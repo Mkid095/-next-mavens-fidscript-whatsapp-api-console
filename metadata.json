@@ -1,0 +1,6 @@
+{
+  "name": "FIDScript WhatsApp API Console",
+  "description": "Premium multi-instance tracking and automated payment reconciliation dashboard for Kenyan corporate clients leveraging FIDScript WhatsApp APIs by Next Mavens.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
