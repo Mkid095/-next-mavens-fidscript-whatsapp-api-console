@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check } from 'lucide-react';
+import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, Zap, RefreshCw, CheckCircle, XCircle, ChevronRight, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clientKeysApi } from '../../services/api';
 import type { ClientApiKey } from './types';
@@ -8,12 +8,23 @@ interface ApiKeysSectionProps {
   clientToken?: string;
 }
 
+interface KeyWithStats extends ClientApiKey {
+  request_count?: number;
+}
+
 export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [showNewKeyModal, setShowNewKeyModal] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
-  const [apiKeys, setApiKeys] = useState<ClientApiKey[]>([]);
+  const [apiKeys, setApiKeys] = useState<KeyWithStats[]>([]);
   const [showKeyValue, setShowKeyValue] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<'keys' | 'reference'>('keys');
+  const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<{ id: string; ok: boolean; msg: string } | null>(null);
+  const [regeneratingKeyId, setRegeneratingKeyId] = useState<string | null>(null);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [regenerateKeyId, setRegenerateKeyId] = useState<string | null>(null);
+  const [regenerateKeyName, setRegenerateKeyName] = useState('');
 
   const fetchKeys = async () => {
     if (!clientToken) return;
@@ -32,7 +43,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     if (!newKeyName.trim() || !clientToken) return;
     const res = await clientKeysApi.create(newKeyName.trim());
     if (res.success && res.data) {
-      setApiKeys((prev) => [{ ...res.data, last_used: 'Never' } as ClientApiKey, ...prev]);
+      setApiKeys((prev) => [{ ...res.data, last_used: 'Just now' } as KeyWithStats, ...prev]);
       setNewKeyName('');
       setShowNewKeyModal(false);
     }
@@ -51,6 +62,54 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     }
   };
 
+  const handleTestKey = async (k: KeyWithStats) => {
+    if (!k.key) return;
+    setTestingKeyId(k.id);
+    setTestResult(null);
+    try {
+      const res = await fetch('https://whatsapp.fidscript.com/api/instance/connectionState/ping', {
+        method: 'GET',
+        headers: {
+          'X-API-Key': k.key,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      setTestResult({ id: k.id, ok: res.ok, msg: res.ok ? 'Key is valid!' : (data?.error || `HTTP ${res.status}`) });
+    } catch (err: unknown) {
+      setTestResult({ id: k.id, ok: false, msg: err instanceof Error ? err.message : 'Connection failed' });
+    }
+    setTestingKeyId(null);
+  };
+
+  const handleRegenerateKey = async () => {
+    if (!regenerateKeyId || !clientToken) return;
+    setRegeneratingKeyId(regenerateKeyId);
+    try {
+      // Revoke old key
+      await clientKeysApi.revoke(regenerateKeyId);
+      // Create new key with same name
+      const res = await clientKeysApi.create(regenerateKeyName);
+      if (res.success && res.data) {
+        setApiKeys((prev) => [
+          ...prev.filter((k) => k.id !== regenerateKeyId).map((k) => k.id === regenerateKeyId ? { ...k, status: 'Revoked' as const } : k),
+          { ...res.data, last_used: 'Just now' } as KeyWithStats,
+        ]);
+        setShowRegenerateModal(false);
+        setRegenerateKeyId(null);
+        setRegenerateKeyName('');
+      }
+    } finally {
+      setRegeneratingKeyId(null);
+    }
+  };
+
+  const openRegenerateModal = (k: KeyWithStats) => {
+    setRegenerateKeyId(k.id);
+    setRegenerateKeyName(k.name);
+    setShowRegenerateModal(true);
+  };
+
   const toggleShowKey = (id: string) => {
     setShowKeyValue((prev) => {
       const next = new Set(prev);
@@ -61,69 +120,141 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   };
 
   return (
-    <div className="bg-white border border-[#eaebe4] rounded-3xl p-6 shadow-sm space-y-4">
-      <div className="flex items-center justify-between pb-4 border-b border-stone-100">
-        <div>
-          <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5"><Key className="w-4 h-4 text-yellow-700" /> FidScript API Credentials</h3>
-          <p className="text-xs text-graphite mt-0.5">Custom API keys for integrating with FidScript endpoints.</p>
+    <div className="space-y-6">
+      {/* Tab bar */}
+      <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm">
+        <div className="flex items-center gap-1.5 p-1.5 bg-[#f9f9f2] border-b border-[#eaebe4]">
+          {(['keys', 'reference'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                activeTab === tab ? 'bg-forest-deep text-white' : 'text-stone-600 hover:text-black hover:bg-stone-100'
+              }`}
+            >
+              {tab === 'keys' ? 'My API Keys' : 'API Reference'}
+            </button>
+          ))}
         </div>
-        <button onClick={() => setShowNewKeyModal(true)} className="bg-forest-deep hover:bg-[#33301a] text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5">
-          <Plus className="w-3.5 h-3.5" /> Generate Key
-        </button>
-      </div>
 
-      <div className="bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl p-4">
-        <p className="text-[10px] font-bold text-forest-deep mb-2">FidScript API Base URL</p>
-        <div className="flex items-center gap-2">
-          <code className="flex-1 text-xs font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-xl text-forest-deep">https://whatsapp.fidscript.com/api/instance</code>
-          <button onClick={() => navigator.clipboard.writeText('https://whatsapp.fidscript.com/api/instance')}
-            className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors">
-            <Copy className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {apiKeys.map((k) => {
-          const isRevoked = k.status === 'Revoked';
-          return (
-            <div key={k.id} className={`p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-[#eaebe4] rounded-2xl ${isRevoked ? 'opacity-50' : ''}`}>
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className={`text-xs font-bold font-mono ${isRevoked ? 'line-through text-gray-400' : 'text-forest-deep'}`}>{k.name}</p>
-                  <span className={`px-2 py-0.5 text-[8px] font-bold rounded-full ${isRevoked ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-800'}`}>{k.status}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-[11px] font-mono bg-stone-100 px-2 py-1 rounded text-stone-700 truncate select-all max-w-md">
-                    {showKeyValue.has(k.id) ? k.key : `${k.key?.substring(0, 20)}••••••••••••••••`}
-                  </code>
-                  <button onClick={() => toggleShowKey(k.id)} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors">
-                    {showKeyValue.has(k.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                  <button onClick={() => handleCopyKey(k.id, k.key || '')} disabled={isRevoked} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors">
-                    {copiedKeyId === k.id ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-[10px] font-mono text-gray-400 shrink-0">
-                <div><p className="text-[9px] uppercase font-bold text-stone-400">Created</p><p className="text-stone-700 font-bold mt-0.5">{k.created_at}</p></div>
-                {!isRevoked ? (
-                  <button onClick={() => handleRevokeKey(k.id, k.name)} className="p-2 text-stone-400 hover:text-red-600 bg-white border border-stone-200 rounded-xl transition-all" title="Revoke Key"><Trash2 className="w-3.5 h-3.5" /></button>
-                ) : <span className="text-[9px] bg-stone-100 text-gray-400 p-2 rounded-xl font-bold">Revoked</span>}
+        {activeTab === 'keys' && (
+          <div className="p-6 space-y-4">
+            {/* Base URL banner */}
+            <div className="bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl p-4">
+              <p className="text-[10px] font-bold text-forest-deep mb-2">FidScript API Base URL</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-xl text-forest-deep">https://whatsapp.fidscript.com/api/instance</code>
+                <button onClick={() => navigator.clipboard.writeText('https://whatsapp.fidsapp.com/api/instance')}
+                  className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors" title="Copy URL">
+                  <Copy className="w-4 h-4" />
+                </button>
               </div>
             </div>
-          );
-        })}
+
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5"><Key className="w-4 h-4 text-yellow-700" /> FidScript API Credentials</h3>
+                <p className="text-xs text-graphite mt-0.5">Manage API keys for integrating with FidScript endpoints.</p>
+              </div>
+              <button onClick={() => setShowNewKeyModal(true)} className="bg-forest-deep hover:bg-[#33301a] text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5">
+                <Plus className="w-3.5 h-3.5" /> Generate Key
+              </button>
+            </div>
+
+            {/* Key list */}
+            <div className="space-y-3">
+              {apiKeys.length === 0 ? (
+                <div className="py-12 text-center text-graphite space-y-3">
+                  <Key className="w-10 h-10 text-yellow-200 mx-auto" />
+                  <p className="font-bold text-forest-deep text-sm">No API keys yet</p>
+                  <p className="text-xs text-graphite">Generate a key to start integrating with FidScript.</p>
+                  <button onClick={() => setShowNewKeyModal(true)} className="px-4 py-2 bg-yellow-500 text-stone-950 font-bold text-xs rounded-xl mt-2">
+                    Generate Your First Key
+                  </button>
+                </div>
+              ) : apiKeys.map((k) => {
+                const isRevoked = k.status === 'Revoked';
+                return (
+                  <div key={k.id} className={`p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-[#eaebe4] rounded-2xl ${isRevoked ? 'opacity-50 bg-stone-50' : ''}`}>
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-xs font-bold font-mono ${isRevoked ? 'line-through text-gray-400' : 'text-forest-deep'}`}>{k.name}</p>
+                        <span className={`px-2 py-0.5 text-[8px] font-bold rounded-full ${isRevoked ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-800'}`}>{k.status}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 text-[11px] font-mono bg-stone-100 px-2 py-1.5 rounded text-stone-700 select-all truncate max-w-lg">
+                          {showKeyValue.has(k.id) && !isRevoked ? k.key : `${k.key?.substring(0, 24)}••••••••••••`}
+                        </code>
+                        {!isRevoked && (
+                          <>
+                            <button onClick={() => toggleShowKey(k.id)} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors" title={showKeyValue.has(k.id) ? 'Hide' : 'Reveal'}>
+                              {showKeyValue.has(k.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+                            <button onClick={() => handleCopyKey(k.id, k.key || '')} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors" title="Copy">
+                              {copiedKeyId === k.id ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-[10px] text-stone-500">
+                        <span>Created {k.created_at}</span>
+                        <span>·</span>
+                        <span>Last used {k.last_used}</span>
+                      </div>
+                      {testResult && testResult.id === k.id && (
+                        <div className={`flex items-center gap-1.5 text-[10px] font-bold ${testResult.ok ? 'text-green-700' : 'text-red-600'}`}>
+                          {testResult.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                          {testResult.msg}
+                        </div>
+                      )}
+                    </div>
+                    {!isRevoked ? (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => handleTestKey(k)}
+                          disabled={testingKeyId === k.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-600 border border-stone-200 rounded-xl transition-all"
+                          title="Test this key"
+                        >
+                          <Terminal className="w-3.5 h-3.5" />
+                          {testingKeyId === k.id ? 'Testing...' : 'Test'}
+                        </button>
+                        <button
+                          onClick={() => openRegenerateModal(k)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-xl transition-all"
+                          title="Regenerate key"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Regenerate
+                        </button>
+                        <button onClick={() => handleRevokeKey(k.id, k.name)} className="p-2 text-stone-400 hover:text-red-600 bg-white border border-stone-200 rounded-xl transition-all" title="Revoke Key">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[9px] bg-stone-100 text-gray-400 p-2 rounded-xl font-bold shrink-0">Revoked</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Security notice */}
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-2xl flex items-start gap-2.5">
+              <Lock className="w-4 h-4 text-yellow-700 mt-0.5 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-yellow-950">Keep your API keys secret</p>
+                <p className="text-[11px] text-yellow-800 leading-relaxed">Keys are only shown once at creation. Copy and store them securely. Use server-to-server communication — never expose in client-side code.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'reference' && <ApiReference />}
       </div>
 
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-2xl flex items-start gap-2.5">
-        <Lock className="w-4 h-4 text-yellow-700 mt-0.5 shrink-0" />
-        <div className="space-y-1">
-          <p className="text-xs font-bold text-yellow-950">Keep your API keys secret</p>
-          <p className="text-[11px] text-yellow-800 leading-relaxed">Never expose keys in client-side code or public repositories. Use server-to-server communication.</p>
-        </div>
-      </div>
-
+      {/* New key modal */}
       <AnimatePresence>
         {showNewKeyModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
@@ -136,12 +267,12 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
               <form onSubmit={handleCreateApiKey} className="space-y-4 text-xs font-semibold text-forest-deep">
                 <div>
                   <label className="block text-[10px] font-bold text-graphite uppercase mb-1.5">Key Name</label>
-                  <input type="text" required placeholder="e.g. ERP Sales Hook" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none font-mono text-xs" />
+                  <input type="text" required placeholder="e.g. ERP Sales Hook, Mobile App" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs" />
                   <p className="text-[9px] text-stone-400 mt-1">A label to identify this key.</p>
                 </div>
                 <div className="flex gap-2 justify-end pt-3">
-                  <button type="button" onClick={() => setShowNewKeyModal(false)} className="px-4 py-2 border border-stone-200 rounded-xl text-xs">Cancel</button>
+                  <button type="button" onClick={() => setShowNewKeyModal(false)} className="px-4 py-2 border border-stone-200 rounded-xl text-xs hover:bg-stone-50">Cancel</button>
                   <button type="submit" className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-stone-950 font-bold text-xs rounded-xl">Generate Key</button>
                 </div>
               </form>
@@ -149,6 +280,145 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Regenerate key modal */}
+      <AnimatePresence>
+        {showRegenerateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-[#eaebe4] text-forest-deep rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                <h4 className="font-bold text-sm">Regenerate API Key</h4>
+                <button onClick={() => setShowRegenerateModal(false)} className="text-gray-400 hover:text-black"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800">
+                  <p className="font-bold mb-1">This will replace the current key</p>
+                  <p>The existing key <strong>"{regenerateKeyName}"</strong> will be permanently revoked and cannot be recovered. A new key will be generated with the same name.</p>
+                </div>
+                <div className="flex gap-2 justify-end pt-2">
+                  <button onClick={() => setShowRegenerateModal(false)} className="px-4 py-2 border border-stone-200 rounded-xl hover:bg-stone-50">Cancel</button>
+                  <button onClick={handleRegenerateKey} disabled={regeneratingKeyId === regenerateKeyId}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 disabled:opacity-50">
+                    {regeneratingKeyId === regenerateKeyId ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    Regenerate Key
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/** Full API reference section */
+function ApiReference() {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const endpoints = [
+    {
+      group: 'Messaging',
+      items: [
+        {
+          method: 'POST', path: '/sendText/:instance', name: 'Send Text Message', cost: '1 token',
+          desc: 'Send a plain text message to a WhatsApp number.',
+          body: { to: '254712345678', message: 'Hello!' },
+          response: { success: true, data: { messageId: 'msg_abc123', to: '254712345678', timestamp: '2026-06-14T10:00:00Z' } },
+        },
+        {
+          method: 'POST', path: '/sendMedia/:instance', name: 'Send Media', cost: '2 tokens',
+          desc: 'Send an image, video, audio, or document. Media is hosted externally and referenced by URL.',
+          body: { to: '254712345678', media_url: 'https://example.com/image.jpg', media_type: 'image', caption: 'Check this out!' },
+          response: { success: true, data: { messageId: 'msg_abc123', to: '254712345678', media_type: 'image', timestamp: '2026-06-14T10:00:00Z' } },
+        },
+        {
+          method: 'POST', path: '/sendLocation/:instance', name: 'Send Location', cost: '1 token',
+          desc: 'Send a location pin with optional name and address.',
+          body: { to: '254712345678', latitude: -1.2921, longitude: 36.8219, name: 'Nairobi CBD', address: 'City Square' },
+          response: { success: true, data: { messageId: 'msg_abc123', to: '254712345678', location: { latitude: -1.2921, longitude: 36.8219 } } },
+        },
+      ],
+    },
+    {
+      group: 'Instance',
+      items: [
+        {
+          method: 'GET', path: '/connectionState/:instance', name: 'Get Connection State', cost: '0',
+          desc: 'Check if a WhatsApp container is connected, connecting, or disconnected.',
+          response: { success: true, data: { name: 'my-container', status: 'connected', phone_number: '+254700000000' } },
+        },
+        {
+          method: 'DELETE', path: '/logout/:instance', name: 'Disconnect', cost: '0',
+          desc: 'Log out of WhatsApp and reset the container to disconnected state.',
+          response: { success: true, message: 'Disconnected successfully' },
+        },
+      ],
+    },
+  ];
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl p-4">
+        <p className="text-[10px] font-bold text-forest-deep mb-2">Authentication</p>
+        <div className="bg-[#13120d] text-[#e3ded2] rounded-xl p-3 font-mono text-[11px] space-y-1">
+          <p className="text-[9px] font-bold text-[#b8ab81] mb-1">Header</p>
+          <p><span className="text-blue-400">X-API-Key</span>: <span className="text-yellow-300">fidscript_live_your_key_here</span></p>
+          <p><span className="text-blue-400">Content-Type</span>: <span className="text-green-300">application/json</span></p>
+        </div>
+      </div>
+
+      {endpoints.map((group) => (
+        <div key={group.group} className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#3d3311] pb-2 border-b border-[#eaebe4]">{group.group}</h4>
+          {group.items.map((ep) => (
+            <div key={ep.path + ep.method} className="border border-[#eaebe4] rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setExpanded(expanded === ep.path + ep.method ? null : ep.path + ep.method)}
+                className="w-full p-4 flex items-center justify-between text-left hover:bg-stone-50 transition-colors"
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded font-mono ${ep.method === 'POST' ? 'bg-yellow-600 text-stone-950' : ep.method === 'GET' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'}`}>{ep.method}</span>
+                  <code className="text-[11px] font-mono font-bold text-forest-deep">{ep.path}</code>
+                  <span className="text-[10px] text-graphite ml-1">{ep.name}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {ep.cost !== '0' && <span className="text-[10px] font-bold text-yellow-700 font-mono">{ep.cost}</span>}
+                  <ChevronRight className={`w-4 h-4 text-stone-400 transition-transform ${expanded === ep.path + ep.method ? 'rotate-90' : ''}`} />
+                </div>
+              </button>
+              <AnimatePresence>
+                {expanded === ep.path + ep.method && (
+                  <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                    <div className="p-4 border-t border-[#eaebe4] bg-[#f9f9f2] space-y-4">
+                      <p className="text-[11px] text-graphite leading-relaxed">{ep.desc}</p>
+                      {ep.body && (
+                        <div>
+                          <p className="text-[9px] font-bold text-forest-deep mb-1.5 uppercase">Request Body</p>
+                          <pre className="bg-[#13120d] text-yellow-100 rounded-xl p-3 text-[11px] font-mono overflow-x-auto">{JSON.stringify(ep.body, null, 2)}</pre>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-[9px] font-bold text-forest-deep mb-1.5 uppercase">Response</p>
+                        <pre className="bg-[#13120d] text-green-100 rounded-xl p-3 text-[11px] font-mono overflow-x-auto">{JSON.stringify(ep.response, null, 2)}</pre>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      ))}
+
+      <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl text-[11px] text-graphite space-y-2">
+        <p className="font-bold text-forest-deep text-xs">Rate Limits</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div><p className="font-bold text-forest-deep">30 messages/minute</p><p className="text-stone-500">Per container</p></div>
+          <div><p className="font-bold text-forest-deep">1 token = 1 text</p><p className="text-stone-500">Media costs 2+ tokens</p></div>
+        </div>
+      </div>
     </div>
   );
 }
