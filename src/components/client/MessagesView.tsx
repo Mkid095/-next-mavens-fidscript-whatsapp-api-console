@@ -84,13 +84,16 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   }, []);
 
   useEffect(() => {
+    const savedContactMap = new Map(savedContacts.map(c => [c.phone, c.name || c.phone]));
     const map = new Map<string, ConversationContact>();
     messages.forEach(msg => {
       const phone = msg.from_number;
+      const savedName = savedContactMap.get(phone);
+      const displayName = savedName || msg.from_name || phone;
       if (!map.has(phone)) {
         map.set(phone, {
           phone,
-          name: msg.from_name || phone,
+          name: displayName,
           lastMessage: msg.content || `[${msg.message_type}]`,
           lastTime: msg.timestamp,
           unread: msg.is_read === 0 ? 1 : 0,
@@ -109,7 +112,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
     setContacts(Array.from(map.values()).sort((a, b) =>
       new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()
     ));
-  }, [messages]);
+  }, [messages, savedContacts]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -482,15 +485,15 @@ function NewChatPanelInline({ savedContacts, clientToken, onSelectContact, onCon
     setLoading(true);
     try {
       const phone = phoneInput.replace(/\D/g, '');
-      const isKnown = savedContacts.some(c => c.phone === phone);
-      if (!isKnown) {
-        const res = await contactsApi.importBatch([{ phone, name: nameInput.trim() }]);
-        if (res.success && res.data?.count > 0) {
-          onContactCreated({ id: `new_${Date.now()}`, phone, name: nameInput.trim() || phone, tags: '', created_at: new Date().toISOString() });
-        }
-      } else {
-        const contact = savedContacts.find(c => c.phone === phone)!;
+      const existing = savedContacts.find(c => c.phone === phone);
+      if (existing) {
         onSelectContact(phone);
+      } else {
+        const res = await contactsApi.importBatch([{ phone, name: nameInput.trim() }]);
+        if (res.success) {
+          const newContact = { id: `new_${Date.now()}`, phone, name: nameInput.trim() || phone, tags: '', created_at: new Date().toISOString() };
+          onContactCreated(newContact);
+        }
       }
     } finally {
       setLoading(false);

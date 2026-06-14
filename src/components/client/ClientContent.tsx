@@ -19,6 +19,8 @@ interface ClientContentProps {
   tokenBalance: number;
   tokenPackages: TokenPackage[];
   dailyUsage: DailyUsage[];
+  recentMessages: ClientMessage[];
+  messagesToday: number;
   previousBalance?: number;
   onInstancesChange: (instances: Instance[]) => void;
   onTokenBalanceChange: (balance: number) => void;
@@ -34,6 +36,8 @@ export default function ClientContent({
   tokenBalance,
   tokenPackages,
   dailyUsage,
+  recentMessages,
+  messagesToday,
   previousBalance,
   onInstancesChange,
   onTokenBalanceChange,

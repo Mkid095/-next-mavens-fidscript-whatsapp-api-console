@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../database.js';
 import { clientJwtAuth } from '../middleware/auth.js';
 import { callEvolutionAPI } from '../utils/evolution.js';
+import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 
 const router = Router();
 
@@ -204,6 +205,7 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       db.prepare(
         "UPDATE campaigns SET status = 'completed', completed_at = CURRENT_TIMESTAMP, sent_count = ?, delivered_count = ?, failed_count = ? WHERE id = ?"
       ).run(sentCount, deliveredCount, failedCount, req.params.id);
+      emitDashboardRefresh(req.client!.id);
     };
 
     sendMessages().catch(console.error);

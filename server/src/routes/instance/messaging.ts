@@ -5,6 +5,7 @@ import { clientJwtAuth, clientRateLimit } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
 import { callEvolutionAPI, emitTokenUpdate } from '../../utils/evolution.js';
 import { logApiRequest } from '../../utils/audit.js';
+import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 
 const router = Router();
 
@@ -67,6 +68,7 @@ router.post('/sendText/:name', clientJwtAuth, clientRateLimit, async (req: Reque
     db.prepare('UPDATE clients SET msg_count_today = msg_count_today + 1, total_messages = total_messages + 1 WHERE id = ?').run(instance.client_id);
     saveSentMessage(instance.id, instance.client_id, msgId, to, message);
     logApiRequest(req, instance.id, instance.client_id, 200, JSON.stringify({ msgId, to, message }));
+    emitDashboardRefresh(instance.client_id);
 
     res.json({ success: true, data: { messageId: msgId, to, message, timestamp: new Date().toISOString() } });
   } catch (error) {
@@ -117,6 +119,7 @@ router.post('/sendMedia/:name', clientJwtAuth, clientRateLimit, async (req: Requ
     db.prepare('UPDATE clients SET msg_count_today = msg_count_today + 1, total_messages = total_messages + 1 WHERE id = ?').run(instance.client_id);
     saveSentMessage(instance.id, instance.client_id, msgId, to, caption || '', msgType, media_url);
     logApiRequest(req, instance.id, instance.client_id, 200, JSON.stringify({ msgId, to, media_url, media_type: msgType }));
+    emitDashboardRefresh(instance.client_id);
 
     res.json({ success: true, data: { messageId: msgId, to, media_url, media_type: msgType, caption, timestamp: new Date().toISOString() } });
   } catch (error) {
@@ -168,6 +171,7 @@ router.post('/sendLocation/:name', clientJwtAuth, clientRateLimit, async (req: R
 
     const locationContent = `${name || ''} ${address || ''} (${latitude},${longitude})`;
     saveSentMessage(instance.id, instance.client_id, msgId, to, locationContent, 'location');
+    emitDashboardRefresh(instance.client_id);
 
     res.json({ success: true, data: { messageId: msgId, to, location: { latitude, longitude, name, address }, timestamp: new Date().toISOString() } });
   } catch (error) {

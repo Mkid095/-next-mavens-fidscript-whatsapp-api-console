@@ -52,6 +52,13 @@ export const clientMessagesApi = {
 
   markRead: (id: string) =>
     fetchApi<void>(`/api/client/messages/${id}/read`, { method: 'PATCH' }),
+
+  getDashboardStats: () =>
+    fetchApi<{
+      messagesToday: number;
+      dailyVolume: { date: string; messages_sent: number; messages_delivered: number }[];
+      recentMessages: ClientMessage[];
+    }>('/api/client/messages/dashboard-stats'),
 };
 
 export interface Campaign {

@@ -3,6 +3,7 @@ import db from '../database.js';
 import { verifyToken } from '../middleware/auth/jwt.js';
 import { instanceEmitter } from '../utils/evolution.js';
 import { paymentEmitter } from '../utils/paymentEmitter.js';
+import { dashboardEmitter } from '../utils/dashboardEmitter.js';
 import type { Client } from '../types.js';
 
 const router = Router();
@@ -126,6 +127,106 @@ router.get('/client', (req: Request, res: Response) => {
   req.on('close', () => {
     clearInterval(heartbeat);
     paymentEmitter.off('tokenUpdate', tokenUpdateHandler);
+  });
+});
+
+/**
+ * GET /api/sse/dashboard
+ * SSE endpoint for client dashboard real-time stats (messages today, volume chart, recent messages).
+ * Auth via query param: ?token=<client_jwt>
+ */
+router.get('/dashboard', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  if (!token) {
+    res.status(401).json({ success: false, error: 'Token required' });
+    return;
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded || decoded.type !== 'client') {
+    res.status(401).json({ success: false, error: 'Invalid or expired token' });
+    return;
+  }
+
+  const client = db.prepare('SELECT * FROM clients WHERE id = ? AND is_active = 1').get(decoded.id) as Client | undefined;
+  if (!client) {
+    res.status(401).json({ success: false, error: 'Client not found or inactive' });
+    return;
+  }
+
+  const clientId = decoded.id;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  res.write(': connected\n\n');
+
+  const heartbeat = setInterval(() => {
+    res.write(': heartbeat\n\n');
+  }, 30000);
+
+  const sendDashboardStats = () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+
+      const todayRow = db.prepare(`
+        SELECT COUNT(*) as count FROM inbox_messages
+        WHERE client_id = ? AND direction = 'outgoing' AND date(timestamp) = ?
+      `).get(clientId, today) as { count: number };
+
+      const dailyVolume = db.prepare(`
+        SELECT
+          date(timestamp) as date,
+          SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as messages_sent,
+          SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as messages_received
+        FROM inbox_messages
+        WHERE client_id = ? AND timestamp >= datetime('now', '-7 days')
+        GROUP BY date(timestamp)
+        ORDER BY date ASC
+      `).all(clientId) as { date: string; messages_sent: number; messages_received: number }[];
+
+      const recentMessages = db.prepare(`
+        SELECT im.id, im.from_number, im.from_name, im.message_type, im.content,
+               im.media_url, im.is_read, im.timestamp, im.direction, i.name as instance_name
+        FROM inbox_messages im
+        JOIN instances i ON im.instance_id = i.id
+        WHERE im.client_id = ?
+        ORDER BY im.timestamp DESC
+        LIMIT 10
+      `).all(clientId);
+
+      res.write(`event: dashboardUpdate\ndata: ${JSON.stringify({
+        messagesToday: todayRow.count,
+        dailyVolume: dailyVolume.map(d => ({
+          date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          messages_sent: d.messages_sent,
+          messages_delivered: d.messages_received,
+        })),
+        recentMessages,
+      })}\n\n`);
+    } catch (err) {
+      console.error('Dashboard SSE stats error:', err);
+    }
+  };
+
+  // Send initial stats
+  sendDashboardStats();
+
+  // Forward dashboard refresh events
+  const msgUpdateHandler = (emittedClientId: string) => {
+    if (emittedClientId === clientId) {
+      sendDashboardStats();
+    }
+  };
+
+  dashboardEmitter.on('msgUpdate', msgUpdateHandler);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    dashboardEmitter.off('msgUpdate', msgUpdateHandler);
   });
 });
 

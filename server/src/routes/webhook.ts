@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import db from '../database.js';
 import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage } from '../utils/evolution.js';
 import { logAuditAction } from '../utils/audit.js';
+import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 
 const router = Router();
 
@@ -138,6 +139,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
       // Broadcast new message to SSE for real-time inbox
       emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: msgType, content, media_url: mediaUrl, timestamp });
       emitInstanceStateChange(instance.name, 'connected', phone || null);
+      emitDashboardRefresh(instance.client_id);
     }
     res.status(200).json({ success: true, handled: true });
     return;

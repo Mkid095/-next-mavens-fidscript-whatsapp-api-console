@@ -4,8 +4,7 @@ import {
   CheckCircle, XCircle, MessageSquare
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { Client, Instance, DailyUsage } from '../../services/api';
-import type { QueuedMessage } from './types';
+import type { Client, Instance, DailyUsage, ClientMessage } from '../../services/api';
 import StatCards from './StatCards';
 import TokenCosts from './TokenCosts';
 
@@ -14,11 +13,12 @@ interface DashboardHomeProps {
   tokenBalance: number;
   instances: Instance[];
   dailyUsage: DailyUsage[];
-  recentMessages: QueuedMessage[];
+  recentMessages: ClientMessage[];
+  messagesToday: number;
 }
 
 export default function DashboardHome({
-  client, tokenBalance, instances, dailyUsage, recentMessages
+  client, tokenBalance, instances, dailyUsage, recentMessages, messagesToday
 }: DashboardHomeProps) {
   if (!client) {
     return (
@@ -59,7 +59,7 @@ export default function DashboardHome({
         tokenBalance={tokenBalance}
         connectedInstances={connectedInstances}
         instances={instances}
-        msgCountToday={client.msg_count_today || 0}
+        msgCountToday={messagesToday}
         totalTokens={totalTokens}
       />
 
@@ -104,26 +104,26 @@ export default function DashboardHome({
             <Clock className="w-4 h-4 text-yellow-700" />
             Recent Messages
           </h3>
-          <span className="text-[10px] text-stone-400">Last 5 messages</span>
+          <span className="text-[10px] text-stone-400">Last 10 messages</span>
         </div>
         {recentMessages.length > 0 ? (
           <div className="space-y-2">
-            {recentMessages.slice(0, 5).map((msg) => (
+            {recentMessages.slice(0, 10).map((msg) => (
               <div key={msg.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl">
                 <div className="flex items-center gap-3">
-                  {msg.status === 'sent' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
-                   msg.status === 'pending' ? <Clock className="w-4 h-4 text-amber-500" /> :
+                  {msg.direction === 'outgoing' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
+                   msg.is_read === 0 ? <Clock className="w-4 h-4 text-amber-500" /> :
                    <XCircle className="w-4 h-4 text-red-500" />}
                   <div>
-                    <p className="text-xs font-bold text-forest-deep font-mono">{msg.phone}</p>
-                    <p className="text-[10px] text-stone-500 truncate max-w-[200px]">{msg.message}</p>
+                    <p className="text-xs font-bold text-forest-deep font-mono">{msg.from_number}</p>
+                    <p className="text-[10px] text-stone-500 truncate max-w-[200px]">{msg.content}</p>
                   </div>
                 </div>
                 <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                  msg.status === 'sent' ? 'bg-green-100 text-green-800' :
-                  msg.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                  'bg-red-100 text-red-600'
-                }`}>{msg.status}</span>
+                  msg.direction === 'outgoing' ? 'bg-green-100 text-green-800' :
+                  msg.is_read === 0 ? 'bg-amber-100 text-amber-800' :
+                  'bg-stone-100 text-stone-600'
+                }`}>{msg.direction === 'outgoing' ? 'Sent' : msg.is_read === 0 ? 'New' : 'Received'}</span>
               </div>
             ))}
           </div>

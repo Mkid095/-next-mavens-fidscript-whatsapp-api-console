@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import ClientDashboard from './ClientDashboard';
-import type { Instance, Client, TokenPackage, DailyUsage } from '../../services/api';
+import type { Instance, Client, TokenPackage, DailyUsage, ClientMessage } from '../../services/api';
 
 interface ClientRouteProps {
   currentUser: { email: string; role: 'admin' | 'client'; name: string } | null;
@@ -11,12 +11,14 @@ interface ClientRouteProps {
   tokenBalance: number;
   tokenPackages: TokenPackage[];
   dailyUsage: DailyUsage[];
+  recentMessages: ClientMessage[];
+  messagesToday: number;
   onTokenBalanceChange: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export function ClientRoutes({
   currentUser, clientData, clientInstances, onInstancesChange, onLogout,
-  tokenBalance, tokenPackages, dailyUsage, onTokenBalanceChange,
+  tokenBalance, tokenPackages, dailyUsage, recentMessages, messagesToday, onTokenBalanceChange,
 }: ClientRouteProps) {
   // Guard: must be an authenticated client with loaded profile data
   if (!currentUser || currentUser.role !== 'client' || !clientData) {
@@ -39,6 +41,8 @@ export function ClientRoutes({
       tokenBalance={tokenBalance}
       tokenPackages={tokenPackages}
       dailyUsage={dailyUsage}
+      recentMessages={recentMessages}
+      messagesToday={messagesToday}
       onTokenBalanceChange={onTokenBalanceChange}
     />
   );
