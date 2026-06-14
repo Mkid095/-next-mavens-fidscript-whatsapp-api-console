@@ -117,8 +117,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
       const timestamp = new Date().toISOString();
       try {
         db.prepare(`
-          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming')
         `).run(msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '', msgType, content, mediaUrl);
         // Update last_active on both instance and client when a message is received
         db.prepare('UPDATE instances SET last_active = ? WHERE id = ?').run(timestamp, instance.id);

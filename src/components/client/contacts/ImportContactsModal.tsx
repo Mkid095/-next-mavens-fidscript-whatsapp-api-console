@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import { motion } from 'motion/react';
 import { contactsApi } from '../../../services/api';
 
@@ -21,6 +21,17 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
       const name = parts[1]?.trim() || `Contact ${i + 1}`;
       return { phone, name };
     }).filter(c => c.phone.length >= 8);
+  };
+
+  const downloadTemplate = () => {
+    const csv = "phone,name\n254712345678,John Doe\n254798765432,Jane Smith\n254700111222,Bob Alice";
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "contacts_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +106,12 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
             onChange={handleFileChange}
             className="w-full text-xs border border-[#eaebe4] rounded-xl p-2"
           />
+          <button
+            onClick={downloadTemplate}
+            className="w-full flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-600 py-2 rounded-xl text-xs font-bold border border-stone-200 transition-all"
+          >
+            <Download className="w-3.5 h-3.5" /> Download CSV Template
+          </button>
           <div className="text-center text-[10px] text-stone-400 font-semibold">OR</div>
           <textarea
             rows={5}

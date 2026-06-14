@@ -9,7 +9,7 @@ router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const messages = db.prepare(`
       SELECT im.id, im.from_number, im.from_name, im.message_type, im.content,
-             im.media_url, im.is_read, im.timestamp, i.name as instance_name
+             im.media_url, im.is_read, im.timestamp, im.direction, i.name as instance_name
       FROM inbox_messages im
       JOIN instances i ON im.instance_id = i.id
       WHERE im.client_id = ?

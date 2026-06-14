@@ -42,6 +42,7 @@ export function createTables(db: Database): void {
   // Migration: add evolution_name column if it doesn't exist
   try { db.run('ALTER TABLE instances ADD COLUMN evolution_name TEXT'); } catch (e: any) { /* already exists */ }
 
+  try { db.run("ALTER TABLE inbox_messages ADD COLUMN direction TEXT DEFAULT 'incoming'"); } catch (e: any) { /* already exists */ }
   db.run(`
     CREATE TABLE IF NOT EXISTS api_logs (
       id TEXT PRIMARY KEY, instance_id TEXT REFERENCES instances(id), client_id TEXT REFERENCES clients(id),

@@ -19,6 +19,7 @@ export interface ClientMessage {
   is_read: number;
   timestamp: string;
   instance_name: string;
+  direction?: 'incoming' | 'outgoing';
 }
 
 export interface ClientApiKey {

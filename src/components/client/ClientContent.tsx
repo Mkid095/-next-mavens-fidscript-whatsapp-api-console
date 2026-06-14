@@ -6,7 +6,7 @@ import WhatsAppContainers from './whatsapp/WhatsAppContainers';
 import ApiKeysSection from './ApiKeysSection';
 import DocsSection from './DocsSection';
 import SandboxSection from './SandboxSection';
-import MessagesSection from './MessagesSection';
+import MessagesView from './MessagesView';
 import ContactsSection from './contacts/ContactsSection';
 import TokenStoreSection from './TokenStoreSection';
 import SettingsSection from './SettingsSection';
@@ -85,7 +85,7 @@ export default function ClientContent({
         />
       )}
       {activeSection === 'messages' && (
-        <MessagesSection clientToken={clientToken} />
+        <MessagesView clientToken={clientToken} />
       )}
       {activeSection === 'contacts' && (
         <ContactsSection

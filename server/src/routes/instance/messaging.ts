@@ -22,8 +22,8 @@ function deductTokens(clientId: string, amount: number, reference: string): bool
 
 function saveSentMessage(instanceId: string, clientId: string, msgId: string, to: string, content: string, messageType = 'text', mediaUrl?: string) {
   db.prepare(`
-    INSERT INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
-    VALUES (?, ?, ?, ?, '', ?, ?, ?)
+    INSERT INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction)
+    VALUES (?, ?, ?, ?, '', ?, ?, ?, 1, 'outgoing')
   `).run(msgId, instanceId, clientId, to, messageType, content, mediaUrl || null);
 }
 
