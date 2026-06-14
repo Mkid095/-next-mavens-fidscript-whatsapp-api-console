@@ -94,24 +94,34 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
   const selectedCountryData = COUNTRY_OPTIONS.find(c => c.code === selectedCountry);
 
   const parseAndPreview = (text: string, countryCode: string) => {
-    const lines = text.split('\n').filter(l => l.trim());
+    if (!text || !text.trim()) { setPreview([]); return; }
+
+    // Split on newlines, keep all non-empty lines
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     if (lines.length === 0) { setPreview([]); return; }
 
-    // Check first line — if it looks like a header (contains letters, not just digits), skip it
-    const firstLine = lines[0].trim();
-    const firstIsHeader = /[a-zA-Z]/.test(firstLine) && !/^\+?\d[\d\s,;\t-]{5,}$/.test(firstLine);
+    // Detect if first line is a header (has text in name column but no digits in phone column)
+    const firstLine = lines[0];
+    const firstParts = firstLine.split(/[,\t;]/);
+    const firstPhoneRaw = firstParts[0]?.replace(/\D/g, '') || '';
+    const firstHasLetters = /[a-zA-Z]/.test(firstLine);
+    // Header if: has letters AND phone part has fewer than 7 digits (i.e., it's a label, not a number)
+    const firstIsHeader = firstHasLetters && firstPhoneRaw.length < 7;
     const dataLines = firstIsHeader ? lines.slice(1) : lines;
 
-    const parsed = dataLines.map((line, i) => {
+    const parsed: { phone: string; name: string; normalized: string }[] = [];
+    dataLines.forEach((line, i) => {
       const parts = line.split(/[,\t;]/);
-      const raw = parts[0]?.trim() || '';
-      const name = parts[1]?.trim() || '';
-      return {
+      const raw = (parts[0] || '').trim();
+      const name = (parts[1] || '').trim();
+      const digitsOnly = raw.replace(/\D/g, '');
+      if (digitsOnly.length < 7) return; // skip too-short numbers
+      parsed.push({
         phone: raw,
         name: name || `Contact ${i + 1}`,
         normalized: normalizeNumber(raw, countryCode),
-      };
-    }).filter(c => c.phone.replace(/\D/g, '').length >= 7);
+      });
+    });
 
     setPreview(parsed);
   };
