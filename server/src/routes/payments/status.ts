@@ -17,7 +17,8 @@ router.get('/:reference', async (req: Request, res: Response) => {
     `).get(reference, reference, reference) as any;
 
     if (!payment) {
-      console.error(`[paymentStatus] reference="${reference}" not found in payments table`);
+      const recent = (db.prepare('SELECT id, payhero_reference, checkout_request_id, status FROM payments ORDER BY created_at DESC LIMIT 5').all() as any[]);
+      console.error(`[paymentStatus] ref="${reference}" not found. Recent:`, JSON.stringify(recent));
       return res.status(404).json({ success: false, error: 'Payment not found' });
     }
 
