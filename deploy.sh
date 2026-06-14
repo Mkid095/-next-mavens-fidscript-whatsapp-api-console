@@ -20,7 +20,7 @@ log() {
     local level="$1"
     shift
     local message="$*"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [${level}] ${message}" | tee -a "${LOG_FILE}"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [${level}] ${message}" | tee -a "${LOG_FILE}" >&2
 }
 
 log_info() {
@@ -83,13 +83,13 @@ get_changed_files() {
 # =============================================================================
 
 detect_changes() {
-    log_info "Detecting changes since last commit..."
+    log_info "Detecting changes since last commit..." >&2
 
     local changed_files
     changed_files=$(get_changed_files)
 
     if [ -z "${changed_files}" ]; then
-        log_info "No changes detected."
+        log_info "No changes detected." >&2
         echo "none"
         return
     fi
@@ -126,9 +126,9 @@ detect_changes() {
 ensure_versions_table() {
     log_info "Ensuring deploy_versions table exists..."
 
-    # Create table if not exists using sql.js
+    # Create table if not exists using sql.js (from server/node_modules)
     node -e "
-const initSqlJs = require('sql.js');
+const initSqlJs = require('${SCRIPT_DIR}/server/node_modules/sql.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -168,8 +168,15 @@ initSqlJs().then(SQL => {
 }
 
 get_current_version() {
+    # Use git tag as source of truth, fallback to server/package.json version
+    local git_version
+    git_version=$(git describe --tags 2>/dev/null | sed 's/^v//' || echo "")
+    if [ -n "${git_version}" ]; then
+        echo "${git_version}"
+        return
+    fi
     local pkg_version
-    pkg_version=$(node -e "console.log(require('${SCRIPT_DIR}/package.json').version)")
+    pkg_version=$(node -e "console.log(require('${SCRIPT_DIR}/server/package.json').version)")
     echo "${pkg_version}"
 }
 
@@ -203,7 +210,7 @@ get_last_deployed_version() {
     local service="$1"
 
     node -e "
-const initSqlJs = require('sql.js');
+const initSqlJs = require('${SCRIPT_DIR}/server/node_modules/sql.js');
 const fs = require('fs');
 
 const dbPath = '${DB_PATH}';
@@ -229,7 +236,8 @@ initSqlJs().then(SQL => {
 }
 
 get_changes_summary() {
-    git diff --stat HEAD~1 2>/dev/null | head -20 || echo "No changes summary available"
+    # Returns a single-line summary safe for JSON/SQL
+    git diff --stat HEAD~1 2>/dev/null | head -5 | tr '\n' ' ' | sed 's/  */ /g' | sed 's/"/\"/g' | cut -c1-200 || echo "No changes"
 }
 
 record_deployment() {
@@ -241,10 +249,14 @@ record_deployment() {
 
     log_info "Recording deployment: ${service} v${version}"
 
+    # Escape changes_summary for JSON
+    local escaped_summary
+    escaped_summary=$(printf '%s' "${changes_summary}" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "${changes_summary}" | sed 's/"/\\"/g' | tr -d "'")
+
     local response
     response=$(curl -s -X POST "${api_url}" \
         -H "Content-Type: application/json" \
-        -d "{\"version\":\"${version}\",\"commit_hash\":\"${commit_hash}\",\"changes_summary\":\"${changes_summary}\",\"service\":\"${service}\"}" \
+        -d "{\"version\":\"${version}\",\"commit_hash\":\"${commit_hash}\",\"changes_summary\":${escaped_summary},\"service\":\"${service}\"}" \
         2>&1) || true
 
     if echo "${response}" | grep -q '"success":true'; then
@@ -253,7 +265,7 @@ record_deployment() {
         log_warn "API recording failed, trying direct DB write..."
         # Fallback to direct DB write
         node -e "
-const initSqlJs = require('sql.js');
+const initSqlJs = require('${SCRIPT_DIR}/server/node_modules/sql.js');
 const fs = require('fs');
 
 const dbPath = '${DB_PATH}';
@@ -266,10 +278,8 @@ initSqlJs().then(SQL => {
     const buffer = fs.readFileSync(dbPath);
     const db = new SQL.Database(buffer);
 
-    db.run(\`
-        INSERT INTO deploy_versions (version, commit_hash, changes_summary, service)
-        VALUES (?, ?, ?, ?)
-    \`, ['${version}', '${commit_hash}', '${changes_summary}', '${service}']);
+    db.run('INSERT INTO deploy_versions (version, commit_hash, changes_summary, service) VALUES (?, ?, ?, ?)',
+        ['${version}', '${commit_hash}', \`${changes_summary}\`, '${service}']);
 
     const data = db.export();
     const fileBuffer = Buffer.from(data);
@@ -304,6 +314,26 @@ restart_backend() {
     log_info "Restarting backend service via PM2..."
 
     if command -v pm2 >/dev/null 2>&1; then
+        local deploy_version
+        deploy_version=$(git describe --tags 2>/dev/null || echo "1.0.0")
+        local commit_hash
+        commit_hash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        local deployed_at
+        deployed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+        # Update ecosystem config with current deploy info
+        cd "${SCRIPT_DIR}/server"
+        node -e "
+const fs = require('fs');
+const config = fs.readFileSync('ecosystem.config.cjs', 'utf8');
+const updated = config.replace(/DEPLOY_VERSION: '[^']*'/g, \"DEPLOY_VERSION: '${deploy_version}'\")
+                       .replace(/DEPLOY_COMMIT_HASH: '[^']*'/g, \"DEPLOY_COMMIT_HASH: '${commit_hash}'\")
+                       .replace(/DEPLOY_DEPLOYED_AT: '[^']*'/g, \"DEPLOY_DEPLOYED_AT: '${deployed_at}'\");
+fs.writeFileSync('ecosystem.config.cjs', updated);
+console.log('Ecosystem config updated with v${deploy_version} (${commit_hash})');
+"
+        cd "${SCRIPT_DIR}"
+
         pm2 restart fidscript-api 2>&1 | tee -a "${LOG_FILE}"
         log_success "Backend service restarted."
     else
@@ -330,24 +360,24 @@ deploy() {
             build_backend
             restart_backend
 
-            local frontend_version
+            local frontend_version backend_version changes
             frontend_version=$(get_current_version)
-            local backend_version
             backend_version=$(get_current_version)
+            changes=$(get_changes_summary)
 
-            # Record both deployments
-            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "$(get_changes_summary)"
-            record_deployment "backend" "${backend_version}" "${commit_hash}" "$(get_changes_summary)"
+            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "${changes}"
+            record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
             ;;
         frontend)
             log_info "Changes detected in frontend only."
 
             build_frontend
 
-            local frontend_version
+            local frontend_version changes
             frontend_version=$(get_current_version)
+            changes=$(get_changes_summary)
 
-            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "$(get_changes_summary)"
+            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "${changes}"
             ;;
         backend)
             log_info "Changes detected in backend only."
@@ -355,10 +385,11 @@ deploy() {
             build_backend
             restart_backend
 
-            local backend_version
+            local backend_version changes
             backend_version=$(get_current_version)
+            changes=$(get_changes_summary)
 
-            record_deployment "backend" "${backend_version}" "${commit_hash}" "$(get_changes_summary)"
+            record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
             ;;
         none)
             log_info "No relevant changes detected. Skipping build."

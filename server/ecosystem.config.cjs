@@ -11,7 +11,10 @@ module.exports = {
       PAYHERO_API_URL: 'https://backend.payhero.co.ke/api/v2',
       PAYHERO_BASIC_AUTH: 'Basic dmtEdDFyWWxaRzB0N0dSY0ZwbXI6RDh2WENlS1BHcWFXQWZyWmR1ZVNIcUtxSHVCc3ZBd29wdWViaERjVA==',
       PAYHERO_CHANNEL_ID: '7173',
-      PLATFORM_URL: 'https://whatsapp.fidscript.com'
+      PLATFORM_URL: 'https://whatsapp.fidscript.com',
+      DEPLOY_VERSION: '1.0.0',
+      DEPLOY_COMMIT_HASH: '4de0426',
+      DEPLOY_DEPLOYED_AT: new Date().toISOString()
     },
     error_file: '/tmp/fidscript-err.log',
     out_file: '/tmp/fidscript-out.log',
