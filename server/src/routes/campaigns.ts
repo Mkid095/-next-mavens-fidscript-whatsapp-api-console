@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../database.js';
 import { clientJwtAuth } from '../middleware/auth.js';
+import { callEvolutionAPI } from '../utils/evolution.js';
 
 const router = Router();
 
@@ -102,7 +103,7 @@ router.get('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/campaigns/:id/send - Start sending a campaign
+// POST /api/campaigns/:id/send - Send a campaign's queued messages via Evolution API
 router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const campaign = db.prepare(
@@ -115,13 +116,24 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Campaign already sent or sending' });
     }
 
-    const recipientCount = db.prepare(
-      'SELECT COUNT(*) as count FROM campaign_recipients WHERE campaign_id = ?'
-    ).get(req.params.id) as { count: number };
+    // Get instance for this campaign
+    const instance = db.prepare(
+      'SELECT * FROM instances WHERE name = ? AND client_id = ?'
+    ).get(campaign.instance_name, req.client!.id) as any;
+    if (!instance) {
+      return res.status(400).json({ success: false, error: 'Instance not found' });
+    }
+    if (instance.status !== 'connected') {
+      return res.status(400).json({ success: false, error: 'Instance is not connected' });
+    }
+
+    const recipients = db.prepare(
+      'SELECT * FROM campaign_recipients WHERE campaign_id = ? ORDER BY created_at ASC'
+    ).all(req.params.id) as any[];
 
     const tokenCost = campaign.message_type === 'text' || campaign.message_type === 'location'
-      ? recipientCount.count
-      : recipientCount.count * 2;
+      ? recipients.length
+      : recipients.length * 2;
 
     const client = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(req.client!.id) as { token_balance: number };
     if (client.token_balance < tokenCost) {
@@ -134,6 +146,67 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
 
     db.prepare("UPDATE campaigns SET status = 'sending', started_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.params.id);
     db.prepare("UPDATE campaign_recipients SET status = 'queued' WHERE campaign_id = ?").run(req.params.id);
+
+    // Resolve evolution instance name
+    const evolutionName = instance.evolution_name || `${req.client!.id}_${instance.name}`;
+
+    // Send messages asynchronously (don't wait for all to complete)
+    const sendMessages = async () => {
+      let sentCount = 0;
+      let deliveredCount = 0;
+      let failedCount = 0;
+
+      for (const recipient of recipients) {
+        try {
+          if (campaign.message_type === 'text' || !campaign.message_type) {
+            const evoRes: any = await callEvolutionAPI('POST', `/messages/sendText/${evolutionName}`, {
+              number: recipient.phone,
+              text: campaign.content,
+            });
+            const msgKey = Object.keys(evoRes || {}).find(k => k.includes('message') || k.includes('id'));
+            if (evoRes && !evoRes?.erro && !evoRes?.error) {
+              db.prepare("UPDATE campaign_recipients SET status = 'sent', sent_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+              sentCount++;
+              deliveredCount++; // Evolution marks delivered when queued
+            } else {
+              db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+              failedCount++;
+            }
+          } else if (campaign.message_type === 'media' && campaign.media_url) {
+            const evoRes: any = await callEvolutionAPI('POST', `/messages/sendMedia/${evolutionName}`, {
+              number: recipient.phone,
+              mediatype: 'image',
+              media: campaign.media_url,
+              caption: campaign.content || campaign.caption || '',
+            });
+            if (evoRes && !evoRes?.erro && !evoRes?.error) {
+              db.prepare("UPDATE campaign_recipients SET status = 'sent', sent_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+              sentCount++;
+              deliveredCount++;
+            } else {
+              db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+              failedCount++;
+            }
+          } else {
+            db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+            failedCount++;
+          }
+        } catch (err) {
+          db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+          failedCount++;
+        }
+
+        // Small delay between messages to avoid rate limiting
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      // Mark campaign complete
+      db.prepare(
+        "UPDATE campaigns SET status = 'completed', completed_at = CURRENT_TIMESTAMP, sent_count = ?, delivered_count = ?, failed_count = ? WHERE id = ?"
+      ).run(sentCount, deliveredCount, failedCount, req.params.id);
+    };
+
+    sendMessages().catch(console.error);
 
     res.json({ success: true, data: { campaign_id: campaign.id, tokens_deducted: tokenCost } });
   } catch (err: unknown) {
