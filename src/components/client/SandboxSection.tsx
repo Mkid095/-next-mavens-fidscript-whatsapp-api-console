@@ -283,9 +283,9 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4" style={{ gridTemplateColumns: '1fr 1.5fr' }}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '340px 1fr', minHeight: '600px', height: 'calc(100vh - 240px)' }}>
         {/* Left: endpoint browser */}
-        <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm flex flex-col" style={{ maxHeight: '700px' }}>
+        <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm flex flex-col" style={{ maxHeight: '100%' }}>
           <div className="p-3 border-b border-[#eaebe4] bg-[#f9f9f2]">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
