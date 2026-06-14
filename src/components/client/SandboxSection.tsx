@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Terminal, Copy, Check, Zap, X } from 'lucide-react';
+import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Terminal, Copy, Check, Zap, X, MessageSquare, Smartphone, Users, Settings, Building, Tag, Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { instancesApi } from '../../services/api';
 import type { Instance } from '../../services/api';
@@ -30,10 +30,10 @@ interface CategoryGroup {
   endpoints: EndpointDef[];
 }
 
-const ENDPOINT_GROUPS: CategoryGroup[] = [
+const ICON_MAP: Record<string, React.ReactNode> = { MessageSquare: <MessageSquare className="w-4 h-4 text-yellow-600" />, Smartphone: <Smartphone className="w-4 h-4 text-yellow-600" />, Users: <Users className="w-4 h-4 text-yellow-600" />, Settings: <Settings className="w-4 h-4 text-yellow-600" />, Building: <Building className="w-4 h-4 text-yellow-600" />, Tag: <Tag className="w-4 h-4 text-yellow-600" />, Wrench: <Wrench className="w-4 h-4 text-yellow-600" /> }; const ENDPOINT_GROUPS: CategoryGroup[] = [
   {
     name: 'Messaging',
-    icon: '💬',
+    icon: 'MessageSquare',
     endpoints: [
       { method: 'POST', path: '/message/sendText/:instanceName', name: 'Send Text', desc: 'Send a plain text message to a WhatsApp number.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'text', label: 'Message', type: 'text', placeholder: 'Hello!', required: true }], cost: 1, category: 'Messaging' },
       { method: 'POST', path: '/message/sendMedia/:instanceName', name: 'Send Media', desc: 'Send image, video, audio, or document via URL.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'mediatype', label: 'Media Type', type: 'string', placeholder: 'image | video | audio | document', required: true }, { key: 'media', label: 'Media URL', type: 'string', placeholder: 'https://example.com/file.jpg', required: true }, { key: 'caption', label: 'Caption', type: 'text', placeholder: 'Optional caption' }], cost: 2, category: 'Messaging' },
@@ -50,7 +50,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Instance',
-    icon: '📱',
+    icon: 'Smartphone',
     endpoints: [
       { method: 'GET', path: '/instance/connectionState/:instanceName', name: 'Connection State', desc: 'Get the current connection status of an instance.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
       { method: 'GET', path: '/instance/connect/:instanceName', name: 'Generate QR Code', desc: 'Generate a new QR code for linking WhatsApp.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
@@ -62,7 +62,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Chat',
-    icon: '💬',
+    icon: 'MessageSquare',
     endpoints: [
       { method: 'POST', path: '/chat/findContacts/:instanceName', name: 'Find Contacts', desc: 'Search contacts in the instance contact list.', pathParams: ['instanceName'], bodyFields: [{ key: 'search', label: 'Search Query', type: 'string', placeholder: 'John' }], category: 'Chat' },
       { method: 'POST', path: '/chat/findChats/:instanceName', name: 'Find Chats', desc: 'Search chat threads.', pathParams: ['instanceName'], bodyFields: [{ key: 'search', label: 'Search Query', type: 'string', placeholder: 'Sales' }], category: 'Chat' },
@@ -75,7 +75,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Group',
-    icon: '👥',
+    icon: 'Users',
     endpoints: [
       { method: 'POST', path: '/group/create/:instanceName', name: 'Create Group', desc: 'Create a new WhatsApp group.', pathParams: ['instanceName'], bodyFields: [{ key: 'subject', label: 'Group Subject', type: 'string', placeholder: 'Sales Team', required: true }, { key: 'participants', label: 'Participants (JSON array)', type: 'text', placeholder: '["254712345678","254798765432"]', required: true }], category: 'Group' },
       { method: 'POST', path: '/group/updateGroupSubject/:instanceName', name: 'Update Group Subject', desc: 'Change the group name/subject.', pathParams: ['instanceName'], bodyFields: [{ key: 'groupJid', label: 'Group JID', type: 'string', placeholder: '123456789-987654321@g.us', required: true }, { key: 'subject', label: 'New Subject', type: 'string', placeholder: 'New Group Name', required: true }], category: 'Group' },
@@ -89,7 +89,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Settings',
-    icon: '⚙️',
+    icon: 'Settings',
     endpoints: [
       { method: 'GET', path: '/settings/:instanceName', name: 'Get Settings', desc: 'Fetch current instance settings.', pathParams: ['instanceName'], bodyFields: [], category: 'Settings' },
       { method: 'POST', path: '/settings/:instanceName', name: 'Update Settings', desc: 'Update instance settings (webhooks, presence, etc.).', pathParams: ['instanceName'], bodyFields: [{ key: 'settings', label: 'Settings JSON', type: 'text', placeholder: '{"webhook":{"url":"https://yoursite.com/webhook","enabled":true},"presence":"available"}', required: true }], category: 'Settings' },
@@ -98,7 +98,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Business',
-    icon: '🏢',
+    icon: 'Building',
     endpoints: [
       { method: 'GET', path: '/business/fetchBusinessProfile/:instanceName', name: 'Fetch Business Profile', desc: 'Get the WhatsApp Business profile info.', pathParams: ['instanceName'], bodyFields: [], category: 'Business' },
       { method: 'POST', path: '/business/updateBusinessProfile/:instanceName', name: 'Update Business Profile', desc: 'Update business profile (name, description, logo, etc.).', pathParams: ['instanceName'], bodyFields: [{ key: 'businessProfile', label: 'Profile JSON', type: 'text', placeholder: '{"about":"Your business description","website":"https://yoursite.com"}', required: true }], category: 'Business' },
@@ -106,7 +106,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Labels',
-    icon: '🏷️',
+    icon: 'Tag',
     endpoints: [
       { method: 'GET', path: '/label/findLabels/:instanceName', name: 'List Labels', desc: 'Get all labels (tags) for the instance.', pathParams: ['instanceName'], bodyFields: [], category: 'Labels' },
       { method: 'POST', path: '/label/create/:instanceName', name: 'Create Label', desc: 'Create a new label/tag.', pathParams: ['instanceName'], bodyFields: [{ key: 'label', label: 'Label Name', type: 'string', placeholder: 'VIP Customer', required: true }], category: 'Labels' },
@@ -115,7 +115,7 @@ const ENDPOINT_GROUPS: CategoryGroup[] = [
   },
   {
     name: 'Utils',
-    icon: '🔧',
+    icon: 'Wrench',
     endpoints: [
       { method: 'GET', path: '/health', name: 'Health Check', desc: 'Check if the Evolution API server is running.', pathParams: [], bodyFields: [], category: 'Utils' },
       { method: 'GET', path: '/instance/fetchInstances', name: 'Fetch All Instances', desc: 'List all instances on the Evolution API server.', pathParams: [], bodyFields: [], category: 'Utils' },
@@ -304,7 +304,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                   onClick={() => toggleCategory(group.name)}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-forest-deep bg-[#f9f9f2] border-b border-[#eaebe4] hover:bg-stone-100 transition-colors"
                 >
-                  <span>{group.icon}</span>
+                  <span className="text-stone-600">{ICON_MAP[group.icon]}</span>
                   <span>{group.name}</span>
                   <span className="ml-auto text-stone-400">{group.endpoints.length}</span>
                   {expandedCategories.has(group.name) ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
