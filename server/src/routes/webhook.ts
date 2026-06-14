@@ -31,7 +31,11 @@ function extractPhoneFromJid(sender: string): string | null {
  */
 router.post('/evolution', async (req: Request, res: Response) => {
   const apiKey = req.headers['x-api-key'] as string;
+  console.log('[WEBHOOK] Raw headers x-api-key:', apiKey ? 'present' : 'missing');
+  console.log('[WEBHOOK] Raw body:', JSON.stringify(req.body).slice(0, 500));
+
   if (apiKey !== EVOLUTION_API_KEY) {
+    console.log('[WEBHOOK] Unauthorized - expected key:', EVOLUTION_API_KEY.slice(0, 10), '... got:', apiKey?.slice(0, 10));
     res.status(401).json({ success: false, error: 'Unauthorized' });
     return;
   }
@@ -43,6 +47,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
     sender?: string;
   };
 
+  console.log('[WEBHOOK] event:', event, 'instanceName:', instanceName, 'sender:', sender);
+
   if (!instanceName) {
     res.status(400).json({ success: false, error: 'Missing instance name' });
     return;
@@ -53,6 +59,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
   const instance = db.prepare(
     'SELECT id, name, client_id, evolution_name FROM instances WHERE name = ? OR evolution_name = ?'
   ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string } | undefined;
+  console.log('[WEBHOOK] Instance lookup for', decodedName, ':', instance ? 'FOUND id=' + instance.id : 'NOT FOUND');
   if (!instance) {
     res.status(200).json({ success: true, handled: false, reason: 'instance_not_found' });
     return;
