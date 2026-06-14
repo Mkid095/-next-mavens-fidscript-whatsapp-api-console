@@ -54,12 +54,11 @@ export const instancesApi = {
   delete: (name: string) =>
     fetchApi<void>(`/api/instance/delete/${name}`, { method: 'DELETE' }),
 
-  sendText: (name: string, to: string, message: string, apiKey: string) =>
+  sendText: (name: string, to: string, message: string) =>
     fetchApi<{ messageId: string; to: string; message: string; timestamp: string }>(
       `/api/instance/sendText/${name}`,
       {
         method: 'POST',
-        headers: { 'X-API-Key': apiKey },
         body: JSON.stringify({ to, message }),
       }
     ),

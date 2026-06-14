@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
-import { clientAuth, clientRateLimit } from '../../middleware/auth.js';
+import { clientJwtAuth, clientRateLimit } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
 import { callEvolutionAPI, emitTokenUpdate } from '../../utils/evolution.js';
 import { logApiRequest } from '../../utils/audit.js';
@@ -28,7 +28,7 @@ function saveSentMessage(instanceId: string, clientId: string, msgId: string, to
 }
 
 // POST /api/instance/sendText/:name - Send text message
-router.post('/sendText/:name', clientAuth, clientRateLimit, async (req: Request, res: Response) => {
+router.post('/sendText/:name', clientJwtAuth, clientRateLimit, async (req: Request, res: Response) => {
   try {
     const { to, message } = req.body;
     if (!to || !message) {
@@ -76,7 +76,7 @@ router.post('/sendText/:name', clientAuth, clientRateLimit, async (req: Request,
 });
 
 // POST /api/instance/sendMedia/:name - Send media message
-router.post('/sendMedia/:name', clientAuth, clientRateLimit, async (req: Request, res: Response) => {
+router.post('/sendMedia/:name', clientJwtAuth, clientRateLimit, async (req: Request, res: Response) => {
   try {
     const { to, media_url, media_type, caption } = req.body;
     if (!to || !media_url) {
@@ -126,7 +126,7 @@ router.post('/sendMedia/:name', clientAuth, clientRateLimit, async (req: Request
 });
 
 // POST /api/instance/sendLocation/:name - Send location
-router.post('/sendLocation/:name', clientAuth, clientRateLimit, async (req: Request, res: Response) => {
+router.post('/sendLocation/:name', clientJwtAuth, clientRateLimit, async (req: Request, res: Response) => {
   try {
     const { to, latitude, longitude, name, address } = req.body;
     if (!to || latitude === undefined || longitude === undefined) {

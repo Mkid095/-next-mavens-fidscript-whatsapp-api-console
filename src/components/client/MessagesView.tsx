@@ -5,8 +5,8 @@ import {
   RefreshCw, Smile, Paperclip, SendHorizontal, Users, Clock,
   Plus, Calendar, Trash2, Play, Pause, Zap, AlertCircle, Check
 } from 'lucide-react';
-import { clientMessagesApi, clientKeysApi, contactsApi, campaignsApi, instancesApi } from '../../services/api';
-import type { ClientMessage, ClientApiKey, Contact, Instance, Campaign } from '../../services/api';
+import { clientMessagesApi, contactsApi, campaignsApi, instancesApi } from '../../services/api';
+import type { ClientMessage, Contact, Instance } from '../../services/api';
 
 interface ConversationContact {
   phone: string;
@@ -37,7 +37,6 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   const [newChatPhone, setNewChatPhone] = useState('');
   const [newChatName, setNewChatName] = useState('');
   const [sendingError, setSendingError] = useState('');
-  const [activeApiKey, setActiveApiKey] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'chat' | 'bulk'>('chat');
   const [showBulkModal, setShowBulkModal] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -53,12 +52,6 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
 
   useEffect(() => {
     if (!clientToken) return;
-    clientKeysApi.getAll().then((res) => {
-      if (res.success && res.data && res.data.length > 0) {
-        const active = res.data.find((k: ClientApiKey) => k.is_active);
-        setActiveApiKey(active?.api_key || res.data[0].api_key || '');
-      }
-    });
     contactsApi.getAll().then((res) => {
       if (res.success && res.data) setSavedContacts(res.data);
     });
@@ -139,7 +132,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
     setSendingError('');
 
     try {
-      const res = await instancesApi.sendText(selectedInstance, selectedPhone, replyText.trim(), activeApiKey);
+      const res = await instancesApi.sendText(selectedInstance, selectedPhone, replyText.trim());
       if (res.success && res.data) {
         const sentMsg: ClientMessage = {
           id: res.data.messageId,
