@@ -43,6 +43,13 @@ log_success() {
 # Pre-deployment Checks
 # =============================================================================
 
+# Guard: refuse to run from inside server/ directory
+if basename "$(pwd)" | grep -q "server"; then
+    echo "[ERROR] Do not run deploy.sh from inside the server/ directory." >&2
+    echo "[ERROR] Run it from the project root: bash deploy.sh" >&2
+    exit 1
+fi
+
 check_prerequisites() {
     log_info "Checking prerequisites..."
 
