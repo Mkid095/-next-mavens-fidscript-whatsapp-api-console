@@ -5,14 +5,14 @@ import { adminNavItems } from './adminNavItems';
 
 interface Props {
   sidebarOpen: boolean;
-  currentUser: { name: string };
+  currentUser: { email: string; role: 'admin' | 'client'; name: string } | null;
   handleLogout: () => void;
   currentTab: string;
   activeUnreadInboxes: number;
 }
 
 export function AdminSidebar({ sidebarOpen, currentUser, handleLogout, currentTab, activeUnreadInboxes }: Props) {
-  const initial = currentUser.name.charAt(0).toUpperCase();
+  const initial = currentUser?.name?.charAt(0).toUpperCase() ?? '?';
   return (
     <aside className={`fixed inset-y-0 left-0 md:relative md:translate-x-0 z-40 md:z-20 h-screen flex flex-col justify-between transition-all duration-300 shrink-0 border-r border-[#262413] bg-[#12110c] ${sidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full md:w-16 md:translate-x-0'}`}>
       <div className="flex-1 overflow-y-auto space-y-4 pt-4 pb-4">

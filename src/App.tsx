@@ -10,7 +10,7 @@ import { ClientRoutes } from './components/client/clientRoutes';
 import { UpdateToast } from './components/shared/UpdateToast';
 import { initDeployNotification } from './services/deployNotification';
 
-export default function App() {
+function AppContent() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<{ email: string; role: 'admin' | 'client'; name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -172,16 +172,24 @@ export default function App() {
   if (isLoading) return <LoadingScreen />;
 
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LandingPage />} />
         <Route path="/login" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleClientLogin} />} />
         <Route path="/register" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleClientLogin} initialMode="register" />} />
         <Route path="/client/*" element={<ClientRoutes currentUser={currentUser} clientData={clientData} clientInstances={clientInstances} onInstancesChange={setClientInstances} onLogout={handleLogout} tokenBalance={tokenBalance} tokenPackages={tokenPackages} dailyUsage={dailyUsage} onTokenBalanceChange={setTokenBalance} />} />
-        <Route path="/admin/*" element={<AdminRoutes sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} currentUser={currentUser} handleLogout={handleLogout} messages={messages} toasts={toasts} setToasts={setToasts} instances={instances} clients={clients} logs={logs} analytics={analytics} keys={keys} handleAddInstance={async (d) => { const r = await instancesApi.create(d); if (r.success && r.data) { setInstances(p => [r.data!, ...p]); addToast(`Instance ${d.name} created`); } else addToast(r.error || 'Failed', 'warn'); }} handleUpdateInstanceStatus={async (n, s) => { if (s === 'disconnected') { const r = await instancesApi.disconnect(n); if (r.success) { setInstances(p => p.map(i => i.name === n ? { ...i, status: 'disconnected' as const } : i)); addToast(`Instance ${n} disconnected`); } } }} handleDeleteInstance={async (n) => { const r = await instancesApi.delete(n); if (r.success) { setInstances(p => p.filter(i => i.name !== n)); addToast(`Instance ${n} deleted`, 'warn'); } }} handleAddClient={async (d) => { const r = await clientsApi.create(d); if (r.success && r.data) { setClients(p => [r.data!, ...p]); addToast(`Client ${d.name} created`); } else addToast(r.error || 'Failed', 'warn'); }} handleToggleClient={async (id) => { const r = await clientsApi.toggle(id); if (r.success) { setClients(p => p.map(c => c.id === id ? { ...c, is_active: r.data!.is_active } : c)); addToast('Client updated'); } }} handleResetClientKey={async (id) => { const r = await clientsApi.resetKey(id); if (r.success) addToast('API key reset'); }} handleDeleteClient={async (id) => { const r = await clientsApi.delete(id); if (r.success) { setClients(p => p.filter(c => c.id !== id)); addToast('Client deleted', 'warn'); } }} handleAddKey={(n) => { const k = { id: `key-${Date.now()}`, name: n, key: `fidscript_live_${Math.random().toString(16).substring(2, 10)}...`, created: new Date().toISOString().split('T')[0], lastUsed: 'Never', status: 'Active' }; setKeys(p => [k, ...p]); addToast(`API key '${n}' generated`); }} handleRevokeKey={(id) => { setKeys(p => p.map(k => k.id === id ? { ...k, status: 'Revoked' } : k)); addToast('API key revoked', 'warn'); }} handleMarkMessageRead={(id) => setMessages(p => p.map(m => m.id === id ? { ...m, read: true } : m))} />} />
+        <Route path="/admin/*" element={<AdminRoutes sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} currentUser={currentUser} handleLogout={handleLogout} messages={messages} toasts={toasts} setToasts={setToasts} instances={instances} clients={clients} logs={logs} analytics={analytics} keys={keys} handleAddInstance={async (d) => { const r = await instancesApi.create(d); if (r.success && r.data) { setInstances(p => [r.data!, ...p]); addToast(`Instance ${d.name} created`); } else addToast(r.error || 'Failed', 'warn'); }} handleUpdateInstanceStatus={async (n, s) => { if (s === 'disconnected') { const r = await instancesApi.disconnect(n); if (r.success) { setInstances(p => p.map(i => i.name === n ? { ...i, status: 'disconnected' as const } : i)); addToast(`Instance ${n} disconnected`); } } }} handleDeleteInstance={async (n) => { const r = await instancesApi.delete(n); if (r.success) { setInstances(p => p.filter(i => i.name !== n)); addToast(`Instance ${n} deleted`, 'warn'); } }} handleAddClient={async (d) => { const r = await clientsApi.create(d); if (r.success && r.data) { setClients(p => [r.data!, ...p]); addToast(`Client ${d.name} created`); } else addToast(r.error || 'Failed', 'warn'); }} handleToggleClient={async (id) => { const r = await clientsApi.toggle(id); if (r.success) { setClients(p => p.map(c => c.id === id ? { ...c, is_active: r.data!.is_active } : c)); addToast('Client updated'); } }} handleResetClientKey={async (id) => { const r = await clientsApi.resetKey(id); if (r.success) addToast('API key reset'); }} handleDeleteClient={async (id) => { const r = await clientsApi.delete(id); if (r.success) { setClients(p => p.filter(c => c.id !== id)); addToast(`Client deleted`, 'warn'); } }} handleAddKey={(n) => { const k = { id: `key-${Date.now()}`, name: n, key: `fidscript_live_${Math.random().toString(16).substring(2, 10)}...`, created: new Date().toISOString().split('T')[0], lastUsed: 'Never', status: 'Active' }; setKeys(p => [k, ...p]); addToast(`API key '${n}' generated`); }} handleRevokeKey={(id) => { setKeys(p => p.map(k => k.id === id ? { ...k, status: 'Revoked' } : k)); addToast('API key revoked', 'warn'); }} handleMarkMessageRead={(id) => setMessages(p => p.map(m => m.id === id ? { ...m, read: true } : m))} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <UpdateToast />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
