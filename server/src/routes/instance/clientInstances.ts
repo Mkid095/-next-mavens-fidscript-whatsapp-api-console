@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
-import { callEvolutionAPI, generateInstanceToken } from '../../utils/evolution.js';
+import { callEvolutionAPI, generateInstanceToken, emitInstanceStateChange } from '../../utils/evolution.js';
 
 const router = Router();
 
@@ -42,11 +42,22 @@ router.post('/client-create', clientJwtAuth, async (req: Request, res: Response)
 
     const id = `inst_${uuidv4().substring(0, 8)}`;
     const instanceToken = generateInstanceToken();
+    const webhookUrl = `${process.env.API_URL || 'https://apiwhatsapp.fidscript.com'}/api/webhook/evolution`;
+
+    // Set webhook on the Evolution API instance so CONNECTION_UPDATE and MESSAGES_UPSERT fire to our backend
+    callEvolutionAPI('POST', `/webhook/set/${evolutionInstanceName}`, {
+      enabled: true,
+      url: webhookUrl,
+      webhookByEvents: false,
+      webhookBase64: false,
+      headers: {},
+      events: ['CONNECTION_UPDATE', 'QRCODE_UPDATED', 'MESSAGES_UPSERT'],
+    }).catch(err => console.warn('Failed to set webhook on instance:', err));
 
     db.prepare(`
-      INSERT INTO instances (id, name, display_name, client_id, instance_token, status, evolution_name)
-      VALUES (?, ?, ?, ?, ?, 'disconnected', ?)
-    `).run(id, name, display_name || name, clientId, instanceToken, evolutionInstanceName);
+      INSERT INTO instances (id, name, display_name, client_id, instance_token, status, evolution_name, webhook_url, webhook_enabled)
+      VALUES (?, ?, ?, ?, ?, 'disconnected', ?, ?, 1)
+    `).run(id, name, display_name || name, clientId, instanceToken, evolutionInstanceName, webhookUrl);
 
     const instance = db.prepare('SELECT * FROM instances WHERE id = ?').get(id);
     res.status(201).json({ success: true, data: instance, message: 'Instance created successfully' });

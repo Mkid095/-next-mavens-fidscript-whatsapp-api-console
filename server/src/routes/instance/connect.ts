@@ -7,7 +7,7 @@ import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
 
-const API_BASE_URL = process.env.API_URL || 'http://localhost:3099';
+const API_BASE_URL = process.env.API_URL || 'https://apiwhatsapp.fidscript.com';
 
 // GET /api/instance/connect/:name - Generate QR code from Evolution API
 router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) => {
@@ -32,7 +32,7 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
       webhookByEvents: false,
       webhookBase64: false,
       headers: {},
-      events: ['CONNECTION_UPDATE', 'QRCODE_UPDATED'],
+      events: ['CONNECTION_UPDATE', 'QRCODE_UPDATED', 'MESSAGES_UPSERT'],
     }).catch(err => console.warn('Failed to set webhook on instance:', err));
 
     const evoRes = await callEvolutionAPI('GET', `/instance/connect/${evolutionInstanceName}`);
