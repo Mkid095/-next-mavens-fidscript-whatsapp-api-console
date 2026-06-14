@@ -159,7 +159,8 @@ function AppContent() {
         }
         if (packagesRes.success && packagesRes.data) setTokenPackages(packagesRes.data);
         addToast('Welcome to your dashboard!');
-        navigate('/client', { replace: true });
+        // Navigate after state updates are flushed to ensure ClientRoutes has clientData
+        setTimeout(() => navigate('/client', { replace: true }), 0);
       } else {
         addToast('Session expired, please login again', 'warn');
         localStorage.removeItem('fidscript_client_token');
