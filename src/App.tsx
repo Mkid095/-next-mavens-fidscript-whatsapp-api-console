@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { authApi, adminApi, clientsApi, instancesApi, plansApi, paymentsApi } from './services/api';
 import type { Instance, Client, Plan, ApiLog, AnalyticsData, TokenPackage, DailyUsage, TokenTransaction } from './services/api';
 import { LoadingScreen } from './components/shared/LoadingScreen';
@@ -11,6 +11,7 @@ import { UpdateToast } from './components/shared/UpdateToast';
 import { initDeployNotification } from './services/deployNotification';
 
 export default function App() {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<{ email: string; role: 'admin' | 'client'; name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -126,7 +127,6 @@ export default function App() {
   const handleLoginSuccess = (email: string, role: 'admin' | 'client') => {
     setCurrentUser({ email, role, name: email.split('@')[0] });
     if (role === 'client') {
-      // Load full client data and redirect to client dashboard
       handleClientLogin();
     } else {
       addToast('Welcome to FIDScript!');
@@ -159,7 +159,7 @@ export default function App() {
         }
         if (packagesRes.success && packagesRes.data) setTokenPackages(packagesRes.data);
         addToast('Welcome to your dashboard!');
-        setTimeout(() => { window.location.href = '/client'; }, 50);
+        navigate('/client', { replace: true });
       } else {
         addToast('Session expired, please login again', 'warn');
         localStorage.removeItem('fidscript_client_token');
