@@ -36,37 +36,46 @@ function openSSE(inst: Instance, onInstancesChange: (cb: (prev: Instance[]) => I
   const es = new EventSource(`/api/sse/instance/${inst.name}?token=${encodeURIComponent(token)}`);
   instanceSSEControllers.set(inst.name, es);
 
-  es.onmessage = (event) => {
+  es.addEventListener('stateChange', (event) => {
     try {
-      const raw = JSON.parse(event.data);
-      // Named event: { state: string, phoneNumber } | { id, from_number, ... } | { balance }
-      if ('state' in raw) {
-        const data = raw as { state: string; phoneNumber: string | null };
-        if (data.state === 'disconnected') {
-          onInstancesChange(prev => prev.map(i =>
-            i.name === inst.name
-              ? { ...i, status: 'disconnected' as const, phone_number: null }
-              : i
-          ));
-          closeSSE(inst.name);
-        } else if (data.state === 'connected') {
-          onInstancesChange(prev => prev.map(i =>
-            i.name === inst.name
-              ? { ...i, status: 'connected' as const, phone_number: data.phoneNumber || i.phone_number }
-              : i
-          ));
-        }
-      } else if ('id' in raw) {
-        // newMessage event — dispatch to window for MessagesView
-        window.dispatchEvent(new CustomEvent('sse-new-message', { detail: raw }));
-      } else if ('balance' in raw) {
-        // tokenUpdate event — dispatch to window for App/TokenBalanceBar
-        window.dispatchEvent(new CustomEvent('sse-token-update', { detail: raw }));
+      const raw = JSON.parse((event as MessageEvent).data);
+      const data = raw as { state: string; phoneNumber: string | null };
+      if (data.state === 'disconnected') {
+        onInstancesChange(prev => prev.map(i =>
+          i.name === inst.name
+            ? { ...i, status: 'disconnected' as const, phone_number: null }
+            : i
+        ));
+        closeSSE(inst.name);
+      } else if (data.state === 'connected') {
+        onInstancesChange(prev => prev.map(i =>
+          i.name === inst.name
+            ? { ...i, status: 'connected' as const, phone_number: data.phoneNumber || i.phone_number }
+            : i
+        ));
       }
     } catch {
-      // Ignore malformed messages
+      // Ignore malformed
     }
-  };
+  });
+
+  es.addEventListener('newMessage', (event) => {
+    try {
+      const raw = JSON.parse((event as MessageEvent).data);
+      window.dispatchEvent(new CustomEvent('sse-new-message', { detail: raw }));
+    } catch {
+      // Ignore malformed
+    }
+  });
+
+  es.addEventListener('tokenUpdate', (event) => {
+    try {
+      const raw = JSON.parse((event as MessageEvent).data);
+      window.dispatchEvent(new CustomEvent('sse-token-update', { detail: raw }));
+    } catch {
+      // Ignore malformed
+    }
+  });
 
   es.onclose = () => {
     closeSSE(inst.name);

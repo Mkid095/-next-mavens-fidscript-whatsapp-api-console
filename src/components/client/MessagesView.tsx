@@ -48,6 +48,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const connectedInstances = instances.filter(i => i.status === 'connected');
+  const selectedInstanceConnected = connectedInstances.some(i => i.name === selectedInstance);
 
   useEffect(() => {
     if (connectedInstances.length > 0 && !selectedInstance) {
@@ -133,7 +134,9 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   const selectedContactDetails = savedContacts.find(c => c.phone === selectedPhone);
 
   const handleSendReply = async () => {
-    if (!replyText.trim() || !selectedPhone || !selectedInstance || !clientToken) return;
+    // Only send if a connected instance is selected
+    const instanceIsConnected = connectedInstances.some(i => i.name === selectedInstance);
+    if (!replyText.trim() || !selectedPhone || !selectedInstance || !instanceIsConnected || !clientToken) return;
     setSending(true);
     setSendingError('');
     try {
@@ -340,6 +343,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
             conversationMessages={conversationMessages}
             groupedMessages={groupedMessages}
             selectedInstance={selectedInstance}
+            selectedInstanceConnected={selectedInstanceConnected}
             connectedInstances={connectedInstances}
             showInstancePicker={showInstancePicker}
             sendingError={sendingError}
@@ -647,6 +651,7 @@ interface ChatPanelProps {
   conversationMessages: ClientMessage[];
   groupedMessages: { date: string; messages: ClientMessage[] }[];
   selectedInstance: string;
+  selectedInstanceConnected: boolean;
   connectedInstances: Instance[];
   showInstancePicker: boolean;
   sendingError: string;
@@ -673,6 +678,7 @@ function ChatPanel({
   conversationMessages,
   groupedMessages,
   selectedInstance,
+  selectedInstanceConnected,
   connectedInstances,
   showInstancePicker,
   sendingError,
@@ -700,10 +706,10 @@ function ChatPanel({
             <ArrowLeft className="w-3.5 h-3.5 text-stone-500" />
           </button>
           <div className="w-8 h-8 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
-            {(selectedContact?.name || selectedPhone).charAt(0).toUpperCase()}
+            {(selectedContactDetails?.name || selectedContact?.name || selectedPhone).charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-forest-deep truncate">{selectedContact?.name || selectedPhone}</p>
+            <p className="text-xs font-bold text-forest-deep truncate">{selectedContactDetails?.name || selectedContact?.name || selectedPhone}</p>
             <p className="text-[10px] text-stone-500 font-mono truncate">{selectedPhone}</p>
           </div>
         </div>
@@ -837,7 +843,7 @@ function ChatPanel({
               rows={1}
               value={replyText}
               onChange={e => onReplyTextChange(e.target.value)}
-              placeholder={`Message ${selectedContact?.name || selectedPhone}...`}
+              placeholder={`Message ${selectedContactDetails?.name || selectedContact?.name || selectedPhone}...`}
               className="w-full px-3 py-2 pr-10 text-xs border border-[#eaebe4] rounded-2xl focus:outline-none focus:border-yellow-500 resize-none bg-stone-50"
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } }}
             />
@@ -847,7 +853,7 @@ function ChatPanel({
           </div>
           <button
             onClick={onSend}
-            disabled={!replyText.trim() || sending || connectedInstances.length === 0}
+            disabled={!replyText.trim() || sending || !selectedInstanceConnected}
             className="bg-forest-deep hover:bg-[#33301a] text-white p-2.5 rounded-2xl disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
           >
             {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <SendHorizontal className="w-4 h-4" />}

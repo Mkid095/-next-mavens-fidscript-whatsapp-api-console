@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import fetch from 'node-fetch';
+import { emitTokenUpdate } from '../../utils/paymentEmitter.js';
 
 const router = Router();
 
@@ -61,6 +62,16 @@ router.post('/', async (req: Request, res: Response) => {
         db.prepare(`
           UPDATE payments SET status = 'completed' WHERE id = ?
         `).run(payment_id);
+
+        // Fetch updated balance and emit SSE to all connected client sessions
+        const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(client_id) as { token_balance: number } | undefined;
+        if (updated) {
+          emitTokenUpdate(client_id, {
+            balance: updated.token_balance,
+            transaction_id: payment_id,
+            mpesa_receipt: MpesaReceiptNumber,
+          });
+        }
       }
     } else {
       db.prepare(`UPDATE payments SET status = 'failed' WHERE id = ?`).run(payment_id);

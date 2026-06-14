@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import db from '../database.js';
 import { verifyToken } from '../middleware/auth/jwt.js';
 import { instanceEmitter } from '../utils/evolution.js';
+import { paymentEmitter } from '../utils/paymentEmitter.js';
 import type { Client } from '../types.js';
 
 const router = Router();
@@ -71,6 +72,60 @@ router.get('/instance/:name', (req: Request, res: Response) => {
     clearInterval(heartbeat);
     instanceEmitter.off('stateChange', stateHandler);
     instanceEmitter.off('newMessage', messageHandler);
+  });
+});
+
+/**
+ * GET /api/sse/client
+ * SSE endpoint for client-scoped events: token updates, payment status.
+ * Auth via query param: ?token=<client_jwt>
+ * No rate limiting (long-lived connection).
+ */
+router.get('/client', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  if (!token) {
+    res.status(401).json({ success: false, error: 'Token required' });
+    return;
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded || decoded.type !== 'client') {
+    res.status(401).json({ success: false, error: 'Invalid or expired token' });
+    return;
+  }
+
+  const client = db.prepare('SELECT * FROM clients WHERE id = ? AND is_active = 1').get(decoded.id) as Client | undefined;
+  if (!client) {
+    res.status(401).json({ success: false, error: 'Client not found or inactive' });
+    return;
+  }
+
+  const clientId = decoded.id;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  res.write(': connected\n\n');
+
+  const heartbeat = setInterval(() => {
+    res.write(': heartbeat\n\n');
+  }, 30000);
+
+  // Forward token updates to this SSE connection
+  const tokenUpdateHandler = (emittedClientId: string, data: { balance: number; transaction_id: string; mpesa_receipt?: string }) => {
+    if (emittedClientId === clientId) {
+      res.write(`event: tokenUpdate\ndata: ${JSON.stringify(data)}\n\n`);
+    }
+  };
+
+  paymentEmitter.on('tokenUpdate', tokenUpdateHandler);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    paymentEmitter.off('tokenUpdate', tokenUpdateHandler);
   });
 });
 
