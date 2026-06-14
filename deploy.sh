@@ -310,7 +310,12 @@ initSqlJs().then(SQL => {
 build_frontend() {
     log_info "Building frontend..."
     rm -rf "${SCRIPT_DIR}/dist" && npm run build 2>&1 | tee -a "${LOG_FILE}"
-    log_success "Frontend build completed."
+
+    # Sync built files to nginx root — this is where the frontend is served from
+    local nginx_root="/var/www/whatsapp.nextmavens.cloud"
+    log_info "Syncing dist/ to ${nginx_root}..."
+    rm -rf "${nginx_root}"/* && cp -r "${SCRIPT_DIR}/dist"/* "${nginx_root}/"
+    log_success "Frontend synced to nginx root."
 }
 
 build_backend() {
@@ -343,8 +348,8 @@ console.log('Ecosystem config updated with v${deploy_version} (${commit_hash})')
 "
         cd "${SCRIPT_DIR}"
 
-        # Always clean dist folders — stale files break the app even when no code changed
-        rm -rf "${SCRIPT_DIR}/dist" "${SCRIPT_DIR}/server/dist"
+        # Clean server dist only — frontend dist is handled by build_frontend
+        rm -rf "${SCRIPT_DIR}/server/dist"
 
         pm2 restart fidscript-api 2>&1 | tee -a "${LOG_FILE}"
         log_success "Backend service restarted."
