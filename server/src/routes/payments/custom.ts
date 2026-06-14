@@ -59,6 +59,8 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
           status = 'processing'
         WHERE id = ?
       `).run(tumaRes.data.merchant_request_id, tumaRes.data.checkout_request_id, payment_id);
+
+      console.log(`[customPay] stored checkout_request_id="${tumaRes.data.checkout_request_id}" for payment_id="${payment_id}"`);
     }
 
     res.json({

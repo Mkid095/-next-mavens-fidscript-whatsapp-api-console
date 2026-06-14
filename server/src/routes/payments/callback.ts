@@ -29,7 +29,7 @@ router.post('/', async (req: Request, res: Response) => {
     ).get(merchant_request_id || checkout_request_id, checkout_request_id) as any;
 
     if (!payment) {
-      console.error('Payment not found for callback:', merchant_request_id, checkout_request_id);
+      console.error(`[callback] Payment not found for merchant_request_id="${merchant_request_id}", checkout_request_id="${checkout_request_id}"`);
       return res.status(200).json({ received: true });
     }
 
