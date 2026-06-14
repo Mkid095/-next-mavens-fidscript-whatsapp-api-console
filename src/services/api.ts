@@ -95,5 +95,5 @@ export type { Client, Plan, User, TokenTransaction } from './clients';
 export { instancesApi } from './instances';
 export { paymentsApi } from './payments';
 export { uploadsApi } from './uploads';
-export { contactsApi, clientMessagesApi, clientKeysApi } from './contacts';
-export type { Contact, ClientMessage, ClientApiKey } from './contacts';
+export { contactsApi, clientMessagesApi, clientKeysApi, campaignsApi } from './contacts';
+export type { Contact, ClientMessage, ClientApiKey, Campaign, CampaignRecipient } from './contacts';

@@ -132,4 +132,42 @@ export function createTables(db: Database): void {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Campaigns table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS campaigns (
+      id TEXT PRIMARY KEY,
+      client_id TEXT REFERENCES clients(id),
+      name TEXT NOT NULL,
+      instance_name TEXT NOT NULL,
+      message_type TEXT DEFAULT 'text',
+      content TEXT,
+      media_url TEXT,
+      caption TEXT,
+      status TEXT DEFAULT 'draft',
+      scheduled_at TEXT,
+      started_at TEXT,
+      completed_at TEXT,
+      total_recipients INTEGER DEFAULT 0,
+      sent_count INTEGER DEFAULT 0,
+      delivered_count INTEGER DEFAULT 0,
+      failed_count INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Campaign recipients
+  db.run(`
+    CREATE TABLE IF NOT EXISTS campaign_recipients (
+      id TEXT PRIMARY KEY,
+      campaign_id TEXT REFERENCES campaigns(id),
+      phone TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      sent_at TEXT,
+      delivered_at TEXT,
+      failed_at TEXT,
+      error_message TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

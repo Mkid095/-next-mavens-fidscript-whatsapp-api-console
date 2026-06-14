@@ -4,18 +4,28 @@ import db from '../database.js';
 
 const router = Router();
 
-// Get messages for authenticated client
+// GET /api/client/messages - Get messages for authenticated client
+// Optional query: ?instance_name=foo to filter by container
 router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
-    const messages = db.prepare(`
+    const { instance_name } = req.query;
+    let query = `
       SELECT im.id, im.from_number, im.from_name, im.message_type, im.content,
              im.media_url, im.is_read, im.timestamp, im.direction, i.name as instance_name
       FROM inbox_messages im
       JOIN instances i ON im.instance_id = i.id
       WHERE im.client_id = ?
-      ORDER BY im.timestamp DESC
-      LIMIT 100
-    `).all(req.client!.id);
+    `;
+    const params: any[] = [req.client!.id];
+
+    if (instance_name) {
+      query += ' AND i.name = ?';
+      params.push(instance_name);
+    }
+
+    query += ' ORDER BY im.timestamp DESC LIMIT 200';
+
+    const messages = db.prepare(query).all(...params);
     res.json({ success: true, data: messages });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
