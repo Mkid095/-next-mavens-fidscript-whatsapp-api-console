@@ -309,13 +309,13 @@ initSqlJs().then(SQL => {
 
 build_frontend() {
     log_info "Building frontend..."
-    npm run build 2>&1 | tee -a "${LOG_FILE}"
+    rm -rf "${SCRIPT_DIR}/dist" && npm run build 2>&1 | tee -a "${LOG_FILE}"
     log_success "Frontend build completed."
 }
 
 build_backend() {
     log_info "Building backend..."
-    cd "${SCRIPT_DIR}/server" && npm run build 2>&1 | tee -a "${LOG_FILE}"
+    rm -rf "${SCRIPT_DIR}/server/dist" && cd "${SCRIPT_DIR}/server" && npm run build 2>&1 | tee -a "${LOG_FILE}"
     log_success "Backend build completed."
 }
 
@@ -342,6 +342,9 @@ fs.writeFileSync('ecosystem.config.cjs', updated);
 console.log('Ecosystem config updated with v${deploy_version} (${commit_hash})');
 "
         cd "${SCRIPT_DIR}"
+
+        # Clean old dist artifacts on production server before restart
+        rm -rf "${SCRIPT_DIR}/dist" "${SCRIPT_DIR}/server/dist"
 
         pm2 restart fidscript-api 2>&1 | tee -a "${LOG_FILE}"
         log_success "Backend service restarted."
