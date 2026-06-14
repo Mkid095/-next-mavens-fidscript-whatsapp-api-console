@@ -4,38 +4,6 @@ import { adminAuth, clientJwtAuth } from '../../middleware/auth.js';
 
 const router = Router();
 
-// GET /api/payments/status/:reference - Check payment status by reference
-router.get('/:reference', async (req: Request, res: Response) => {
-  try {
-    const { reference } = req.params;
-
-    const payment = db.prepare(`
-      SELECT p.*, tp.tokens, tp.bonus_tokens
-      FROM payments p
-      LEFT JOIN token_packages tp ON p.package_id = tp.id
-      WHERE p.payhero_reference = ? OR p.checkout_request_id = ? OR p.id = ?
-    `).get(reference, reference, reference) as any;
-
-    if (!payment) {
-      const recent = (db.prepare('SELECT id, payhero_reference, checkout_request_id, status FROM payments ORDER BY created_at DESC LIMIT 5').all() as any[]);
-      console.error(`[paymentStatus] ref="${reference}" not found. Recent:`, JSON.stringify(recent));
-      return res.status(404).json({ success: false, error: 'Payment not found' });
-    }
-
-    return res.json({
-      success: true,
-      data: {
-        status: payment.status,
-        amount: payment.amount_kes,
-        tokens: (payment.token_count ?? 0) + (payment.bonus_tokens ?? 0),
-        created_at: payment.created_at,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to check payment status' });
-  }
-});
-
 // GET /api/payments/client/history - Get own payment history (client JWT auth)
 router.get('/client/history', clientJwtAuth, (req: Request, res: Response) => {
   try {
@@ -77,6 +45,39 @@ router.get('/history/:clientId', adminAuth, (req: Request, res: Response) => {
     res.json({ success: true, data: payments });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch payment history' });
+  }
+});
+
+// GET /api/payments/status/:reference - Check payment status by reference
+// NOTE: this catch-all MUST be last — specific routes (/client/history, /history/:clientId) must match first
+router.get('/:reference', async (req: Request, res: Response) => {
+  try {
+    const { reference } = req.params;
+
+    const payment = db.prepare(`
+      SELECT p.*, tp.tokens, tp.bonus_tokens
+      FROM payments p
+      LEFT JOIN token_packages tp ON p.package_id = tp.id
+      WHERE p.payhero_reference = ? OR p.checkout_request_id = ? OR p.id = ?
+    `).get(reference, reference, reference) as any;
+
+    if (!payment) {
+      const recent = (db.prepare('SELECT id, payhero_reference, checkout_request_id, status FROM payments ORDER BY created_at DESC LIMIT 5').all() as any[]);
+      console.error(`[paymentStatus] ref="${reference}" not found. Recent:`, JSON.stringify(recent));
+      return res.status(404).json({ success: false, error: 'Payment not found' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        status: payment.status,
+        amount: payment.amount_kes,
+        tokens: (payment.token_count ?? 0) + (payment.bonus_tokens ?? 0),
+        created_at: payment.created_at,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to check payment status' });
   }
 });
 
