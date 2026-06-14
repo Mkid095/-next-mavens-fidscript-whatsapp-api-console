@@ -85,8 +85,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
 
     db.prepare('UPDATE instances SET status = ?, phone_number = ? WHERE name = ?').run(status, phoneNumber, instance.name);
     logAuditAction(req, 'CONNECTION_STATE', 'instance', String(instance.id), `Webhook: ${instance.name} -> ${status}`);
-    // Emit using decodedName so it matches what the SSE route subscribes to
-    emitInstanceStateChange(decodedName, status, phoneNumber);
+    // Emit using instance.name (our DB name) to match SSE subscription
+    emitInstanceStateChange(instance.name, status, phoneNumber);
     res.status(200).json({ success: true, handled: true });
     return;
   }
@@ -95,13 +95,11 @@ router.post('/evolution', async (req: Request, res: Response) => {
   if (event === 'messages.upsert') {
     const key = data?.key as { remoteJid?: string; fromMe?: boolean; id?: string } | undefined;
     if (key && !key.fromMe) {
-      // Only handle incoming messages (not our own sent messages)
       const senderJid = (sender as string | undefined) || key.remoteJid;
       const phone = senderJid ? extractPhoneFromJid(senderJid) : null;
       const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
       const pushName = data?.pushName as string | undefined;
 
-      // Determine message type and content
       const msgObj = data?.message as Record<string, unknown> || {};
       const content = (msgObj.conversation as string)
         || (msgObj.extendedTextMessage as { text?: string })?.text
@@ -111,30 +109,29 @@ router.post('/evolution', async (req: Request, res: Response) => {
         || '';
       const msgType = (data?.messageType as string) || 'text';
 
-      // Extract media URL if present
       const mediaUrl = (msgObj.imageMessage as { url?: string; mimetype?: string })?.url
         || (msgObj.videoMessage as { url?: string; mimetype?: string })?.url
         || (msgObj.documentMessage as { url?: string; mimetype?: string })?.url
         || null;
 
-      // Save to inbox_messages
-      db.prepare(`
-        INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
-      `).run(msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '', msgType, content, mediaUrl);
+      try {
+        db.prepare(`
+          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+        `).run(msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '', msgType, content, mediaUrl);
+      } catch {
+        // Duplicate message ID — ignore
+      }
 
-      // Capture phone from first incoming message
       if (phone) {
         const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
         if (!current?.phone_number) {
           db.prepare('UPDATE instances SET phone_number = ? WHERE name = ?').run(phone, instance.name);
           logAuditAction(req, 'MESSAGE_RECEIVED', 'instance', String(instance.id), `Phone captured from message: ${phone}`);
-          emitInstanceStateChange(decodedName, 'connected', phone);
         }
       }
 
-      // Broadcast to SSE for real-time inbox update
-      emitInstanceStateChange(decodedName, 'connected', phone || null);
+      emitInstanceStateChange(instance.name, 'connected', phone || null);
     }
     res.status(200).json({ success: true, handled: true });
     return;
