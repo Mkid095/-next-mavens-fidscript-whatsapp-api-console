@@ -93,7 +93,8 @@ export default function TokenStoreSection({
     try {
       const res = await paymentsApi.initiatePayment({ package_id: pkgId, phone_number: phone });
       if (res.success) {
-        setPendingRef(res.data?.reference || '');
+        // Use checkout_request_id as primary ref (status endpoint looks it up)
+        setPendingRef(res.data?.checkout_request_id || '');
         setPendingCheckoutId(res.data?.checkout_request_id || '');
         setPayMsg(`M-Pesa prompt sent to ${phone} — complete payment on your phone.`);
       } else {
@@ -113,7 +114,7 @@ export default function TokenStoreSection({
     try {
       const res = await paymentsApi.initiateCustomPayment({ tokens, phone_number: phone });
       if (res.success) {
-        setPendingRef(res.data?.reference || '');
+        setPendingRef(res.data?.checkout_request_id || '');
         setPendingCheckoutId(res.data?.checkout_request_id || '');
         setPayMsg(`M-Pesa prompt sent to ${phone} — complete payment on your phone.`);
       } else {
@@ -475,7 +476,8 @@ function PendingPoller({
 
     const poll = async () => {
       try {
-        const res = await paymentsApi.getPaymentStatus(reference || checkoutId);
+        // Prefer checkout_request_id (status endpoint stores it in checkout_request_id column)
+        const res = await paymentsApi.getPaymentStatus(checkoutId || reference);
         if (res.success && res.data) {
           if (res.data.status === 'completed') {
             setState('done');
@@ -507,7 +509,7 @@ function PendingPoller({
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [reference, checkoutId]);
+  }, [checkoutId, reference]);
 
   if (state === 'timeout') {
     return (
