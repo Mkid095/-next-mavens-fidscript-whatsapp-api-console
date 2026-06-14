@@ -1,37 +1,18 @@
-export type InstanceStatus = 'Connected' | 'Connecting' | 'Disconnected';
+// Re-export all API types from services/types.ts
+export type {
+  InstanceStatus,
+  Instance,
+  ApiLog,
+  InstanceSettings,
+  AnalyticsData,
+  DailyTrend,
+  TopClient,
+  TopInstance,
+  TokenPackage,
+  DailyUsage,
+} from './services/types';
 
-export interface Instance {
-  id: string;
-  name: string;
-  phone: string;
-  status: InstanceStatus;
-  client: string;
-  lastActive: string;
-}
-
-export interface Transaction {
-  id: string;
-  amount: number;
-  tokens: number;
-  reference: string;
-  timestamp: string;
-  phone: string;
-  status: 'Pending' | 'Success' | 'Failed';
-}
-
-export interface Client {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  instancesCount: number;
-  plan: string;
-  joinedDate: string;
-  tokenBalance?: number;
-  transactions?: Transaction[];
-}
-
-
+// UI-specific types only below
 
 export interface SystemLog {
   id: string;
@@ -47,16 +28,14 @@ export interface ApiKey {
   key: string;
   created: string;
   lastUsed: string;
-  status: 'Active' | 'Revoked';
+  status: string;
 }
 
 export interface InboxMessage {
   id: string;
-  sender: string;
-  role: string;
-  subject: string;
-  snippet: string;
-  date: string;
+  from_number: string;
+  from_name: string;
+  content: string;
+  timestamp: string;
   read: boolean;
-  body: string;
 }

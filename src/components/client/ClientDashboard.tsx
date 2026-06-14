@@ -1,0 +1,123 @@
+import React, { useState, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import type { Client, Instance, TokenPackage, DailyUsage } from '../../services/api';
+import Sidebar, { ClientSection } from '../Sidebar';
+import BottomNav from '../shared/BottomNav';
+import { UpdateToast } from '../shared/UpdateToast';
+import ClientContent from './ClientContent';
+
+interface ClientDashboardProps {
+  client: Client;
+  clientToken?: string;
+  instances: Instance[];
+  onInstancesChange: (instances: Instance[]) => void;
+  onLogout: () => void;
+  tokenBalance: number;
+  tokenPackages: TokenPackage[];
+  dailyUsage: DailyUsage[];
+  onTokenBalanceChange: (balance: number) => void;
+}
+
+const pathToSection = (path: string): ClientSection => {
+  const map: Record<string, ClientSection> = {
+    '/client': 'dashboard',
+    '/client/dashboard': 'dashboard',
+    '/client/whatsapp': 'whatsapp',
+    '/client/api-keys': 'api-keys',
+    '/client/docs': 'docs',
+    '/client/sandbox': 'sandbox',
+    '/client/messages': 'messages',
+    '/client/contacts': 'contacts',
+    '/client/token-store': 'token-store',
+    '/client/settings': 'settings',
+  };
+  return map[path] || 'dashboard';
+};
+
+const sectionToPath = (section: ClientSection): string => {
+  const map: Record<ClientSection, string> = {
+    'dashboard': '/client',
+    'whatsapp': '/client/whatsapp',
+    'api-keys': '/client/api-keys',
+    'docs': '/client/docs',
+    'sandbox': '/client/sandbox',
+    'messages': '/client/messages',
+    'contacts': '/client/contacts',
+    'token-store': '/client/token-store',
+    'settings': '/client/settings',
+  };
+  return map[section];
+};
+
+export default function ClientDashboard({
+  client,
+  clientToken,
+  instances,
+  onInstancesChange,
+  onLogout,
+  tokenBalance,
+  tokenPackages,
+  dailyUsage,
+  onTokenBalanceChange,
+}: ClientDashboardProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [previousBalance, setPreviousBalance] = useState<number | undefined>();
+
+  const activeSection = pathToSection(location.pathname);
+
+  const handleSectionChange = useCallback((section: ClientSection) => {
+    navigate(sectionToPath(section));
+  }, [navigate]);
+
+  const handleTokenDeduct = useCallback((amount: number) => {
+    setPreviousBalance(tokenBalance);
+    onTokenBalanceChange(Math.max(0, tokenBalance - amount));
+  }, [tokenBalance, onTokenBalanceChange]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('fidscript_client_token');
+    onLogout();
+  };
+
+  return (
+    <div className="flex h-screen bg-[#11100b] overflow-hidden">
+      <Sidebar
+        activeSection={activeSection}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        clientName={client.name}
+        tokenBalance={tokenBalance}
+        onLogout={handleLogout}
+      />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+          <ClientContent
+            activeSection={activeSection}
+            client={client}
+            clientToken={clientToken}
+            instances={instances}
+            tokenBalance={tokenBalance}
+            tokenPackages={tokenPackages}
+            dailyUsage={dailyUsage}
+            previousBalance={previousBalance}
+            onInstancesChange={onInstancesChange}
+            onTokenBalanceChange={onTokenBalanceChange}
+            onTokenDeduct={handleTokenDeduct}
+            onLogout={handleLogout}
+          />
+        </div>
+
+        <BottomNav
+          activeMenuItem={activeSection}
+          onMenuItemChange={handleSectionChange}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      <UpdateToast />
+    </div>
+  );
+}

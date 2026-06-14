@@ -1,0 +1,131 @@
+import React, { useState, useEffect } from 'react';
+import { Plus, Smartphone } from 'lucide-react';
+import { AnimatePresence } from 'motion/react';
+import { instancesApi } from '../../../services/api';
+import type { Client, Instance } from '../../../services/api';
+import CreateInstanceModal from './CreateInstanceModal';
+import QRPairingModal from './QRPairingModal';
+import InstanceCard from './InstanceCard';
+import { useInstanceConnection } from './useInstanceConnection';
+
+interface WhatsAppContainersProps {
+  client: Client;
+  clientToken?: string;
+  instances: Instance[];
+  onInstancesChange: (instances: Instance[]) => void;
+  onTokenDeduct: (n: number) => void;
+}
+
+export default function WhatsAppContainers({
+  client,
+  clientToken,
+  instances,
+  onInstancesChange,
+  onTokenDeduct,
+}: WhatsAppContainersProps) {
+  const [showNewInstanceModal, setShowNewInstanceModal] = useState(false);
+
+  // Fetch instances on mount if instances prop is empty (direct URL navigation)
+  useEffect(() => {
+    if (instances.length === 0) {
+      instancesApi.getClientInstances().then((res) => {
+        if (res.success && res.data) {
+          onInstancesChange(res.data);
+        }
+      }).catch(console.error);
+    }
+  }, []);
+
+  const {
+    pairingInstance,
+    pairingQR,
+    pairingMode,
+    linkCode,
+    generatingQR,
+    connectionError,
+    handleConnect,
+    handleSimulateSuccessfulScan,
+    handleDisconnect,
+    handleDeleteInstance,
+    handleClosePairingModal,
+  } = useInstanceConnection({ instances, onInstancesChange });
+
+  const handleCreateInstance = async (name: string) => {
+    const res = await instancesApi.clientCreate({
+      name: name.toLowerCase().trim().replace(/[^a-z0-9_-]/g, ''),
+      display_name: name,
+    });
+    if (res.success && res.data) {
+      onInstancesChange([res.data, ...instances]);
+      setShowNewInstanceModal(false);
+    } else {
+      throw new Error(res.error || 'Failed to create container');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+          <div>
+            <h3 className="text-sm font-bold text-forest-deep">My WhatsApp Containers</h3>
+            <p className="text-xs text-graphite mt-0.5">Create containers and connect via QR code or link code.</p>
+          </div>
+          <button
+            onClick={() => setShowNewInstanceModal(true)}
+            className="px-3.5 py-1.5 bg-forest-deep text-white text-xs font-bold rounded-xl hover:bg-[#33301a] transition-all flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Container</span>
+          </button>
+        </div>
+
+        {instances.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            {instances.map((inst) => (
+              <InstanceCard
+                key={inst.id}
+                inst={inst}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                onDelete={handleDeleteInstance}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 text-center text-graphite space-y-3">
+            <Smartphone className="w-12 h-12 text-yellow-300 mx-auto" />
+            <p className="font-bold text-forest-deep">No containers provisioned yet.</p>
+            <button onClick={() => setShowNewInstanceModal(true)} className="px-4 py-2 bg-yellow-500 text-stone-950 font-bold text-xs rounded-xl">
+              Create your first container
+            </button>
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {showNewInstanceModal && (
+          <CreateInstanceModal
+            onClose={() => setShowNewInstanceModal(false)}
+            onSubmit={handleCreateInstance}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {pairingInstance && (
+          <QRPairingModal
+            instance={pairingInstance}
+            mode={pairingMode}
+            qrCode={pairingQR}
+            linkCode={linkCode}
+            generatingQR={generatingQR}
+            connectionError={connectionError}
+            onClose={handleClosePairingModal}
+            onCheckConnection={handleSimulateSuccessfulScan}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

@@ -1,0 +1,50 @@
+import { Router, Request, Response } from 'express';
+import { clientJwtAuth } from '../middleware/auth.js';
+import db from '../database.js';
+
+const router = Router();
+
+// Get contacts for authenticated client
+router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    const contacts = db.prepare(
+      'SELECT id, phone, name, tags, created_at FROM contacts WHERE client_id = ? ORDER BY created_at DESC'
+    ).all(req.client!.id);
+    res.json({ success: true, data: contacts });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// Add contacts (batch import)
+router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
+  const { contacts } = req.body;
+  if (!Array.isArray(contacts)) {
+    return res.status(400).json({ success: false, error: 'contacts array required' });
+  }
+  try {
+    let added = 0;
+    for (const c of contacts) {
+      const id = `contact_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      db.prepare(
+        'INSERT INTO contacts (id, client_id, phone, name, tags) VALUES (?, ?, ?, ?, ?)'
+      ).run(id, req.client!.id, c.phone, c.name || '', c.tags || '');
+      added++;
+    }
+    res.json({ success: true, count: added });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// Delete contact
+router.delete('/:id', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    db.prepare('DELETE FROM contacts WHERE id = ? AND client_id = ?').run(req.params.id, req.client!.id);
+    res.json({ success: true });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+export default router;
