@@ -14,6 +14,10 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
   const [regeneratingQR, setRegeneratingQR] = useState(false);
   const [connectionError, setConnectionError] = useState('');
   const esRef = useRef<EventSource | null>(null);
+  // Prevent reconnection loops
+  const reconnectAttempts = useRef(0);
+  // Set to true when the user explicitly closed the modal (don't reconnect)
+  const closingManually = useRef(false);
 
   // Clean up SSE on unmount
   useEffect(() => {
@@ -29,9 +33,13 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
   const openSSEConnection = useCallback((inst: Instance) => {
     if (esRef.current) {
       esRef.current.close();
+      esRef.current = null;
     }
     const token = localStorage.getItem('fidscript_client_token');
     if (!token) return;
+
+    reconnectAttempts.current = 0;
+    closingManually.current = false;
 
     const es = new EventSource(`/api/sse/instance/${inst.name}?token=${encodeURIComponent(token)}`);
     esRef.current = es;
@@ -50,16 +58,41 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
           setPairingQR('');
           es.close();
           esRef.current = null;
+        } else if (data.state === 'disconnected') {
+          // Phone logged out — update UI to show disconnected
+          const updated = instances.map(i =>
+            i.id === pairingInstance?.id
+              ? { ...i, status: 'disconnected' as const, phone_number: null }
+              : i
+          );
+          onInstancesChange(updated);
+          setPairingInstance(null);
+          setPairingQR('');
+          es.close();
+          esRef.current = null;
         }
       } catch {
         // Ignore malformed messages
       }
     };
 
+    // onclose fires when the stream ends — attempt reconnect if not closing manually
+    es.onclose = () => {
+      if (closingManually.current) {
+        esRef.current = null;
+        return;
+      }
+      if (reconnectAttempts.current < 3) {
+        reconnectAttempts.current++;
+        setTimeout(() => openSSEConnection(inst), 2000);
+      } else {
+        esRef.current = null;
+      }
+    };
+
     es.onerror = () => {
-      // SSE error — fall back to not polling; the user can tap "Check Connection" if needed
-      es.close();
-      esRef.current = null;
+      // Don't close here — let onclose handle cleanup and reconnection
+      // EventSource auto-reconnects on transient errors
     };
   }, [instances, pairingInstance, onInstancesChange]);
 
@@ -143,6 +176,7 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
   }, [instances, onInstancesChange]);
 
   const handleClosePairingModal = useCallback(() => {
+    closingManually.current = true;
     if (esRef.current) {
       esRef.current.close();
       esRef.current = null;
