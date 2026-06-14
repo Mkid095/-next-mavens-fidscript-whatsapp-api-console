@@ -49,9 +49,11 @@ router.post('/evolution', async (req: Request, res: Response) => {
     status = 'disconnected';
   }
 
-  // Find instance by name (use URL-decoded name since Evolution may send it as-is)
+  // Find instance by name OR evolution_name (Evolution API sends evolution_name as instance identifier)
   const decodedName = decodeURIComponent(instanceName);
-  const instance = db.prepare('SELECT * FROM instances WHERE name = ?').get(decodedName) as { id: number; name: string; evolution_name?: string } | undefined;
+  const instance = db.prepare(
+    'SELECT * FROM instances WHERE name = ? OR evolution_name = ?'
+  ).get(decodedName, decodedName) as { id: number; name: string; evolution_name?: string } | undefined;
   if (!instance) {
     // Instance may not exist in our DB yet — ignore
     res.status(200).json({ success: true, handled: false, reason: 'instance_not_found' });
@@ -71,12 +73,12 @@ router.post('/evolution', async (req: Request, res: Response) => {
     }
   }
 
-  // Update instance status and phone number in DB
-  db.prepare('UPDATE instances SET status = ?, phone_number = ? WHERE name = ?').run(status, phoneNumber, decodedName);
-  logAuditAction(req, 'CONNECTION_STATE', 'instance', String(instance.id), `Webhook: ${decodedName} -> ${status}`);
+  // Update instance status and phone number in DB (use our instance name, not evolution name)
+  db.prepare('UPDATE instances SET status = ?, phone_number = ? WHERE name = ?').run(status, phoneNumber, instance.name);
+  logAuditAction(req, 'CONNECTION_STATE', 'instance', String(instance.id), `Webhook: ${instance.name} -> ${status}`);
 
-  // Broadcast to any SSE subscribers
-  emitInstanceStateChange(decodedName, status, phoneNumber);
+  // Broadcast to any SSE subscribers (use our instance name for SSE matching)
+  emitInstanceStateChange(instance.name, status, phoneNumber);
 
   res.status(200).json({ success: true, handled: true });
 });
