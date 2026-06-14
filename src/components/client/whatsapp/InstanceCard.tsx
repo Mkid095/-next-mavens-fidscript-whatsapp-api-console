@@ -29,7 +29,13 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete }
           <h4 className="text-base font-bold text-forest-deep font-mono">{inst.name}</h4>
           <div className="text-[11px] text-[#6a6c5d] flex items-center gap-1">
             {isConnected ? <Wifi className="w-3 h-3 text-green-500" /> : <WifiOff className="w-3 h-3 text-stone-400" />}
-            <code className="font-mono bg-[#eaebe4] px-1 py-0.5 rounded text-xs">{inst.phone_number || '—'}</code>
+            {inst.phone_number ? (
+              <code className="font-mono bg-[#eaebe4] px-1 py-0.5 rounded text-xs">{inst.phone_number}</code>
+            ) : isConnected ? (
+              <span className="text-[10px] text-amber-600 italic">Number after first message</span>
+            ) : (
+              <code className="font-mono text-stone-400">—</code>
+            )}
           </div>
         </div>
         <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${
