@@ -343,7 +343,7 @@ console.log('Ecosystem config updated with v${deploy_version} (${commit_hash})')
 "
         cd "${SCRIPT_DIR}"
 
-        # Clean old dist artifacts on production server before restart
+        # Always clean dist folders — stale files break the app even when no code changed
         rm -rf "${SCRIPT_DIR}/dist" "${SCRIPT_DIR}/server/dist"
 
         pm2 restart fidscript-api 2>&1 | tee -a "${LOG_FILE}"
@@ -404,9 +404,19 @@ deploy() {
             record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
             ;;
         none)
-            log_info "No relevant changes detected. Skipping build."
-            log_success "Deployment check completed - no rebuild needed."
-            return 0
+            log_info "No relevant changes detected — forcing clean rebuild to eliminate stale dist artifacts."
+
+            build_frontend
+            build_backend
+            restart_backend
+
+            local frontend_version backend_version changes
+            frontend_version=$(get_current_version)
+            backend_version=$(get_current_version)
+            changes=$(get_changes_summary)
+
+            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "${changes}"
+            record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
             ;;
     esac
 
