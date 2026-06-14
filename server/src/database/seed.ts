@@ -32,14 +32,12 @@ export async function seedData(db: Database): Promise<void> {
     `);
   }
 
-  // Seed default admin user if none exist
+  // Seed default admin user if none exist — no password (passwordless auth)
   const userCount = db.exec('SELECT COUNT(*) as count FROM users')[0]?.values[0]?.[0] as number;
   if (!userCount || userCount === 0) {
-    const bcrypt = await import('bcryptjs');
-    const hash = bcrypt.default.hashSync('admin123', 10);
     db.run(`
-      INSERT INTO users (id, email, password_hash, name, role)
-      VALUES ('admin_1', 'admin@fidscript.io', ?, 'Admin', 'admin')
-    `, [hash]);
+      INSERT INTO users (id, email, name, role)
+      VALUES ('admin_1', 'admin@fidscript.io', 'Admin', 'admin')
+    `);
   }
 }

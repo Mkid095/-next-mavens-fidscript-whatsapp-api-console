@@ -6,19 +6,19 @@ export const apiInfo = {
   documentation: 'https://whatsapp.fidscript.com/docs',
   endpoints: {
     auth: {
-      'POST /api/auth/login': 'Admin login',
-      'POST /api/auth/register': 'Register first admin',
-      'GET /api/auth/me': 'Get current user',
-      'POST /api/auth/client-register': 'Client signup',
-      'POST /api/auth/client-login': 'Client portal login',
-      'GET /api/auth/client/me': 'Get current client',
+      'POST /api/auth/request-code': 'Request a magic sign-in code (anti-enumeration)',
+      'POST /api/auth/verify-code': 'Verify code and receive JWT (admin or client)',
+      'POST /api/auth/client/request-code': 'Request a registration code',
+      'POST /api/auth/client/verify-code': 'Verify code, create account, receive JWT',
+      'GET /api/auth/me': 'Get current admin profile',
+      'GET /api/auth/client/me': 'Get current client profile',
       'GET /api/auth/client/tokens': 'Get token balance and history',
+      'GET /api/stats': 'Public platform stats',
     },
     admin: {
       'GET /api/admin/instances': 'List all instances',
       'GET /api/admin/analytics': 'Platform analytics',
       'GET /api/admin/logs': 'API request logs',
-      'GET /api/stats': 'Public platform stats',
     },
     clients: {
       'GET /api/clients': 'List all clients',

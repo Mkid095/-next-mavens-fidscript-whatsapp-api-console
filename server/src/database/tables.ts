@@ -3,7 +3,7 @@ import type { Database } from 'sql.js';
 export function createTables(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+      id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL, role TEXT DEFAULT 'admin',
       created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT
     )
@@ -21,7 +21,7 @@ export function createTables(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS clients (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, phone TEXT,
-      password_hash TEXT, api_key TEXT UNIQUE NOT NULL, plan_id TEXT REFERENCES plans(id),
+      api_key TEXT UNIQUE NOT NULL, plan_id TEXT REFERENCES plans(id),
       is_active INTEGER DEFAULT 1, token_balance INTEGER DEFAULT 500,
       msg_count_today INTEGER DEFAULT 0, total_messages INTEGER DEFAULT 0,
       last_reset TEXT DEFAULT CURRENT_TIMESTAMP, created_at TEXT DEFAULT CURRENT_TIMESTAMP

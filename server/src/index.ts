@@ -10,7 +10,6 @@ import { registerRoutes } from './routes/index.js';
 import { apiInfo } from './utils/apiInfo.js';
 
 import authRoutes from './routes/auth.js';
-import clientAuthRoutes from './routes/clientAuth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,7 +41,6 @@ async function startServer() {
 
     // Public routes
     app.use('/api/auth', publicLimiter, authRoutes);
-    app.use('/api/auth', publicLimiter, clientAuthRoutes);
 
     // Public stats endpoint
     app.get('/api/stats', (req: express.Request, res: express.Response) => {
@@ -126,10 +124,7 @@ async function startServer() {
 ║   By Next Mavens                                              ║
 ║                                                               ║
 ║   Server running on http://localhost:${PORT}                    ║
-║                                                               ║
-║   Default admin credentials:                                   ║
-║   Email: admin@fidscript.io                                   ║
-║   Password: admin123                                          ║
+║   Passwordless auth — magic-code login                         ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
       `);

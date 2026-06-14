@@ -40,7 +40,6 @@ export interface Client {
   name: string;
   email: string;
   phone: string | null;
-  password_hash?: string;
   api_key: string;
   plan_id: string | null;
   is_active: number;

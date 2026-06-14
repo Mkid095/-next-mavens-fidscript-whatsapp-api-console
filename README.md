@@ -68,15 +68,13 @@ The magic-code system is designed so the client is never trusted with anything s
 
 > **Why codes are hashed, not stored plaintext:** a 6-digit code is short, so storing it in plaintext would let anyone with DB read access (a leak, a backup, an insider) immediately log in as any user with an active code. Hashing makes the stored value useless to an attacker while still letting the server verify a submitted code with `bcrypt.compare`. This is the same approach used for passwords and OTPs.
 
-The legacy password endpoints (`/login`, `/client-login`, `/client-register`) remain mounted for backward compatibility but are **dormant** — the frontend no longer calls them, and new accounts are created without a password (`password_hash = NULL`).
-
 ---
 
 ## Tech stack
 
 - **Frontend:** React 18 + Vite 6, TypeScript, Tailwind CSS v4, React Router v7, `motion` (Framer Motion), `lucide-react`, `recharts`.
 - **Backend:** Node.js + Express 4, TypeScript (ESM), `sql.js` (SQLite compiled to WASM, persisted to disk).
-- **Auth:** `jsonwebtoken` (JWT), `bcryptjs` (code hashing), **Resend** (transactional email).
+- **Auth:** `jsonwebtoken` (JWT), `bcryptjs` (magic-code hashing), **Resend** (transactional email).
 - **Integrations:** Evolution API (WhatsApp gateway, port 8080), PayHero (M-Pesa STK push), Cloudinary (media storage).
 - **Process management:** PM2 (backend), Nginx (frontend + reverse proxy).
 

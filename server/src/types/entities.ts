@@ -2,7 +2,6 @@
 export interface User {
   id: string;
   email: string;
-  password_hash: string;
   name: string;
   role: 'admin' | 'client';
   created_at: string;

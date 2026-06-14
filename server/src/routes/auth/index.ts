@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import adminAuthRouter from './adminAuth.js';
-import clientAuthRouter from './clientAuth.js';
 import clientMeRouter from './clientMe.js';
 import clientTokensRouter from './clientTokens.js';
 import magicAuthRouter from './magicAuth.js';
@@ -20,8 +18,6 @@ const magicLimiter = rateLimit({
   message: { success: false, error: 'Too many authentication attempts. Please try again later.' },
 });
 
-router.use('/', adminAuthRouter);
-router.use('/', clientAuthRouter);
 router.use('/', clientMeRouter);
 router.use('/', clientTokensRouter);
 router.use('/', magicLimiter, magicAuthRouter);
