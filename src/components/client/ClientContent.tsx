@@ -7,6 +7,7 @@ import ApiKeysSection from './ApiKeysSection';
 import DocsSection from './DocsSection';
 import SandboxSection from './SandboxSection';
 import MessagesView from './MessagesView';
+import CampaignsView from './CampaignsView';
 import ContactsSection from './contacts/ContactsSection';
 import TokenStoreSection from './TokenStoreSection';
 import SettingsSection from './SettingsSection';
@@ -90,6 +91,13 @@ export default function ClientContent({
       )}
       {activeSection === 'messages' && (
         <MessagesView
+          clientToken={clientToken}
+          instances={instances}
+          onTokenDeduct={onTokenDeduct}
+        />
+      )}
+      {activeSection === 'campaigns' && (
+        <CampaignsView
           clientToken={clientToken}
           instances={instances}
           onTokenDeduct={onTokenDeduct}

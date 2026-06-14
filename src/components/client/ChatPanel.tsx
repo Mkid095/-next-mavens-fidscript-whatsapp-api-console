@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import type { ClientMessage, Contact, Instance } from '../../services/api';
-import ComposeBar, { MessageType } from './ComposeBar';
+import { instancesApi } from '../../services/api';
+import ComposeBar from './ComposeBar';
 import MessageGroupList from './MessageGroupList';
 import ChatPanelHeader from './ChatPanelHeader';
-import ChatPanelModals from './ChatPanelModals';
 import SendingFromBar from './SendingFromBar';
 import SendingErrorBanner from './SendingErrorBanner';
-import { useMessageTypeModal } from './useMessageTypeModal';
+import ReactionPicker from './whatsapp/ReactionPicker';
+import { TOKEN_COST } from '../../utils/tokenCosts';
 
 interface ConversationContact {
   phone: string; name: string; lastMessage: string; lastTime: string; unread: number; instanceName: string;
@@ -27,6 +28,7 @@ interface ChatPanelProps {
   sending: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   bottomRef: React.RefObject<HTMLDivElement | null>;
+  savedContacts: Contact[];
   onBack: () => void;
   onOpenContactProfile: () => void;
   onToggleInstancePicker: () => void;
@@ -47,20 +49,12 @@ export default function ChatPanel({
   conversationMessages, groupedMessages,
   selectedInstance, selectedInstanceConnected, connectedInstances,
   showInstancePicker, sendingError, replyText, sending,
-  textareaRef, bottomRef,
+  textareaRef, bottomRef, savedContacts,
   onBack, onOpenContactProfile, onToggleInstancePicker, onSelectInstance,
   onClearError, onReplyTextChange, onSend,
   formatTime, formatFullTime, getStatusIcon, onTokenDeduct
 }: ChatPanelProps) {
   const [reactionTarget, setReactionTarget] = useState<ReactionTarget | null>(null);
-  const {
-    showMediaModal, setShowMediaModal,
-    showLocationModal, setShowLocationModal,
-    showContactModal, setShowContactModal,
-    showPollModal, setShowPollModal,
-    showListModal, setShowListModal,
-    openModal,
-  } = useMessageTypeModal();
 
   const activeInstance = connectedInstances.find(i => i.name === selectedInstance);
 
@@ -80,6 +74,19 @@ export default function ChatPanel({
   const handleMessageTouchEnd = (e: React.TouchEvent) => {
     const timer = (e.currentTarget as HTMLElement).dataset.longPressTimer;
     if (timer) { clearTimeout(parseInt(timer)); delete (e.currentTarget as HTMLElement).dataset.longPressTimer; }
+  };
+
+  const handleQuickReaction = async (msgId: string, emoji: string) => {
+    if (!activeInstance) return;
+    try {
+      const remoteJid = `${selectedPhone}@s.whatsapp.net`;
+      await instancesApi.sendReaction(activeInstance.name, selectedPhone, { remoteJid, fromMe: true, id: msgId }, emoji);
+      onTokenDeduct?.(TOKEN_COST.REACTION);
+    } catch { /* silent — reaction is best-effort */ }
+  };
+
+  const handleOpenReactionPicker = (msgId: string, x: number, y: number) => {
+    setReactionTarget({ messageId: msgId, position: { x, y } });
   };
 
   return (
@@ -111,6 +118,8 @@ export default function ChatPanel({
           onContextMenu={handleMessageContextMenu}
           onTouchStart={handleMessageTouchStart}
           onTouchEnd={handleMessageTouchEnd}
+          onQuickReaction={handleQuickReaction}
+          onOpenReactionPicker={handleOpenReactionPicker}
         />
       </div>
 
@@ -121,30 +130,24 @@ export default function ChatPanel({
         sending={sending}
         disabled={!selectedInstanceConnected}
         selectedContactName={selectedContactDetails?.name || selectedContact?.name || selectedPhone}
+        selectedInstance={activeInstance}
+        savedContacts={savedContacts}
         textareaRef={textareaRef}
         onReplyTextChange={onReplyTextChange}
         onSend={onSend}
-        onSelectMessageType={openModal}
+        onTokenDeduct={onTokenDeduct}
       />
 
-      <ChatPanelModals
-        activeInstance={activeInstance}
-        selectedPhone={selectedPhone}
-        showMediaModal={showMediaModal}
-        showLocationModal={showLocationModal}
-        showContactModal={showContactModal}
-        showPollModal={showPollModal}
-        showListModal={showListModal}
-        reactionTarget={reactionTarget}
-        onCloseMedia={() => setShowMediaModal(false)}
-        onCloseLocation={() => setShowLocationModal(false)}
-        onCloseContact={() => setShowContactModal(false)}
-        onClosePoll={() => setShowPollModal(false)}
-        onCloseList={() => setShowListModal(false)}
-        onCloseReaction={() => setReactionTarget(null)}
-        onTokenDeduct={cost => onTokenDeduct?.(cost)}
-      />
+      {reactionTarget && activeInstance && (
+        <ReactionPicker
+          instance={activeInstance}
+          to={selectedPhone}
+          messageId={reactionTarget.messageId}
+          position={reactionTarget.position}
+          onClose={() => setReactionTarget(null)}
+          onSelect={cost => onTokenDeduct?.(cost)}
+        />
+      )}
     </>
   );
 }
-

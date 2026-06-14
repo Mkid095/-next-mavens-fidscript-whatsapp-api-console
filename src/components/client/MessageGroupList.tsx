@@ -13,12 +13,15 @@ interface MessageGroupListProps {
   onContextMenu: (e: React.MouseEvent, msgId: string) => void;
   onTouchStart: (e: React.TouchEvent, msgId: string) => void;
   onTouchEnd: (e: React.TouchEvent) => void;
+  onQuickReaction: (msgId: string, emoji: string) => void;
+  onOpenReactionPicker: (msgId: string, x: number, y: number) => void;
 }
 
 export default function MessageGroupList({
   groupedMessages, selectedPhone,
   formatTime, formatFullTime, getStatusIcon, bottomRef,
-  onContextMenu, onTouchStart, onTouchEnd
+  onContextMenu, onTouchStart, onTouchEnd,
+  onQuickReaction, onOpenReactionPicker
 }: MessageGroupListProps) {
   if (groupedMessages.length === 0) {
     return (
@@ -46,6 +49,8 @@ export default function MessageGroupList({
               onContextMenu={onContextMenu}
               onTouchStart={onTouchStart}
               onTouchEnd={onTouchEnd}
+              onQuickReaction={onQuickReaction}
+              onOpenReactionPicker={onOpenReactionPicker}
             />
           ))}
         </div>

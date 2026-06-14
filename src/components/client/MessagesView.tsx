@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Search, CheckCircle, CheckCheck, MoreVertical, Phone, Video, ChevronDown, X,
-  RefreshCw, Plus, ChevronRight, ArrowLeft, Globe, FileText, MessageCircle, PenSquare,
-  SlidersHorizontal, User, Mail, Tag, ChevronRight as ChevronRightIcon, Clock, Users, Zap
+  Search, CheckCircle, CheckCheck,
+  MessageCircle, PenSquare, Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clientMessagesApi, contactsApi, instancesApi } from '../../services/api';
@@ -12,7 +11,6 @@ import ChatPanel from './ChatPanel';
 import NewChatPanelInline from './NewChatPanelInline';
 import EmptyState from './EmptyState';
 import ContactProfilePanel from './contacts/ContactProfilePanel';
-import BulkMessagingPanel from './BulkMessagingPanel';
 
 interface ConversationContact {
   phone: string;
@@ -29,8 +27,6 @@ interface MessagesViewProps {
   onTokenDeduct?: (n: number) => void;
 }
 
-type SidebarView = 'chats' | 'bulk';
-
 export default function MessagesView({ clientToken, instances, onTokenDeduct }: MessagesViewProps) {
   const [messages, setMessages] = useState<ClientMessage[]>([]);
   const [contacts, setContacts] = useState<ConversationContact[]>([]);
@@ -42,7 +38,6 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   const [selectedInstance, setSelectedInstance] = useState<string>('');
   const [showInstancePicker, setShowInstancePicker] = useState(false);
   const [sendingError, setSendingError] = useState('');
-  const [sidebarView, setSidebarView] = useState<SidebarView>('chats');
   const [showNewChatInline, setShowNewChatInline] = useState(false);
   const [showContactProfile, setShowContactProfile] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -91,14 +86,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
       const savedName = savedContactMap.get(phone);
       const displayName = savedName || msg.from_name || phone;
       if (!map.has(phone)) {
-        map.set(phone, {
-          phone,
-          name: displayName,
-          lastMessage: msg.content || `[${msg.message_type}]`,
-          lastTime: msg.timestamp,
-          unread: msg.is_read === 0 ? 1 : 0,
-          instanceName: msg.instance_name,
-        });
+        map.set(phone, { phone, name: displayName, lastMessage: msg.content || `[${msg.message_type}]`, lastTime: msg.timestamp, unread: msg.is_read === 0 ? 1 : 0, instanceName: msg.instance_name });
       } else {
         const existing = map.get(phone)!;
         if (new Date(msg.timestamp) > new Date(existing.lastTime)) {
@@ -171,7 +159,6 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
 
   const handleSelectConversation = (phone: string) => {
     setSelectedPhone(phone);
-    setSidebarView('chats');
     setShowContactProfile(false);
   };
 
@@ -232,19 +219,10 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-forest-deep">Chats</h3>
               {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 bg-yellow-500 text-white text-[9px] font-bold rounded-full">
-                  {unreadCount}
-                </span>
+                <span className="px-1.5 py-0.5 bg-yellow-500 text-white text-[9px] font-bold rounded-full">{unreadCount}</span>
               )}
             </div>
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => setSidebarView('chats')}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${sidebarView === 'chats' ? 'bg-forest-deep text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
-                title="Chats"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-              </button>
               <button
                 onClick={() => setShowNewChatInline(true)}
                 className="w-7 h-7 rounded-lg bg-forest-deep text-white flex items-center justify-center hover:bg-[#33301a] transition-all"
@@ -252,17 +230,10 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
               >
                 <PenSquare className="w-3.5 h-3.5" />
               </button>
-              <button
-                onClick={() => setSidebarView('bulk')}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${sidebarView === 'bulk' ? 'bg-yellow-500 text-stone-950' : 'bg-yellow-500 text-stone-950 hover:bg-yellow-400'}`}
-                title="Bulk messages"
-              >
-                <Zap className="w-3.5 h-3.5" />
-              </button>
             </div>
           </div>
 
-          {sidebarView === 'chats' && !showNewChatInline && (
+          { !showNewChatInline && (
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
               <input
@@ -276,7 +247,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
         </div>
 
         {/* Container filter chips */}
-        {sidebarView === 'chats' && connectedInstances.length > 1 && (
+        {connectedInstances.length > 1 && (
           <div className="px-3 py-2 border-b border-[#eaebe4] flex items-center gap-1.5 overflow-x-auto">
             <button
               onClick={() => setSelectedInstance('')}
@@ -298,39 +269,20 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
         )}
 
         {/* Sidebar content */}
-        {sidebarView === 'chats' && (
-          showNewChatInline ? (
-            <NewChatPanelInline
-              savedContacts={savedContacts}
-              clientToken={clientToken}
-              onSelectContact={(phone) => {
-                setSelectedPhone(phone);
-                setShowNewChatInline(false);
-              }}
-              onContactCreated={(contact) => {
-                setSavedContacts(prev => [contact, ...prev]);
-                setSelectedPhone(contact.phone);
-                setShowNewChatInline(false);
-              }}
-              onClose={() => setShowNewChatInline(false)}
-            />
-          ) : (
-            <ChatList
-              contacts={filteredContacts}
-              selectedPhone={selectedPhone}
-              onSelect={handleSelectConversation}
-              formatTime={formatTime}
-            />
-          )
-        )}
-
-        {sidebarView === 'bulk' && (
-          <BulkMessagingPanel
-            instances={connectedInstances}
+        { showNewChatInline ? (
+          <NewChatPanelInline
             savedContacts={savedContacts}
             clientToken={clientToken}
-            onTokenDeduct={onTokenDeduct}
-            onClose={() => setSidebarView('chats')}
+            onSelectContact={(phone) => { setSelectedPhone(phone); setShowNewChatInline(false); }}
+            onContactCreated={(contact) => { setSavedContacts(prev => [contact, ...prev]); setSelectedPhone(contact.phone); setShowNewChatInline(false); }}
+            onClose={() => setShowNewChatInline(false)}
+          />
+        ) : (
+          <ChatList
+            contacts={filteredContacts}
+            selectedPhone={selectedPhone}
+            onSelect={handleSelectConversation}
+            formatTime={formatTime}
           />
         )}
       </div>
@@ -353,6 +305,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
             sending={sending}
             textareaRef={textareaRef}
             bottomRef={bottomRef}
+            savedContacts={savedContacts}
             onBack={() => setSelectedPhone(null)}
             onOpenContactProfile={handleOpenContactProfile}
             onToggleInstancePicker={() => setShowInstancePicker(!showInstancePicker)}

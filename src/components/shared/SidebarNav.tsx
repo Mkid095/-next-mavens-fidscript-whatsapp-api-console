@@ -10,6 +10,7 @@ import {
   Users,
   CreditCard,
   Settings,
+  Zap,
 } from 'lucide-react';
 
 export type ClientSection =
@@ -19,6 +20,7 @@ export type ClientSection =
   | 'docs'
   | 'sandbox'
   | 'messages'
+  | 'campaigns'
   | 'contacts'
   | 'token-store'
   | 'settings';
@@ -37,13 +39,14 @@ export const mainNavItems: NavItem[] = [
   { id: 'docs', label: 'Documentation', icon: <FileText className="w-4 h-4" />, path: '/client/docs' },
   { id: 'sandbox', label: 'API Sandbox', icon: <Bot className="w-4 h-4" />, path: '/client/sandbox' },
   { id: 'messages', label: 'Messages', icon: <Send className="w-4 h-4" />, path: '/client/messages' },
+  { id: 'campaigns', label: 'Campaigns', icon: <Zap className="w-4 h-4" />, path: '/client/campaigns' },
   { id: 'contacts', label: 'Contacts', icon: <Users className="w-4 h-4" />, path: '/client/contacts' },
   { id: 'token-store', label: 'Token Store', icon: <CreditCard className="w-4 h-4" />, path: '/client/token-store' },
   { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" />, path: '/client/settings' },
 ];
 
 export const menuItems: NavItem[] = mainNavItems.filter(item =>
-  ['whatsapp', 'api-keys', 'docs', 'sandbox', 'messages', 'contacts', 'token-store'].includes(item.id),
+  ['whatsapp', 'api-keys', 'docs', 'sandbox', 'messages', 'campaigns', 'contacts', 'token-store'].includes(item.id),
 );
 
 interface SidebarNavProps {
