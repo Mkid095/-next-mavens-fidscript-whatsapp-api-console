@@ -9,6 +9,7 @@ import instancesRoutes from './instances.js';
 import paymentsRoutes from './payments.js';
 import uploadsRoutes from './uploads.js';
 import contactsRoutes from './contacts.js';
+import contactGroupsRoutes from './contactGroups.js';
 import clientMessagesRoutes from './clientMessages.js';
 import clientKeysRoutes from './clientKeys.js';
 import campaignsRoutes from './campaigns.js';
@@ -35,6 +36,7 @@ export function registerRoutes(app: Express): void {
   app.use('/api/payments', apiLimiter, paymentsRoutes);
   app.use('/api/uploads', apiLimiter, uploadsRoutes);
   app.use('/api/contacts', apiLimiter, contactsRoutes);
+  app.use('/api/groups', apiLimiter, contactGroupsRoutes);
   app.use('/api/client/messages', apiLimiter, clientMessagesRoutes);
   app.use('/api/client/keys', apiLimiter, clientKeysRoutes);
   app.use('/api/campaigns', apiLimiter, campaignsRoutes);

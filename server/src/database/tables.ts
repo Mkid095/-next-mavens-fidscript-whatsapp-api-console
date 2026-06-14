@@ -133,6 +133,27 @@ export function createTables(db: Database): void {
     )
   `);
 
+  // Contact groups
+  db.run(`
+    CREATE TABLE IF NOT EXISTS contact_groups (
+      id TEXT PRIMARY KEY,
+      client_id TEXT REFERENCES clients(id),
+      name TEXT NOT NULL,
+      description TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS contact_group_members (
+      id TEXT PRIMARY KEY,
+      group_id TEXT REFERENCES contact_groups(id) ON DELETE CASCADE,
+      contact_id TEXT REFERENCES contacts(id) ON DELETE CASCADE,
+      added_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(group_id, contact_id)
+    )
+  `);
+
   // Campaigns table
   db.run(`
     CREATE TABLE IF NOT EXISTS campaigns (
@@ -152,6 +173,7 @@ export function createTables(db: Database): void {
       sent_count INTEGER DEFAULT 0,
       delivered_count INTEGER DEFAULT 0,
       failed_count INTEGER DEFAULT 0,
+      group_id TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);

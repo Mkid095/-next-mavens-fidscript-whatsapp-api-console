@@ -9,7 +9,11 @@ const router = Router();
 router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const campaigns = db.prepare(`
-      SELECT * FROM campaigns WHERE client_id = ? ORDER BY created_at DESC
+      SELECT c.*, cg.name as group_name
+      FROM campaigns c
+      LEFT JOIN contact_groups cg ON c.group_id = cg.id
+      WHERE c.client_id = ?
+      ORDER BY c.created_at DESC
     `).all(req.client!.id);
     res.json({ success: true, data: campaigns });
   } catch (err: unknown) {
@@ -20,10 +24,10 @@ router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
 // POST /api/campaigns - Create a new campaign
 router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
-    const { name, instance_name, message_type, content, media_url, caption, scheduled_at, phone_numbers } = req.body;
+    const { name, instance_name, message_type, content, media_url, caption, scheduled_at, phone_numbers, group_id } = req.body;
 
-    if (!name || !instance_name || !phone_numbers?.length) {
-      return res.status(400).json({ success: false, error: 'name, instance_name, and phone_numbers are required' });
+    if (!name || !instance_name) {
+      return res.status(400).json({ success: false, error: 'name and instance_name are required' });
     }
 
     // Verify instance belongs to client and is connected
@@ -37,19 +41,39 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Instance is not connected' });
     }
 
+    // Resolve phone numbers: from group_id or from phone_numbers array
+    let resolvedPhones: string[] = [];
+    if (group_id) {
+      // Verify group belongs to client
+      const group = db.prepare(
+        'SELECT * FROM contact_groups WHERE id = ? AND client_id = ?'
+      ).get(group_id, req.client!.id);
+      if (!group) {
+        return res.status(404).json({ success: false, error: 'Contact group not found' });
+      }
+      const members = db.prepare(
+        'SELECT c.phone FROM contact_group_members cgm JOIN contacts c ON cgm.contact_id = c.id WHERE cgm.group_id = ?'
+      ).all(group_id) as { phone: string }[];
+      resolvedPhones = members.map(m => m.phone);
+    } else if (Array.isArray(phone_numbers) && phone_numbers.length > 0) {
+      resolvedPhones = phone_numbers;
+    } else {
+      return res.status(400).json({ success: false, error: 'Provide either group_id or phone_numbers' });
+    }
+
     const campaignId = `camp_${uuidv4().substring(0, 8)}`;
     const status = scheduled_at ? 'scheduled' : 'draft';
 
     db.prepare(`
-      INSERT INTO campaigns (id, client_id, name, instance_name, message_type, content, media_url, caption, status, scheduled_at, total_recipients)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(campaignId, req.client!.id, name, instance_name, message_type || 'text', content || '', media_url || null, caption || '', status, scheduled_at || null, phone_numbers.length);
+      INSERT INTO campaigns (id, client_id, name, instance_name, message_type, content, media_url, caption, status, scheduled_at, total_recipients, group_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(campaignId, req.client!.id, name, instance_name, message_type || 'text', content || '', media_url || null, caption || '', status, scheduled_at || null, resolvedPhones.length, group_id || null);
 
     // Insert recipients
     const insertRecipient = db.prepare(`
       INSERT INTO campaign_recipients (id, campaign_id, phone) VALUES (?, ?, ?)
     `);
-    for (const phone of phone_numbers) {
+    for (const phone of resolvedPhones) {
       insertRecipient.run(`recip_${uuidv4().substring(0, 8)}`, campaignId, phone);
     }
 
@@ -64,7 +88,7 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
 router.get('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const campaign = db.prepare(
-      'SELECT * FROM campaigns WHERE id = ? AND client_id = ?'
+      'SELECT c.*, cg.name as group_name FROM campaigns c LEFT JOIN contact_groups cg ON c.group_id = cg.id WHERE c.id = ? AND c.client_id = ?'
     ).get(req.params.id, req.client!.id);
     if (!campaign) {
       return res.status(404).json({ success: false, error: 'Campaign not found' });
@@ -78,7 +102,7 @@ router.get('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/campaigns/:id/send - Start sending a campaign (queues messages with delays)
+// POST /api/campaigns/:id/send - Start sending a campaign
 router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const campaign = db.prepare(
@@ -91,7 +115,6 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Campaign already sent or sending' });
     }
 
-    // Calculate token cost
     const recipientCount = db.prepare(
       'SELECT COUNT(*) as count FROM campaign_recipients WHERE campaign_id = ?'
     ).get(req.params.id) as { count: number };
@@ -105,18 +128,44 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(402).json({ success: false, error: `Insufficient tokens. Need ${tokenCost}, have ${client.token_balance}` });
     }
 
-    // Deduct tokens
     db.prepare('UPDATE clients SET token_balance = token_balance - ? WHERE id = ?').run(tokenCost, req.client!.id);
     db.prepare('INSERT INTO token_transactions (id, client_id, type, amount, reference) VALUES (?, ?, ?, ?, ?)')
       .run(`txn_${uuidv4().substring(0, 8)}`, req.client!.id, 'sent', -tokenCost, `campaign_${campaign.id}`);
 
-    // Mark campaign as sending
     db.prepare("UPDATE campaigns SET status = 'sending', started_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.params.id);
-
-    // Update all recipients to 'queued'
     db.prepare("UPDATE campaign_recipients SET status = 'queued' WHERE campaign_id = ?").run(req.params.id);
 
     res.json({ success: true, data: { campaign_id: campaign.id, tokens_deducted: tokenCost } });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /api/campaigns/:id/duplicate - Resend a past campaign (copies it as draft with same content)
+router.post('/:id/duplicate', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    const original = db.prepare(
+      'SELECT * FROM campaigns WHERE id = ? AND client_id = ?'
+    ).get(req.params.id, req.client!.id) as any;
+    if (!original) {
+      return res.status(404).json({ success: false, error: 'Campaign not found' });
+    }
+
+    const newId = `camp_${uuidv4().substring(0, 8)}`;
+    db.prepare(`
+      INSERT INTO campaigns (id, client_id, name, instance_name, message_type, content, media_url, caption, status, group_id, total_recipients)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)
+    `).run(newId, req.client!.id, `${original.name} (Copy)`, original.instance_name, original.message_type, original.content, original.media_url, original.caption, original.group_id, original.total_recipients);
+
+    // Copy all recipients
+    const origRecipients = db.prepare('SELECT phone FROM campaign_recipients WHERE campaign_id = ?').all(req.params.id) as { phone: string }[];
+    const insertRecipient = db.prepare('INSERT INTO campaign_recipients (id, campaign_id, phone) VALUES (?, ?, ?)');
+    for (const r of origRecipients) {
+      insertRecipient.run(`recip_${uuidv4().substring(0, 8)}`, newId, r.phone);
+    }
+
+    const campaign = db.prepare('SELECT * FROM campaigns WHERE id = ?').get(newId);
+    res.status(201).json({ success: true, data: campaign });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }

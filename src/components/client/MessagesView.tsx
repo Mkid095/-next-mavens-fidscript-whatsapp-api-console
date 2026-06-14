@@ -5,8 +5,8 @@ import {
   RefreshCw, Smile, Paperclip, SendHorizontal, Users, Clock,
   Plus, Calendar, Trash2, Play, Pause, Zap, AlertCircle, Check
 } from 'lucide-react';
-import { clientMessagesApi, contactsApi, campaignsApi, instancesApi } from '../../services/api';
-import type { ClientMessage, Contact, Instance } from '../../services/api';
+import { clientMessagesApi, contactsApi, campaignsApi, instancesApi, groupsApi } from '../../services/api';
+import type { ClientMessage, Contact, Instance, ContactGroup } from '../../services/api';
 
 interface ConversationContact {
   phone: string;
@@ -810,9 +810,18 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
   const [scheduledAt, setScheduledAt] = useState('');
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [groups, setGroups] = useState<ContactGroup[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
+  const [loadingGroups, setLoadingGroups] = useState(false);
+
+  useEffect(() => {
+    groupsApi.getAll().then(res => {
+      if (res.success && res.data) setGroups(res.data);
+    });
+  }, []);
 
   const allPhones = [
-    ...Array.from(selectedContacts),
+    ...(selectedGroup ? [] : Array.from(selectedContacts)),
     ...extraPhones.map(p => p.replace(/\D/g, '')).filter(Boolean),
   ];
 
@@ -840,14 +849,19 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
     setCreating(true);
     setError('');
     try {
-      const res = await campaignsApi.create({
+      const payload: any = {
         name: campaignName,
         instance_name: selectedInstance,
         message_type: 'text',
         content: messageText,
         scheduled_at: scheduledAt || undefined,
-        phone_numbers: allPhones,
-      });
+      };
+      if (selectedGroup) {
+        payload.group_id = selectedGroup;
+      } else {
+        payload.phone_numbers = allPhones;
+      }
+      const res = await campaignsApi.create(payload);
       if (res.success && res.data) {
         const sendRes = await campaignsApi.send(res.data.id);
         if (sendRes.success) {
@@ -865,6 +879,10 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
       setCreating(false);
     }
   };
+
+  const recipientCount = selectedGroup
+    ? groups.find(g => g.id === selectedGroup)?.member_count || 0
+    : allPhones.length;
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
@@ -929,64 +947,91 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
                   className="w-full mt-1 px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 resize-none"
                 />
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-[9px] text-stone-400">{allPhones.length} recipients</span>
+                  <span className="text-[9px] text-stone-400">{recipientCount} recipients</span>
                   <span className="text-[9px] text-stone-400">{totalCost} tokens</span>
                 </div>
               </div>
 
-              {/* Recipients — saved contacts */}
-              {savedContacts.length > 0 && (
-                <div>
-                  <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide mb-1 block">
-                    Select from saved contacts
-                  </label>
-                  <div className="max-h-32 overflow-y-auto border border-[#eaebe4] rounded-xl">
-                    {savedContacts.map(c => (
-                      <label key={c.id} className="flex items-center gap-2 px-3 py-2 hover:bg-stone-50 cursor-pointer border-b border-[#eaebe4]/50 last:border-0">
-                        <input
-                          type="checkbox"
-                          checked={selectedContacts.has(c.phone)}
-                          onChange={() => toggleContact(c.phone)}
-                          className="w-3.5 h-3.5 rounded accent-yellow-500"
-                        />
-                        <div>
-                          <p className="text-[11px] font-bold text-forest-deep">{c.name || c.phone}</p>
-                          <p className="text-[9px] text-stone-400 font-mono">{c.phone}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Extra phones */}
+              {/* Source selector: group or manual */}
               <div>
-                <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Add phone numbers</label>
-                <div className="flex gap-1.5 mt-1">
-                  <input
-                    value={phoneInput}
-                    onChange={e => setPhoneInput(e.target.value)}
-                    placeholder="254712345678"
-                    className="flex-1 px-3 py-1.5 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 font-mono"
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addPhone(); } }}
-                  />
-                  <button onClick={addPhone} className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-[10px] font-bold text-stone-600 transition-all">
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
-                {extraPhones.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {extraPhones.map(p => (
-                      <span key={p} className="px-2 py-0.5 bg-stone-100 rounded-full text-[10px] font-mono flex items-center gap-1">
-                        {p}
-                        <button onClick={() => setExtraPhones(prev => prev.filter(x => x !== p))}>
-                          <X className="w-2.5 h-2.5 text-stone-400" />
-                        </button>
-                      </span>
-                    ))}
+                <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide mb-1 block">Recipients</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="text-[9px] text-stone-400 mb-1 block">From group</label>
+                    <div className="relative">
+                      <select
+                        value={selectedGroup}
+                        onChange={e => { setSelectedGroup(e.target.value); setSelectedContacts(new Set()); setExtraPhones([]); }}
+                        className="w-full px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white appearance-none"
+                      >
+                        <option value="">-- Select a group --</option>
+                        {groups.map(g => (
+                          <option key={g.id} value={g.id}>{g.name} ({g.member_count})</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-stone-400 pointer-events-none" />
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
+
+              {/* Manual selection — only show when no group selected */}
+              {!selectedGroup && (
+                <>
+                  {savedContacts.length > 0 && (
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide mb-1 block">
+                        Select from saved contacts
+                      </label>
+                      <div className="max-h-32 overflow-y-auto border border-[#eaebe4] rounded-xl">
+                        {savedContacts.map(c => (
+                          <label key={c.id} className="flex items-center gap-2 px-3 py-2 hover:bg-stone-50 cursor-pointer border-b border-[#eaebe4]/50 last:border-0">
+                            <input
+                              type="checkbox"
+                              checked={selectedContacts.has(c.phone)}
+                              onChange={() => toggleContact(c.phone)}
+                              className="w-3.5 h-3.5 rounded accent-yellow-500"
+                            />
+                            <div>
+                              <p className="text-[11px] font-bold text-forest-deep">{c.name || c.phone}</p>
+                              <p className="text-[9px] text-stone-400 font-mono">{c.phone}</p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Extra phones */}
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Add phone numbers</label>
+                    <div className="flex gap-1.5 mt-1">
+                      <input
+                        value={phoneInput}
+                        onChange={e => setPhoneInput(e.target.value)}
+                        placeholder="254712345678"
+                        className="flex-1 px-3 py-1.5 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 font-mono"
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addPhone(); } }}
+                      />
+                      <button onClick={addPhone} className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-[10px] font-bold text-stone-600 transition-all">
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    {extraPhones.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {extraPhones.map(p => (
+                          <span key={p} className="px-2 py-0.5 bg-stone-100 rounded-full text-[10px] font-mono flex items-center gap-1">
+                            {p}
+                            <button onClick={() => setExtraPhones(prev => prev.filter(x => x !== p))}>
+                              <X className="w-2.5 h-2.5 text-stone-400" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Schedule */}
               <div>
@@ -1013,21 +1058,14 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
               <div className="bg-stone-50 rounded-xl p-4 space-y-2">
                 <p className="text-[11px] font-bold text-forest-deep">Campaign: {campaignName}</p>
                 <p className="text-[10px] text-stone-500">Container: {selectedInstance}</p>
-                <p className="text-[10px] text-stone-500">Recipients: {allPhones.length}</p>
+                <p className="text-[10px] text-stone-500">Recipients: {recipientCount}</p>
                 <p className="text-[10px] text-stone-500">Tokens: {totalCost}</p>
+                {selectedGroup && <p className="text-[10px] text-stone-500">Group: {groups.find(g => g.id === selectedGroup)?.name}</p>}
                 {scheduledAt && <p className="text-[10px] text-stone-500">Scheduled: {new Date(scheduledAt).toLocaleString()}</p>}
               </div>
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
                 <p className="text-[10px] font-bold text-yellow-800 mb-1">Message preview:</p>
                 <p className="text-[11px] text-yellow-900 whitespace-pre-wrap">{messageText}</p>
-              </div>
-              <div className="max-h-40 overflow-y-auto space-y-1">
-                {allPhones.map(p => (
-                  <div key={p} className="flex items-center gap-2 px-3 py-1.5 bg-stone-50 rounded-lg">
-                    <Check className="w-3 h-3 text-green-500" />
-                    <span className="text-[11px] font-mono text-stone-600">{p}</span>
-                  </div>
-                ))}
               </div>
             </div>
           )}
@@ -1038,7 +1076,7 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
                 <Check className="w-6 h-6 text-green-600" />
               </div>
               <p className="text-sm font-bold text-forest-deep">Campaign created and queued!</p>
-              <p className="text-xs text-graphite">{allPhones.length} messages queued for delivery</p>
+              <p className="text-xs text-graphite">{recipientCount} messages queued for delivery</p>
             </div>
           )}
         </div>
@@ -1051,11 +1089,11 @@ function BulkMessageModal({ instances, savedContacts, clientToken, onClose, onTo
                 Cancel
               </button>
               <button
-                onClick={() => { if (allPhones.length > 0 && messageText.trim() && campaignName.trim()) setStep('preview'); }}
-                disabled={!allPhones.length || !messageText.trim() || !campaignName.trim()}
+                onClick={() => { if (recipientCount > 0 && messageText.trim() && campaignName.trim()) setStep('preview'); }}
+                disabled={recipientCount <= 0 || !messageText.trim() || !campaignName.trim()}
                 className="px-4 py-2 bg-forest-deep text-white text-xs font-bold rounded-xl hover:bg-[#33301a] disabled:opacity-30 transition-all"
               >
-                Preview ({allPhones.length})
+                Preview ({recipientCount})
               </button>
             </>
           )}
