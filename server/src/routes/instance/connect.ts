@@ -7,6 +7,8 @@ import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
 
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3099';
+
 // GET /api/instance/connect/:name - Generate QR code from Evolution API
 router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) => {
   try {
@@ -21,6 +23,18 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
 
     // Use stored evolution_name or construct fallback
     const evolutionInstanceName = instance.evolution_name || `${req.client?.id}_${req.params.name}`;
+
+    // Set webhook for this instance so CONNECTION_UPDATE events are forwarded to us
+    const webhookUrl = `${API_BASE_URL}/api/webhook/evolution`;
+    callEvolutionAPI('POST', `/webhook/set/${evolutionInstanceName}`, {
+      enabled: true,
+      url: webhookUrl,
+      webhookByEvents: false,
+      webhookBase64: false,
+      headers: {},
+      events: ['CONNECTION_UPDATE', 'QRCODE_UPDATED'],
+    }).catch(err => console.warn('Failed to set webhook on instance:', err));
+
     const evoRes = await callEvolutionAPI('GET', `/instance/connect/${evolutionInstanceName}`);
 
     // Evolution API v2: { qrcode: { code, base64, pairingCode, count } } or flat { code, base64, pairingCode }
