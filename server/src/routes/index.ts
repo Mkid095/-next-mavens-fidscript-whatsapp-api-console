@@ -14,6 +14,7 @@ import clientKeysRoutes from './clientKeys.js';
 import sseRoutes from './sse.js';
 import versionsRoutes from './versions.js';
 import webhookRoutes from './webhook.js';
+import sandboxRoutes from './sandbox.js';
 
 export function registerRoutes(app: Express): void {
   const apiLimiter = rateLimit({
@@ -39,4 +40,5 @@ export function registerRoutes(app: Express): void {
   app.use('/api/versions', versionsRoutes);
   // Webhook endpoint for Evolution API events (no rate limit — authenticated via API key)
   app.use('/api/webhook', webhookRoutes);
+  app.use('/api/sandbox', apiLimiter, sandboxRoutes);
 }
