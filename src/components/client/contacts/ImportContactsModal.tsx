@@ -87,6 +87,9 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
   const [preview, setPreview] = useState<{ phone: string; name: string; normalized: string }[]>([]);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Always-read ref to avoid stale state in callbacks
+  const countryRef = useRef(selectedCountry);
+  countryRef.current = selectedCountry;
 
   const selectedCountryData = COUNTRY_OPTIONS.find(c => c.code === selectedCountry);
 
@@ -128,7 +131,8 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
         return;
       }
     }
-    parseAndPreview(text, selectedCountry);
+    // Always use the ref so we never use stale state
+    parseAndPreview(text, countryRef.current);
   };
 
   const handleCountryChange = (code: string) => {
@@ -143,7 +147,7 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
     if (!file) return;
     const text = await file.text();
     const countryFromFile = detectCountry(text);
-    const country = countryFromFile || selectedCountry;
+    const country = countryFromFile || countryRef.current;
     if (countryFromFile) {
       setDetectedCountry(countryFromFile);
       setSelectedCountry(countryFromFile);
@@ -179,7 +183,12 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
   };
 
   const downloadTemplate = () => {
-    const csv = "phone,name\n254712345678,John Doe\n0712345678,Mary Wanjiku\n+255612345678,M说好\n254798765432,Jane Smith";
+    const cc = selectedCountry; // always current — no stale closure
+    const example1 = cc + '712345678';
+    const example2 = cc + '701234567';
+    const example3 = cc + '800000001';
+    const example4 = cc + '900000002';
+    const csv = `phone,name\n${example1},John Doe\n${example2},Mary Wanjiku\n${example3},Sam Otieno\n${example4},Jane Smith`;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
