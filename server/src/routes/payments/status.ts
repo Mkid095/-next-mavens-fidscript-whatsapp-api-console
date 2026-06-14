@@ -13,8 +13,8 @@ router.get('/:reference', async (req: Request, res: Response) => {
       SELECT p.*, tp.tokens, tp.bonus_tokens
       FROM payments p
       LEFT JOIN token_packages tp ON p.package_id = tp.id
-      WHERE p.payhero_reference = ? OR p.checkout_request_id = ?
-    `).get(reference, reference) as any;
+      WHERE p.payhero_reference = ? OR p.checkout_request_id = ? OR p.id = ?
+    `).get(reference, reference, reference) as any;
 
     if (!payment) {
       return res.status(404).json({ success: false, error: 'Payment not found' });

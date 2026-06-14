@@ -93,7 +93,6 @@ export default function TokenStoreSection({
     try {
       const res = await paymentsApi.initiatePayment({ package_id: pkgId, phone_number: phone });
       if (res.success) {
-        // Use checkout_request_id as primary ref (status endpoint looks it up)
         setPendingRef(res.data?.checkout_request_id || '');
         setPendingCheckoutId(res.data?.checkout_request_id || '');
         setPayMsg(`M-Pesa prompt sent to ${phone} — complete payment on your phone.`);

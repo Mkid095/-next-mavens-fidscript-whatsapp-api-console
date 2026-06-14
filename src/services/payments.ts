@@ -23,7 +23,7 @@ export const paymentsApi = {
     ),
 
   initiatePayment: (data: { package_id: string; phone_number: string }) =>
-    fetchApi<{ checkout_request_id: string; status: string }>(
+    fetchApi<{ payment_id: string; checkout_request_id: string; reference: string; status: string; amount: number; tokens: number }>(
       '/api/payments/initiate',
       { method: 'POST', body: JSON.stringify(data) }
     ),
@@ -37,7 +37,7 @@ export const paymentsApi = {
     ),
 
   initiateCustomPayment: (data: { tokens: number; phone_number: string }) =>
-    fetchApi<{ checkout_request_id: string; status: string; tokens: number; amount: number }>(
+    fetchApi<{ payment_id: string; checkout_request_id: string; reference: string; status: string; tokens: number; amount: number }>(
       '/api/payments/custom',
       { method: 'POST', body: JSON.stringify(data) }
     ),
