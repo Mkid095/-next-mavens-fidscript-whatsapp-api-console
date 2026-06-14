@@ -5,13 +5,10 @@ import { contactsApi } from '../../../services/api';
 import type { Client } from '../../../services/api';
 import ImportContactsModal from './ImportContactsModal';
 import AddContactModal from './AddContactModal';
-import BulkMessagePanel from './BulkMessagePanel';
 
 interface ContactsSectionProps {
   client: Client;
   clientToken?: string;
-  tokenBalance: number;
-  onTokenDeduct: (n: number) => void;
 }
 
 interface Contact {
@@ -24,8 +21,6 @@ interface Contact {
 export default function ContactsSection({
   client,
   clientToken,
-  tokenBalance,
-  onTokenDeduct,
 }: ContactsSectionProps) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
@@ -164,15 +159,6 @@ export default function ContactsSection({
           )}
         </div>
       </div>
-
-      {contacts.length > 0 && (
-        <BulkMessagePanel
-          contacts={contacts}
-          selectedContacts={selectedContacts}
-          tokenBalance={tokenBalance}
-          onTokenDeduct={onTokenDeduct}
-        />
-      )}
 
       <AnimatePresence>
         {showAddModal && (

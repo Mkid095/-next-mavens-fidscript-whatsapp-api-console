@@ -95,8 +95,6 @@ export default function ClientContent({
         <ContactsSection
           client={client}
           clientToken={clientToken}
-          tokenBalance={tokenBalance}
-          onTokenDeduct={onTokenDeduct}
         />
       )}
       {activeSection === 'token-store' && (
