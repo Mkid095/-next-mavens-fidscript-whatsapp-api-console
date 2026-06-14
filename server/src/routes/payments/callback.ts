@@ -60,7 +60,7 @@ router.post('/', async (req: Request, res: Response) => {
           VALUES (?, ?, 'purchase', ?, ?, ?, 'completed')
         `).run(uuidv4(), client_id, totalTokens, merchant_request_id, mpesa_receipt_number || null);
 
-        db.prepare('UPDATE payments SET status = ? WHERE id = ?').run('completed', payment_id);
+        db.prepare('UPDATE payments SET status = ?, token_count = ? WHERE id = ?').run('completed', totalTokens, payment_id);
 
         // Emit SSE token update to the client
         const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(client_id) as { token_balance: number } | undefined;

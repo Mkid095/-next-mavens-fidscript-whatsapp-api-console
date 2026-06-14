@@ -25,7 +25,7 @@ router.get('/:reference', async (req: Request, res: Response) => {
       data: {
         status: payment.status,
         amount: payment.amount_kes,
-        tokens: (payment.tokens || 0) + (payment.bonus_tokens || 0),
+        tokens: (payment.token_count ?? 0) + (payment.bonus_tokens ?? 0),
         created_at: payment.created_at,
       },
     });
@@ -38,7 +38,11 @@ router.get('/:reference', async (req: Request, res: Response) => {
 router.get('/client/history', clientJwtAuth, (req: Request, res: Response) => {
   try {
     const payments = db.prepare(`
-      SELECT p.*, tp.name as package_name, tp.tokens, tp.bonus_tokens
+      SELECT p.id, p.client_id, p.package_id, p.amount_kes, p.phone_number,
+             p.payhero_reference, p.checkout_request_id, p.status, p.token_count,
+             p.created_at, tp.name as package_name,
+             COALESCE(p.token_count, tp.tokens + tp.bonus_tokens) as tokens,
+             tp.bonus_tokens
       FROM payments p
       LEFT JOIN token_packages tp ON p.package_id = tp.id
       WHERE p.client_id = ?
@@ -56,7 +60,11 @@ router.get('/client/history', clientJwtAuth, (req: Request, res: Response) => {
 router.get('/history/:clientId', adminAuth, (req: Request, res: Response) => {
   try {
     const payments = db.prepare(`
-      SELECT p.*, tp.name as package_name, tp.tokens, tp.bonus_tokens
+      SELECT p.id, p.client_id, p.package_id, p.amount_kes, p.phone_number,
+             p.payhero_reference, p.checkout_request_id, p.status, p.token_count,
+             p.created_at, tp.name as package_name,
+             COALESCE(p.token_count, tp.tokens + tp.bonus_tokens) as tokens,
+             tp.bonus_tokens
       FROM payments p
       LEFT JOIN token_packages tp ON p.package_id = tp.id
       WHERE p.client_id = ?

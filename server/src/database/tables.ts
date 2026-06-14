@@ -81,7 +81,8 @@ export function createTables(db: Database): void {
       id TEXT PRIMARY KEY, client_id TEXT REFERENCES clients(id),
       package_id TEXT REFERENCES token_packages(id), amount_kes REAL NOT NULL,
       phone_number TEXT NOT NULL, payhero_reference TEXT, checkout_request_id TEXT,
-      status TEXT DEFAULT 'pending', created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      status TEXT DEFAULT 'pending', token_count INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

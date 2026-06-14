@@ -68,6 +68,8 @@ export default function TokenStoreSection({
   const [phone, setPhone] = useState(client.phone || '');
   const [paying, setPaying] = useState(false);
   const [payMsg, setPayMsg] = useState('');
+  const [pendingRef, setPendingRef] = useState('');
+  const [pendingCheckoutId, setPendingCheckoutId] = useState('');
   const [txs, setTxs] = useState<PaymentTransaction[]>([]);
   const [loadingTxs, setLoadingTxs] = useState(false);
 
@@ -85,9 +87,13 @@ export default function TokenStoreSection({
   const doPayPkg = async (pkgId: string) => {
     setPaying(true);
     setPayMsg('');
+    setPendingRef('');
+    setPendingCheckoutId('');
     try {
       const res = await paymentsApi.initiatePayment({ package_id: pkgId, phone_number: phone });
       if (res.success) {
+        setPendingRef(res.data?.reference || '');
+        setPendingCheckoutId(res.data?.checkout_request_id || '');
         setPayMsg(`M-Pesa prompt sent to ${phone} — complete payment on your phone.`);
       } else {
         setPayMsg('Error: ' + (res.error || 'Unknown error'));
@@ -101,9 +107,13 @@ export default function TokenStoreSection({
   const doPayCustom = async (tokens: number) => {
     setPaying(true);
     setPayMsg('');
+    setPendingRef('');
+    setPendingCheckoutId('');
     try {
       const res = await paymentsApi.initiateCustomPayment({ tokens, phone_number: phone });
       if (res.success) {
+        setPendingRef(res.data?.reference || '');
+        setPendingCheckoutId(res.data?.checkout_request_id || '');
         setPayMsg(`M-Pesa prompt sent to ${phone} — complete payment on your phone.`);
       } else {
         setPayMsg('Error: ' + (res.error || 'Unknown error'));
@@ -122,6 +132,16 @@ export default function TokenStoreSection({
   const handlePayCustom = (e: React.FormEvent) => {
     e.preventDefault();
     doPayCustom(customTokens);
+  };
+
+  const handlePendingStatus = (status: string) => {
+    if (status === 'completed') {
+      setPayMsg('Payment confirmed! Tokens added to your balance.');
+    } else if (status === 'failed') {
+      setPayMsg('Payment failed. Please try again.');
+    } else if (status === 'timeout') {
+      setPayMsg('Payment timed out. Check your M-Pesa app and try again if needed.');
+    }
   };
 
   const buyContent = (
@@ -183,6 +203,13 @@ export default function TokenStoreSection({
           msg={payMsg}
           onPay={handlePayCustom}
           custom
+        />
+      )}
+      {(pendingRef || pendingCheckoutId) && (
+        <PendingPoller
+          reference={pendingRef}
+          checkoutId={pendingCheckoutId}
+          onStatusChange={handlePendingStatus}
         />
       )}
     </div>
@@ -366,6 +393,7 @@ function PayForm({
   msg,
   onPay,
   custom,
+  onPending,
 }: {
   pkg: { id: string; name: string; tokens: number; price_kes: number };
   phone: string;
@@ -374,6 +402,7 @@ function PayForm({
   msg: string;
   onPay: (e: React.FormEvent) => void;
   custom?: boolean;
+  onPending?: (reference: string, checkoutId: string) => void;
 }) {
   const isError = msg.includes('Error') || msg.includes('error') || msg.includes('failed');
   return (
@@ -423,5 +452,77 @@ function PayForm({
         {paying ? 'Processing...' : `Pay KES ${pkg.price_kes.toLocaleString()} via M-Pesa`}
       </button>
     </form>
+  );
+}
+
+function PendingPoller({
+  reference,
+  checkoutId,
+  onStatusChange,
+}: {
+  reference: string;
+  checkoutId: string;
+  onStatusChange: (status: string) => void;
+}) {
+  const [state, setState] = useState<'waiting' | 'timeout' | 'done'>('waiting');
+  const [elapsed, setElapsed] = useState(0);
+  const MAX_SECONDS = 120;
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      try {
+        const res = await paymentsApi.getPaymentStatus(reference || checkoutId);
+        if (res.success && res.data) {
+          if (res.data.status === 'completed') {
+            setState('done');
+            onStatusChange('completed');
+            clearInterval(interval);
+            clearTimeout(timeout);
+            return;
+          }
+          if (res.data.status === 'failed') {
+            setState('done');
+            onStatusChange('failed');
+            clearInterval(interval);
+            clearTimeout(timeout);
+            return;
+          }
+        }
+        setElapsed(e => e + 5);
+      } catch {}
+    };
+
+    interval = setInterval(poll, 5000);
+    timeout = setTimeout(() => {
+      clearInterval(interval);
+      setState('timeout');
+      onStatusChange('timeout');
+    }, MAX_SECONDS * 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [reference, checkoutId]);
+
+  if (state === 'timeout') {
+    return (
+      <div className="p-3 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-2">
+        <AlertCircle className="w-4 h-4 shrink-0" />
+        Payment may have failed — check your M-Pesa app. Tokens will be added automatically once confirmed.
+      </div>
+    );
+  }
+
+  if (state === 'done') return null;
+
+  return (
+    <div className="p-3 rounded-xl text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2">
+      <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
+      Waiting for M-Pesa confirmation... {elapsed > 0 && `(${elapsed}s)`}
+    </div>
   );
 }

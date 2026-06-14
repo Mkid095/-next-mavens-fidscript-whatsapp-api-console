@@ -31,6 +31,11 @@ export const paymentsApi = {
   getHistory: () =>
     fetchApi<PaymentTransaction[]>('/api/payments/client/history'),
 
+  getPaymentStatus: (reference: string) =>
+    fetchApi<{ status: string; amount: number; tokens: number; created_at: string }>(
+      `/api/payments/status/${reference}`
+    ),
+
   initiateCustomPayment: (data: { tokens: number; phone_number: string }) =>
     fetchApi<{ checkout_request_id: string; status: string; tokens: number; amount: number }>(
       '/api/payments/custom',
