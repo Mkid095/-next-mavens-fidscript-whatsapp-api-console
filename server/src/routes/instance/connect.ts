@@ -33,7 +33,7 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
 
     res.json({
       success: true,
-      data: { qrcode: qrCode, qrcode_image: qrCode, link_code: pairingCode, expires_in: 60 },
+      data: { qrcode: qrCode, qrcode_image: qrCode, expires_in: 60, created_at: new Date().toISOString() },
     });
   } catch (error) {
     // Revert status on failure

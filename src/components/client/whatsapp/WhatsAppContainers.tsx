@@ -39,11 +39,11 @@ export default function WhatsAppContainers({
   const {
     pairingInstance,
     pairingQR,
-    pairingMode,
-    linkCode,
     generatingQR,
+    regeneratingQR,
     connectionError,
     handleConnect,
+    handleRegenerateQR,
     handleSimulateSuccessfulScan,
     handleDisconnect,
     handleDeleteInstance,
@@ -69,7 +69,7 @@ export default function WhatsAppContainers({
         <div className="flex items-center justify-between pb-4 border-b border-stone-100">
           <div>
             <h3 className="text-sm font-bold text-forest-deep">My WhatsApp Containers</h3>
-            <p className="text-xs text-graphite mt-0.5">Create containers and connect via QR code or link code.</p>
+            <p className="text-xs text-graphite mt-0.5">Create containers and connect via QR code.</p>
           </div>
           <button
             onClick={() => setShowNewInstanceModal(true)}
@@ -118,9 +118,11 @@ export default function WhatsAppContainers({
             instance={pairingInstance}
             qrCode={pairingQR}
             generatingQR={generatingQR}
+            regeneratingQR={regeneratingQR}
             connectionError={connectionError}
             onClose={handleClosePairingModal}
             onCheckConnection={handleSimulateSuccessfulScan}
+            onRegenerate={handleRegenerateQR}
           />
         )}
       </AnimatePresence>
