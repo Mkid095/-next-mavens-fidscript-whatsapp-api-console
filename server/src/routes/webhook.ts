@@ -83,7 +83,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
       }
     }
 
-    db.prepare('UPDATE instances SET status = ?, phone_number = ? WHERE name = ?').run(status, phoneNumber, instance.name);
+    db.prepare('UPDATE instances SET status = ?, phone_number = ?, last_active = ? WHERE name = ?').run(status, phoneNumber, new Date().toISOString(), instance.name);
     logAuditAction(req, 'CONNECTION_STATE', 'instance', String(instance.id), `Webhook: ${instance.name} -> ${status}`);
     // Emit using instance.name (our DB name) to match SSE subscription
     emitInstanceStateChange(instance.name, status, phoneNumber);
@@ -120,6 +120,9 @@ router.post('/evolution', async (req: Request, res: Response) => {
           INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
         `).run(msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '', msgType, content, mediaUrl);
+        // Update last_active on both instance and client when a message is received
+        db.prepare('UPDATE instances SET last_active = ? WHERE id = ?').run(timestamp, instance.id);
+        db.prepare('UPDATE clients SET last_active = ? WHERE id = ?').run(timestamp, instance.client_id);
       } catch {
         // Duplicate message ID — ignore
       }
