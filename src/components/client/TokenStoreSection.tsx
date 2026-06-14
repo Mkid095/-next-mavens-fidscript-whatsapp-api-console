@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Wallet, CreditCard, History, CheckCircle,
   Clock, XCircle, AlertCircle, Zap, Calculator,
-  MessagesSquare, Image as ImageIcon, FileText, Video, ArrowUpDown
+  MessagesSquare, Image as ImageIcon, FileText, Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { paymentsApi } from '../../services/api';
@@ -73,6 +73,38 @@ export default function TokenStoreSection({
   const [pendingCheckoutId, setPendingCheckoutId] = useState('');
   const [txs, setTxs] = useState<PaymentTransaction[]>([]);
   const [loadingTxs, setLoadingTxs] = useState(false);
+
+  // SSE connection for real-time token updates
+  useEffect(() => {
+    const token = localStorage.getItem('fidscript_client_token');
+    if (!token) return;
+
+    const es = new EventSource(`/api/sse/client?token=${encodeURIComponent(token)}`);
+
+    es.addEventListener('tokenUpdate', (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+        // Update token balance
+        if (data.balance != null) {
+          onTokenBalanceChange(data.balance);
+        }
+        // If we have a pending payment, show confirmation and clear pending
+        if (pendingRef || pendingCheckoutId) {
+          setPayMsg('Payment confirmed! Tokens added to your balance.');
+          setPendingRef('');
+          setPendingCheckoutId('');
+        }
+      } catch {}
+    });
+
+    es.addEventListener('error', () => {
+      // EventSource will auto-reconnect
+    });
+
+    return () => {
+      es.close();
+    };
+  }, [pendingRef, pendingCheckoutId, onTokenBalanceChange]);
 
   useEffect(() => {
     if (tab === 'history' && txs.length === 0) {
@@ -309,7 +341,7 @@ function TabBtn({ active, onClick, icon, label }: { active: boolean; onClick: ()
 function CustomCalc({ tokens, onTokens, cost }: {
   tokens: number;
   onTokens: (n: number) => void;
-  cost: { total: number; perToken: number; label: string };
+  cost: { total: number; perToken: number; label: string; displayTokens: number };
 }) {
   const presets = [100, 500, 1000, 2000];
 
@@ -394,7 +426,6 @@ function PayForm({
   msg,
   onPay,
   custom,
-  onPending,
 }: {
   pkg: { id: string; name: string; tokens: number; price_kes: number };
   phone: string;
@@ -403,7 +434,6 @@ function PayForm({
   msg: string;
   onPay: (e: React.FormEvent) => void;
   custom?: boolean;
-  onPending?: (reference: string, checkoutId: string) => void;
 }) {
   const isError = msg.includes('Error') || msg.includes('error') || msg.includes('failed');
   return (
@@ -468,47 +498,67 @@ function PendingPoller({
   const [state, setState] = useState<'waiting' | 'timeout' | 'done'>('waiting');
   const [elapsed, setElapsed] = useState(0);
   const MAX_SECONDS = 120;
+  const doneRef = useRef(false);
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
+    doneRef.current = false;
+    setState('waiting');
+    setElapsed(0);
+
+    let pollInterval: ReturnType<typeof setInterval>;
+    let tickInterval: ReturnType<typeof setInterval>;
     let timeout: ReturnType<typeof setTimeout>;
 
+    // Tick every second for smooth elapsed counter
+    tickInterval = setInterval(() => {
+      setElapsed(e => e + 1);
+    }, 1000);
+
     const poll = async () => {
+      if (doneRef.current) return;
       try {
-        // Prefer checkout_request_id (status endpoint stores it in checkout_request_id column)
         const res = await paymentsApi.getPaymentStatus(checkoutId || reference);
+        if (doneRef.current) return;
         if (res.success && res.data) {
           if (res.data.status === 'completed') {
+            doneRef.current = true;
             setState('done');
-            onStatusChange('completed');
-            clearInterval(interval);
+            clearInterval(tickInterval);
             clearTimeout(timeout);
+            onStatusChange('completed');
             return;
           }
           if (res.data.status === 'failed') {
+            doneRef.current = true;
             setState('done');
-            onStatusChange('failed');
-            clearInterval(interval);
+            clearInterval(tickInterval);
             clearTimeout(timeout);
+            onStatusChange('failed');
             return;
           }
         }
-        setElapsed(e => e + 5);
       } catch {}
     };
 
-    interval = setInterval(poll, 5000);
+    pollInterval = setInterval(poll, 5000);
+    // Immediate first poll
+    poll();
+
     timeout = setTimeout(() => {
-      clearInterval(interval);
+      if (doneRef.current) return;
+      doneRef.current = true;
       setState('timeout');
+      clearInterval(tickInterval);
+      clearInterval(pollInterval);
       onStatusChange('timeout');
     }, MAX_SECONDS * 1000);
 
     return () => {
-      clearInterval(interval);
+      clearInterval(pollInterval);
+      clearInterval(tickInterval);
       clearTimeout(timeout);
     };
-  }, [checkoutId, reference]);
+  }, [checkoutId, reference, onStatusChange]);
 
   if (state === 'timeout') {
     return (
@@ -524,7 +574,7 @@ function PendingPoller({
   return (
     <div className="p-3 rounded-xl text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2">
       <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
-      Waiting for M-Pesa confirmation... {elapsed > 0 && `(${elapsed}s)`}
+      Waiting for M-Pesa confirmation... ({elapsed}s)
     </div>
   );
 }
