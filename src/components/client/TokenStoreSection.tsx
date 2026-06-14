@@ -427,7 +427,7 @@ function PayForm({
   onPay,
   custom,
 }: {
-  pkg: { id: string; name: string; tokens: number; price_kes: number };
+  pkg: { id: string; name: string; tokens: number; price_kes: number; bonus_tokens?: number };
   phone: string;
   onPhone: (v: string) => void;
   paying: boolean;
