@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../database.js';
-import { emitInstanceStateChange } from '../utils/evolution.js';
+import { callEvolutionAPI, emitInstanceStateChange } from '../utils/evolution.js';
 import { logAuditAction } from '../utils/audit.js';
 
 const router = Router();
@@ -13,7 +13,7 @@ const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || '94977bc1fcb107c79d06
  * Receives CONNECTION_UPDATE (and other) events forwarded by Evolution API.
  * Authenticated via X-API-Key header matching our Evolution API key.
  */
-router.post('/evolution', (req: Request, res: Response) => {
+router.post('/evolution', async (req: Request, res: Response) => {
   const apiKey = req.headers['x-api-key'] as string;
   if (apiKey !== EVOLUTION_API_KEY) {
     res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -38,7 +38,6 @@ router.post('/evolution', (req: Request, res: Response) => {
   }
 
   const state = data?.state as string | undefined;
-  const phoneNumber = (data?.phone || data?.phone_number) as string | null || null;
 
   // Map Evolution state values to our status values
   let status: 'connected' | 'connecting' | 'disconnected' = 'disconnected';
@@ -52,11 +51,24 @@ router.post('/evolution', (req: Request, res: Response) => {
 
   // Find instance by name (use URL-decoded name since Evolution may send it as-is)
   const decodedName = decodeURIComponent(instanceName);
-  const instance = db.prepare('SELECT * FROM instances WHERE name = ?').get(decodedName) as { id: number; name: string } | undefined;
+  const instance = db.prepare('SELECT * FROM instances WHERE name = ?').get(decodedName) as { id: number; name: string; evolution_name?: string } | undefined;
   if (!instance) {
     // Instance may not exist in our DB yet — ignore
     res.status(200).json({ success: true, handled: false, reason: 'instance_not_found' });
     return;
+  }
+
+  // Phone number is not in the CONNECTION_UPDATE payload — fetch it from connectionState
+  let phoneNumber: string | null = null;
+  if (status === 'connected') {
+    try {
+      const evoName = instance.evolution_name || decodedName;
+      const evoRes = await callEvolutionAPI('GET', `/instance/connectionState/${evoName}`);
+      const inst = (evoRes.instance as { state?: string; phone?: string; phone_number?: string } | undefined) || evoRes;
+      phoneNumber = (inst?.phone as string | undefined) || (inst?.phone_number as string | undefined) || null;
+    } catch {
+      // Phone number fetch failed — leave as null
+    }
   }
 
   // Update instance status and phone number in DB
