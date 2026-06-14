@@ -30,15 +30,22 @@ export async function getTumaToken(): Promise<string> {
     body: JSON.stringify({ email, api_key: apiKey }),
   });
 
-  const data = await response.json() as { success: boolean; token?: string; expires_in?: number; message?: string };
+  const raw = await response.json() as Record<string, unknown>;
 
-  if (!response.ok || !data.success || !data.token) {
-    throw new Error(data.message || 'Failed to obtain Tuma token');
+  if (!response.ok || raw.success !== true) {
+    const msg = (raw.message as string) || 'Failed to obtain Tuma token';
+    throw new Error(msg);
+  }
+
+  const body = raw as { success: true; data: { token: string; expires_in?: number } };
+  const token = body.data?.token;
+  if (!token) {
+    throw new Error('Tuma auth response missing token');
   }
 
   cachedToken = {
-    token: data.token,
-    expires_at: Date.now() + (data.expires_in ?? 86400) * 1000,
+    token,
+    expires_at: Date.now() + ((body.data?.expires_in ?? 86400) * 1000),
   };
 
   return cachedToken.token;
