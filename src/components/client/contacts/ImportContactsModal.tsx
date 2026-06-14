@@ -135,20 +135,21 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
     setSelectedCountry(code);
     setDetectedCountry(code);
     setShowCountryPicker(false);
-    parseAndPreview(importText, code);
+    if (importText.trim()) parseAndPreview(importText, code);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const text = await file.text();
-    const detected = detectCountry(text);
-    if (detected) {
-      setDetectedCountry(detected);
-      setSelectedCountry(detected);
+    const countryFromFile = detectCountry(text);
+    const country = countryFromFile || selectedCountry;
+    if (countryFromFile) {
+      setDetectedCountry(countryFromFile);
+      setSelectedCountry(countryFromFile);
     }
     setImportText(text);
-    parseAndPreview(text, detected || selectedCountry);
+    parseAndPreview(text, country);
   };
 
   const handleImport = async () => {
