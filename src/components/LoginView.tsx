@@ -23,8 +23,8 @@ export default function LoginView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLoginSuccess = (email: string, token: string) => {
-    onLoginSuccess(email, 'admin', token);
+  const handleLoginSuccess = (email: string, token: string, role: 'admin' | 'client') => {
+    onLoginSuccess(email, role, token);
   };
 
   const handleRegisterSuccess = (token: string) => {

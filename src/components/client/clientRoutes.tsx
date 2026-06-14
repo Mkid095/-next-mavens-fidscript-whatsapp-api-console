@@ -18,7 +18,10 @@ export function ClientRoutes({
   currentUser, clientData, clientInstances, onInstancesChange, onLogout,
   tokenBalance, tokenPackages, dailyUsage, onTokenBalanceChange,
 }: ClientRouteProps) {
-  if (currentUser?.role !== 'client' || !clientData) {
+  if (!currentUser || currentUser.role !== 'client' || !clientData) {
+    if (currentUser?.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/login" replace />;
   }
 

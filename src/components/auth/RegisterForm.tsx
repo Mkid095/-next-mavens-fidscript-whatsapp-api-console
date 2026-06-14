@@ -17,6 +17,7 @@ export default function RegisterForm({
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('2547');
   const [regPassword, setRegPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +26,7 @@ export default function RegisterForm({
       return;
     }
 
+    setIsSubmitting(true);
     onLoadingChange(true);
     onError('');
 
@@ -36,25 +38,21 @@ export default function RegisterForm({
     );
 
     if (response.success && response.data) {
-      // Registration successful - now login to get token
       const loginResponse = await authApi.clientLogin(
         regEmail.trim().toLowerCase(),
         regPassword,
       );
       if (loginResponse.success && loginResponse.data) {
         localStorage.setItem('fidscript_client_token', loginResponse.data.token);
-        if (loginResponse.data.client) {
-          localStorage.setItem('fidscript_client_data', JSON.stringify(loginResponse.data.client));
-        }
         onSuccess(loginResponse.data.token);
       } else {
-        // Registration worked but auto-login failed - still success, user can login manually
         onSuccess('');
       }
     } else {
       onError(response.error || 'Registration failed. Please try again.');
     }
 
+    setIsSubmitting(false);
     onLoadingChange(false);
   };
 
@@ -128,10 +126,11 @@ export default function RegisterForm({
 
       <button
         type="submit"
-        className="w-full mt-2 bg-[#eab308] hover:bg-[#d9a307] text-[#070e0c] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all focus:outline-none"
+        disabled={isSubmitting}
+        className="w-full mt-2 bg-[#eab308] hover:bg-[#d9a307] disabled:opacity-50 disabled:cursor-not-allowed text-[#070e0c] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all focus:outline-none"
       >
-        <UserPlus className="w-4 h-4 text-[#070e0c]" />
-        <span>Create Account - It is Free</span>
+        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin text-[#070e0c]" /> : <UserPlus className="w-4 h-4 text-[#070e0c]" />}
+        <span>{isSubmitting ? 'Creating account...' : 'Create Account - It is Free'}</span>
       </button>
     </form>
   );

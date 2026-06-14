@@ -48,10 +48,13 @@ export default function App() {
         setIsLoading(false);
       });
     } else if (clientToken) {
-      authApi.clientMe().then((meRes) => {
+      Promise.all([authApi.clientMe(), instancesApi.getClientInstances()]).then(([meRes, instRes]) => {
         if (meRes.success && meRes.data) {
           setClientData(meRes.data);
           setCurrentUser({ email: meRes.data.email, role: 'client', name: meRes.data.name });
+          if (instRes.success && instRes.data) {
+            setClientInstances(instRes.data);
+          }
         } else {
           localStorage.removeItem('fidscript_client_token');
         }
@@ -122,7 +125,12 @@ export default function App() {
 
   const handleLoginSuccess = (email: string, role: 'admin' | 'client') => {
     setCurrentUser({ email, role, name: email.split('@')[0] });
-    addToast('Welcome to FIDScript!');
+    if (role === 'client') {
+      // Load full client data and redirect to client dashboard
+      handleClientLogin();
+    } else {
+      addToast('Welcome to FIDScript!');
+    }
   };
 
   const handleClientLogin = async () => {
@@ -163,16 +171,12 @@ export default function App() {
 
   if (isLoading) return <LoadingScreen />;
 
-  const publicRedirect = currentUser
-    ? currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />
-    : undefined;
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={publicRedirect ?? <LandingPage />} />
-        <Route path="/login" element={publicRedirect ?? <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleClientLogin} />} />
-        <Route path="/register" element={publicRedirect ?? <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleClientLogin} initialMode="register" />} />
+        <Route path="/" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LandingPage />} />
+        <Route path="/login" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleClientLogin} />} />
+        <Route path="/register" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleClientLogin} initialMode="register" />} />
         <Route path="/client/*" element={<ClientRoutes currentUser={currentUser} clientData={clientData} clientInstances={clientInstances} onInstancesChange={setClientInstances} onLogout={handleLogout} tokenBalance={tokenBalance} tokenPackages={tokenPackages} dailyUsage={dailyUsage} onTokenBalanceChange={setTokenBalance} />} />
         <Route path="/admin/*" element={<AdminRoutes sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} currentUser={currentUser} handleLogout={handleLogout} messages={messages} toasts={toasts} setToasts={setToasts} instances={instances} clients={clients} logs={logs} analytics={analytics} keys={keys} handleAddInstance={async (d) => { const r = await instancesApi.create(d); if (r.success && r.data) { setInstances(p => [r.data!, ...p]); addToast(`Instance ${d.name} created`); } else addToast(r.error || 'Failed', 'warn'); }} handleUpdateInstanceStatus={async (n, s) => { if (s === 'disconnected') { const r = await instancesApi.disconnect(n); if (r.success) { setInstances(p => p.map(i => i.name === n ? { ...i, status: 'disconnected' as const } : i)); addToast(`Instance ${n} disconnected`); } } }} handleDeleteInstance={async (n) => { const r = await instancesApi.delete(n); if (r.success) { setInstances(p => p.filter(i => i.name !== n)); addToast(`Instance ${n} deleted`, 'warn'); } }} handleAddClient={async (d) => { const r = await clientsApi.create(d); if (r.success && r.data) { setClients(p => [r.data!, ...p]); addToast(`Client ${d.name} created`); } else addToast(r.error || 'Failed', 'warn'); }} handleToggleClient={async (id) => { const r = await clientsApi.toggle(id); if (r.success) { setClients(p => p.map(c => c.id === id ? { ...c, is_active: r.data!.is_active } : c)); addToast('Client updated'); } }} handleResetClientKey={async (id) => { const r = await clientsApi.resetKey(id); if (r.success) addToast('API key reset'); }} handleDeleteClient={async (id) => { const r = await clientsApi.delete(id); if (r.success) { setClients(p => p.filter(c => c.id !== id)); addToast('Client deleted', 'warn'); } }} handleAddKey={(n) => { const k = { id: `key-${Date.now()}`, name: n, key: `fidscript_live_${Math.random().toString(16).substring(2, 10)}...`, created: new Date().toISOString().split('T')[0], lastUsed: 'Never', status: 'Active' }; setKeys(p => [k, ...p]); addToast(`API key '${n}' generated`); }} handleRevokeKey={(id) => { setKeys(p => p.map(k => k.id === id ? { ...k, status: 'Revoked' } : k)); addToast('API key revoked', 'warn'); }} handleMarkMessageRead={(id) => setMessages(p => p.map(m => m.id === id ? { ...m, read: true } : m))} />} />
         <Route path="*" element={<Navigate to="/" replace />} />

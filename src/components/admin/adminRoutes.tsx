@@ -69,8 +69,8 @@ export function AdminRoutes({
 
   return (
     <Routes>
-      <Route path="/admin" element={currentUser?.role === 'admin' ? adminLayout : <Navigate to="/login" replace />} />
-      <Route path="/admin/:tab" element={currentUser?.role === 'admin' ? adminLayout : <Navigate to="/login" replace />} />
+      <Route path="/admin" element={currentUser?.role === 'admin' ? adminLayout : (currentUser?.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/login" replace />)} />
+      <Route path="/admin/:tab" element={currentUser?.role === 'admin' ? adminLayout : (currentUser?.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/login" replace />)} />
     </Routes>
   );
 }
