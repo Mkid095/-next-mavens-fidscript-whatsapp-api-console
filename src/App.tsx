@@ -114,6 +114,16 @@ function AppContent() {
     }).catch(console.error);
   }, [currentUser?.role, clientData]);
 
+  // Real-time token balance updates via SSE
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const data = (e as CustomEvent).detail as { balance: number };
+      setTokenBalance(data.balance);
+    };
+    window.addEventListener('sse-token-update', handler);
+    return () => window.removeEventListener('sse-token-update', handler);
+  }, []);
+
   // Handlers
   const handleLogout = () => {
     localStorage.removeItem('fidscript_admin_token');

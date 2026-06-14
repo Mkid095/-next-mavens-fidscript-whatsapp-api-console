@@ -70,6 +70,10 @@ export function emitNewMessage(instanceName: string, message: { id: string; from
   instanceEmitter.emit('newMessage', instanceName, message);
 }
 
+export function emitTokenUpdate(instanceName: string, newBalance: number) {
+  instanceEmitter.emit('tokenUpdate', instanceName, { balance: newBalance });
+}
+
 export function generateInstanceToken(): string {
   return `inst_${crypto.randomBytes(16).toString('hex')}`;
 }

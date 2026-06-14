@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { clientAuth, clientRateLimit } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
-import { callEvolutionAPI } from '../../utils/evolution.js';
+import { callEvolutionAPI, emitTokenUpdate } from '../../utils/evolution.js';
 import { logApiRequest } from '../../utils/audit.js';
 
 const router = Router();
@@ -51,6 +51,8 @@ router.post('/sendText/:name', clientAuth, clientRateLimit, async (req: Request,
     if (!deductTokens(instance.client_id, TOKEN_COST_TEXT, `send_text_${instance.name}`)) {
       return res.status(402).json({ success: false, error: 'Insufficient token balance' });
     }
+    const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(instance.client_id) as { token_balance: number };
+    emitTokenUpdate(instance.name, updated?.token_balance ?? 0);
 
     const msgId = `msg_${uuidv4().substring(0, 12)}`;
     const evolutionName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
@@ -97,6 +99,8 @@ router.post('/sendMedia/:name', clientAuth, clientRateLimit, async (req: Request
     if (!deductTokens(instance.client_id, TOKEN_COST_MEDIA, `send_media_${instance.name}`)) {
       return res.status(402).json({ success: false, error: 'Insufficient token balance' });
     }
+    const updatedMedia = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(instance.client_id) as { token_balance: number };
+    emitTokenUpdate(instance.name, updatedMedia?.token_balance ?? 0);
 
     const msgId = `msg_${uuidv4().substring(0, 12)}`;
     const evolutionName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
@@ -145,6 +149,8 @@ router.post('/sendLocation/:name', clientAuth, clientRateLimit, async (req: Requ
     if (!deductTokens(instance.client_id, TOKEN_COST_TEXT, `send_location_${instance.name}`)) {
       return res.status(402).json({ success: false, error: 'Insufficient token balance' });
     }
+    const updatedLoc = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(instance.client_id) as { token_balance: number };
+    emitTokenUpdate(instance.name, updatedLoc?.token_balance ?? 0);
 
     const msgId = `msg_${uuidv4().substring(0, 12)}`;
     const evolutionName = instance.evolution_name || `${instance.client_id}_${instance.name}`;

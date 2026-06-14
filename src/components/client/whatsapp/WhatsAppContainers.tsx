@@ -38,7 +38,7 @@ function openSSE(inst: Instance, onInstancesChange: (cb: (prev: Instance[]) => I
   es.onmessage = (event) => {
     try {
       const raw = JSON.parse(event.data);
-      // Named event: { state: string, phoneNumber } | { id, from_number, ... }
+      // Named event: { state: string, phoneNumber } | { id, from_number, ... } | { balance }
       if ('state' in raw) {
         const data = raw as { state: string; phoneNumber: string | null };
         if (data.state === 'disconnected') {
@@ -58,6 +58,9 @@ function openSSE(inst: Instance, onInstancesChange: (cb: (prev: Instance[]) => I
       } else if ('id' in raw) {
         // newMessage event — dispatch to window for MessagesView
         window.dispatchEvent(new CustomEvent('sse-new-message', { detail: raw }));
+      } else if ('balance' in raw) {
+        // tokenUpdate event — dispatch to window for App/TokenBalanceBar
+        window.dispatchEvent(new CustomEvent('sse-token-update', { detail: raw }));
       }
     } catch {
       // Ignore malformed messages
