@@ -28,12 +28,13 @@ const MESSAGE_TYPES = [
   { label: 'Video', Icon: Video, perMsg: 3 },
 ];
 
-function calcCost(tokens: number, packages: TokenPackage[]) {
-  if (tokens >= 1000) {
-    const pkg = packages.find(p => p.tokens <= tokens) || packages[packages.length - 1];
-    return { total: pkg.price_kes, perToken: pkg.price_kes / (pkg.tokens + pkg.bonus_tokens), label: pkg.name };
-  }
-  return { total: Math.ceil(tokens * PER_TOKEN_RATE), perToken: PER_TOKEN_RATE, label: 'Custom' };
+function calcCost(tokens: number) {
+  return {
+    total: Math.ceil(tokens * PER_TOKEN_RATE),
+    perToken: PER_TOKEN_RATE,
+    label: 'Custom',
+    displayTokens: tokens,
+  };
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -82,7 +83,7 @@ export default function TokenStoreSection({
     }
   }, [tab]);
 
-  const customCost = calcCost(customTokens, tokenPackages);
+  const customCost = calcCost(customTokens);
 
   const doPayPkg = async (pkgId: string) => {
     setPaying(true);
@@ -359,8 +360,8 @@ function CustomCalc({ tokens, onTokens, cost }: {
           <p className="text-[9px] text-stone-400">Total cost</p>
         </div>
         <div className="bg-white border border-[#eaebe4] rounded-xl p-3 text-center">
-          <p className="text-lg font-black text-green-700">{Math.floor(tokens / cost.perToken).toLocaleString()}</p>
-          <p className="text-[9px] text-stone-400">Tokens at KES {cost.perToken.toFixed(2)}</p>
+          <p className="text-lg font-black text-green-700">{cost.displayTokens.toLocaleString()}</p>
+          <p className="text-[9px] text-stone-400">Tokens</p>
         </div>
       </div>
 
