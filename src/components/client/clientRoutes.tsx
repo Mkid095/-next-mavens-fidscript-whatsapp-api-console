@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import ClientDashboard from './ClientDashboard';
 import type { Instance, Client, TokenPackage, DailyUsage } from '../../services/api';
 
@@ -18,6 +18,7 @@ export function ClientRoutes({
   currentUser, clientData, clientInstances, onInstancesChange, onLogout,
   tokenBalance, tokenPackages, dailyUsage, onTokenBalanceChange,
 }: ClientRouteProps) {
+  // Guard: must be an authenticated client with loaded profile data
   if (!currentUser || currentUser.role !== 'client' || !clientData) {
     if (currentUser?.role === 'admin') {
       return <Navigate to="/admin" replace />;
@@ -25,22 +26,20 @@ export function ClientRoutes({
     return <Navigate to="/login" replace />;
   }
 
-  const dashboardProps = {
-    client: clientData,
-    clientToken: localStorage.getItem('fidscript_client_token') || '',
-    instances: clientInstances,
-    onInstancesChange,
-    onLogout,
-    tokenBalance,
-    tokenPackages,
-    dailyUsage,
-    onTokenBalanceChange,
-  };
-
+  // Render dashboard directly. The parent route is `/client/*`, so this
+  // component mounts for any /client path. ClientDashboard reads the current
+  // location via useLocation() to determine which section to display.
   return (
-    <Routes>
-      <Route path="/client" element={<ClientDashboard {...dashboardProps} />} />
-      <Route path="/client/:section" element={<ClientDashboard {...dashboardProps} />} />
-    </Routes>
+    <ClientDashboard
+      client={clientData}
+      clientToken={localStorage.getItem('fidscript_client_token') || ''}
+      instances={clientInstances}
+      onInstancesChange={onInstancesChange}
+      onLogout={onLogout}
+      tokenBalance={tokenBalance}
+      tokenPackages={tokenPackages}
+      dailyUsage={dailyUsage}
+      onTokenBalanceChange={onTokenBalanceChange}
+    />
   );
 }

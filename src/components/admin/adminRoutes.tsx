@@ -1,7 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { AdminContent } from './AdminContent';
-import type { Instance, Client, ApiLog, AnalyticsData, DailyUsage } from '../../services/api';
+import type { Instance, Client, ApiLog, AnalyticsData } from '../../services/api';
 
 interface AdminRouteProps {
   sidebarOpen: boolean;
@@ -36,7 +36,18 @@ export function AdminRoutes({
   handleAddClient, handleToggleClient, handleResetClientKey, handleDeleteClient,
   handleAddKey, handleRevokeKey, handleMarkMessageRead,
 }: AdminRouteProps) {
-  const adminLayout = (
+  // Guard: must be an authenticated admin
+  if (currentUser?.role !== 'admin') {
+    if (currentUser?.role === 'client') {
+      return <Navigate to="/client" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
+
+  // Render layout directly. The parent route is `/admin/*`, so this component
+  // mounts for any /admin path. AdminContent reads the current location via
+  // useLocation() to determine which tab to display.
+  return (
     <AdminLayout
       sidebarOpen={sidebarOpen}
       setSidebarOpen={setSidebarOpen}
@@ -65,12 +76,5 @@ export function AdminRoutes({
         handleMarkMessageRead={handleMarkMessageRead}
       />
     </AdminLayout>
-  );
-
-  return (
-    <Routes>
-      <Route path="/admin" element={currentUser?.role === 'admin' ? adminLayout : (currentUser?.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/login" replace />)} />
-      <Route path="/admin/:tab" element={currentUser?.role === 'admin' ? adminLayout : (currentUser?.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/login" replace />)} />
-    </Routes>
   );
 }
