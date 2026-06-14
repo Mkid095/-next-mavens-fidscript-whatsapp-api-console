@@ -37,9 +37,9 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
     const external_reference = `TOKEN_BUY_${client_id}_REF_${payment_id}`;
 
     db.prepare(`
-      INSERT INTO payments (id, client_id, package_id, amount_kes, phone_number, status)
-      VALUES (?, ?, ?, ?, ?, 'pending')
-    `).run(payment_id, client_id, package_id, pkg.price_kes, formattedPhone);
+      INSERT INTO payments (id, client_id, package_id, amount_kes, phone_number, token_count, status)
+      VALUES (?, ?, ?, ?, ?, ?, 'pending')
+    `).run(payment_id, client_id, package_id, pkg.price_kes, formattedPhone, pkg.tokens + pkg.bonus_tokens);
 
     const callback_url = `${PLATFORM_URL}/api/payments/callback`;
     const description = `Token purchase: ${pkg.name} — ${pkg.tokens.toLocaleString()} tokens`;
