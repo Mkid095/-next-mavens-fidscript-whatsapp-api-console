@@ -56,9 +56,18 @@ fidscript-whatsapp/
 
 ## Deployment
 
-### Frontend Build
+### Production Paths
+| Path | Purpose |
+|------|---------|
+| `/var/www/whatsapp.nextmavens.cloud` | Nginx root — where frontend is served from |
+| `/home/ken/fidscript-whatsapp/server` | PM2 working dir |
+| `/home/ken/fidscript-whatsapp/server/dist` | Compiled backend (server/) |
+| `/home/ken/fidscript-whatsapp/server/fidscript.db` | Runtime SQLite DB (gitignored) |
+| `/home/ken/fidscript-whatsapp/server/ecosystem.config.cjs` | PM2 config (gitignored, modified at deploy time) |
+
+### Production Frontend Build
 ```bash
-npm run build   # Outputs to dist/
+npm run build   # Outputs to dist/, then synced to /var/www/whatsapp.nextmavens.cloud
 ```
 
 ### Backend Start
@@ -67,25 +76,29 @@ cd server && npm run dev  # Uses tsx loader
 ```
 
 ### Production
-- Frontend built and served by backend or CDN
-- Backend runs on PM2 with ecosystem.config.cjs
-- Evolution API (WhatsApp gateway) runs separately
+- Frontend served by **nginx** from `/var/www/whatsapp.nextmavens.cloud`
+- Backend runs on **PM2** (process name: `fidscript-api`) in `/home/ken/fidscript-whatsapp/server`
+- Evolution API (WhatsApp gateway) runs separately on port 8080
+- **ecosystem.config.cjs and fidscript.db are gitignored** — do not commit them
 
 ### Smart Deployment Script
 ```bash
-# Main deployment script (smart - detects changes and rebuilds only what changed)
-./deploy.sh
-
-# Server-only deployment (can be called by main script or run independently)
-./server/deploy.sh
+bash deploy.sh   # Full workflow: pull → detect → build → sync → restart → record
 ```
 
-The deploy script:
-1. Pulls from GitHub (git pull origin main)
-2. Detects changes using `git diff --name-only HEAD~1`
-3. Only rebuilds changed components (frontend, backend, or both)
-4. Records deployments to `deploy_versions` table in the DB
-5. Logs all operations to `/home/ken/fidscript-whatsapp/deploy.log`
+**Prerequisites:** All local changes must be committed before running.
+
+**What it does:**
+1. Refuses to run if uncommitted changes exist (`git status --porcelain`)
+2. Pulls from GitHub (`git pull origin main`)
+3. Detects changes using `git diff --name-only HEAD~1`
+4. Rebuilds changed components (frontend, backend, or both) — **always cleans dist/ before rebuild**
+5. Syncs frontend `dist/` to nginx root (`/var/www/whatsapp.nextmavens.cloud`)
+6. Restarts PM2 process `fidscript-api`
+7. Records deployment to `deploy_versions` DB table
+8. Logs everything to `deploy.log`
+
+**If "no relevant changes" detected:** still forces a clean rebuild to eliminate stale artifacts.
 
 ### Version Tracking
 ```bash
@@ -97,10 +110,10 @@ curl -H "Authorization: Bearer <admin_token>" https://whatsapp.fidscript.com/api
 ```
 
 The deploy script automatically records each deployment with:
-- `version` - from package.json
-- `commit_hash` - from git rev-parse --short HEAD
-- `changes_summary` - from git diff --stat HEAD~1
-- `service` - which service was deployed (frontend, backend, or both)
+- `version` — from `git describe --tags` (or `1.0.0` fallback)
+- `commit_hash` — from `git rev-parse --short HEAD`
+- `changes_summary` — from `git diff --stat HEAD~1`
+- `service` — which service was deployed (frontend, backend, or both)
 
 
 ## Type Safety Rules
