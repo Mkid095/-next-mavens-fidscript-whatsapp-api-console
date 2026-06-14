@@ -17,6 +17,7 @@ router.get('/:reference', async (req: Request, res: Response) => {
     `).get(reference, reference, reference) as any;
 
     if (!payment) {
+      console.error(`[paymentStatus] reference="${reference}" not found in payments table`);
       return res.status(404).json({ success: false, error: 'Payment not found' });
     }
 
