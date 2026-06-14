@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Smartphone } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { instancesApi } from '../../../services/api';
@@ -16,6 +16,56 @@ interface WhatsAppContainersProps {
   onTokenDeduct: (n: number) => void;
 }
 
+/** Persistent SSE connection per instance name */
+const instanceSSEControllers = new Map<string, EventSource>();
+
+function closeSSE(name: string) {
+  const es = instanceSSEControllers.get(name);
+  if (es) {
+    es.close();
+    instanceSSEControllers.delete(name);
+  }
+}
+
+function openSSE(inst: Instance, onInstancesChange: (cb: (prev: Instance[]) => Instance[]) => void) {
+  if (instanceSSEControllers.has(inst.name)) return; // already subscribed
+  const token = localStorage.getItem('fidscript_client_token');
+  if (!token) return;
+
+  const es = new EventSource(`/api/sse/instance/${inst.name}?token=${encodeURIComponent(token)}`);
+  instanceSSEControllers.set(inst.name, es);
+
+  es.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data) as { state: string; phoneNumber: string | null };
+      if (data.state === 'disconnected') {
+        onInstancesChange(prev => prev.map(i =>
+          i.name === inst.name
+            ? { ...i, status: 'disconnected' as const, phone_number: null }
+            : i
+        ));
+        closeSSE(inst.name);
+      } else if (data.state === 'connected') {
+        onInstancesChange(prev => prev.map(i =>
+          i.name === inst.name
+            ? { ...i, status: 'connected' as const, phone_number: data.phoneNumber || i.phone_number }
+            : i
+        ));
+      }
+    } catch {
+      // Ignore malformed messages
+    }
+  };
+
+  es.onclose = () => {
+    closeSSE(inst.name);
+  };
+
+  es.onerror = () => {
+    // Let onclose handle cleanup
+  };
+}
+
 export default function WhatsAppContainers({
   client,
   clientToken,
@@ -24,6 +74,8 @@ export default function WhatsAppContainers({
   onTokenDeduct,
 }: WhatsAppContainersProps) {
   const [showNewInstanceModal, setShowNewInstanceModal] = useState(false);
+  const instancesRef = useRef(instances);
+  instancesRef.current = instances;
 
   // Fetch instances on mount if instances prop is empty (direct URL navigation)
   useEffect(() => {
@@ -35,6 +87,28 @@ export default function WhatsAppContainers({
       }).catch(console.error);
     }
   }, []);
+
+  // Open SSE for all connected instances on mount
+  useEffect(() => {
+    instances.forEach(inst => {
+      if (inst.status === 'connected') {
+        openSSE(inst, onInstancesChange);
+      }
+    });
+    return () => {
+      instanceSSEControllers.forEach((_, name) => closeSSE(name));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount
+
+  // Watch for instances that transition to connected and open SSE for them
+  useEffect(() => {
+    instances.forEach(inst => {
+      if (inst.status === 'connected') {
+        openSSE(inst, onInstancesChange);
+      }
+    });
+  }, [instances, onInstancesChange]);
 
   const {
     pairingInstance,
