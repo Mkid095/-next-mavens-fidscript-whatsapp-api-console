@@ -1,0 +1,7 @@
+export const TOKEN_COST_TEXT = 1;
+export const TOKEN_COST_MEDIA = 2;
+export const TOKEN_COST_LOCATION = 1;
+export const TOKEN_COST_CONTACT = 1;
+export const TOKEN_COST_REACTION = 1;
+export const TOKEN_COST_POLL = 1;
+export const TOKEN_COST_LIST = 1;

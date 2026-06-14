@@ -80,6 +80,74 @@ export const instancesApi = {
       }
     ),
 
+  sendLocation: (name: string, to: string, latitude: number, longitude: number, nameField?: string, address?: string) =>
+    fetchApi<{ messageId: string; to: string; location: object; timestamp: string }>(
+      `/api/instance/sendLocation/${name}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ to, latitude, longitude, name: nameField, address }),
+      }
+    ),
+
+  sendContact: (
+    name: string,
+    to: string,
+    contact: { fullName: string; wuid: string; phoneNumber: string; organization?: string }
+  ) =>
+    fetchApi<{ messageId: string; to: string; contact: object; timestamp: string }>(
+      `/api/instance/sendContact/${name}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ to, contact: [contact] }),
+      }
+    ),
+
+  sendReaction: (
+    name: string,
+    to: string,
+    key: { remoteJid: string; fromMe: boolean; id: string },
+    reaction: string
+  ) =>
+    fetchApi<{ messageId: string; to: string; reaction: string; timestamp: string }>(
+      `/api/instance/sendReaction/${name}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ to, key, reaction }),
+      }
+    ),
+
+  sendPoll: (
+    name: string,
+    to: string,
+    poll: { name: string; selectableCount: number; values: string[] }
+  ) =>
+    fetchApi<{ messageId: string; to: string; poll: object; timestamp: string }>(
+      `/api/instance/sendPoll/${name}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ to, ...poll }),
+      }
+    ),
+
+  sendList: (
+    name: string,
+    to: string,
+    list: {
+      title: string;
+      description: string;
+      buttonText: string;
+      footerText?: string;
+      sections: { title: string; rows: { title: string; description: string; rowId: string }[] }[];
+    }
+  ) =>
+    fetchApi<{ messageId: string; to: string; list: object; timestamp: string }>(
+      `/api/instance/sendList/${name}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ to, ...list }),
+      }
+    ),
+
   getClientInstances: () => fetchApi<Instance[]>('/api/instance/client-instances'),
 
   getClientSettings: (name: string) =>
