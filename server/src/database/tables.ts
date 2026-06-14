@@ -118,4 +118,17 @@ export function createTables(db: Database): void {
       service TEXT DEFAULT 'both'
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS auth_codes (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      code_hash TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      attempts INTEGER DEFAULT 0,
+      consumed_at TEXT,
+      expires_at TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

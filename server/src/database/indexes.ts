@@ -9,4 +9,5 @@ export function createIndexes(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_token_transactions_client ON token_transactions(client_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_payments_client ON payments(client_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_payments_reference ON payments(payhero_reference)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_auth_codes_email ON auth_codes(email, created_at)`);
 }

@@ -1,30 +1,54 @@
-// Auth API - handles admin and client authentication
-import { fetchApi, getAuthHeaders, type ApiResponse } from './api';
+// Auth API — passwordless magic-code authentication (Resend email)
+import { fetchApi, type ApiResponse } from './api';
+import type { Client } from './clients';
+
+export interface MagicVerifyData {
+  token: string;
+  role: 'admin' | 'client';
+  user?: { id: string; email: string; name: string };
+  client?: Client;
+}
+
+export interface ClientMagicVerifyData {
+  token: string;
+  client: Client;
+  message?: string;
+}
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    fetchApi<{ token: string; user: { id: string; email: string; name: string; role: string } }>(
-      '/api/auth/login',
-      { method: 'POST', body: JSON.stringify({ email, password }) }
-    ),
+  // Step 1 of sign-in: request a 6-digit code to the email
+  requestCode: (email: string) =>
+    fetchApi<{ message: string }>('/api/auth/request-code', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
 
-  clientLogin: (email: string, password: string) =>
-    fetchApi<{ token: string; client: import('./clients').Client }>(
-      '/api/auth/client-login',
-      { method: 'POST', body: JSON.stringify({ email, password }) }
-    ),
+  // Step 2 of sign-in: verify the code and receive a JWT (admin or client)
+  verifyCode: (email: string, code: string) =>
+    fetchApi<MagicVerifyData>('/api/auth/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    }),
 
-  clientRegister: (name: string, email: string, phone: string, password: string) =>
-    fetchApi<{ client: import('./clients').Client; message: string }>(
-      '/api/auth/client-register',
-      { method: 'POST', body: JSON.stringify({ name, email, phone, password }) }
-    ),
+  // Step 1 of sign-up: request a code for a new client account
+  clientRequestCode: (name: string, email: string, phone: string) =>
+    fetchApi<{ message: string }>('/api/auth/client/request-code', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, phone }),
+    }),
+
+  // Step 2 of sign-up: verify the code, create the account, receive a JWT
+  clientVerifyCode: (name: string, email: string, phone: string, code: string) =>
+    fetchApi<ClientMagicVerifyData>('/api/auth/client/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, phone, code }),
+    }),
 
   me: () =>
     fetchApi<{ id: string; email: string; name: string; role: string }>('/api/auth/me'),
 
   clientMe: () =>
-    fetchApi<import('./clients').Client>('/api/auth/client/me'),
+    fetchApi<Client>('/api/auth/client/me'),
 
   clientTokens: () =>
     fetchApi<{ balance: number; history: import('./clients').TokenTransaction[] }>(
