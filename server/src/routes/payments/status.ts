@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../../database.js';
-import { adminAuth } from '../../middleware/auth.js';
+import { adminAuth, clientJwtAuth } from '../../middleware/auth.js';
 import fetch from 'node-fetch';
 
 const router = Router();
@@ -62,7 +62,25 @@ router.get('/:reference', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/payments/history/:clientId - Get client's payment history
+// GET /api/payments/client/history - Get own payment history (client JWT auth)
+router.get('/client/history', clientJwtAuth, (req: Request, res: Response) => {
+  try {
+    const payments = db.prepare(`
+      SELECT p.*, tp.name as package_name, tp.tokens, tp.bonus_tokens
+      FROM payments p
+      LEFT JOIN token_packages tp ON p.package_id = tp.id
+      WHERE p.client_id = ?
+      ORDER BY p.created_at DESC
+      LIMIT 50
+    `).all(req.client?.id);
+
+    res.json({ success: true, data: payments });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch payment history' });
+  }
+});
+
+// GET /api/payments/history/:clientId - Get client's payment history (admin only)
 router.get('/history/:clientId', adminAuth, (req: Request, res: Response) => {
   try {
     const payments = db.prepare(`

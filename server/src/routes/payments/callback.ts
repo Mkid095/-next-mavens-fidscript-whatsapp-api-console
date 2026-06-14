@@ -47,9 +47,15 @@ router.post('/', async (req: Request, res: Response) => {
     if (ResultCode === 0 && status) {
       const pkg = db.prepare('SELECT * FROM token_packages WHERE id = ?').get(existingPayment.package_id) as any;
 
+      let totalTokens = 0;
       if (pkg) {
-        const totalTokens = pkg.tokens + pkg.bonus_tokens;
+        totalTokens = pkg.tokens + pkg.bonus_tokens;
+      } else {
+        // Custom purchase: tokens = amount_kes / 0.11
+        totalTokens = Math.round((existingPayment.amount_kes || 0) / 0.11);
+      }
 
+      if (totalTokens > 0) {
         db.prepare(`
           UPDATE clients SET token_balance = token_balance + ? WHERE id = ?
         `).run(totalTokens, client_id);
