@@ -114,7 +114,6 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
   }, [instances, onInstancesChange]);
 
   const handleDeleteInstance = useCallback(async (inst: Instance) => {
-    if (!confirm(`Delete container "${inst.name}"? This cannot be undone.`)) return;
     try {
       await instancesApi.delete(inst.name);
       onInstancesChange(instances.filter(i => i.id !== inst.id));

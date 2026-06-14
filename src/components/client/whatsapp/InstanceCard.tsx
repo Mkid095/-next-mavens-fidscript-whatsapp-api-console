@@ -1,5 +1,5 @@
-import React from 'react';
-import { QrCode, Link2, Link2Off, RefreshCw, Wifi, WifiOff, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { QrCode, Link2, Link2Off, RefreshCw, Wifi, WifiOff, Trash2, AlertTriangle, X } from 'lucide-react';
 import type { Instance } from '../../../services/api';
 
 interface InstanceCardProps {
@@ -10,8 +10,15 @@ interface InstanceCardProps {
 }
 
 export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete }: InstanceCardProps) {
+  const [confirming, setConfirming] = useState(false);
+
   const isConnected = inst.status === 'connected';
   const isConnecting = inst.status === 'connecting';
+
+  const handleConfirmDelete = () => {
+    onDelete(inst);
+    setConfirming(false);
+  };
 
   return (
     <div className="bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl p-4 flex flex-col justify-between">
@@ -32,45 +39,76 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete }
           {inst.status}
         </span>
       </div>
-      <div className="pt-3 border-t border-[#eaebe4] flex items-center justify-between mt-4">
-        <span className="text-[10px] text-stone-400 font-semibold">
-          {inst.last_active ? `Active: ${new Date(inst.last_active).toLocaleDateString()}` : 'Never active'}
-        </span>
-        <div className="flex items-center gap-1.5">
-          {!isConnected && !isConnecting && (
-            <>
-              <button
-                onClick={() => onConnect(inst, 'qr')}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <QrCode className="w-3 h-3" /> QR
+
+      {/* Normal action bar */}
+      {!confirming && (
+        <div className="pt-3 border-t border-[#eaebe4] flex items-center justify-between mt-4">
+          <span className="text-[10px] text-stone-400 font-semibold">
+            {inst.last_active ? `Active: ${new Date(inst.last_active).toLocaleDateString()}` : 'Never active'}
+          </span>
+          <div className="flex items-center gap-1.5">
+            {!isConnected && !isConnecting && (
+              <>
+                <button
+                  onClick={() => onConnect(inst, 'qr')}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1"
+                >
+                  <QrCode className="w-3 h-3" /> QR
+                </button>
+                <button
+                  onClick={() => onConnect(inst, 'code')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1"
+                >
+                  <Link2 className="w-3 h-3" /> Code
+                </button>
+              </>
+            )}
+            {isConnecting && (
+              <button onClick={() => onConnect(inst, 'qr')} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                <RefreshCw className="w-3 h-3" /> Retry
               </button>
-              <button
-                onClick={() => onConnect(inst, 'code')}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <Link2 className="w-3 h-3" /> Code
+            )}
+            {isConnected && (
+              <button onClick={() => onDisconnect(inst)} className="bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                <Link2Off className="w-3 h-3" /> Disconnect
               </button>
-            </>
-          )}
-          {isConnecting && (
-            <button onClick={() => onConnect(inst, 'qr')} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-              <RefreshCw className="w-3 h-3" /> Retry
+            )}
+            <button
+              onClick={() => setConfirming(true)}
+              className="text-stone-400 hover:text-red-700 p-1.5 bg-white border border-stone-200 hover:border-red-200 rounded-lg transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
-          )}
-          {isConnected && (
-            <button onClick={() => onDisconnect(inst)} className="bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-              <Link2Off className="w-3 h-3" /> Disconnect
-            </button>
-          )}
-          <button
-            onClick={() => onDelete(inst)}
-            className="text-stone-400 hover:text-red-700 p-1.5 bg-white border border-stone-200 hover:border-red-200 rounded-lg transition-all"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Inline delete confirmation */}
+      {confirming && (
+        <div className="pt-3 border-t border-red-200 mt-4 flex flex-col gap-3">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-red-700">Delete "{inst.name}"?</p>
+              <p className="text-[10px] text-stone-500 mt-0.5">This cannot be undone.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleConfirmDelete}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] py-2 rounded-lg transition-all"
+            >
+              Yes, Delete
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-[10px] py-2 rounded-lg border border-stone-200 transition-all flex items-center justify-center gap-1"
+            >
+              <X className="w-3 h-3" /> Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
