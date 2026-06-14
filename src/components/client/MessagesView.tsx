@@ -503,87 +503,289 @@ interface NewChatModalProps {
   onSubmit: () => void;
 }
 
+const COUNTRY_CODES = [
+  { code: '+1', country: 'US/CA', flag: '🇺🇸' },
+  { code: '+44', country: 'UK', flag: '🇬🇧' },
+  { code: '+254', country: 'Kenya', flag: '🇰🇪' },
+  { code: '+255', country: 'Tanzania', flag: '🇹🇿' },
+  { code: '+256', country: 'Uganda', flag: '🇺🇬' },
+  { code: '+250', country: 'Rwanda', flag: '🇷🇼' },
+  { code: '+251', country: 'Ethiopia', flag: '🇪🇹' },
+  { code: '+249', country: 'Sudan', flag: '🇸🇩' },
+  { code: '+20', country: 'Egypt', flag: '🇪🇬' },
+  { code: '+216', country: 'Tunisia', flag: '🇹🇳' },
+  { code: '+213', country: 'Algeria', flag: '🇩🇿' },
+  { code: '+212', country: 'Morocco', flag: '🇲🇦' },
+  { code: '+91', country: 'India', flag: '🇮🇳' },
+  { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
+  { code: '+880', country: 'Bangladesh', flag: '🇧🇩' },
+  { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
+  { code: '+65', country: 'Singapore', flag: '🇸🇬' },
+  { code: '+66', country: 'Thailand', flag: '🇹🇭' },
+  { code: '+84', country: 'Vietnam', flag: '🇻🇳' },
+  { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
+  { code: '+63', country: 'Philippines', flag: '🇵🇭' },
+  { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
+  { code: '+233', country: 'Ghana', flag: '🇬🇭' },
+  { code: '+225', country: "Cote d'Ivoire", flag: '🇨🇮' },
+  { code: '+221', country: 'Senegal', flag: '🇸🇳' },
+  { code: '+230', country: 'Mauritius', flag: '🇲🇺' },
+  { code: '+27', country: 'South Africa', flag: '🇿🇦' },
+  { code: '+34', country: 'Spain', flag: '🇪🇸' },
+  { code: '+33', country: 'France', flag: '🇫🇷' },
+  { code: '+49', country: 'Germany', flag: '🇩🇪' },
+  { code: '+39', country: 'Italy', flag: '🇮🇹' },
+  { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
+  { code: '+32', country: 'Belgium', flag: '🇧🇪' },
+  { code: '+41', country: 'Switzerland', flag: '🇨🇭' },
+  { code: '+43', country: 'Austria', flag: '🇦🇹' },
+  { code: '+45', country: 'Denmark', flag: '🇩🇰' },
+  { code: '+46', country: 'Sweden', flag: '🇸🇪' },
+  { code: '+47', country: 'Norway', flag: '🇳🇴' },
+  { code: '+358', country: 'Finland', flag: '🇫🇮' },
+  { code: '+30', country: 'Greece', flag: '🇬🇷' },
+  { code: '+90', country: 'Turkey', flag: '🇹🇷' },
+  { code: '+971', country: 'UAE', flag: '🇦🇪' },
+  { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: '+968', country: 'Oman', flag: '🇴🇲' },
+  { code: '+973', country: 'Bahrain', flag: '🇧🇭' },
+  { code: '+965', country: 'Kuwait', flag: '🇰🇼' },
+  { code: '+962', country: 'Jordan', flag: '🇯🇴' },
+  { code: '+972', country: 'Israel', flag: '🇮🇱' },
+  { code: '+20', country: 'Egypt', flag: '🇪🇬' },
+  { code: '+52', country: 'Mexico', flag: '🇲🇽' },
+  { code: '+52', country: 'Mexico', flag: '🇲🇽' },
+  { code: '+54', country: 'Argentina', flag: '🇦🇷' },
+  { code: '+55', country: 'Brazil', flag: '🇧🇷' },
+  { code: '+56', country: 'Chile', flag: '🇨🇱' },
+  { code: '+57', country: 'Colombia', flag: '🇨🇴' },
+  { code: '+51', country: 'Peru', flag: '🇵🇪' },
+  { code: '+598', country: 'Uruguay', flag: '🇺🇾' },
+  { code: '+86', country: 'China', flag: '🇨🇳' },
+  { code: '+82', country: 'South Korea', flag: '🇰🇷' },
+  { code: '+81', country: 'Japan', flag: '🇯🇵' },
+  { code: '+61', country: 'Australia', flag: '🇦🇺' },
+  { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
+];
+
 function NewChatModal({ savedContacts, value, name, onChangePhone, onChangeName, onSelectContact, onClose, onSubmit }: NewChatModalProps) {
+  const [activeTab, setActiveTab] = useState<'contacts' | 'newnumber'>('contacts');
   const [contactSearch, setContactSearch] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('+254');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+
   const filtered = savedContacts.filter(c =>
     !contactSearch || c.phone.includes(contactSearch) || (c.name || '').toLowerCase().includes(contactSearch.toLowerCase())
   );
 
+  const handlePhoneChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, '');
+    onChangePhone(selectedCountry + digits);
+  };
+
+  const handleCountrySelect = (code: string) => {
+    setSelectedCountry(code);
+    setShowCountryPicker(false);
+    setPhoneInput('');
+    onChangePhone(code);
+  };
+
+  const selectedCountryData = COUNTRY_CODES.find(c => c.code === selectedCountry);
+
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-96 p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-forest-deep">New Conversation</h3>
-          <button onClick={onClose} className="w-6 h-6 rounded-lg hover:bg-stone-100 flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-xl w-[420px] overflow-hidden">
+        {/* Header */}
+        <div className="px-5 pt-5 pb-4 border-b border-[#eaebe4] flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-forest-deep">New Conversation</h3>
+            <p className="text-[10px] text-graphite mt-0.5">Start a chat with any contact</p>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition-all">
             <X className="w-4 h-4 text-stone-400" />
           </button>
         </div>
 
-        {/* Saved contacts */}
-        {savedContacts.length > 0 && (
-          <div>
-            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide mb-1 block">Or select a saved contact</label>
-            <div className="relative mb-2">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-stone-400" />
-              <input
-                value={contactSearch}
-                onChange={e => setContactSearch(e.target.value)}
-                placeholder="Search contacts..."
-                className="w-full pl-7 pr-2 py-1 text-[10px] border border-[#eaebe4] rounded-lg focus:outline-none focus:border-yellow-500"
-              />
+        {/* Tabs */}
+        <div className="flex border-b border-[#eaebe4]">
+          <button
+            onClick={() => setActiveTab('contacts')}
+            className={`flex-1 py-2.5 text-[11px] font-bold transition-all border-b-2 ${
+              activeTab === 'contacts'
+                ? 'border-forest-deep text-forest-deep'
+                : 'border-transparent text-stone-400 hover:text-stone-600'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-1.5">
+              <Users className="w-3.5 h-3.5" />
+              Existing Contacts
             </div>
-            <div className="max-h-28 overflow-y-auto space-y-1">
-              {filtered.slice(0, 8).map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => onSelectContact(c)}
-                  className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-yellow-50 flex items-center gap-2"
-                >
-                  <div className="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] font-bold text-stone-600">
-                    {(c.name || c.phone).charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-forest-deep">{c.name || c.phone}</p>
-                    <p className="text-[9px] text-stone-400 font-mono">{c.phone}</p>
-                  </div>
-                </button>
-              ))}
+          </button>
+          <button
+            onClick={() => setActiveTab('newnumber')}
+            className={`flex-1 py-2.5 text-[11px] font-bold transition-all border-b-2 ${
+              activeTab === 'newnumber'
+                ? 'border-forest-deep text-forest-deep'
+                : 'border-transparent text-stone-400 hover:text-stone-600'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" />
+              New Number
             </div>
-          </div>
-        )}
-
-        <div className="border-t border-[#eaebe4] pt-3 space-y-2">
-          <div>
-            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Phone Number</label>
-            <input
-              type="tel"
-              value={value}
-              onChange={e => onChangePhone(e.target.value)}
-              placeholder="254712345678"
-              className="w-full mt-1 px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 font-mono"
-              autoFocus
-              onKeyDown={e => { if (e.key === 'Enter') onSubmit(); }}
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Name (optional)</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => onChangeName(e.target.value)}
-              placeholder="Display name"
-              className="w-full mt-1 px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500"
-              onKeyDown={e => { if (e.key === 'Enter') onSubmit(); }}
-            />
-          </div>
+          </button>
         </div>
-        <button
-          onClick={onSubmit}
-          disabled={!value.trim()}
-          className="w-full py-2 bg-forest-deep text-white text-xs font-bold rounded-xl hover:bg-[#33301a] disabled:opacity-30 transition-all"
-        >
-          Open Chat
-        </button>
+
+        <div className="p-5">
+          {activeTab === 'contacts' && (
+            <div className="space-y-3">
+              {savedContacts.length === 0 ? (
+                <div className="text-center py-8 space-y-2">
+                  <Users className="w-8 h-8 mx-auto text-stone-200" />
+                  <p className="text-xs font-bold text-forest-deep">No saved contacts</p>
+                  <p className="text-[10px] text-graphite">Switch to "New Number" to message any number</p>
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                    <input
+                      value={contactSearch}
+                      onChange={e => setContactSearch(e.target.value)}
+                      placeholder="Search by name or number..."
+                      className="w-full pl-9 pr-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500"
+                    />
+                  </div>
+                  <div className="max-h-64 overflow-y-auto space-y-1">
+                    {filtered.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => onSelectContact(c)}
+                        className="w-full px-3 py-2.5 text-left rounded-xl hover:bg-stone-50 flex items-center gap-3 transition-all border border-transparent hover:border-[#eaebe4]"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
+                          {(c.name || c.phone).charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-forest-deep truncate">{c.name || c.phone}</p>
+                          <p className="text-[10px] text-stone-400 font-mono">{c.phone}</p>
+                        </div>
+                        {c.tags && (
+                          <span className="text-[9px] px-1.5 py-0.5 bg-stone-100 rounded-full text-stone-500 shrink-0">{c.tags}</span>
+                        )}
+                      </button>
+                    ))}
+                    {filtered.length === 0 && (
+                      <p className="text-center text-[11px] text-stone-400 py-4">No contacts match your search</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'newnumber' && (
+            <div className="space-y-4">
+              {/* Country picker */}
+              <div>
+                <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Country</label>
+                <div className="relative mt-1">
+                  <button
+                    onClick={() => setShowCountryPicker(!showCountryPicker)}
+                    className="w-full px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white flex items-center justify-between"
+                  >
+                    <span className="font-bold text-forest-deep">
+                      {selectedCountryData?.code} {selectedCountryData?.country}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+                  </button>
+                  {showCountryPicker && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#eaebe4] rounded-xl shadow-lg z-10 max-h-52 overflow-y-auto">
+                      <div className="sticky top-0 bg-white border-b border-[#eaebe4] px-3 py-1.5">
+                        <input
+                          placeholder="Search country..."
+                          className="w-full text-[10px] border border-[#eaebe4] rounded-lg px-2 py-1 focus:outline-none focus:border-yellow-500"
+                          onChange={e => {
+                            const q = e.target.value.toLowerCase();
+                            // filter the picker list
+                          }}
+                          autoFocus
+                        />
+                      </div>
+                      {COUNTRY_CODES.map(c => (
+                        <button
+                          key={c.code + c.country}
+                          onClick={() => handleCountrySelect(c.code)}
+                          className={`w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 transition-colors ${
+                            selectedCountry === c.code ? 'bg-yellow-50 font-bold text-forest-deep' : 'text-stone-600'
+                          }`}
+                        >
+                          <span className="w-6 text-center">{c.flag}</span>
+                          <span className="font-mono text-[10px] text-stone-400 w-10">{c.code}</span>
+                          <span>{c.country}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Phone number */}
+              <div>
+                <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Phone Number</label>
+                <div className="mt-1 flex rounded-xl border border-[#eaebe4] overflow-hidden focus-within:border-yellow-500">
+                  <div className="px-3 py-2 bg-stone-50 text-xs font-bold text-stone-500 font-mono flex items-center border-r border-[#eaebe4] shrink-0">
+                    {selectedCountry}
+                  </div>
+                  <input
+                    type="tel"
+                    value={phoneInput}
+                    onChange={e => { setPhoneInput(e.target.value); handlePhoneChange(e.target.value); }}
+                    placeholder="712 345 678"
+                    className="flex-1 px-3 py-2 text-xs font-mono focus:outline-none bg-white"
+                    autoFocus
+                    onKeyDown={e => { if (e.key === 'Enter') onSubmit(); }}
+                  />
+                </div>
+                <p className="text-[9px] text-stone-400 mt-1">Enter the local number without the country code</p>
+              </div>
+
+              {/* Name */}
+              <div>
+                <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Name (optional)</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => onChangeName(e.target.value)}
+                  placeholder="Display name for this contact"
+                  className="w-full mt-1 px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500"
+                  onKeyDown={e => { if (e.key === 'Enter') onSubmit(); }}
+                />
+              </div>
+
+              {/* Preview */}
+              {phoneInput && (
+                <div className="px-3 py-2 bg-stone-50 rounded-xl flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-stone-400" />
+                  <span className="text-xs font-mono text-forest-deep">{selectedCountry} {phoneInput}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-5">
+          <button
+            onClick={onSubmit}
+            disabled={activeTab === 'newnumber' && !phoneInput.trim()}
+            className="w-full py-2.5 bg-forest-deep text-white text-xs font-bold rounded-xl hover:bg-[#33301a] disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            Open Chat
+          </button>
+        </div>
       </div>
     </div>
   );
