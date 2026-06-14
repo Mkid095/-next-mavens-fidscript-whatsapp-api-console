@@ -20,6 +20,13 @@ interface DashboardHomeProps {
 export default function DashboardHome({
   client, tokenBalance, instances, dailyUsage, recentMessages
 }: DashboardHomeProps) {
+  if (!client) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
   const connectedInstances = instances.filter(i => i.status === 'connected').length;
   const totalTokens = dailyUsage.reduce((sum, d) => sum + d.tokens_used, 0);
 

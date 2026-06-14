@@ -40,6 +40,14 @@ export default function ClientContent({
   onTokenDeduct,
   onLogout,
 }: ClientContentProps) {
+  if (!client) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 lg:p-6 space-y-6 max-w-7xl mx-auto">
       <TokenBalanceBar balance={tokenBalance} previousBalance={previousBalance} />
