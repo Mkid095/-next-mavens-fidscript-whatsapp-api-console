@@ -57,8 +57,8 @@ router.post('/sendText/:name', clientJwtAuth, clientRateLimit, async (req: Reque
     const msgId = `msg_${uuidv4().substring(0, 12)}`;
     const evolutionName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
 
-    // Call Evolution API to send the message
-    const evoRes = await callEvolutionAPI('POST', `/messages/sendText/${evolutionName}`, {
+    // Call Evolution API v2 to send the message
+    const evoRes = await callEvolutionAPI('POST', `/message/sendText/${evolutionName}`, {
       number: to,
       text: message,
     });
@@ -106,7 +106,7 @@ router.post('/sendMedia/:name', clientJwtAuth, clientRateLimit, async (req: Requ
     const evolutionName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
     const msgType = media_type || 'image';
 
-    await callEvolutionAPI('POST', `/messages/sendMedia/${evolutionName}`, {
+    await callEvolutionAPI('POST', `/message/sendMedia/${evolutionName}`, {
       number: to,
       mediatype: msgType,
       media: media_url,
@@ -155,7 +155,7 @@ router.post('/sendLocation/:name', clientJwtAuth, clientRateLimit, async (req: R
     const msgId = `msg_${uuidv4().substring(0, 12)}`;
     const evolutionName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
 
-    await callEvolutionAPI('POST', `/messages/sendLocation/${evolutionName}`, {
+    await callEvolutionAPI('POST', `/message/sendLocation/${evolutionName}`, {
       number: to,
       latitude,
       longitude,

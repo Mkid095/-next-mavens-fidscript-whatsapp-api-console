@@ -159,7 +159,7 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       for (const recipient of recipients) {
         try {
           if (campaign.message_type === 'text' || !campaign.message_type) {
-            const evoRes: any = await callEvolutionAPI('POST', `/messages/sendText/${evolutionName}`, {
+            const evoRes: any = await callEvolutionAPI('POST', `/message/sendText/${evolutionName}`, {
               number: recipient.phone,
               text: campaign.content,
             });
@@ -173,7 +173,7 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
               failedCount++;
             }
           } else if (campaign.message_type === 'media' && campaign.media_url) {
-            const evoRes: any = await callEvolutionAPI('POST', `/messages/sendMedia/${evolutionName}`, {
+            const evoRes: any = await callEvolutionAPI('POST', `/message/sendMedia/${evolutionName}`, {
               number: recipient.phone,
               mediatype: 'image',
               media: campaign.media_url,
