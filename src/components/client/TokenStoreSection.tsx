@@ -84,15 +84,15 @@ export default function TokenStoreSection({
     es.addEventListener('tokenUpdate', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        // Update token balance
-        if (data.balance != null) {
+        // Only update balance if a valid number is provided
+        if (typeof data.balance === 'number' && data.balance >= 0) {
           onTokenBalanceChange(data.balance);
-        }
-        // If we have a pending payment, show confirmation and clear pending
-        if (pendingRef || pendingCheckoutId) {
-          setPayMsg('Payment confirmed! Tokens added to your balance.');
-          setPendingRef('');
-          setPendingCheckoutId('');
+          // If we have a pending payment, show confirmation and clear pending
+          if (pendingRef || pendingCheckoutId) {
+            setPayMsg('Payment confirmed! Tokens added to your balance.');
+            setPendingRef('');
+            setPendingCheckoutId('');
+          }
         }
       } catch {}
     });
@@ -104,7 +104,7 @@ export default function TokenStoreSection({
     return () => {
       es.close();
     };
-  }, [pendingRef, pendingCheckoutId, onTokenBalanceChange]);
+  }, [onTokenBalanceChange]);
 
   useEffect(() => {
     if (tab === 'history' && txs.length === 0) {

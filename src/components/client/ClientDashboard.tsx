@@ -80,6 +80,11 @@ export default function ClientDashboard({
     onTokenBalanceChange(Math.max(0, tokenBalance - amount));
   }, [tokenBalance, onTokenBalanceChange]);
 
+  // Clear previousBalance when tokenBalance is updated from SSE (real-time sync)
+  useEffect(() => {
+    setPreviousBalance(undefined);
+  }, [tokenBalance]);
+
   const handleLogout = () => {
     localStorage.removeItem('fidscript_client_token');
     onLogout();

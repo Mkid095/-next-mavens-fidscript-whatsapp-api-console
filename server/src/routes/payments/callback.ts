@@ -49,11 +49,12 @@ router.post('/', async (req: Request, res: Response) => {
       // Success
       const pkg = db.prepare('SELECT * FROM token_packages WHERE id = ?').get(payment.package_id) as any;
 
-      let totalTokens = 0;
+      // Use stored token_count if available, otherwise calculate from package or amount
+      let totalTokens = payment.token_count || 0;
       if (pkg) {
         totalTokens = pkg.tokens + pkg.bonus_tokens;
-      } else {
-        // Custom purchase: tokens = amount_kes / 0.11
+      } else if (!totalTokens) {
+        // Custom purchase fallback: tokens = amount_kes / 0.11
         totalTokens = Math.round((payment.amount_kes || 0) / 0.11);
       }
 
@@ -67,7 +68,7 @@ router.post('/', async (req: Request, res: Response) => {
           VALUES (?, ?, 'purchase', ?, ?, ?, 'completed')
         `).run(uuidv4(), client_id, totalTokens, merchant_request_id, mpesa_receipt_number || null);
 
-        db.prepare('UPDATE payments SET status = ?, token_count = ? WHERE id = ?').run('completed', totalTokens, our_payment_id);
+        db.prepare('UPDATE payments SET status = ? WHERE id = ?').run('completed', our_payment_id);
 
         // Emit SSE token update to the client
         const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(client_id) as { token_balance: number } | undefined;
