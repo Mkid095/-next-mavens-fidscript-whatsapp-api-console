@@ -51,7 +51,7 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
       description,
     });
 
-    if (tumaRes.success && tumaRes.data) {
+    if (tumaRes.success && tumaRes.data && tumaRes.data.merchant_request_id) {
       db.prepare(`
         UPDATE payments SET
           payhero_reference = ?,
@@ -59,19 +59,27 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
           status = 'processing'
         WHERE id = ?
       `).run(tumaRes.data.merchant_request_id, tumaRes.data.checkout_request_id, payment_id);
-    }
 
-    res.json({
-      success: true,
-      data: {
-        payment_id,
-        reference: tumaRes.data?.merchant_request_id,
-        checkout_request_id: tumaRes.data?.checkout_request_id,
-        status: tumaRes.message,
-        amount: pkg.price_kes,
-        tokens: pkg.tokens + pkg.bonus_tokens,
-      },
-    });
+      res.json({
+        success: true,
+        data: {
+          payment_id,
+          reference: tumaRes.data.merchant_request_id,
+          checkout_request_id: tumaRes.data.checkout_request_id,
+          status: tumaRes.message,
+          amount: pkg.price_kes,
+          tokens: pkg.tokens + pkg.bonus_tokens,
+        },
+      });
+    } else {
+      // Tuma call failed or returned no data — return error so UI shows failure
+      console.error(`[initiate] Tuma call failed for pkg=${package_id}:`, tumaRes);
+      db.prepare("UPDATE payments SET status = 'failed' WHERE id = ?").run(payment_id);
+      res.json({
+        success: false,
+        error: tumaRes.message || 'Payment request failed. Please try again.',
+      });
+    }
   } catch (error) {
     console.error('Tuma initiate error:', error);
     res.status(500).json({ success: false, error: 'Failed to initiate payment' });
