@@ -61,6 +61,15 @@ check_prerequisites() {
         exit 1
     fi
 
+    # Refuse to deploy with uncommitted changes
+    if [ -n "$(git status --porcelain)" ]; then
+        log_error "Uncommitted changes detected. Commit or stash before deploying. Aborting."
+        echo "" >&2
+        echo "Uncommitted files:" >&2
+        git status --short >&2
+        exit 1
+    fi
+
     log_info "Prerequisites check passed."
 }
 
