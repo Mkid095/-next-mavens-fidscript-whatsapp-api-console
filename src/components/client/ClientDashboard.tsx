@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Client, Instance, TokenPackage, DailyUsage, ClientMessage } from '../../services/api';
 import Sidebar, { ClientSection } from '../Sidebar';
