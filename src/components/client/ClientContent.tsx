@@ -85,7 +85,11 @@ export default function ClientContent({
         />
       )}
       {activeSection === 'messages' && (
-        <MessagesView clientToken={clientToken} />
+        <MessagesView
+          clientToken={clientToken}
+          instances={instances}
+          onTokenDeduct={onTokenDeduct}
+        />
       )}
       {activeSection === 'contacts' && (
         <ContactsSection
