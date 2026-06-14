@@ -6,6 +6,7 @@ import { contactsApi } from '../../../services/api';
 interface ImportContactsModalProps {
   onClose: () => void;
   onContactsImported: (newContacts: { id: string; phone: string; name: string; created_at: string }[]) => void;
+  existingPhones?: Set<string>;
 }
 
 const COUNTRY_OPTIONS = [
@@ -78,13 +79,13 @@ function detectCountry(text: string): string {
   return '';
 }
 
-export default function ImportContactsModal({ onClose, onContactsImported }: ImportContactsModalProps) {
+export default function ImportContactsModal({ onClose, onContactsImported, existingPhones }: ImportContactsModalProps) {
   const [importText, setImportText] = useState('');
   const [importing, setImporting] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('+254');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState('');
-  const [preview, setPreview] = useState<{ phone: string; name: string; normalized: string }[]>([]);
+  const [preview, setPreview] = useState<{ phone: string; name: string; normalized: string; isDuplicate: boolean }[]>([]);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Always-read ref to avoid stale state in callbacks
@@ -93,7 +94,7 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
 
   const selectedCountryData = COUNTRY_OPTIONS.find(c => c.code === selectedCountry);
 
-  const parseAndPreview = (text: string, countryCode: string) => {
+  const parseAndPreview = (text: string, countryCode: string, existing?: Set<string>) => {
     if (!text || !text.trim()) { setPreview([]); return; }
 
     // Split on newlines, keep all non-empty lines
@@ -109,17 +110,23 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
     const firstIsHeader = firstHasLetters && firstPhoneRaw.length < 7;
     const dataLines = firstIsHeader ? lines.slice(1) : lines;
 
-    const parsed: { phone: string; name: string; normalized: string }[] = [];
+    const seenNumbers = new Set<string>();
+    const parsed: { phone: string; name: string; normalized: string; isDuplicate: boolean }[] = [];
     dataLines.forEach((line, i) => {
       const parts = line.split(/[,\t;]/);
       const raw = (parts[0] || '').trim();
       const name = (parts[1] || '').trim();
       const digitsOnly = raw.replace(/\D/g, '');
       if (digitsOnly.length < 7) return; // skip too-short numbers
+      const normalized = normalizeNumber(raw, countryCode);
+      const normalizedDigits = normalized.replace(/^\+/, '');
+      const isDuplicate = seenNumbers.has(normalizedDigits) || (existing?.has(normalizedDigits) ?? false);
+      seenNumbers.add(normalizedDigits);
       parsed.push({
         phone: raw,
         name: name || `Contact ${i + 1}`,
-        normalized: normalizeNumber(raw, countryCode),
+        normalized,
+        isDuplicate,
       });
     });
 
@@ -137,19 +144,19 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
       if (detected) {
         setDetectedCountry(detected);
         setSelectedCountry(detected);
-        parseAndPreview(text, detected);
+        parseAndPreview(text, detected, existingPhones);
         return;
       }
     }
     // Always use the ref so we never use stale state
-    parseAndPreview(text, countryRef.current);
+    parseAndPreview(text, countryRef.current, existingPhones);
   };
 
   const handleCountryChange = (code: string) => {
     setSelectedCountry(code);
     setDetectedCountry(code);
     setShowCountryPicker(false);
-    if (importText.trim()) parseAndPreview(importText, code);
+    if (importText.trim()) parseAndPreview(importText, code, existingPhones);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,15 +170,17 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
       setSelectedCountry(countryFromFile);
     }
     setImportText(text);
-    parseAndPreview(text, country);
+    parseAndPreview(text, country, existingPhones);
   };
 
   const handleImport = async () => {
     if (preview.length === 0) return;
+    const toImport = preview.filter(p => !p.isDuplicate);
+    const skipped = preview.length - toImport.length;
     setImporting(true);
     setError('');
     try {
-      const contacts = preview.map(p => ({ phone: p.normalized, name: p.name }));
+      const contacts = toImport.map(p => ({ phone: p.normalized, name: p.name }));
       const res = await contactsApi.importBatch(contacts);
       if (res.success) {
         const newContacts = contacts.map((c, i) => ({
@@ -296,9 +305,12 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
             </div>
             <div className="max-h-36 overflow-y-auto border border-[#eaebe4] rounded-xl divide-y divide-[#eaebe4]/50">
               {preview.slice(0, 20).map((p, i) => (
-                <div key={i} className="px-3 py-1.5 flex items-center justify-between">
+                <div key={i} className={`px-3 py-1.5 flex items-center justify-between ${p.isDuplicate ? 'opacity-40' : ''}`}>
                   <div>
-                    <p className="text-[10px] font-bold text-forest-deep">{p.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[10px] font-bold text-forest-deep">{p.name}</p>
+                      {p.isDuplicate && <span className="text-[8px] bg-amber-100 text-amber-700 px-1 rounded font-bold">Duplicate</span>}
+                    </div>
                     <p className="text-[9px] text-stone-400 font-mono">{p.phone}</p>
                   </div>
                   <div className="text-right">
@@ -309,6 +321,11 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
               {preview.length > 20 && (
                 <div className="px-3 py-1.5 text-[10px] text-stone-400 text-center">
                   +{preview.length - 20} more
+                </div>
+              )}
+              {preview.some(p => p.isDuplicate) && (
+                <div className="px-3 py-1.5 bg-amber-50 text-[9px] text-amber-700 text-center">
+                  {preview.filter(p => p.isDuplicate).length} duplicate(s) will be skipped
                 </div>
               )}
             </div>
@@ -327,7 +344,7 @@ export default function ImportContactsModal({ onClose, onContactsImported }: Imp
           disabled={preview.length === 0 || importing}
           className="w-full bg-forest-deep hover:bg-[#33301a] text-white py-2.5 rounded-xl text-xs font-bold disabled:opacity-40 transition-all"
         >
-          {importing ? 'Importing...' : `Import ${preview.length} Contacts`}
+          {importing ? 'Importing...' : `Import ${preview.filter(p => !p.isDuplicate).length} Contacts${preview.some(p => p.isDuplicate) ? ` (${preview.filter(p => p.isDuplicate).length} skipped)` : ''}`}
         </button>
       </motion.div>
     </div>

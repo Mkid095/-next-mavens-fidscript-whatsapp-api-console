@@ -5,6 +5,7 @@ import { contactsApi } from '../../../services/api';
 interface AddContactModalProps {
   onClose: () => void;
   onSaved: (contact: { id: string; phone: string; name: string; created_at: string }) => void;
+  existingPhones?: Set<string>;
 }
 
 const COUNTRY_OPTIONS = [
@@ -36,7 +37,7 @@ const COUNTRY_OPTIONS = [
   { code: '+60', country: 'Malaysia' },
 ];
 
-export default function AddContactModal({ onClose, onSaved }: AddContactModalProps) {
+export default function AddContactModal({ onClose, onSaved, existingPhones }: AddContactModalProps) {
   const [name, setName] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('+254');
   const [phoneInput, setPhoneInput] = useState('');
@@ -54,10 +55,15 @@ export default function AddContactModal({ onClose, onSaved }: AddContactModalPro
       setError('Phone number is required');
       return;
     }
+    const fullPhone = selectedCountry + phoneDigits;
+    const normalized = phoneDigits;
+    if (existingPhones?.has(normalized) || existingPhones?.has(fullPhone)) {
+      setError('This phone number is already in your contacts.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
-      const fullPhone = selectedCountry + phoneDigits;
       const res = await contactsApi.importBatch([{ phone: fullPhone, name: name.trim(), tags: tags.trim() }]);
       if (res.success) {
         onSaved({

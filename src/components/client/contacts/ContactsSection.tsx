@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileUp, UserPlus } from 'lucide-react';
+import { Users, FileUp, UserPlus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { contactsApi } from '../../../services/api';
 import type { Client } from '../../../services/api';
@@ -63,6 +63,33 @@ export default function ContactsSection({
     else setSelectedContacts(new Set(contacts.map(c => c.id)));
   };
 
+  const deleteContact = async (id: string) => {
+    try {
+      const res = await contactsApi.delete(id);
+      if (res.success) {
+        setContacts(prev => prev.filter(c => c.id !== id));
+        setSelectedContacts(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }
+    } catch {}
+  };
+
+  const deleteSelected = async () => {
+    if (selectedContacts.size === 0) return;
+    const ids = Array.from(selectedContacts);
+    try {
+      await Promise.all(ids.map(id => contactsApi.delete(id)));
+      setContacts(prev => prev.filter(c => !ids.includes(c.id)));
+      setSelectedContacts(new Set());
+    } catch {}
+  };
+
+  // Normalized phone set for duplicate detection
+  const existingPhones = new Set(contacts.map(c => c.phone.replace(/^\+/, '')));
+
   return (
     <div className="space-y-6">
       <div className="bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
@@ -71,9 +98,22 @@ export default function ContactsSection({
             <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5"><Users className="w-4 h-4 text-yellow-700" /> My Contacts</h3>
             <p className="text-xs text-graphite mt-0.5">{contacts.length} contacts saved.</p>
           </div>
-          <button onClick={() => setShowImportModal(true)} className="px-3.5 py-1.5 bg-forest-deep text-white text-xs font-bold rounded-xl flex items-center gap-1.5">
-            <FileUp className="w-3.5 h-3.5" /> Import Contacts
-          </button>
+          <div className="flex items-center gap-2">
+            {selectedContacts.size > 0 && (
+              <button
+                onClick={deleteSelected}
+                className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-red-100 transition-all"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Delete ({selectedContacts.size})
+              </button>
+            )}
+            <button onClick={() => setShowImportModal(true)} className="px-3.5 py-1.5 bg-forest-deep text-white text-xs font-bold rounded-xl flex items-center gap-1.5">
+              <FileUp className="w-3.5 h-3.5" /> Import Contacts
+            </button>
+            <button onClick={() => setShowAddModal(true)} className="px-3.5 py-1.5 bg-yellow-500 text-stone-950 text-xs font-bold rounded-xl flex items-center gap-1.5">
+              <UserPlus className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {contacts.length > 0 && (
@@ -93,7 +133,7 @@ export default function ContactsSection({
 
         <div className="divide-y divide-stone-100 max-h-[300px] overflow-y-auto mt-2">
           {contacts.length > 0 ? contacts.map((contact) => (
-            <div key={contact.id} className="p-3 flex items-center gap-3 hover:bg-stone-50/50 transition-all">
+            <div key={contact.id} className="p-3 flex items-center gap-3 hover:bg-stone-50/50 transition-all group">
               <input
                 type="checkbox"
                 checked={selectedContacts.has(contact.id)}
@@ -104,6 +144,13 @@ export default function ContactsSection({
                 <p className="text-xs font-bold text-forest-deep truncate">{contact.name}</p>
                 <p className="text-[11px] text-stone-500 font-mono">{contact.phone}</p>
               </div>
+              <button
+                onClick={() => deleteContact(contact.id)}
+                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all shrink-0"
+                title="Delete contact"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           )) : (
             <div className="py-12 text-center text-graphite space-y-3">
@@ -132,6 +179,7 @@ export default function ContactsSection({
           <AddContactModal
             onClose={() => setShowAddModal(false)}
             onSaved={handleContactSaved}
+            existingPhones={existingPhones}
           />
         )}
       </AnimatePresence>
@@ -141,6 +189,7 @@ export default function ContactsSection({
           <ImportContactsModal
             onClose={() => setShowImportModal(false)}
             onContactsImported={handleContactsImported}
+            existingPhones={existingPhones}
           />
         )}
       </AnimatePresence>
