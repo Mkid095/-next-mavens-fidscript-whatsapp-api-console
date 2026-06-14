@@ -27,12 +27,14 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
     // Set webhook for this instance so CONNECTION_UPDATE events are forwarded to us
     const webhookUrl = `${API_BASE_URL}/api/webhook/evolution`;
     callEvolutionAPI('POST', `/webhook/set/${evolutionInstanceName}`, {
-      enabled: true,
-      url: webhookUrl,
-      webhookByEvents: false,
-      webhookBase64: false,
-      headers: {},
-      events: ['CONNECTION_UPDATE', 'QRCODE_UPDATED', 'MESSAGES_UPSERT'],
+      webhook: {
+        enabled: true,
+        url: webhookUrl,
+        webhookByEvents: false,
+        webhookBase64: false,
+        headers: {},
+        events: ['CONNECTION_UPDATE', 'QRCODE_UPDATED', 'MESSAGES_UPSERT'],
+      },
     }).catch(err => console.warn('Failed to set webhook on instance:', err));
 
     const evoRes = await callEvolutionAPI('GET', `/instance/connect/${evolutionInstanceName}`);
