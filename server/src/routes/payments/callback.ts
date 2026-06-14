@@ -27,9 +27,10 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Find payment: try merchant_request_id, checkout_request_id, AND our internal payment_id
+    const lookupId = merchant_request_id || checkout_request_id;
     const payment = db.prepare(
       'SELECT * FROM payments WHERE payhero_reference = ? OR checkout_request_id = ? OR id = ? LIMIT 1'
-    ).get(merchant_request_id || checkout_request_id, checkout_request_id || merchant_request_id, tumaPaymentId) as any;
+    ).get(lookupId, lookupId, tumaPaymentId || null) as any;
 
     console.log(`[callback] lookup by merchant="${merchant_request_id}" checkout="${checkout_request_id}" tumaId="${tumaPaymentId}" => payment=${payment ? 'FOUND id=' + payment.id + ' status=' + payment.status : 'NOT FOUND'}`);
 
