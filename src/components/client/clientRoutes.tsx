@@ -1,4 +1,4 @@
-import { Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ClientDashboard from './ClientDashboard';
 import type { Instance, Client, TokenPackage, DailyUsage } from '../../services/api';
 
@@ -35,9 +35,9 @@ export function ClientRoutes({
   };
 
   return (
-    <>
+    <Routes>
       <Route path="/client" element={<ClientDashboard {...dashboardProps} />} />
       <Route path="/client/:section" element={<ClientDashboard {...dashboardProps} />} />
-    </>
+    </Routes>
   );
 }

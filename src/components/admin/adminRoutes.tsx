@@ -1,4 +1,4 @@
-import { Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { AdminContent } from './AdminContent';
 import type { Instance, Client, ApiLog, AnalyticsData, DailyUsage } from '../../services/api';
@@ -68,9 +68,9 @@ export function AdminRoutes({
   );
 
   return (
-    <>
+    <Routes>
       <Route path="/admin" element={currentUser?.role === 'admin' ? adminLayout : <Navigate to="/login" replace />} />
       <Route path="/admin/:tab" element={currentUser?.role === 'admin' ? adminLayout : <Navigate to="/login" replace />} />
-    </>
+    </Routes>
   );
 }
