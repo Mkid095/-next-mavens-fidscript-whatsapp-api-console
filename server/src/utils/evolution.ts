@@ -62,6 +62,14 @@ export function emitInstanceStateChange(instanceName: string, state: string, pho
   instanceEmitter.emit('stateChange', instanceName, { state, phoneNumber });
 }
 
+/**
+ * Emit a new inbox message event for an instance.
+ * Used by webhook to broadcast incoming messages to subscribed clients.
+ */
+export function emitNewMessage(instanceName: string, message: { id: string; from_number: string; from_name: string; message_type: string; content: string; media_url: string | null; timestamp: string }) {
+  instanceEmitter.emit('newMessage', instanceName, message);
+}
+
 export function generateInstanceToken(): string {
   return `inst_${crypto.randomBytes(16).toString('hex')}`;
 }

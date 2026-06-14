@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../database.js';
-import { callEvolutionAPI, emitInstanceStateChange } from '../utils/evolution.js';
+import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage } from '../utils/evolution.js';
 import { logAuditAction } from '../utils/audit.js';
 
 const router = Router();
@@ -114,6 +114,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
         || (msgObj.documentMessage as { url?: string; mimetype?: string })?.url
         || null;
 
+      const timestamp = new Date().toISOString();
       try {
         db.prepare(`
           INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
@@ -131,6 +132,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
         }
       }
 
+      // Broadcast new message to SSE for real-time inbox
+      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: msgType, content, media_url: mediaUrl, timestamp });
       emitInstanceStateChange(instance.name, 'connected', phone || null);
     }
     res.status(200).json({ success: true, handled: true });

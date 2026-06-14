@@ -8,12 +8,10 @@ const router = Router();
 
 /**
  * GET /api/sse/instance/:name
- * SSE endpoint for real-time instance connection state updates.
- * Clients subscribe to receive events when the instance's connection state changes.
+ * SSE endpoint for real-time instance connection state and inbox message updates.
  * Auth via query param: ?token=<client_jwt>
  */
 router.get('/instance/:name', (req: Request, res: Response) => {
-  // Authenticate via query param (EventSource doesn't support headers)
   const token = req.query.token as string;
   if (!token) {
     res.status(401).json({ success: false, error: 'Token required' });
@@ -32,7 +30,6 @@ router.get('/instance/:name', (req: Request, res: Response) => {
     return;
   }
 
-  // Verify instance belongs to this client
   const instance = db.prepare('SELECT * FROM instances WHERE name = ? AND client_id = ?').get(req.params.name, client.id);
   if (!instance) {
     res.status(404).json({ success: false, error: 'Instance not found' });
@@ -41,33 +38,39 @@ router.get('/instance/:name', (req: Request, res: Response) => {
 
   const instanceName = req.params.name;
 
-  // Set SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
 
-  // Send initial heartbeat comment to establish connection
   res.write(': connected\n\n');
 
   const heartbeat = setInterval(() => {
     res.write(': heartbeat\n\n');
-  }, 30000); // Heartbeat every 30s
+  }, 30000);
 
-  // Handler for state change events on this instance
+  // Broadcast connection state changes
   const stateHandler = (emittedName: string, data: { state: string; phoneNumber: string | null }) => {
     if (emittedName === instanceName) {
-      res.write(`data: ${JSON.stringify({ name: emittedName, ...data })}\n\n`);
+      res.write(`event: stateChange\ndata: ${JSON.stringify({ name: emittedName, ...data })}\n\n`);
+    }
+  };
+
+  // Broadcast new inbox messages
+  const messageHandler = (emittedName: string, message: { id: string; from_number: string; from_name: string; message_type: string; content: string; media_url: string | null; timestamp: string }) => {
+    if (emittedName === instanceName) {
+      res.write(`event: newMessage\ndata: ${JSON.stringify({ name: emittedName, ...message })}\n\n`);
     }
   };
 
   instanceEmitter.on('stateChange', stateHandler);
+  instanceEmitter.on('newMessage', messageHandler);
 
-  // Cleanup on client disconnect
   req.on('close', () => {
     clearInterval(heartbeat);
     instanceEmitter.off('stateChange', stateHandler);
+    instanceEmitter.off('newMessage', messageHandler);
   });
 });
 
