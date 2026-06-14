@@ -1,26 +1,10 @@
 import { Router, Request, Response } from 'express';
 import db from '../../database.js';
 import { adminAuth, clientJwtAuth } from '../../middleware/auth.js';
-import fetch from 'node-fetch';
 
 const router = Router();
 
-const PAYHERO_API_URL = process.env.PAYHERO_API_URL || 'https://backend.payhero.co.ke/api/v2';
-const PAYHERO_BASIC_AUTH = process.env.PAYHERO_BASIC_AUTH || '';
-
-async function payheroRequest(endpoint: string, method: string, body?: object) {
-  const response = await fetch(`${PAYHERO_API_URL}${endpoint}`, {
-    method,
-    headers: {
-      'Authorization': PAYHERO_BASIC_AUTH,
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  return response.json();
-}
-
-// GET /api/payments/status/:reference - Check payment status
+// GET /api/payments/status/:reference - Check payment status by reference
 router.get('/:reference', async (req: Request, res: Response) => {
   try {
     const { reference } = req.params;
@@ -32,29 +16,17 @@ router.get('/:reference', async (req: Request, res: Response) => {
       WHERE p.payhero_reference = ? OR p.checkout_request_id = ?
     `).get(reference, reference) as any;
 
-    if (payment) {
-      return res.json({
-        success: true,
-        data: {
-          status: payment.status,
-          amount: payment.amount_kes,
-          tokens: payment.tokens + payment.bonus_tokens,
-          created_at: payment.created_at,
-        },
-      });
+    if (!payment) {
+      return res.status(404).json({ success: false, error: 'Payment not found' });
     }
 
-    const payheroResponse: any = await payheroRequest(
-      `/transaction-status?reference=${reference}`,
-      'GET'
-    );
-
-    res.json({
+    return res.json({
       success: true,
       data: {
-        status: payheroResponse.status,
-        provider: payheroResponse.provider,
-        transaction_date: payheroResponse.transaction_date,
+        status: payment.status,
+        amount: payment.amount_kes,
+        tokens: (payment.tokens || 0) + (payment.bonus_tokens || 0),
+        created_at: payment.created_at,
       },
     });
   } catch (error) {
@@ -95,16 +67,6 @@ router.get('/history/:clientId', adminAuth, (req: Request, res: Response) => {
     res.json({ success: true, data: payments });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch payment history' });
-  }
-});
-
-// GET /api/payments/wallet-balance - Get Pay Hero wallet balance
-router.get('/wallet-balance', adminAuth, async (req: Request, res: Response) => {
-  try {
-    const balance: any = await payheroRequest('/payments_wallet_balance', 'GET');
-    res.json({ success: true, data: balance });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to fetch wallet balance' });
   }
 });
 
