@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { QrCode, Link2, Link2Off, RefreshCw, Wifi, WifiOff, Trash2, AlertTriangle, X } from 'lucide-react';
+import { QrCode, Link2Off, RefreshCw, Wifi, WifiOff, Trash2, AlertTriangle, X } from 'lucide-react';
 import type { Instance } from '../../../services/api';
 
 interface InstanceCardProps {
   inst: Instance;
-  onConnect: (inst: Instance, mode: 'qr' | 'code') => void;
+  onConnect: (inst: Instance) => void;
   onDisconnect: (inst: Instance) => void;
   onDelete: (inst: Instance) => void;
 }
@@ -59,21 +59,15 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete }
               {!isConnected && !isConnecting && (
                 <>
                   <button
-                    onClick={() => onConnect(inst, 'qr')}
+                    onClick={() => onConnect(inst)}
                     className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1"
                   >
                     <QrCode className="w-3 h-3" /> QR
                   </button>
-                  <button
-                    onClick={() => onConnect(inst, 'code')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1"
-                  >
-                    <Link2 className="w-3 h-3" /> Code
-                  </button>
                 </>
               )}
               {isConnecting && (
-                <button onClick={() => onConnect(inst, 'qr')} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                <button onClick={() => onConnect(inst)} className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg flex items-center gap-1">
                   <RefreshCw className="w-3 h-3" /> Retry
                 </button>
               )}

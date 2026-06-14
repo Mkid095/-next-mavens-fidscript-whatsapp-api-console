@@ -10,10 +10,7 @@ interface UseInstanceConnectionProps {
 export function useInstanceConnection({ instances, onInstancesChange }: UseInstanceConnectionProps) {
   const [pairingInstance, setPairingInstance] = useState<Instance | null>(null);
   const [pairingQR, setPairingQR] = useState<string>('');
-  const [pairingMode, setPairingMode] = useState<'qr' | 'code'>('qr');
-  const [linkCode, setLinkCode] = useState<string>('');
   const [generatingQR, setGeneratingQR] = useState(false);
-  const [connecting, setConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState('');
   const connectionCheckInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const sseRef = useRef<EventSource | null>(null);
@@ -31,38 +28,21 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     };
   }, []);
 
-  const handleConnect = useCallback(async (inst: Instance, mode: 'qr' | 'code') => {
+  const handleConnect = useCallback(async (inst: Instance) => {
     setPairingInstance(inst);
-    setPairingMode(mode);
     setConnectionError('');
-    setConnecting(true);
-
-    if (mode === 'qr') {
-      setGeneratingQR(true);
-      try {
-        const res = await instancesApi.connect(inst.name);
-        if (res.success && res.data) {
-          setPairingQR(res.data.qrcode_image || res.data.qrcode || '');
-        } else {
-          setConnectionError(res.error || 'Failed to generate QR code');
-        }
-      } catch {
-        setConnectionError('Failed to connect to Evolution API');
+    setGeneratingQR(true);
+    try {
+      const res = await instancesApi.connect(inst.name);
+      if (res.success && res.data) {
+        setPairingQR(res.data.qrcode_image || res.data.qrcode || '');
+      } else {
+        setConnectionError(res.error || 'Failed to generate QR code');
       }
-      setGeneratingQR(false);
-    } else {
-      try {
-        const res = await instancesApi.connect(inst.name);
-        if (res.success && res.data?.link_code) {
-          setLinkCode(res.data.link_code);
-        } else {
-          setLinkCode('CODE_REQUESTED');
-        }
-      } catch {
-        setLinkCode('CODE_REQUESTED');
-      }
+    } catch {
+      setConnectionError('Failed to connect to Evolution API');
     }
-    setConnecting(false);
+    setGeneratingQR(false);
   }, []);
 
   const handleSimulateSuccessfulScan = useCallback(() => {
@@ -133,16 +113,12 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     }
     setPairingInstance(null);
     setPairingQR('');
-    setLinkCode('');
   }, []);
 
   return {
     pairingInstance,
     pairingQR,
-    pairingMode,
-    linkCode,
     generatingQR,
-    connecting,
     connectionError,
     handleConnect,
     handleSimulateSuccessfulScan,

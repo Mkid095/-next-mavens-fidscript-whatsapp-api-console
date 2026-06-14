@@ -116,9 +116,7 @@ export default function WhatsAppContainers({
         {pairingInstance && (
           <QRPairingModal
             instance={pairingInstance}
-            mode={pairingMode}
             qrCode={pairingQR}
-            linkCode={linkCode}
             generatingQR={generatingQR}
             connectionError={connectionError}
             onClose={handleClosePairingModal}
