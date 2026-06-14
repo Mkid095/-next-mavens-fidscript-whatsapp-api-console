@@ -162,6 +162,15 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   const handleStartNewChat = () => {
     if (!newChatPhone.trim()) return;
     const phone = newChatPhone.replace(/\D/g, '');
+    // Silently save unknown numbers to contacts
+    const isKnown = savedContacts.some(c => c.phone === phone);
+    if (!isKnown) {
+      contactsApi.importBatch([{ phone, name: newChatName || '' }]).then(res => {
+        if (res.success && res.data?.count > 0) {
+          setSavedContacts(prev => [{ id: `new_${Date.now()}`, phone, name: newChatName || '', tags: '', created_at: new Date().toISOString() }, ...prev]);
+        }
+      });
+    }
     setSelectedPhone(phone);
     setNewChatPhone('');
     setNewChatName('');
@@ -170,7 +179,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
 
   const handleSelectSavedContact = (contact: Contact) => {
     setNewChatPhone(contact.phone);
-    setNewChatName(contact.name);
+    setNewChatName(contact.name || '');
   };
 
   const formatTime = (ts: string) => {

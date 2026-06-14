@@ -81,4 +81,40 @@ router.get('/client-instances', clientJwtAuth, async (req: Request, res: Respons
   }
 });
 
+
+// GET /api/instance/client-settings/:name - Get settings for client's own instance
+router.get('/client-settings/:name', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    const instance = db.prepare(
+      'SELECT * FROM instances WHERE name = ? AND client_id = ?'
+    ).get(req.params.name, req.client?.id) as Instance | undefined;
+    if (!instance) {
+      return res.status(404).json({ success: false, error: 'Instance not found' });
+    }
+    const settings = JSON.parse(instance.settings || '{}');
+    const defaults = { reject_calls: false, groups_ignore: false, always_online: true, read_messages: true, sync_full_history: false };
+    res.json({ success: true, data: { ...defaults, ...settings } });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// POST /api/instance/client-settings/:name - Update settings for client's own instance
+router.post('/client-settings/:name', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    const instance = db.prepare(
+      'SELECT * FROM instances WHERE name = ? AND client_id = ?'
+    ).get(req.params.name, req.client?.id) as Instance | undefined;
+    if (!instance) {
+      return res.status(404).json({ success: false, error: 'Instance not found' });
+    }
+    const current = JSON.parse(instance.settings || '{}');
+    const updated = { ...current, ...req.body };
+    db.prepare('UPDATE instances SET settings = ? WHERE name = ?').run(JSON.stringify(updated), req.params.name);
+    res.json({ success: true, data: updated });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 export default router;

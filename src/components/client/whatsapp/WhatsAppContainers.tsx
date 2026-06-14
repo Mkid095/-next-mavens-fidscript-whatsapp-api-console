@@ -6,6 +6,7 @@ import type { Client, Instance } from '../../../services/api';
 import CreateInstanceModal from './CreateInstanceModal';
 import QRPairingModal from './QRPairingModal';
 import InstanceCard from './InstanceCard';
+import InstanceSettingsModal from './InstanceSettingsModal';
 import { useInstanceConnection } from './useInstanceConnection';
 
 interface WhatsAppContainersProps {
@@ -84,6 +85,7 @@ export default function WhatsAppContainers({
   onTokenDeduct,
 }: WhatsAppContainersProps) {
   const [showNewInstanceModal, setShowNewInstanceModal] = useState(false);
+  const [settingsInstance, setSettingsInstance] = useState<Instance | null>(null);
   const instancesRef = useRef(instances);
   instancesRef.current = instances;
 
@@ -173,6 +175,7 @@ export default function WhatsAppContainers({
                 onConnect={handleConnect}
                 onDisconnect={handleDisconnect}
                 onDelete={handleDeleteInstance}
+                onSettings={setSettingsInstance}
               />
             ))}
           </div>
@@ -197,8 +200,17 @@ export default function WhatsAppContainers({
       </AnimatePresence>
 
       <AnimatePresence>
+        {settingsInstance && (
+          <InstanceSettingsModal
+            inst={settingsInstance}
+            onClose={() => setSettingsInstance(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {pairingInstance && (
-          <QRPairingModal
+            <QRPairingModal
             instance={pairingInstance}
             qrCode={pairingQR}
             generatingQR={generatingQR}

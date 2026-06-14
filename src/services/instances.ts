@@ -81,4 +81,13 @@ export const instancesApi = {
     ),
 
   getClientInstances: () => fetchApi<Instance[]>('/api/instance/client-instances'),
+
+  getClientSettings: (name: string) =>
+    fetchApi<InstanceSettings>(`/api/instance/client-settings/${name}`),
+
+  updateClientSettings: (name: string, settings: Partial<InstanceSettings>) =>
+    fetchApi<InstanceSettings>(`/api/instance/client-settings/${name}`, {
+      method: 'POST',
+      body: JSON.stringify(settings),
+    }),
 };

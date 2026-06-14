@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { QrCode, Link2Off, RefreshCw, Wifi, WifiOff, Trash2, AlertTriangle, X } from 'lucide-react';
+import { QrCode, Link2Off, RefreshCw, Wifi, WifiOff, Trash2, AlertTriangle, X, Settings2 } from 'lucide-react';
 import type { Instance } from '../../../services/api';
 
 interface InstanceCardProps {
@@ -8,9 +8,10 @@ interface InstanceCardProps {
   onConnect: (inst: Instance) => void;
   onDisconnect: (inst: Instance) => void;
   onDelete: (inst: Instance) => void;
+  onSettings: (inst: Instance) => void;
 }
 
-export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete }: InstanceCardProps) {
+export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete, onSettings }: InstanceCardProps) {
   const [confirming, setConfirming] = useState(false);
 
   const isConnected = inst.status === 'connected';
@@ -82,6 +83,13 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete }
                   <Link2Off className="w-3 h-3" /> Disconnect
                 </button>
               )}
+              <button
+                onClick={() => onSettings(inst)}
+                className="text-stone-400 hover:text-forest-deep p-1.5 bg-white border border-stone-200 hover:border-[#d4d4bc] rounded-lg transition-all"
+                title="Settings"
+              >
+                <Settings2 className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={() => setConfirming(true)}
                 className="text-stone-400 hover:text-red-700 p-1.5 bg-white border border-stone-200 hover:border-red-200 rounded-lg transition-all"
