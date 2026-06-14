@@ -211,7 +211,7 @@ export default function TokenStoreSection({
                     </span>
                   )}
                 </div>
-                <div className="text-xl font-black text-forest-deep">{pkg.tokens.toLocaleString()}</div>
+                <div className="text-xl font-black text-forest-deep">{pkg.tokens.toLocaleString()}{pkg.bonus_tokens > 0 && <span className="text-sm font-semibold text-green-600"> +{pkg.bonus_tokens.toLocaleString()}</span>}</div>
                 <div className="text-[10px] text-stone-400 mb-2">tokens</div>
                 <div className="text-sm font-bold text-yellow-700">KES {pkg.price_kes.toLocaleString()}</div>
                 <div className="text-[9px] text-stone-400">KES {(pkg.price_kes / (pkg.tokens + pkg.bonus_tokens)).toFixed(2)}/token</div>
@@ -441,7 +441,7 @@ function PayForm({
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-sm font-bold text-forest-deep">{pkg.name}</h4>
-          <p className="text-xs text-graphite">{pkg.tokens.toLocaleString()} tokens</p>
+          <p className="text-xs text-graphite">{(pkg.tokens + (pkg.bonus_tokens || 0)).toLocaleString()} tokens{(pkg.bonus_tokens || 0) > 0 ? ` (${pkg.tokens.toLocaleString()} + ${pkg.bonus_tokens.toLocaleString()} bonus)` : ''}</p>
         </div>
         <div className="text-right">
           <p className="text-lg font-bold text-yellow-800">KES {pkg.price_kes.toLocaleString()}</p>
