@@ -28,7 +28,7 @@ interface MessagesViewProps {
   onTokenDeduct?: (n: number) => void;
 }
 
-type SidebarTab = 'chats' | 'newchat' | 'bulk';
+type SidebarView = 'chats' | 'bulk';
 
 export default function MessagesView({ clientToken, instances, onTokenDeduct }: MessagesViewProps) {
   const [messages, setMessages] = useState<ClientMessage[]>([]);
@@ -41,7 +41,8 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   const [selectedInstance, setSelectedInstance] = useState<string>('');
   const [showInstancePicker, setShowInstancePicker] = useState(false);
   const [sendingError, setSendingError] = useState('');
-  const [activeTab, setActiveTab] = useState<SidebarTab>('chats');
+  const [sidebarView, setSidebarView] = useState<SidebarView>('chats');
+  const [showNewChatInline, setShowNewChatInline] = useState(false);
   const [showContactProfile, setShowContactProfile] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -165,7 +166,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
 
   const handleSelectConversation = (phone: string) => {
     setSelectedPhone(phone);
-    setActiveTab('chats');
+    setSidebarView('chats');
     setShowContactProfile(false);
   };
 
@@ -202,7 +203,6 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
       : <CheckCircle className="w-3 h-3 text-white/40" />;
   };
 
-  // Group messages by date
   const groupedMessages: { date: string; messages: ClientMessage[] }[] = [];
   let lastDate = '';
   conversationMessages.forEach(msg => {
@@ -221,34 +221,43 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
     <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm flex" style={{ height: '640px' }}>
       {/* Left sidebar */}
       <div className="w-80 border-r border-[#eaebe4] flex flex-col bg-[#fafaf5] shrink-0">
-        {/* Sidebar tabs */}
-        <div className="p-3 border-b border-[#eaebe4]">
-          <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl">
-            <TabButton
-              active={activeTab === 'chats'}
-              onClick={() => setActiveTab('chats')}
-              icon={<MessageCircle className="w-3.5 h-3.5" />}
-              label="Chats"
-              badge={unreadCount > 0 ? unreadCount : undefined}
-            />
-            <TabButton
-              active={activeTab === 'newchat'}
-              onClick={() => setActiveTab('newchat')}
-              icon={<PenSquare className="w-3.5 h-3.5" />}
-              label="New"
-            />
-            <TabButton
-              active={activeTab === 'bulk'}
-              onClick={() => setActiveTab('bulk')}
-              icon={<Zap className="w-3.5 h-3.5" />}
-              label="Bulk"
-            />
+        {/* Sidebar header */}
+        <div className="p-4 border-b border-[#eaebe4]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-forest-deep">Chats</h3>
+              {unreadCount > 0 && (
+                <span className="px-1.5 py-0.5 bg-yellow-500 text-white text-[9px] font-bold rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSidebarView('chats')}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${sidebarView === 'chats' ? 'bg-forest-deep text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+                title="Chats"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setShowNewChatInline(true)}
+                className="w-7 h-7 rounded-lg bg-forest-deep text-white flex items-center justify-center hover:bg-[#33301a] transition-all"
+                title="New chat"
+              >
+                <PenSquare className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setSidebarView('bulk')}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${sidebarView === 'bulk' ? 'bg-yellow-500 text-stone-950' : 'bg-yellow-500 text-stone-950 hover:bg-yellow-400'}`}
+                title="Bulk messages"
+              >
+                <Zap className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Search */}
-        {(activeTab === 'chats') && (
-          <div className="px-3 py-2">
+          {sidebarView === 'chats' && !showNewChatInline && (
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
               <input
@@ -258,11 +267,11 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
                 className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white"
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Container filter chips */}
-        {activeTab === 'chats' && connectedInstances.length > 1 && (
+        {sidebarView === 'chats' && connectedInstances.length > 1 && (
           <div className="px-3 py-2 border-b border-[#eaebe4] flex items-center gap-1.5 overflow-x-auto">
             <button
               onClick={() => setSelectedInstance('')}
@@ -283,39 +292,40 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
           </div>
         )}
 
-        {/* Content based on active tab */}
-        {activeTab === 'chats' && (
-          <ChatList
-            contacts={filteredContacts}
-            selectedPhone={selectedPhone}
-            onSelect={handleSelectConversation}
-            formatTime={formatTime}
-          />
+        {/* Sidebar content */}
+        {sidebarView === 'chats' && (
+          showNewChatInline ? (
+            <NewChatPanelInline
+              savedContacts={savedContacts}
+              clientToken={clientToken}
+              onSelectContact={(phone) => {
+                setSelectedPhone(phone);
+                setShowNewChatInline(false);
+              }}
+              onContactCreated={(contact) => {
+                setSavedContacts(prev => [contact, ...prev]);
+                setSelectedPhone(contact.phone);
+                setShowNewChatInline(false);
+              }}
+              onClose={() => setShowNewChatInline(false)}
+            />
+          ) : (
+            <ChatList
+              contacts={filteredContacts}
+              selectedPhone={selectedPhone}
+              onSelect={handleSelectConversation}
+              formatTime={formatTime}
+            />
+          )
         )}
 
-        {activeTab === 'newchat' && (
-          <NewChatPanel
-            savedContacts={savedContacts}
-            clientToken={clientToken}
-            onSelectContact={(phone, name) => {
-              setSelectedPhone(phone);
-              setActiveTab('chats');
-            }}
-            onContactCreated={(contact) => {
-              setSavedContacts(prev => [contact, ...prev]);
-              setSelectedPhone(contact.phone);
-              setActiveTab('chats');
-            }}
-          />
-        )}
-
-        {activeTab === 'bulk' && (
+        {sidebarView === 'bulk' && (
           <BulkMessagingPanel
             instances={connectedInstances}
             savedContacts={savedContacts}
             clientToken={clientToken}
             onTokenDeduct={onTokenDeduct}
-            onClose={() => setActiveTab('chats')}
+            onClose={() => setSidebarView('chats')}
           />
         )}
       </div>
@@ -323,178 +333,33 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {selectedPhone ? (
-          <>
-            {/* Fixed header */}
-            <div className="p-3 border-b border-[#eaebe4] bg-[#fafaf5] flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <button onClick={() => setSelectedPhone(null)} className="w-7 h-7 rounded-lg hover:bg-stone-200 flex items-center justify-center shrink-0 transition-all">
-                  <ArrowLeft className="w-3.5 h-3.5 text-stone-500" />
-                </button>
-                <div className="w-8 h-8 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
-                  {(selectedContact?.name || selectedPhone).charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-forest-deep truncate">{selectedContact?.name || selectedPhone}</p>
-                  <p className="text-[10px] text-stone-500 font-mono truncate">{selectedPhone}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <button className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="Call">
-                  <Phone className="w-3.5 h-3.5" />
-                </button>
-                <button className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="Video call">
-                  <Video className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={handleOpenContactProfile}
-                  className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all"
-                  title="Contact info"
-                >
-                  <User className="w-3.5 h-3.5" />
-                </button>
-                <button className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="More options">
-                  <MoreVertical className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Instance selector */}
-            <div className="px-4 py-2 border-b border-[#eaebe4] bg-white flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-stone-400 font-medium">Sending from:</span>
-              <div className="relative">
-                <button
-                  onClick={() => setShowInstancePicker(!showInstancePicker)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-[10px] font-bold text-forest-deep transition-all"
-                >
-                  <SmartphoneIcon className="w-3 h-3" />
-                  {selectedInstance || 'All containers'}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-                {showInstancePicker && (
-                  <div className="absolute top-full left-0 mt-1 bg-white border border-[#eaebe4] rounded-xl shadow-lg z-10 min-w-[180px]">
-                    <button
-                      onClick={() => { setSelectedInstance(''); setShowInstancePicker(false); }}
-                      className="w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 border-b border-[#eaebe4] font-bold text-forest-deep"
-                    >
-                      All containers
-                    </button>
-                    {connectedInstances.map(inst => (
-                      <button
-                        key={inst.name}
-                        onClick={() => { setSelectedInstance(inst.name); setShowInstancePicker(false); }}
-                        className={`w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 ${selectedInstance === inst.name ? 'bg-yellow-50 font-bold text-forest-deep' : 'text-stone-600'}`}
-                      >
-                        <div className={`w-1.5 h-1.5 rounded-full ${inst.status === 'connected' ? 'bg-green-500' : 'bg-stone-300'}`} />
-                        {inst.display_name || inst.name}
-                        {inst.phone_number && <span className="text-stone-400 font-mono ml-auto">{inst.phone_number}</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {connectedInstances.length === 0 && (
-                <span className="text-[10px] text-red-500">Connect a container to send messages</span>
-              )}
-            </div>
-
-            {/* Scrollable messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-1 bg-[#f4f4ef]">
-              {groupedMessages.length > 0 ? groupedMessages.map((group, gi) => (
-                <div key={gi}>
-                  <div className="flex items-center justify-center my-3">
-                    <span className="px-3 py-0.5 bg-white/80 backdrop-blur-sm rounded-full text-[9px] font-bold text-stone-500 shadow-sm border border-[#eaebe4]/50">
-                      {group.date}
-                    </span>
-                  </div>
-                  {group.messages.map(msg => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'} mb-1`}
-                      title={formatFullTime(msg.timestamp)}
-                    >
-                      <div className={`max-w-[72%] rounded-2xl px-4 py-2.5 text-xs shadow-sm ${
-                        msg.direction === 'outgoing'
-                          ? 'bg-forest-deep text-white rounded-br-md'
-                          : 'bg-white border border-[#eaebe4] text-forest-deep rounded-bl-md'
-                      }`}>
-                        {msg.media_url && (
-                          msg.message_type === 'image' ? (
-                            <img src={msg.media_url} alt="media" className="rounded-xl w-52 h-52 object-cover mb-2" />
-                          ) : msg.message_type === 'video' ? (
-                            <video src={msg.media_url} controls className="rounded-xl w-52 mb-2" />
-                          ) : (
-                            <div className="flex items-center gap-2 mb-2">
-                              <Paperclip className="w-4 h-4" />
-                              <a href={msg.media_url} target="_blank" rel="noreferrer" className="underline text-[10px]">View media</a>
-                            </div>
-                          )
-                        )}
-                        {msg.message_type === 'location' && (
-                          <div className="flex items-center gap-2 mb-2 text-[10px]">
-                            <MapPin className="w-4 h-4" />
-                            <span>Location</span>
-                          </div>
-                        )}
-                        <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
-                        <div className={`flex items-center gap-1 mt-1.5 ${msg.direction === 'outgoing' ? 'justify-end' : ''}`}>
-                          <span className={`text-[9px] ${msg.direction === 'outgoing' ? 'text-white/50' : 'text-stone-400'}`}>
-                            {formatTime(msg.timestamp)}
-                          </span>
-                          {getStatusIcon(msg)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )) : (
-                <div className="text-center text-stone-400 py-12 space-y-2">
-                  <MessageSquare className="w-8 h-8 mx-auto text-yellow-200" />
-                  <p className="text-xs font-bold text-forest-deep">Start the conversation</p>
-                  <p className="text-[10px] text-graphite">Send a message to {selectedPhone}</p>
-                </div>
-              )}
-              <div ref={bottomRef} />
-            </div>
-
-            {sendingError && (
-              <div className="px-4 py-1.5 bg-red-50 border-t border-red-100 flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-red-600">{sendingError}</span>
-                <button onClick={() => setSendingError('')} className="ml-auto"><X className="w-3 h-3 text-red-400" /></button>
-              </div>
-            )}
-
-            {/* Fixed composer */}
-            <div className="p-3 border-t border-[#eaebe4] bg-white shrink-0">
-              <div className="flex items-end gap-2">
-                <div className="flex-1 relative">
-                  <textarea
-                    ref={textareaRef}
-                    rows={1}
-                    value={replyText}
-                    onChange={e => setReplyText(e.target.value)}
-                    placeholder={`Message ${selectedContact?.name || selectedPhone}...`}
-                    className="w-full px-3 py-2 pr-10 text-xs border border-[#eaebe4] rounded-2xl focus:outline-none focus:border-yellow-500 resize-none bg-stone-50"
-                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReply(); } }}
-                  />
-                  <button className="absolute right-2.5 bottom-2.5 w-5 h-5 text-stone-400 hover:text-stone-600 transition-all">
-                    <Smile className="w-4 h-4" />
-                  </button>
-                </div>
-                <button
-                  onClick={handleSendReply}
-                  disabled={!replyText.trim() || sending || connectedInstances.length === 0}
-                  className="bg-forest-deep hover:bg-[#33301a] text-white p-2.5 rounded-2xl disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
-                >
-                  {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <SendHorizontal className="w-4 h-4" />}
-                </button>
-              </div>
-              <div className="flex items-center gap-3 mt-1.5">
-                <span className="text-[9px] text-stone-400">1 token per text</span>
-              </div>
-            </div>
-          </>
+          <ChatPanel
+            selectedContact={selectedContact}
+            selectedPhone={selectedPhone}
+            selectedContactDetails={selectedContactDetails}
+            conversationMessages={conversationMessages}
+            groupedMessages={groupedMessages}
+            selectedInstance={selectedInstance}
+            connectedInstances={connectedInstances}
+            showInstancePicker={showInstancePicker}
+            sendingError={sendingError}
+            replyText={replyText}
+            sending={sending}
+            textareaRef={textareaRef}
+            bottomRef={bottomRef}
+            onBack={() => setSelectedPhone(null)}
+            onOpenContactProfile={handleOpenContactProfile}
+            onToggleInstancePicker={() => setShowInstancePicker(!showInstancePicker)}
+            onSelectInstance={(name) => { setSelectedInstance(name); setShowInstancePicker(false); }}
+            onClearError={() => setSendingError('')}
+            onReplyTextChange={setReplyText}
+            onSend={handleSendReply}
+            formatTime={formatTime}
+            formatFullTime={formatFullTime}
+            getStatusIcon={getStatusIcon}
+          />
         ) : (
-          <EmptyState activeTab={activeTab} onNewChat={() => setActiveTab('newchat')} />
+          <EmptyState onNewChat={() => setShowNewChatInline(true)} />
         )}
       </div>
 
@@ -514,31 +379,6 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
 }
 
 // ---- Sub-components ----
-
-function TabButton({ active, onClick, icon, label, badge }: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-  badge?: number;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-        active ? 'bg-white text-forest-deep shadow-sm' : 'text-stone-500 hover:text-forest-deep'
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
-      {badge !== undefined && badge > 0 && (
-        <span className="w-4 h-4 rounded-full bg-yellow-500 text-white text-[9px] font-bold flex items-center justify-center">
-          {badge > 9 ? '9+' : badge}
-        </span>
-      )}
-    </button>
-  );
-}
 
 interface ChatListProps {
   contacts: ConversationContact[];
@@ -592,14 +432,15 @@ function ChatList({ contacts, selectedPhone, onSelect, formatTime }: ChatListPro
   );
 }
 
-interface NewChatPanelProps {
+interface NewChatPanelInlineProps {
   savedContacts: Contact[];
   clientToken?: string;
-  onSelectContact: (phone: string, name: string) => void;
+  onSelectContact: (phone: string) => void;
   onContactCreated: (contact: Contact) => void;
+  onClose: () => void;
 }
 
-function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCreated }: NewChatPanelProps) {
+function NewChatPanelInline({ savedContacts, clientToken, onSelectContact, onContactCreated, onClose }: NewChatPanelInlineProps) {
   const [tab, setTab] = useState<'contacts' | 'newnumber'>('contacts');
   const [contactSearch, setContactSearch] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('+254');
@@ -645,7 +486,7 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
         }
       } else {
         const contact = savedContacts.find(c => c.phone === phone)!;
-        onSelectContact(phone, contact.name || phone);
+        onSelectContact(phone);
       }
     } finally {
       setLoading(false);
@@ -654,13 +495,10 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Tabs */}
-      <div className="flex border-b border-[#eaebe4] shrink-0">
+      <div className="flex border-b border-[#eaebe4] shrink-0 items-center">
         <button
           onClick={() => setTab('contacts')}
-          className={`flex-1 py-2.5 text-[11px] font-bold transition-all border-b-2 ${
-            tab === 'contacts' ? 'border-forest-deep text-forest-deep' : 'border-transparent text-stone-400'
-          }`}
+          className={`flex-1 py-2.5 text-[11px] font-bold transition-all border-b-2 ${tab === 'contacts' ? 'border-forest-deep text-forest-deep' : 'border-transparent text-stone-400'}`}
         >
           <div className="flex items-center justify-center gap-1.5">
             <Users className="w-3.5 h-3.5" />
@@ -669,63 +507,58 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
         </button>
         <button
           onClick={() => setTab('newnumber')}
-          className={`flex-1 py-2.5 text-[11px] font-bold transition-all border-b-2 ${
-            tab === 'newnumber' ? 'border-forest-deep text-forest-deep' : 'border-transparent text-stone-400'
-          }`}
+          className={`flex-1 py-2.5 text-[11px] font-bold transition-all border-b-2 ${tab === 'newnumber' ? 'border-forest-deep text-forest-deep' : 'border-transparent text-stone-400'}`}
         >
           <div className="flex items-center justify-center gap-1.5">
             <Phone className="w-3.5 h-3.5" />
             New Number
           </div>
         </button>
+        <button onClick={onClose} className="px-3 py-2 text-stone-400 hover:text-stone-600 transition-all">
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {tab === 'contacts' && (
-          <>
-            {savedContacts.length === 0 ? (
-              <div className="text-center py-8 space-y-2">
-                <Users className="w-8 h-8 mx-auto text-stone-200" />
-                <p className="text-xs font-bold text-forest-deep">No saved contacts</p>
-                <p className="text-[10px] text-graphite">Switch to "New Number" to message anyone</p>
+          savedContacts.length === 0 ? (
+            <div className="text-center py-8 space-y-2">
+              <Users className="w-8 h-8 mx-auto text-stone-200" />
+              <p className="text-xs font-bold text-forest-deep">No saved contacts</p>
+              <p className="text-[10px] text-graphite">Switch to "New Number" to message anyone</p>
+            </div>
+          ) : (
+            <>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                <input
+                  value={contactSearch}
+                  onChange={e => setContactSearch(e.target.value)}
+                  placeholder="Search contacts..."
+                  className="w-full pl-9 pr-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white"
+                />
               </div>
-            ) : (
-              <>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
-                  <input
-                    value={contactSearch}
-                    onChange={e => setContactSearch(e.target.value)}
-                    placeholder="Search contacts..."
-                    className="w-full pl-9 pr-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  {filtered.map(c => (
-                    <button
-                      key={c.id}
-                      onClick={() => onSelectContact(c.phone, c.name || c.phone)}
-                      className="w-full px-3 py-2.5 text-left rounded-xl hover:bg-stone-50 flex items-center gap-3 transition-all border border-transparent hover:border-[#eaebe4]"
-                    >
-                      <div className="w-9 h-9 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
-                        {(c.name || c.phone).charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-forest-deep truncate">{c.name || c.phone}</p>
-                        <p className="text-[10px] text-stone-400 font-mono">{c.phone}</p>
-                      </div>
-                      {c.tags && (
-                        <span className="text-[9px] px-1.5 py-0.5 bg-stone-100 rounded-full text-stone-500 shrink-0">{c.tags}</span>
-                      )}
-                    </button>
-                  ))}
-                  {filtered.length === 0 && (
-                    <p className="text-center text-[11px] text-stone-400 py-4">No contacts match your search</p>
-                  )}
-                </div>
-              </>
-            )}
-          </>
+              <div className="space-y-1">
+                {filtered.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => onSelectContact(c.phone)}
+                    className="w-full px-3 py-2.5 text-left rounded-xl hover:bg-stone-50 flex items-center gap-3 transition-all border border-transparent hover:border-[#eaebe4]"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
+                      {(c.name || c.phone).charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-forest-deep truncate">{c.name || c.phone}</p>
+                      <p className="text-[10px] text-stone-400 font-mono">{c.phone}</p>
+                    </div>
+                    {c.tags && <span className="text-[9px] px-1.5 py-0.5 bg-stone-100 rounded-full text-stone-500 shrink-0">{c.tags}</span>}
+                  </button>
+                ))}
+                {filtered.length === 0 && <p className="text-center text-[11px] text-stone-400 py-4">No contacts match your search</p>}
+              </div>
+            </>
+          )
         )}
 
         {tab === 'newnumber' && (
@@ -737,9 +570,7 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
                   onClick={() => setShowCountryPicker(!showCountryPicker)}
                   className="w-full px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white flex items-center justify-between"
                 >
-                  <span className="font-bold text-forest-deep">
-                    {selectedCountryData?.code} {selectedCountryData?.country}
-                  </span>
+                  <span className="font-bold text-forest-deep">{selectedCountryData?.code} {selectedCountryData?.country}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
                 </button>
                 {showCountryPicker && (
@@ -748,9 +579,7 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
                       <button
                         key={c.code}
                         onClick={() => { setSelectedCountry(c.code); setShowCountryPicker(false); setPhoneInput(''); }}
-                        className={`w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 ${
-                          selectedCountry === c.code ? 'bg-yellow-50 font-bold text-forest-deep' : 'text-stone-600'
-                        }`}
+                        className={`w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 ${selectedCountry === c.code ? 'bg-yellow-50 font-bold text-forest-deep' : 'text-stone-600'}`}
                       >
                         <span className="font-mono text-[10px] text-stone-400 w-10">{c.code}</span>
                         <span>{c.country}</span>
@@ -770,7 +599,7 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
                 <input
                   type="tel"
                   value={phoneInput.replace(selectedCountry, '')}
-                  onChange={e => { handlePhoneChange(e.target.value); }}
+                  onChange={e => handlePhoneChange(e.target.value)}
                   placeholder="712 345 678"
                   className="flex-1 px-3 py-2 text-xs font-mono focus:outline-none bg-white"
                   autoFocus
@@ -811,7 +640,228 @@ function NewChatPanel({ savedContacts, clientToken, onSelectContact, onContactCr
   );
 }
 
-function EmptyState({ activeTab, onNewChat }: { activeTab: SidebarTab; onNewChat: () => void }) {
+interface ChatPanelProps {
+  selectedContact: ConversationContact | undefined;
+  selectedPhone: string;
+  selectedContactDetails: Contact | undefined;
+  conversationMessages: ClientMessage[];
+  groupedMessages: { date: string; messages: ClientMessage[] }[];
+  selectedInstance: string;
+  connectedInstances: Instance[];
+  showInstancePicker: boolean;
+  sendingError: string;
+  replyText: string;
+  sending: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  bottomRef: React.RefObject<HTMLDivElement | null>;
+  onBack: () => void;
+  onOpenContactProfile: () => void;
+  onToggleInstancePicker: () => void;
+  onSelectInstance: (name: string) => void;
+  onClearError: () => void;
+  onReplyTextChange: (v: string) => void;
+  onSend: () => void;
+  formatTime: (ts: string) => string;
+  formatFullTime: (ts: string) => string;
+  getStatusIcon: (msg: ClientMessage) => React.ReactNode;
+}
+
+function ChatPanel({
+  selectedContact,
+  selectedPhone,
+  selectedContactDetails,
+  conversationMessages,
+  groupedMessages,
+  selectedInstance,
+  connectedInstances,
+  showInstancePicker,
+  sendingError,
+  replyText,
+  sending,
+  textareaRef,
+  bottomRef,
+  onBack,
+  onOpenContactProfile,
+  onToggleInstancePicker,
+  onSelectInstance,
+  onClearError,
+  onReplyTextChange,
+  onSend,
+  formatTime,
+  formatFullTime,
+  getStatusIcon,
+}: ChatPanelProps) {
+  return (
+    <>
+      {/* Fixed header */}
+      <div className="p-3 border-b border-[#eaebe4] bg-[#fafaf5] flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button onClick={onBack} className="w-7 h-7 rounded-lg hover:bg-stone-200 flex items-center justify-center shrink-0 transition-all">
+            <ArrowLeft className="w-3.5 h-3.5 text-stone-500" />
+          </button>
+          <div className="w-8 h-8 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
+            {(selectedContact?.name || selectedPhone).charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-forest-deep truncate">{selectedContact?.name || selectedPhone}</p>
+            <p className="text-[10px] text-stone-500 font-mono truncate">{selectedPhone}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <button className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="Call">
+            <Phone className="w-3.5 h-3.5" />
+          </button>
+          <button className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="Video call">
+            <Video className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onOpenContactProfile} className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="Contact info">
+            <User className="w-3.5 h-3.5" />
+          </button>
+          <button className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center text-stone-500 transition-all" title="More options">
+            <MoreVertical className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Instance selector */}
+      <div className="px-4 py-2 border-b border-[#eaebe4] bg-white flex items-center gap-2 shrink-0">
+        <span className="text-[10px] text-stone-400 font-medium">Sending from:</span>
+        <div className="relative">
+          <button
+            onClick={onToggleInstancePicker}
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-[10px] font-bold text-forest-deep transition-all"
+          >
+            <SmartphoneIcon className="w-3 h-3" />
+            {selectedInstance || 'All containers'}
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          {showInstancePicker && (
+            <div className="absolute top-full left-0 mt-1 bg-white border border-[#eaebe4] rounded-xl shadow-lg z-10 min-w-[180px]">
+              <button
+                onClick={() => onSelectInstance('')}
+                className="w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 border-b border-[#eaebe4] font-bold text-forest-deep"
+              >
+                All containers
+              </button>
+              {connectedInstances.map(inst => (
+                <button
+                  key={inst.name}
+                  onClick={() => onSelectInstance(inst.name)}
+                  className={`w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 ${selectedInstance === inst.name ? 'bg-yellow-50 font-bold text-forest-deep' : 'text-stone-600'}`}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${inst.status === 'connected' ? 'bg-green-500' : 'bg-stone-300'}`} />
+                  {inst.display_name || inst.name}
+                  {inst.phone_number && <span className="text-stone-400 font-mono ml-auto">{inst.phone_number}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {connectedInstances.length === 0 && (
+          <span className="text-[10px] text-red-500">Connect a container to send messages</span>
+        )}
+      </div>
+
+      {/* Scrollable messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-1 bg-[#f4f4ef]">
+        {groupedMessages.length > 0 ? groupedMessages.map((group, gi) => (
+          <div key={gi}>
+            <div className="flex items-center justify-center my-3">
+              <span className="px-3 py-0.5 bg-white/80 backdrop-blur-sm rounded-full text-[9px] font-bold text-stone-500 shadow-sm border border-[#eaebe4]/50">
+                {group.date}
+              </span>
+            </div>
+            {group.messages.map(msg => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'} mb-1`}
+                title={formatFullTime(msg.timestamp)}
+              >
+                <div className={`max-w-[72%] rounded-2xl px-4 py-2.5 text-xs shadow-sm ${
+                  msg.direction === 'outgoing'
+                    ? 'bg-forest-deep text-white rounded-br-md'
+                    : 'bg-white border border-[#eaebe4] text-forest-deep rounded-bl-md'
+                }`}>
+                  {msg.media_url && (
+                    msg.message_type === 'image' ? (
+                      <img src={msg.media_url} alt="media" className="rounded-xl w-52 h-52 object-cover mb-2" />
+                    ) : msg.message_type === 'video' ? (
+                      <video src={msg.media_url} controls className="rounded-xl w-52 mb-2" />
+                    ) : (
+                      <div className="flex items-center gap-2 mb-2">
+                        <Paperclip className="w-4 h-4" />
+                        <a href={msg.media_url} target="_blank" rel="noreferrer" className="underline text-[10px]">View media</a>
+                      </div>
+                    )
+                  )}
+                  {msg.message_type === 'location' && (
+                    <div className="flex items-center gap-2 mb-2 text-[10px]">
+                      <MapPin className="w-4 h-4" />
+                      <span>Location</span>
+                    </div>
+                  )}
+                  <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
+                  <div className={`flex items-center gap-1 mt-1.5 ${msg.direction === 'outgoing' ? 'justify-end' : ''}`}>
+                    <span className={`text-[9px] ${msg.direction === 'outgoing' ? 'text-white/50' : 'text-stone-400'}`}>
+                      {formatTime(msg.timestamp)}
+                    </span>
+                    {getStatusIcon(msg)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )) : (
+          <div className="text-center text-stone-400 py-12 space-y-2">
+            <MessageSquare className="w-8 h-8 mx-auto text-yellow-200" />
+            <p className="text-xs font-bold text-forest-deep">Start the conversation</p>
+            <p className="text-[10px] text-graphite">Send a message to {selectedPhone}</p>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {sendingError && (
+        <div className="px-4 py-1.5 bg-red-50 border-t border-red-100 flex items-center gap-2 shrink-0">
+          <span className="text-[10px] text-red-600">{sendingError}</span>
+          <button onClick={onClearError}><X className="w-3 h-3 text-red-400" /></button>
+        </div>
+      )}
+
+      {/* Fixed composer */}
+      <div className="p-3 border-t border-[#eaebe4] bg-white shrink-0">
+        <div className="flex items-end gap-2">
+          <div className="flex-1 relative">
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              value={replyText}
+              onChange={e => onReplyTextChange(e.target.value)}
+              placeholder={`Message ${selectedContact?.name || selectedPhone}...`}
+              className="w-full px-3 py-2 pr-10 text-xs border border-[#eaebe4] rounded-2xl focus:outline-none focus:border-yellow-500 resize-none bg-stone-50"
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+            />
+            <button className="absolute right-2.5 bottom-2.5 w-5 h-5 text-stone-400 hover:text-stone-600 transition-all">
+              <Smile className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            onClick={onSend}
+            disabled={!replyText.trim() || sending || connectedInstances.length === 0}
+            className="bg-forest-deep hover:bg-[#33301a] text-white p-2.5 rounded-2xl disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+          >
+            {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <SendHorizontal className="w-4 h-4" />}
+          </button>
+        </div>
+        <div className="flex items-center gap-3 mt-1.5">
+          <span className="text-[9px] text-stone-400">1 token per text</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function EmptyState({ onNewChat }: { onNewChat: () => void }) {
   return (
     <div className="flex-1 flex items-center justify-center bg-[#fafaf5]">
       <div className="text-center space-y-4 max-w-xs">
@@ -820,11 +870,7 @@ function EmptyState({ activeTab, onNewChat }: { activeTab: SidebarTab; onNewChat
         </div>
         <div>
           <h3 className="text-sm font-bold text-forest-deep">Welcome to Messages</h3>
-          <p className="text-xs text-graphite mt-1">
-            {activeTab === 'bulk'
-              ? 'Select a conversation or start a new chat to begin messaging.'
-              : 'Select a conversation from the list or start a new chat to begin.'}
-          </p>
+          <p className="text-xs text-graphite mt-1">Select a conversation from the list or start a new chat to begin.</p>
         </div>
         <button
           onClick={onNewChat}
