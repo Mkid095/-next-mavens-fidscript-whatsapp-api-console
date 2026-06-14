@@ -50,8 +50,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
   // Find instance by name OR evolution_name (Evolution API sends evolution_name as instance identifier)
   const decodedName = decodeURIComponent(instanceName);
   const instance = db.prepare(
-    'SELECT * FROM instances WHERE name = ? OR evolution_name = ?'
-  ).get(decodedName, decodedName) as { id: number; name: string; evolution_name?: string } | undefined;
+    'SELECT id, name, client_id, evolution_name FROM instances WHERE name = ? OR evolution_name = ?'
+  ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string } | undefined;
   if (!instance) {
     res.status(200).json({ success: true, handled: false, reason: 'instance_not_found' });
     return;
@@ -93,23 +93,48 @@ router.post('/evolution', async (req: Request, res: Response) => {
 
   // Handle MESSAGES_UPSERT — extract phone from sender JID and update instance
   if (event === 'messages.upsert') {
-    // Prefer sender field, fall back to data.key.remoteJid
-    const senderJid = (sender as string | undefined)
-      || (data?.key as { remoteJid?: string } | undefined)?.remoteJid
-      || (data?.sender as string | undefined);
+    const key = data?.key as { remoteJid?: string; fromMe?: boolean; id?: string } | undefined;
+    if (key && !key.fromMe) {
+      // Only handle incoming messages (not our own sent messages)
+      const senderJid = (sender as string | undefined) || key.remoteJid;
+      const phone = senderJid ? extractPhoneFromJid(senderJid) : null;
+      const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
+      const pushName = data?.pushName as string | undefined;
 
-    if (senderJid) {
-      const phone = extractPhoneFromJid(senderJid);
+      // Determine message type and content
+      const msgObj = data?.message as Record<string, unknown> || {};
+      const content = (msgObj.conversation as string)
+        || (msgObj.extendedTextMessage as { text?: string })?.text
+        || (msgObj.imageMessage as { caption?: string })?.caption
+        || (msgObj.videoMessage as { caption?: string })?.caption
+        || (msgObj.documentMessage as { title?: string })?.title
+        || '';
+      const msgType = (data?.messageType as string) || 'text';
+
+      // Extract media URL if present
+      const mediaUrl = (msgObj.imageMessage as { url?: string; mimetype?: string })?.url
+        || (msgObj.videoMessage as { url?: string; mimetype?: string })?.url
+        || (msgObj.documentMessage as { url?: string; mimetype?: string })?.url
+        || null;
+
+      // Save to inbox_messages
+      db.prepare(`
+        INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+      `).run(msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '', msgType, content, mediaUrl);
+
+      // Capture phone from first incoming message
       if (phone) {
-        // Only update phone if not already set
         const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
         if (!current?.phone_number) {
           db.prepare('UPDATE instances SET phone_number = ? WHERE name = ?').run(phone, instance.name);
           logAuditAction(req, 'MESSAGE_RECEIVED', 'instance', String(instance.id), `Phone captured from message: ${phone}`);
-          // Broadcast phone update to SSE subscribers
           emitInstanceStateChange(decodedName, 'connected', phone);
         }
       }
+
+      // Broadcast to SSE for real-time inbox update
+      emitInstanceStateChange(decodedName, 'connected', phone || null);
     }
     res.status(200).json({ success: true, handled: true });
     return;
