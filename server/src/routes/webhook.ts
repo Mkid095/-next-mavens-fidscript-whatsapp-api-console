@@ -85,7 +85,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
 
     db.prepare('UPDATE instances SET status = ?, phone_number = ? WHERE name = ?').run(status, phoneNumber, instance.name);
     logAuditAction(req, 'CONNECTION_STATE', 'instance', String(instance.id), `Webhook: ${instance.name} -> ${status}`);
-    emitInstanceStateChange(instance.name, status, phoneNumber);
+    // Emit using decodedName so it matches what the SSE route subscribes to
+    emitInstanceStateChange(decodedName, status, phoneNumber);
     res.status(200).json({ success: true, handled: true });
     return;
   }
@@ -106,7 +107,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
           db.prepare('UPDATE instances SET phone_number = ? WHERE name = ?').run(phone, instance.name);
           logAuditAction(req, 'MESSAGE_RECEIVED', 'instance', String(instance.id), `Phone captured from message: ${phone}`);
           // Broadcast phone update to SSE subscribers
-          emitInstanceStateChange(instance.name, 'connected', phone);
+          emitInstanceStateChange(decodedName, 'connected', phone);
         }
       }
     }
