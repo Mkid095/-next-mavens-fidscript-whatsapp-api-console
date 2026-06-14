@@ -90,8 +90,30 @@ git_pull() {
     log_success "Git pull completed."
 }
 
+LAST_DEPLOY_FILE="${SCRIPT_DIR}/.last_deploy_commit"
+
+get_last_deploy_commit() {
+    if [ -f "${LAST_DEPLOY_FILE}" ]; then
+        cat "${LAST_DEPLOY_FILE}"
+    else
+        # Fallback: previous commit (for first run)
+        git rev-parse HEAD~1 2>/dev/null || echo ""
+    fi
+}
+
+save_last_deploy_commit() {
+    git rev-parse HEAD > "${LAST_DEPLOY_FILE}"
+}
+
 get_changed_files() {
-    git diff --name-only HEAD~1 2>/dev/null || git diff --name-only HEAD^1 2>/dev/null || echo ""
+    local last_commit
+    last_commit=$(get_last_deploy_commit)
+    if [ -z "${last_commit}" ]; then
+        echo ""
+        return
+    fi
+    # Diff all commits since last deploy against the last deployed commit
+    git diff --name-only "${last_commit}" HEAD 2>/dev/null || echo ""
 }
 
 # =============================================================================
@@ -431,6 +453,7 @@ deploy() {
     esac
 
     log_success "Deployment completed successfully!"
+    save_last_deploy_commit
 }
 
 # =============================================================================

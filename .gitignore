@@ -9,3 +9,4 @@ coverage/
 server/ecosystem.config.cjs
 server/fidscript.db
 server/dist/
+.last_deploy_commit
