@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileUp } from 'lucide-react';
+import { Users, FileUp, UserPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { contactsApi } from '../../../services/api';
 import type { Client } from '../../../services/api';
 import ImportContactsModal from './ImportContactsModal';
+import AddContactModal from './AddContactModal';
 import BulkMessagePanel from './BulkMessagePanel';
 
 interface ContactsSectionProps {
@@ -29,6 +30,7 @@ export default function ContactsSection({
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     if (!clientToken) return;
@@ -38,6 +40,10 @@ export default function ContactsSection({
       }
     });
   }, [clientToken]);
+
+  const handleContactSaved = (contact: Contact) => {
+    setContacts(prev => [contact, ...prev]);
+  };
 
   const handleContactsImported = (newContacts: Contact[]) => {
     setContacts(prev => [...newContacts, ...prev]);
@@ -120,6 +126,15 @@ export default function ContactsSection({
           onTokenDeduct={onTokenDeduct}
         />
       )}
+
+      <AnimatePresence>
+        {showAddModal && (
+          <AddContactModal
+            onClose={() => setShowAddModal(false)}
+            onSaved={handleContactSaved}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showImportModal && (
