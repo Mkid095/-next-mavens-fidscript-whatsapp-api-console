@@ -98,6 +98,22 @@ export function emitTokenUpdate(instanceName: string, newBalance: number) {
   instanceEmitter.emit('tokenUpdate', instanceName, { balance: newBalance });
 }
 
+/**
+ * Emit a read/delivered receipt event for an instance (recipient read our msg).
+ * Pushed to SSE so the inbox flips the message to a blue read tick in real time.
+ */
+export function emitMessageReceipt(instanceName: string, chatId: string, messageId: string, status: string) {
+  instanceEmitter.emit('messageReceipt', instanceName, { chatId, messageId, status });
+}
+
+/**
+ * Emit a presence/typing event for an instance (recipient is composing).
+ * Ephemeral — pushed to SSE so the inbox shows a typing indicator.
+ */
+export function emitPresence(instanceName: string, chatId: string, presence: string, fromName?: string | null) {
+  instanceEmitter.emit('presence', instanceName, { chatId, presence, fromName: fromName ?? null });
+}
+
 export function generateInstanceToken(): string {
   return `inst_${crypto.randomBytes(16).toString('hex')}`;
 }

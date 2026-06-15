@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
 import db from '../database.js';
-import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage } from '../utils/evolution.js';
+import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage, emitMessageReceipt, emitPresence } from '../utils/evolution.js';
 import { parseIncomingMessage } from '../utils/messageParser.js';
 import { logAuditAction } from '../utils/audit.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 import { normalizePhone } from '../utils/phone.js';
 import { resolveConversation } from '../modules/customers/index.js';
-import { dispatchMessageReceived } from '../modules/platform/events/index.js';
+import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
 
 const router = Router();
 
@@ -189,6 +189,51 @@ router.post('/evolution', async (req: Request, res: Response) => {
       emitInstanceStateChange(instance.name, 'connected', phone || null);
       emitDashboardRefresh(instance.client_id);
     }
+    res.status(200).json({ success: true, handled: true });
+    return;
+  }
+
+  // Handle MESSAGES_RECEIPT — recipient read/delivered our message (blue ticks)
+  if (event === 'messages.receipt') {
+    const key = data?.key as { id?: string; remoteJid?: string } | undefined;
+    const receipt = data?.receipt as { id?: string; status?: string } | undefined;
+    const messageId = key?.id || receipt?.id || '';
+    const status = String(receipt?.status || '').toUpperCase();
+    const remoteJid = key?.remoteJid || '';
+    const isGroup = remoteJid.includes('@g.us');
+    const phone = remoteJid ? extractPhoneFromJid(remoteJid) : null;
+    const chatId = isGroup ? remoteJid : (phone ? normalizePhone(phone) : remoteJid);
+
+    if (messageId) {
+      // Flip our outgoing message to read/delivered
+      db.prepare('UPDATE inbox_messages SET is_read = 1 WHERE id = ? AND client_id = ? AND direction = ?')
+        .run(messageId, instance.client_id, 'outgoing');
+
+      const wsCtx = { workspaceId: instance.client_id, userId: instance.client_id, roleId: 'role_0', perms: ['*'] };
+      try {
+        const resolved = await resolveConversation(wsCtx, 'whatsapp', chatId, String(instance.id));
+        if (status === 'READ' || status === 'PLAYED') {
+          dispatchMessageRead(wsCtx, { conversationId: resolved.conversationId, messageId }).catch(() => {});
+        } else if (status === 'DELIVERED' || status === 'DELIVERY') {
+          dispatchMessageDelivered(wsCtx, { conversationId: resolved.conversationId, messageId }).catch(() => {});
+        }
+      } catch { /* resolution optional for receipts */ }
+      emitMessageReceipt(instance.name, chatId, messageId, status || 'READ');
+    }
+    res.status(200).json({ success: true, handled: true });
+    return;
+  }
+
+  // Handle PRESENCE_UPDATE — typing indicator (ephemeral, pushed to SSE only)
+  if (event === 'presence.update') {
+    const remoteJid = (data?.remoteJid as string) || '';
+    const presence = String(data?.presence || (data as Record<string, unknown>)?.status || '');
+    const isGroup = remoteJid.includes('@g.us');
+    const phone = remoteJid ? extractPhoneFromJid(remoteJid) : null;
+    const chatId = isGroup ? remoteJid : (phone ? normalizePhone(phone) : remoteJid);
+    const participant = (data?.participant as string) || remoteJid;
+    const fromName = participant ? extractPhoneFromJid(participant) : null;
+    if (chatId && presence) emitPresence(instance.name, chatId, presence, fromName);
     res.status(200).json({ success: true, handled: true });
     return;
   }

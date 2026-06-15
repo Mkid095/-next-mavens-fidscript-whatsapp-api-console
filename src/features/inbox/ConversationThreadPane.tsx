@@ -4,6 +4,7 @@ import type { Conversation, Instance } from '../../services/api';
 import { useInbox } from '../../data';
 import MessageBubble from './MessageBubble';
 import MessageComposer from './MessageComposer';
+import { useTypingIndicator } from './useTypingIndicator';
 import { priorityStyle, aiStateMeta } from './helpers';
 
 // Center pane — the message thread + composer for the selected conversation.
@@ -15,6 +16,7 @@ interface ConversationThreadPaneProps {
 
 export default function ConversationThreadPane({ conversation, instances, onTokenDeduct }: ConversationThreadPaneProps) {
   const { messages, loading, error, refresh } = useInbox(conversation?.id ?? null);
+  const typing = useTypingIndicator(conversation?.chat_id ?? null);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length, conversation?.id]);
@@ -52,6 +54,17 @@ export default function ConversationThreadPane({ conversation, instances, onToke
         {loading && <p className="text-xs text-stone-400">Loading messages…</p>}
         {error && <p className="text-xs text-red-600">{error}</p>}
         {messages.map((m) => <MessageBubble key={m.id} message={m} />)}
+        {typing && (
+          <div className="mb-2 flex justify-start">
+            <div className="rounded-2xl rounded-bl-sm bg-stone-100 px-3.5 py-2 text-xs text-stone-500">
+              <span className="inline-flex gap-0.5">
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-stone-400 [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-stone-400 [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-stone-400" />
+              </span>
+            </div>
+          </div>
+        )}
         <div ref={endRef} />
       </div>
 

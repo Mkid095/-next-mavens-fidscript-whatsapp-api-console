@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Instance } from '../../../services/api';
+import { emitDataEvent } from '../../../data';
 
 /**
  * Always-on SSE bridge. Owns one EventSource per connected instance for the
@@ -61,6 +62,22 @@ export function useInstanceSSE(
         try {
           const raw = JSON.parse((event as MessageEvent).data);
           window.dispatchEvent(new CustomEvent('sse-token-update', { detail: raw }));
+        } catch { /* malformed payload */ }
+      });
+
+      // Read receipts → flip message to blue tick (inbox refreshes via the data bus)
+      es.addEventListener('messageReceipt', event => {
+        try {
+          const raw = JSON.parse((event as MessageEvent).data) as { chatId: string; messageId: string; status: string };
+          emitDataEvent('message.read', { conversationId: null, messageId: raw.messageId, chatId: raw.chatId });
+        } catch { /* malformed payload */ }
+      });
+
+      // Presence/typing → ephemeral window event (UI-only, not a domain event)
+      es.addEventListener('presence', event => {
+        try {
+          const raw = JSON.parse((event as MessageEvent).data) as { chatId: string; presence: string; fromName: string | null };
+          window.dispatchEvent(new CustomEvent('sse-presence', { detail: raw }));
         } catch { /* malformed payload */ }
       });
     });

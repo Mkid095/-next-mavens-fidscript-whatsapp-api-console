@@ -21,6 +21,7 @@ export function useInbox(conversationId: string | null): UseInboxState {
   const [error, setError] = useState<string | null>(null);
   const received = useDataEvent('message.received');
   const sent = useDataEvent('message.sent');
+  const read = useDataEvent('message.read');
 
   const refresh = useCallback(async () => {
     if (!conversationId) { setMessages([]); return; }
@@ -35,11 +36,12 @@ export function useInbox(conversationId: string | null): UseInboxState {
 
   // Refresh the open thread when a message event for this conversation arrives
   useEffect(() => {
-    if (!received && !sent) return;
+    if (!received && !sent && !read) return;
     const evt = received || sent;
     if (evt?.payload.conversationId === conversationId) refresh();
+    else if (read) refresh(); // read receipt → refresh to flip the blue tick
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [received, sent, conversationId]);
+  }, [received, sent, read, conversationId]);
 
   return { messages, loading, error, refresh };
 }

@@ -69,10 +69,26 @@ router.get('/instance/:name', (req: Request, res: Response) => {
   instanceEmitter.on('stateChange', stateHandler);
   instanceEmitter.on('newMessage', messageHandler);
 
+  // Forward read/delivered receipts (blue ticks) + typing presence
+  const receiptHandler = (emittedName: string, data: { chatId: string; messageId: string; status: string }) => {
+    if (emittedName === instanceName) {
+      res.write(`event: messageReceipt\ndata: ${JSON.stringify({ name: emittedName, ...data })}\n\n`);
+    }
+  };
+  const presenceHandler = (emittedName: string, data: { chatId: string; presence: string; fromName: string | null }) => {
+    if (emittedName === instanceName) {
+      res.write(`event: presence\ndata: ${JSON.stringify({ name: emittedName, ...data })}\n\n`);
+    }
+  };
+  instanceEmitter.on('messageReceipt', receiptHandler);
+  instanceEmitter.on('presence', presenceHandler);
+
   req.on('close', () => {
     clearInterval(heartbeat);
     instanceEmitter.off('stateChange', stateHandler);
     instanceEmitter.off('newMessage', messageHandler);
+    instanceEmitter.off('messageReceipt', receiptHandler);
+    instanceEmitter.off('presence', presenceHandler);
   });
 });
 
