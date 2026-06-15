@@ -17,9 +17,11 @@ export default function StatCards({
   msgCountToday,
   totalTokens,
 }: StatCardsProps) {
-  const safeTokens = Number.isNaN(totalTokens) ? 0 : totalTokens;
-  const safeToday = Number.isNaN(msgCountToday) ? 0 : msgCountToday;
   const safeBalance = typeof tokenBalance === 'number' ? tokenBalance : 0;
+  const safeTokens = typeof totalTokens === 'number' ? totalTokens : 0;
+  const safeToday = typeof msgCountToday === 'number' ? msgCountToday : 0;
+  const safeConnected = typeof connectedInstances === 'number' ? connectedInstances : 0;
+  const safeInstances = Array.isArray(instances) ? instances.length : 0;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -41,7 +43,7 @@ export default function StatCards({
           </div>
           <p className="text-[10px] text-stone-500 font-bold uppercase">Containers</p>
         </div>
-        <p className="text-xl font-black text-forest-deep font-mono">{connectedInstances}/{instances.length}</p>
+        <p className="text-xl font-black text-forest-deep font-mono">{safeConnected}/{safeInstances}</p>
         <p className="text-[10px] text-stone-400 mt-1">Connected instances</p>
       </div>
 
