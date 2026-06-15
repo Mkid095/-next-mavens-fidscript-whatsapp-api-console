@@ -4,7 +4,7 @@ import {
   MessageCircle, PenSquare, Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { clientMessagesApi, contactsApi, instancesApi } from '../../services/api';
+import { clientMessagesApi, contactsApi, instancesApi, refreshDashboard } from '../../services/api';
 import type { ClientMessage, Contact, Instance } from '../../services/api';
 import ChatList from './ChatList';
 import ChatPanel from './ChatPanel';
@@ -147,6 +147,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
         setMessages(prev => [sentMsg, ...prev]);
         setReplyText('');
         onTokenDeduct?.(1);
+        refreshDashboard();
       } else {
         setSendingError(res.error || 'Failed to send message');
       }

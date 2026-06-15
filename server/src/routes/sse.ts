@@ -230,4 +230,24 @@ router.get('/dashboard', (req: Request, res: Response) => {
   });
 });
 
+/**
+ * POST /api/sse/dashboard/refresh
+ * Called by the frontend after a message is sent so dashboard stats update immediately.
+ * Auth via Bearer token.
+ */
+router.post('/dashboard/refresh', (req: Request, res: Response) => {
+  const token = (req.headers.authorization as string | undefined)?.replace('Bearer ', '');
+  if (!token) {
+    res.status(401).json({ success: false, error: 'Token required' });
+    return;
+  }
+  const decoded = verifyToken(token);
+  if (!decoded || decoded.type !== 'client') {
+    res.status(401).json({ success: false, error: 'Invalid token' });
+    return;
+  }
+  dashboardEmitter.emit('msgUpdate', decoded.id);
+  res.json({ success: true });
+});
+
 export default router;

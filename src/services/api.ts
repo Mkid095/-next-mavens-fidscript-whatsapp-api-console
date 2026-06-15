@@ -77,6 +77,15 @@ export function createInstanceSSE(instanceName: string): EventSource {
   return new EventSource(url);
 }
 
+/** Trigger the dashboard SSE to refresh stats (e.g. after sending a message) */
+export async function refreshDashboard(): Promise<void> {
+  const token = localStorage.getItem('fidscript_client_token') || '';
+  await fetchApi('/api/sse/dashboard/refresh', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 // ====================
 // RE-EXPORTS
 // ====================
