@@ -1,8 +1,9 @@
 # FIDScript — Platform Architecture Specification
 
-> **Status:** Authoritative master spec (rev. 2 — 2026-06-15). This is the document the development team builds against before any further coding.
+> **Status:** Authoritative master spec (rev. 3 — 2026-06-15). This is the document the development team builds against before any further coding.
 > **Supersedes:** `docs/CHAT_REDESIGN_SPEC.md` (the chat rebuild is now §13 inside this document).
-> **Phase 1 (backend correctness) is shipped** (`74eb0fe`). This spec defines everything from here forward.
+> **Phase 1 (backend correctness) is shipped** (`74eb0fe`).
+> **Phases 2-5 (Slices A-G) are shipped** (`f54efe9` — G-slice sweep). See [§23 Implementation status](#23-implementation-status) for the truthful per-section current state.
 
 ---
 
@@ -30,6 +31,7 @@
 20. [Migration path from current code](#20-migration-path-from-current-code)
 21. [Phased roadmap](#21-phased-roadmap)
 22. [Conventions, guardrails & verification](#22-conventions-guardrails--verification)
+23. [Implementation status](#23-implementation-status)
 
 ---
 
@@ -825,6 +827,44 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 **Visual:** `lucide-react` only; no emoji chrome; FIDScript palette only; no "WhatsApp"/"Evolution" in UI.
 
 **Per-slice verification (on prod):** real-time push without refresh; send + reply in the same thread (canonical `chatId`); new numbers auto-create customers; tokens change only on successful sends; both builds clean; no file >150 lines in touched paths; `domain_events`/timeline/search-index/rollups populate; permission denials fire correctly.
+
+---
+
+## 23. Implementation status
+
+> **Honest accounting** of what is shipped in production (`f54efe9` — 2026-06-15) versus what the spec describes. Status reflects code that is live on `whatsapp.fidscript.com`, not aspirational claims. Use this table to triage: pick a section marked **Partial** or **Not started** before adding a new feature.
+
+| § | Section | Status | Notes |
+|---|---|---|---|
+| 1–3 | Vision, principles, layered view | ✅ Shipped | Authoritative doc. |
+| 4 | Workspace, teams & access control | ⚠️ Partial | Teams + team members tables exist; `assignee=team` filter works in inbox. Full RBAC + `can()` + WorkspaceContext is not yet enforced across all routes (P11 not yet airtight). |
+| 5 | Event-driven core (the spine) | ✅ Shipped | `EventBus` (`modules/platform/events/bus.ts`) with wildcard `'*'` envelope (`__type`/`__id`/`__workspaceId`/`__actorUserId`); per-type and wildcard subscribers. Catalog of `PlatformEventType`. |
+| 6 | Customer-centric data model | ⚠️ Partial | `customers` + `conversations` + `customer_identifiers` tables exist; inbound messages resolve to canonical customer. AI summary / order linkage not yet wired. |
+| 7 | Customer Timeline | ⚠️ Partial | `timeline_events` table populated; Customer Intelligence drawer reads it. Filters + AI summaries are partial. |
+| 8 | Universal Search | ✅ Shipped | FTS5 virtual table `search_index_fts` (`database/phase6.ts`) with porter-unicode61 tokenization + 3 AFTER triggers; provider JOINs `search_index_fts` with `search_index`; LIKE fallback preserved. |
+| 9 | Inbox assignment, priority, status & SLA | ✅ Shipped | 7 queues (All, Mine, My teams, Unassigned, Urgent, SLA at risk, Resolved) live in `features/inbox/QueueFilter.tsx`. SLA-at-risk query: `response_due_at IS NOT NULL AND status NOT IN ('resolved','closed') AND (breached_at IS NOT NULL OR (first_response_at IS NULL AND response_due_at <= now+1h))`. |
+| 10 | AI governance & handoff | ⚠️ Partial | AI state column on conversations; handoff states authoritative. Agent registry, knowledge hub, `canAgent` enforcement UI not yet built. |
+| 11 | Workflow Builder | ✅ Shipped | Triggers, segments, drip campaigns, step executor live. Visual DAG editor partial. |
+| 12 | Integration Framework & channels | ✅ Shipped | `server/src/channels/{index.ts,whatsapp/connector.ts}` — full 13-type Channel implementation; `parseWhatsAppMessage` exported as authoritative inbound parser. SMS/email/Instagram channels not yet built. |
+| 13 | Analytics pipeline | ⚠️ Partial | `AnalyticsProjector` + rollups populate; admin dashboard charts use mock data (declared "Simulated" in CLAUDE.md). |
+| 14 | Developer ecosystem | ✅ Shipped | `/api/v1` API-key namespace with 11 send types + groups/chats/profile/settings/instance/usage/openapi. Webhooks CRUD + HMAC-SHA256 signed fan-out + exponential backoff (0s/5s/30s/2m/10m, 5 attempts) + `webhook_deliveries` table. Developer logs endpoint. Frontend: `features/developers/{Webhooks,Audit,DevLogs}Tab`. |
+| 15 | Marketing center | ✅ Shipped | Campaigns (segmented / trigger / drip), media library, WhatsApp Status posts. |
+| 16 | Centralized data layer (frontend) | ✅ Shipped | `src/data/{api,hooks,providers,events.ts}` barrel; `AppProviders` mounted; App.tsx migrated. `src/services/*` retained as re-export shim for 36 remaining component importers. |
+| 17 | Feature-folder structure & file rules | ✅ Shipped | SandboxSection 660→138, TokenStoreSection 580→120 (12 + 9 sub-files). No file >150 lines in touched paths. |
+| 18 | Icon & visual system (no emoji chrome) | ✅ Shipped | ~25 brand-string chrome leaks scrubbed. Prompts (`vibe/promptGenerator.ts`) and landing marketing copy retain "WhatsApp API" as legitimate product-context use. |
+| 19 | The Inbox — Phase 2 first surface | ✅ Shipped | 3-pane inbox + Customer Intelligence drawer; receipt/typing/presence SSE; canonical `chatId`; new numbers auto-create customers. |
+| 20 | Migration path | ✅ Done | `services/whatsapp/` → `channels/whatsapp/` complete; data-layer migration in flight (App.tsx done; 36 component importers pending). |
+| 21 | Phased roadmap | 🔄 In progress | Phases 2–5 shipped (`f54efe9`). Phase 6 (commerce + multi-channel) is the next step. |
+| 22 | Conventions, guardrails & verification | ✅ Shipped | No `any` violations in touched files; 8 `catch (err: any)` blocks converted to `err instanceof Error`; raw `fetch()` consolidated to typed wrappers where it lives in the client surface. |
+
+**Next concrete slices to pull off the backlog:**
+
+1. **P11 airtight** — make every route go through `WorkspaceContext`; add `req.can()` enforcement at high-value mutations; close the unscoped-query hole.
+2. **§6.3 customer model** — finish AI summaries + order linkage; promote `customer_identifiers` resolution to handle channel merges.
+3. **§13 charts** — replace the 4 admin chart mocks with real rollup queries.
+4. **§15 visual DAG** — render the workflow editor (the schema is in place; the visual is the gap).
+5. **§10 governance UI** — agent registry + knowledge hub + `canAgent` enforcement panel.
+6. **§20 data-layer migration** — finish the 36 component importers off `src/services/*`.
 
 ---
 
