@@ -25,40 +25,38 @@ function extractPhoneFromJid(sender: string): string | null {
 }
 
 /**
- * Receives CONNECTION_UPDATE and MESSAGES_UPSERT events from Evolution API.
- * Authenticated via apikey in the JSON body (Evolution sends it there, not in a header).
+ * POST /api/webhook/evolution
+ * Receives webhook events from Evolution API (connection.update, messages.upsert, qrcode.updated).
+ * Evolution sends the instance token as the 'apikey' field in the JSON body.
+ * We authenticate by checking the apikey against our global key OR the instance's stored token.
  */
 router.post('/evolution', async (req: Request, res: Response) => {
-  const apiKey = (req.body as { apikey?: string }).apikey;
-  console.log('[WEBHOOK] apikey in body:', apiKey ? 'present' : 'missing');
-  console.log('[WEBHOOK] Raw body:', JSON.stringify(req.body).slice(0, 500));
+  const rawBody = req.body as { event?: string; instance?: string; apikey?: string; data?: Record<string, unknown>; sender?: string };
+  const { event, instance: instanceName, apikey } = rawBody;
 
-  if (apiKey !== EVOLUTION_API_KEY) {
-    console.log('[WEBHOOK] Unauthorized - expected key:', EVOLUTION_API_KEY.slice(0, 10), '... got:', apiKey?.slice(0, 10));
+  // Find instance first so we can validate against its specific token
+  const decodedName = instanceName ? decodeURIComponent(instanceName) : '';
+  const instance = decodedName
+    ? (db.prepare(
+        'SELECT id, name, client_id, evolution_name, instance_token FROM instances WHERE name = ? OR evolution_name = ?'
+      ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string; instance_token: string } | undefined)
+    : undefined;
+
+  const validKey = instance
+    ? (apikey === EVOLUTION_API_KEY || apikey === instance.instance_token)
+    : (apikey === EVOLUTION_API_KEY);
+
+  if (!validKey) {
+    console.log('[WEBHOOK] Unauthorized - apikey mismatch. instance:', instanceName, 'got:', apikey?.slice(0, 10));
     res.status(401).json({ success: false, error: 'Unauthorized' });
     return;
   }
 
-  const { event, instance: instanceName, data, sender } = req.body as {
-    event: string;
-    instance: string;
-    data: Record<string, unknown>;
-    sender?: string;
-  };
+  const { data, sender } = rawBody;
 
-  console.log('[WEBHOOK] event:', event, 'instanceName:', instanceName, 'sender:', sender);
+  console.log('[WEBHOOK] event:', event, 'instanceName:', decodedName, 'sender:', sender);
+  console.log('[WEBHOOK] Instance:', instance ? 'FOUND id=' + instance.id : 'NOT FOUND');
 
-  if (!instanceName) {
-    res.status(400).json({ success: false, error: 'Missing instance name' });
-    return;
-  }
-
-  // Find instance by name OR evolution_name (Evolution API sends evolution_name as instance identifier)
-  const decodedName = decodeURIComponent(instanceName);
-  const instance = db.prepare(
-    'SELECT id, name, client_id, evolution_name FROM instances WHERE name = ? OR evolution_name = ?'
-  ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string } | undefined;
-  console.log('[WEBHOOK] Instance lookup for', decodedName, ':', instance ? 'FOUND id=' + instance.id : 'NOT FOUND');
   if (!instance) {
     res.status(200).json({ success: true, handled: false, reason: 'instance_not_found' });
     return;
