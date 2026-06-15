@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Copy, Check, Eye, EyeOff, ChevronRight, ChevronDown, Bot, Settings, Zap, Globe, CheckSquare, Square, ArrowRight, AlertCircle } from 'lucide-react';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint, type BodyField } from '../../data/apiEndpoints/index';
@@ -686,8 +686,8 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Persist the key secret in wizard-local state so it survives across apiKeys re-fetches
-  const [keySecret, setKeySecret] = useState<string>(apiKey);
+  // Persist the key secret in a ref so it survives across apiKeys re-fetches without stale-closure issues
+  const keySecretRef = useRef<string>(apiKey);
 
   // Which API key is selected in Step 1
   const [selectedKeyId, setSelectedKeyId] = useState<string>('');
@@ -695,23 +695,31 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
   // Auto-select key whenever apiKeys changes
   useEffect(() => {
     if (apiKeys.length === 0) return;
-    // If currently selected key still has its secret in apiKeys, keep it selected
-    if (selectedKeyId && apiKeys.find(k => k.id === selectedKeyId)?.key) return;
-    // Otherwise pick first key with a secret, or just the first key
+    // If the selected key still has its secret in the fresh apiKeys, keep it — ref is already set
+    const currentKey = selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId) : null;
+    if (selectedKeyId && currentKey?.key) {
+      keySecretRef.current = currentKey.key;
+      return;
+    }
+    // Selected key missing secret (apiKeys was re-fetched) — try to preserve ref
     const firstWithSecret = apiKeys.find(k => k.key);
     const first = apiKeys[0];
     const target = firstWithSecret || first;
     if (target) {
       setSelectedKeyId(target.id);
-      setKeySecret(target.key || apiKey);
+      keySecretRef.current = target.key || apiKey;
     }
   }, [apiKeys]);
 
   // Container selection — optional, starts empty
   const [selectedInstance, setSelectedInstance] = useState<string>('');
 
-  // Derive the actual key string: wizard-local secret > apiKeys secret > prop fallback
-  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || keySecret || apiKey || '';
+  // Derive the actual key string: selected key's secret in apiKeys > ref > prop fallback
+  const activeKey =
+    (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null)
+    || keySecretRef.current
+    || apiKey
+    || '';
 
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
@@ -754,7 +762,7 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
               setSelectedInstance={setSelectedInstance}
               onNext={() => setStep(2)}
               onKeySelect={(_id, secret) => {
-                setKeySecret(secret || apiKey);
+                keySecretRef.current = secret || apiKey;
               }}
             />
           </motion.div>
