@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, RefreshCw, CheckCircle, XCircle, Terminal, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clientKeysApi, instancesApi } from '../../services/api';
@@ -32,22 +32,11 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [regenerateKeyId, setRegenerateKeyId] = useState<string | null>(null);
   const [regenerateKeyName, setRegenerateKeyName] = useState('');
 
-  // Track key secrets so they survive getAll() calls (which strip secrets for security)
-  // Persisted to localStorage so secrets survive page refreshes
-  const knownKeySecrets = useRef<Record<string, string>>(
-    JSON.parse(localStorage.getItem('fidscript_key_secrets') || '{}')
-  );
-
   const fetchKeys = async () => {
     if (!clientToken) return;
     const res = await clientKeysApi.getAll();
     if (res.success && res.data) {
-      // Merge in any secrets we already know about (getAll doesn't return them)
-      setApiKeys(res.data.map((k) => ({
-        ...k,
-        last_used: k.last_used || 'Never',
-        key: (k as KeyWithStats).key ?? knownKeySecrets.current[k.id] ?? undefined,
-      })));
+      setApiKeys(res.data.map((k) => ({ ...k, last_used: k.last_used || 'Never' })));
     }
   };
 
@@ -66,8 +55,6 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     const res = await clientKeysApi.create(newKeyName.trim());
     if (res.success && res.data) {
       const created = { ...res.data, last_used: 'Just now' } as KeyWithStats;
-      knownKeySecrets.current[created.id] = created.key; // persist secret
-      localStorage.setItem('fidscript_key_secrets', JSON.stringify(knownKeySecrets.current));
       setApiKeys((prev) => [created, ...prev]);
       // Reveal the full secret once so the owner can copy it before it's masked forever.
       setShowKeyValue((prev) => new Set(prev).add(created.id));
@@ -113,8 +100,6 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
       const res = await clientKeysApi.regenerate(regenerateKeyId);
       if (res.success && res.data) {
         const newKey = res.data.key;
-        knownKeySecrets.current[regenerateKeyId] = newKey; // persist new secret
-        localStorage.setItem('fidscript_key_secrets', JSON.stringify(knownKeySecrets.current));
         setApiKeys((prev) => prev.map((k) => k.id === regenerateKeyId
           ? { ...k, key: newKey, key_prefix: newKey.substring(0, 20), last_used: 'Just now' }
           : k));
@@ -282,9 +267,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
 
         {activeTab === 'vibe' && (
           <VibeWizard
-            apiKey={apiKeys.find(k => k.status === 'Active' && k.key)?.key || ''}
             clientName={undefined}
-            apiKeys={apiKeys.filter(k => k.status === 'Active').map(k => ({ ...k, key: k.key ?? knownKeySecrets.current[k.id] ?? undefined }))}
             instances={clientInstances}
           />
         )}

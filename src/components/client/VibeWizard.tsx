@@ -1,13 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Copy, Check, Eye, EyeOff, ChevronRight, ChevronDown, Bot, Settings, Zap, Globe, CheckSquare, Square, ArrowRight, AlertCircle } from 'lucide-react';
+import { Copy, Check, ChevronRight, ChevronDown, Bot, Settings, CheckSquare, Square, ArrowRight, AlertCircle } from 'lucide-react';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint, type BodyField } from '../../data/apiEndpoints/index';
 import { buildCurl, buildCodeSnippet, type CodeLang } from '../../utils/codegen';
 
 interface VibeWizardProps {
-  apiKey: string;
   clientName?: string;
-  apiKeys: Array<{ id: string; name: string; key?: string; key_prefix?: string; status: string }>;
   instances: Array<{ id: string; name: string; display_name?: string; phone_number?: string; status: string }>;
 }
 
@@ -334,22 +332,17 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 
 // ── Step 1: Credentials ────────────────────────────────────────────────────────
 
-function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelectedKeyId, selectedInstance, setSelectedInstance, onNext }: {
-  apiKey: string;
-  apiKeys: VibeWizardProps['apiKeys'];
+function Step1Credentials({ pastedKey, setPastedKey, instances, selectedInstance, setSelectedInstance, onNext }: {
+  pastedKey: string;
+  setPastedKey: (key: string) => void;
   instances: VibeWizardProps['instances'];
-  selectedKeyId: string;
-  setSelectedKeyId: (id: string) => void;
   selectedInstance: string;
   setSelectedInstance: (name: string) => void;
   onNext: () => void;
-})
-{
-  const [revealed, setRevealed] = useState(false);
+}) {
   const [confirmed, setConfirmed] = useState(false);
 
-  // Resolve the actual key string from selected key ID
-  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || apiKey || '';
+  const isValidKey = pastedKey.startsWith('fidscript_live_') || pastedKey.startsWith('fidscript_test_');
 
   return (
     <div className="space-y-5">
@@ -364,25 +357,28 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
       </div>
 
       <div className="space-y-4">
-        {/* API Key dropdown */}
+        {/* API Key paste input */}
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">API Key</label>
-          <select
-            value={selectedKeyId}
-            onChange={e => {
-              setSelectedKeyId(e.target.value);
-            }}
-            className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
-          >
-            <option value="">— Select a key —</option>
-            {apiKeys.map(k => (
-              <option key={k.id} value={k.id}>
-                {k.name} — {k.key_prefix || (k.key ? k.key.substring(0, 12) : '••••••••')}{k.key ? '…' : ''} [{k.status}]
-              </option>
-            ))}
-          </select>
-          {apiKeys.length === 0 && (
-            <p className="text-[9px] text-amber-600 mt-1">No API keys found. Generate one in the "My API Keys" tab first.</p>
+          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Paste Your API Key</label>
+          <input
+            type="text"
+            value={pastedKey}
+            onChange={e => setPastedKey(e.target.value)}
+            placeholder="fidscript_live_xxxxxxxxxxxx"
+            className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep placeholder:text-stone-400"
+          />
+          {pastedKey && !isValidKey && (
+            <p className="text-[9px] text-red-500 mt-1">Key must start with fidscript_live_ or fidscript_test_</p>
+          )}
+          {isValidKey && (
+            <p className="text-[9px] text-green-600 mt-1 flex items-center gap-1">
+              <Check className="w-3 h-3" /> Valid key format
+            </p>
+          )}
+          {!pastedKey && (
+            <p className="text-[9px] text-stone-400 mt-1">
+              No key stored — paste the one you saved when it was created.
+            </p>
           )}
         </div>
 
@@ -403,28 +399,16 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
           </select>
         </div>
 
-        {/* Key reveal + base URL — only show if we have a key */}
-        {activeKey && (
-          <div className="p-3 bg-stone-50 border border-[#eaebe4] rounded-xl space-y-2">
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700 select-all truncate">
-                {revealed ? activeKey : activeKey.substring(0, 16) + '••••••••••••••••••••'}
-              </code>
-              <button onClick={() => setRevealed(v => !v)} className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors shrink-0">
-                {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700">{PUBLIC_API_BASE}</code>
-              <CopyButton text={PUBLIC_API_BASE} label="Copy" />
-            </div>
-          </div>
-        )}
+        {/* Base URL */}
+        <div className="flex items-center gap-2">
+          <code className="flex-1 text-[11px] font-mono bg-stone-50 border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700">{PUBLIC_API_BASE}</code>
+          <CopyButton text={PUBLIC_API_BASE} label="Copy" />
+        </div>
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
           <p className="text-[10px] text-amber-900 leading-relaxed">
-            This prompt will embed your API key and container name if set. Only use this wizard on a trusted device and paste the result into your AI coding assistant.
+            Paste the API key you saved when it was created. Keys are only shown once. The key and container name will be embedded in the generated prompt.
           </p>
         </div>
 
@@ -433,7 +417,7 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${confirmed ? 'bg-forest-deep border-forest-deep' : 'border-stone-300'}`}>
             {confirmed && <Check className="w-3 h-3 text-white" />}
           </button>
-          <span className="text-[11px] text-graphite">I understand credentials may be embedded in the generated prompt</span>
+          <span className="text-[11px] text-graphite">I understand credentials will be embedded in the generated prompt</span>
         </label>
       </div>
 
@@ -682,27 +666,14 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 
 // ── Main wizard ──────────────────────────────────────────────────────────────
 
-export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
+export default function VibeWizard({ clientName, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Initialize selectedKeyId from the first key that has a secret — runs synchronously on mount
-  const [selectedKeyId, setSelectedKeyId] = useState<string>(() => {
-    const firstWithSecret = apiKeys.find(k => k.key);
-    return firstWithSecret?.id || apiKeys[0]?.id || '';
-  });
-
-  // Sync selectedKeyId if apiKeys changes to a longer list (e.g. new key created)
-  useEffect(() => {
-    if (apiKeys.length === 0) return;
-    if (apiKeys.find(k => k.id === selectedKeyId)) return; // still valid
-    setSelectedKeyId(apiKeys.find(k => k.key)?.id || apiKeys[0]?.id || '');
-  }, [apiKeys]);
+  // The API key is pasted by the user — it's not retrievable from the server after creation
+  const [pastedKey, setPastedKey] = useState<string>('');
 
   // Container selection — optional, starts empty
   const [selectedInstance, setSelectedInstance] = useState<string>('');
-
-  // Derive the actual key string from selected key
-  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || apiKey || '';
 
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
@@ -736,11 +707,9 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
         {step === 1 && (
           <motion.div key="step1" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
             <Step1Credentials
-              apiKey={apiKey}
-              apiKeys={apiKeys}
+              pastedKey={pastedKey}
+              setPastedKey={setPastedKey}
               instances={instances}
-              selectedKeyId={selectedKeyId}
-              setSelectedKeyId={setSelectedKeyId}
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}
               onNext={() => setStep(2)}
@@ -755,7 +724,7 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
         {step === 3 && (
           <motion.div key="step3" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
             <Step3Prompt
-              apiKey={activeKey}
+              apiKey={pastedKey}
               clientName={clientName}
               selectedEps={selectedEps}
               instanceName={selectedInstance}
