@@ -88,6 +88,15 @@ export function finalize(ctx: SendContext, msgId: string, to: string, content: s
  * gateway call. The first completed result (success OR failure) is cached, so a
  * retried failed send with the same key returns the same error without retrying.
  */
+/** 7-day TTL for idempotency key cache entries. */
+const IDEMPOTENCY_TTL_DAYS = 7;
+
+function ttlDate(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + IDEMPOTENCY_TTL_DAYS);
+  return d.toISOString();
+}
+
 export function wrapSend<A>(
   sender: (ctx: SendContext, args: A) => Promise<SendResult>,
 ): (ctx: SendContext, args: A) => Promise<SendResult> {
@@ -103,8 +112,8 @@ export function wrapSend<A>(
     const result = await sender(ctx, args);
     if (key) {
       try {
-        db.prepare('INSERT OR IGNORE INTO idempotency_keys (id, client_id, response_json, status_code, created_at) VALUES (?, ?, ?, ?, ?)')
-          .run(key, ctx.client.id, JSON.stringify(result), isOkResult(result) ? 200 : result.status, new Date().toISOString());
+        db.prepare('INSERT OR IGNORE INTO idempotency_keys (id, client_id, response_json, status_code, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)')
+          .run(key, ctx.client.id, JSON.stringify(result), isOkResult(result) ? 200 : result.status, new Date().toISOString(), ttlDate());
       } catch { /* ignore insert errors */ }
     }
     return result;

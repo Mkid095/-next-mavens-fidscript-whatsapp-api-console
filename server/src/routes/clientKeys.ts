@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import { clientJwtAuth } from '../middleware/auth.js';
 import db from '../database.js';
 
@@ -26,9 +27,10 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const apiKey = `fidscript_live_${crypto.randomBytes(16).toString('hex')}`;
     const id = `key_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const keyHash = bcrypt.hashSync(apiKey, 10);
     db.prepare(
-      'INSERT INTO client_api_keys (id, client_id, name, api_key) VALUES (?, ?, ?, ?)'
-    ).run(id, req.client!.id, name, apiKey);
+      'INSERT INTO client_api_keys (id, client_id, name, api_key, key_hash) VALUES (?, ?, ?, ?, ?)'
+    ).run(id, req.client!.id, name, apiKey, keyHash);
     res.json({ success: true, data: { id, name, key: apiKey, status: 'Active', created_at: new Date().toISOString() } });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
@@ -56,8 +58,9 @@ router.post('/:id/regenerate', clientJwtAuth, async (req: Request, res: Response
       return res.status(404).json({ success: false, error: 'Active key not found' });
     }
     const apiKey = `fidscript_live_${crypto.randomBytes(16).toString('hex')}`;
-    db.prepare('UPDATE client_api_keys SET api_key = ?, created_at = CURRENT_TIMESTAMP WHERE id = ? AND client_id = ?')
-      .run(apiKey, req.params.id, req.client!.id);
+    const keyHash = bcrypt.hashSync(apiKey, 10);
+    db.prepare('UPDATE client_api_keys SET api_key = ?, key_hash = ?, created_at = CURRENT_TIMESTAMP WHERE id = ? AND client_id = ?')
+      .run(apiKey, keyHash, req.params.id, req.client!.id);
     res.json({ success: true, data: { id: req.params.id, key: apiKey } });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });

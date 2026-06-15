@@ -6,10 +6,14 @@ import { RouteId, RouteConfig, routes } from './endpointsData';
 
 export type { RouteId, RouteConfig } from './endpointsData';
 
+// Evolution API base — admin console talks directly to the gateway
+const EVO_BASE = 'http://localhost:8080';
+const EVO_API_KEY = '94977bc1fcb107c79d0687caea800bdb74edd67b5022771fc85c22ee389ca7e8';
+
 export default function ApiConsoleView() {
   const [selectedRoute, setSelectedRoute] = useState<RouteId>('sendText');
   const [targetInstance, setTargetInstance] = useState('soostori');
-  const [customApiKey, setCustomApiKey] = useState('NM_EVO_LIVE_df3c6...2e6');
+  const [customApiKey, setCustomApiKey] = useState(EVO_API_KEY);
   const [destinationPhone, setDestinationPhone] = useState('254732203353');
   const [messageBody, setMessageBody] = useState('Habari! Your Safaricom payment has been confirmed.');
   const [mpesaAmount, setMpesaAmount] = useState('1,500');
@@ -28,40 +32,62 @@ export default function ApiConsoleView() {
     }
   };
 
-  const handleRunRequest = () => {
+  const handleRunRequest = async () => {
     setIsRunning(true);
     setResponseCode(null);
     setResponseBody('');
 
-    setTimeout(() => {
-      setIsRunning(false);
-      setResponseCode(200);
-      let payloadResult: Record<string, unknown> = {};
+    const apiKey = customApiKey || EVO_API_KEY;
+    const path = getEndpointPath();
+    const url = `${EVO_BASE}${path}`;
 
-      if (selectedRoute === 'sendText') {
-        payloadResult = {
-          status: "success",
-          messageId: `NM_EVO_MSG_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-          timestamp: new Date().toISOString(),
-          instance: targetInstance,
-          payload: { phone: destinationPhone, message: messageBody, device_pacing_ms: 250, status: "PENDING_HANDSHAKE" },
-          telemetry: { datacenter: "nairobi-node-01", latency: "14ms" },
-        };
-      } else if (selectedRoute === 'connectionState') {
-        payloadResult = {
-          name: targetInstance, status: "connected",
-          owner: { phone: "254732203353", pushName: "Soostori Kenya" },
-          handshake: { connected_at: new Date().toISOString(), uptime_seconds: 345000, device: "Android 13.0 (Evolution Native)" },
-        };
-      } else {
-        payloadResult = {
-          mpesa_service: "C2B_daraja_automated_hook", status: "PROCESSED",
-          transaction_ref: mpesaRef, amount: parseFloat(mpesaAmount.replace(/,/g, '')),
-          sender_phone: destinationPhone, whatsapp_receipt_dispatch: { status: "SENT", gateway_delay_ms: 18 },
-        };
-      }
-      setResponseBody(JSON.stringify(payloadResult, null, 2));
-    }, 700);
+    let body: string | undefined;
+    let method = selectedConfig.method;
+
+    if (selectedRoute === 'sendText') {
+      body = JSON.stringify({ number: destinationPhone, text: messageBody });
+    } else if (selectedRoute === 'mpesaCallback') {
+      body = JSON.stringify({
+        Body: {
+          stkCallback: {
+            MerchantRequestID: `test_${Date.now()}`,
+            CheckoutRequestID: mpesaRef,
+            ResultCode: 0,
+            ResultDesc: 'The service request is processed successfully.',
+            CallbackMetadata: {
+              Item: [
+                { Name: 'Amount', Value: parseFloat(mpesaAmount.replace(/,/g, '')) },
+                { Name: 'MpesaReceiptNumber', Value: `TEST${mpesaRef}` },
+                { Name: 'PhoneNumber', Value: destinationPhone },
+              ],
+            },
+          },
+        },
+      });
+    }
+
+    try {
+      const opts: RequestInit = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': apiKey,
+        },
+      };
+      if (body) opts.body = body;
+
+      const res = await fetch(url, opts);
+      setResponseCode(res.status);
+      const text = await res.text();
+      // Try to pretty-print JSON
+      try { setResponseBody(JSON.stringify(JSON.parse(text), null, 2)); }
+      catch { setResponseBody(text); }
+    } catch (err) {
+      setResponseCode(0);
+      setResponseBody(`Connection error: ${err instanceof Error ? err.message : String(err)}\n\nIs the Evolution API gateway running on localhost:8080?`);
+    }
+
+    setIsRunning(false);
   };
 
   return (
@@ -69,7 +95,7 @@ export default function ApiConsoleView() {
       <div>
         <h1 className="text-xl font-bold tracking-tight text-forest-deep">FIDScript REST Sandbox</h1>
         <p className="text-xs text-graphite mt-1">
-          Dry-run secure POST / GET requests to check WhatsApp payload parameters and Daraja callback events.
+          Dry-run secure POST / GET requests against the Evolution API gateway to test WhatsApp payload parameters and Daraja callback events.
         </p>
       </div>
 

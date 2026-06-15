@@ -23,7 +23,7 @@ export default function ResponseViewer({ isRunning, responseCode, responseBody, 
       <div className="p-4 bg-[#11211b] border-b border-[#1b3129] flex items-center justify-between text-[#cbd4d0]">
         <div className="flex items-center gap-2">
           <Terminal className="w-4 h-4 text-emerald-400" />
-          <span className="font-mono text-[11px] font-bold">Evolution Server Core Terminal</span>
+          <span className="font-mono text-[11px] font-bold">FIDScript Gateway Terminal</span>
         </div>
         {responseCode && (
           <span className="px-2.5 py-0.5 rounded-full text-[9px] uppercase font-bold font-mono bg-[#10b981]/15 text-emerald-400 border border-emerald-500/20">

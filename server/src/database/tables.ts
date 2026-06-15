@@ -21,12 +21,17 @@ export function createTables(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS clients (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, phone TEXT,
-      api_key TEXT UNIQUE NOT NULL, plan_id TEXT REFERENCES plans(id),
+      api_key TEXT UNIQUE NOT NULL, key_hash TEXT,
+      plan_id TEXT REFERENCES plans(id),
       is_active INTEGER DEFAULT 1, token_balance INTEGER DEFAULT 500,
       msg_count_today INTEGER DEFAULT 0, total_messages INTEGER DEFAULT 0,
       last_reset TEXT DEFAULT CURRENT_TIMESTAMP, created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Migration: add key_hash columns if missing
+  try { db.run('ALTER TABLE clients ADD COLUMN key_hash TEXT'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE client_api_keys ADD COLUMN key_hash TEXT'); } catch (e: any) { /* already exists */ }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS instances (
@@ -117,9 +122,12 @@ export function createTables(db: Database): void {
     CREATE TABLE IF NOT EXISTS idempotency_keys (
       id TEXT PRIMARY KEY, client_id TEXT REFERENCES clients(id),
       response_json TEXT NOT NULL, status_code INTEGER,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP, expires_at TEXT
     )
   `);
+
+  // Migration: add expires_at column if missing
+  try { db.run('ALTER TABLE idempotency_keys ADD COLUMN expires_at TEXT'); } catch (e: any) { /* already exists */ }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS deploy_versions (

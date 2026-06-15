@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import db from '../../database.js';
 import { adminAuth } from '../../middleware/auth.js';
 
@@ -41,8 +42,9 @@ router.post('/', (req: Request, res: Response) => {
 
     const id = `cli_${uuidv4().substring(0, 8)}`;
     const apiKey = generateApiKey();
+    const keyHash = bcrypt.hashSync(apiKey, 10);
 
-    db.prepare(`INSERT INTO clients (id, name, email, phone, api_key, plan_id) VALUES (?, ?, ?, ?, ?, ?)`).run(id, name, email, phone || null, apiKey, plan_id || null);
+    db.prepare(`INSERT INTO clients (id, name, email, phone, api_key, key_hash, plan_id) VALUES (?, ?, ?, ?, ?, ?, ?)`).run(id, name, email, phone || null, apiKey, keyHash, plan_id || null);
 
     const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(id);
 

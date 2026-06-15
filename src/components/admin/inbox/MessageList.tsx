@@ -1,6 +1,6 @@
 import React from 'react';
 import { InboxMessage } from '../../../types';
-import { Mail, MailOpen } from 'lucide-react';
+import { Mail, MailOpen, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 
 interface MessageListProps {
   messages: InboxMessage[];
@@ -12,10 +12,13 @@ export default function MessageList({ messages, selectedMsg, onSelect }: Message
   return (
     <div className="space-y-3">
       <span className="block font-mono text-[9px] uppercase font-bold tracking-widest text-[#15803d]">
-        Secure Payload Inbox
+        Webhook Events
       </span>
 
       <div className="divide-y divide-stone-100 border border-[#e1e9e5]/80 bg-white rounded-3xl shadow-sm overflow-hidden">
+        {messages.length === 0 && (
+          <div className="p-8 text-center text-stone-400 text-xs">No messages</div>
+        )}
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -26,25 +29,39 @@ export default function MessageList({ messages, selectedMsg, onSelect }: Message
                 : 'hover:bg-eco-bg/30'
             } ${!msg.read ? 'bg-[#10b981]/5 font-semibold' : ''}`}
           >
-            <div className="mt-1 shrink-0 bg-[#f0f4f2] p-2 rounded-xl text-emerald-700">
-              {msg.read ? (
-                <MailOpen className="w-4 h-4 text-[#5c7266]" />
-              ) : (
-                <Mail className="w-4 h-4 text-emerald-600 animate-pulse" />
-              )}
+            {/* Direction indicator */}
+            <div className={`mt-1 shrink-0 p-2 rounded-xl ${
+              msg.direction === 'incoming' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
+            }`}>
+              {msg.direction === 'incoming'
+                ? <ArrowDownLeft className="w-4 h-4" />
+                : <ArrowUpRight className="w-4 h-4" />
+              }
             </div>
 
             <div className="flex-1 space-y-1 min-w-0 font-sans">
               <div className="flex items-center justify-between gap-2 text-[10px] text-graphite">
-                <span className="font-bold uppercase tracking-wider text-emerald-800">
-                  {msg.from_name || msg.from_number}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold uppercase tracking-wider text-emerald-800">
+                    {msg.from_name || msg.from_number}
+                  </span>
+                  {msg.message_type && msg.message_type !== 'text' && (
+                    <span className="text-[8px] font-mono text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">
+                      {msg.message_type}
+                    </span>
+                  )}
+                </div>
                 <span className="font-mono text-[9px]">{new Date(msg.timestamp).toLocaleDateString()}</span>
               </div>
 
-              <h3 className="text-xs font-bold text-forest-deep truncate">{msg.content.substring(0, 50)}</h3>
+              <h3 className="text-xs font-bold text-forest-deep truncate">{msg.content?.substring(0, 50) || '(no content)'}</h3>
               <p className="text-[11px] text-[#4d6458] truncate">{msg.content}</p>
             </div>
+
+            {/* Unread dot */}
+            {!msg.read && (
+              <div className="shrink-0 mt-2 w-2 h-2 rounded-full bg-emerald-500" />
+            )}
           </div>
         ))}
       </div>

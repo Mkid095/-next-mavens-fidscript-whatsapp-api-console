@@ -38,4 +38,9 @@ export interface InboxMessage {
   content: string;
   timestamp: string;
   read: boolean;
+  direction?: 'incoming' | 'outgoing';
+  message_type?: string;
+  raw_payload?: string;
+  instance_name?: string;
+  media_url?: string;
 }

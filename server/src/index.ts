@@ -21,6 +21,16 @@ async function startServer() {
   try {
     await initializeDatabase();
 
+    // Prune expired idempotency keys on every startup (7-day TTL)
+    try {
+      const result = db.prepare(`
+        DELETE FROM idempotency_keys
+        WHERE (expires_at IS NOT NULL AND expires_at < datetime('now'))
+           OR (expires_at IS NULL AND created_at < datetime('now', '-7 days'))
+      `).run();
+      if (result.changes > 0) console.log(`🧹 Pruned ${result.changes} expired idempotency keys`);
+    } catch (e) { /* non-fatal */ }
+
     // Security middleware
     app.use(helmet());
     app.use(cors({

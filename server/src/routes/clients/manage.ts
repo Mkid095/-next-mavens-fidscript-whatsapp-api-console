@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import db from '../../database.js';
 import { adminAuth } from '../../middleware/auth.js';
 import type { Client } from '../../types.js';
@@ -53,7 +54,8 @@ router.post('/:id/reset-key', (req: Request, res: Response) => {
     }
 
     const newApiKey = generateApiKey();
-    db.prepare('UPDATE clients SET api_key = ? WHERE id = ?').run(newApiKey, req.params.id);
+    const keyHash = bcrypt.hashSync(newApiKey, 10);
+    db.prepare('UPDATE clients SET api_key = ?, key_hash = ? WHERE id = ?').run(newApiKey, keyHash, req.params.id);
 
     logAuditAction(req, 'RESET_KEY', 'client', req.params.id, `API key reset for ${client.name}`);
 
