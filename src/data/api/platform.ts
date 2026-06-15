@@ -77,6 +77,54 @@ export interface ConversationMessage {
   customer_id: string | null;
 }
 
+// ---- Phase 4 — AI + automation types ----
+export interface Agent {
+  id: string;
+  name: string;
+  description: string | null;
+  model: string | null;
+  default_action_set: string | null;
+  enabled: boolean;
+  created_at: string;
+  permissions?: string[];
+}
+
+export interface AIRule {
+  id: string;
+  keyword: string;
+  reply: string;
+  confidence_threshold: number;
+  escalate_on_low_confidence: number;
+  set_ai_state: string | null;
+  enabled: number;
+  created_at: string;
+}
+
+export interface FlowSummary {
+  id: string;
+  name: string;
+  trigger_event: string;
+  enabled: number;
+  version: number;
+  created_at: string;
+}
+
+export interface FlowNodeInput { id?: string; type: 'trigger' | 'condition' | 'action' | 'wait' | 'branch' | 'ai'; config: Record<string, unknown>; }
+export interface FlowEdgeInput { from: string; to: string; label?: string; }
+export interface FlowDetail extends FlowSummary {
+  workspace_id: string;
+  nodes: Array<{ id: string; type: string; config: Record<string, unknown> }>;
+  edges: Array<{ id: string; from: string; to: string; label?: string }>;
+}
+export interface FlowExecution {
+  id: string;
+  customer_id: string | null;
+  conversation_id: string | null;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+}
+
 // ---- API functions ----
 export const platformApi = {
   // Customers
@@ -146,4 +194,36 @@ export const platformApi = {
   updateSLAPolicy: (id: string, body: Partial<{ name: string; channel: string | null; priority: string | null; first_response_minutes: number; resolution_minutes: number }>) =>
     apiPatch<null>(`/api/platform/sla-policies/${id}`, body),
   deleteSLAPolicy: (id: string) => apiDelete<null>(`/api/platform/sla-policies/${id}`),
+
+  // Agents (Phase 4 §10)
+  listAgents: () =>
+    apiGet<{ agents: Agent[]; action_catalog: string[] }>(`/api/platform/agents`),
+  createAgent: (body: Partial<Agent> & { name: string }) =>
+    apiPost<{ id: string }>(`/api/platform/agents`, body),
+  updateAgent: (id: string, body: Partial<Agent>) => apiPatch<null>(`/api/platform/agents/${id}`, body),
+  deleteAgent: (id: string) => apiDelete<null>(`/api/platform/agents/${id}`),
+  getAgentPermissions: (id: string) =>
+    apiGet<{ granted: string[]; catalog: string[] }>(`/api/platform/agents/${id}/permissions`),
+  grantAgentPermission: (id: string, action: string) => apiPost<null>(`/api/platform/agents/${id}/permissions`, { action }),
+  revokeAgentPermission: (id: string, action: string) => apiDelete<null>(`/api/platform/agents/${id}/permissions/${encodeURIComponent(action)}`),
+  canAgent: (id: string, action: string) => apiPost<{ allowed: boolean }>(`/api/platform/agents/${id}/can`, { action }),
+  handoff: (body: { conversation_id: string; state: 'ai_active' | 'ai_paused' | 'human_active' | 'escalated'; reason?: string }) =>
+    apiPost<null>(`/api/platform/agents/handoff`, body),
+
+  // AI keyword rules (Phase 4 §10.1 — simple rule form)
+  listAIRules: () => apiGet<AIRule[]>(`/api/platform/automation-rules`),
+  createAIRule: (body: { keyword: string; reply: string; confidence_threshold?: number; escalate_on_low_confidence?: boolean; set_ai_state?: string; enabled?: boolean }) =>
+    apiPost<{ id: string }>(`/api/platform/automation-rules`, body),
+  updateAIRule: (id: string, body: Partial<AIRule>) => apiPatch<null>(`/api/platform/automation-rules/${id}`, body),
+  deleteAIRule: (id: string) => apiDelete<null>(`/api/platform/automation-rules/${id}`),
+
+  // Flows (Phase 4 §11)
+  listFlows: () => apiGet<FlowSummary[]>(`/api/platform/automations`),
+  getFlow: (id: string) => apiGet<FlowDetail>(`/api/platform/automations/${id}`),
+  createFlow: (body: { name: string; trigger_event?: string; nodes?: FlowNodeInput[]; edges?: FlowEdgeInput[] }) =>
+    apiPost<{ id: string }>(`/api/platform/automations`, body),
+  updateFlow: (id: string, body: { name?: string; trigger_event?: string; enabled?: boolean; nodes?: FlowNodeInput[]; edges?: FlowEdgeInput[] }) =>
+    apiPatch<null>(`/api/platform/automations/${id}`, body),
+  deleteFlow: (id: string) => apiDelete<null>(`/api/platform/automations/${id}`),
+  listFlowExecutions: (id: string) => apiGet<FlowExecution[]>(`/api/platform/automations/${id}/executions`),
 };

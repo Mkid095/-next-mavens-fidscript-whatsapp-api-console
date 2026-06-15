@@ -26,6 +26,13 @@ export type {
   ConversationPriority,
   ConversationMessage,
   SearchHit,
+  Agent,
+  AIRule,
+  FlowSummary,
+  FlowDetail,
+  FlowNodeInput,
+  FlowEdgeInput,
+  FlowExecution,
 } from './api/index.js';
 
 // Realtime event bus
@@ -53,5 +60,10 @@ export {
   useTeamMembers,
   useSLAPolicies,
   useAssignment,
+  useAgents,
+  useAgentPermissions,
+  useAIRules,
+  useFlows,
+  useFlow,
 } from './hooks/index.js';
 export type { ConversationFilters } from './hooks/index.js';

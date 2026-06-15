@@ -5,6 +5,7 @@ import { useCustomer, platformApi, useTimeline } from '../../data';
 import { aiStateMeta } from './helpers';
 import { TagsManager, NotesEditor, AssignmentPanel, TimelineFilters, toggleFilter } from '../customers/index.js';
 import type { TimelineFilterSet } from '../customers/index.js';
+import { HandoffControls } from '../agents/index.js';
 
 // Right pane — Customer Intelligence drawer (§19): identity, AI-state,
 // assignment/priority/status controls, plus the Phase 3 tags/notes/owner
@@ -65,6 +66,7 @@ export default function CustomerDrawer({ conversation, onUpdated }: CustomerDraw
         <TagsManager customerId={conversation.customer_id} />
         <NotesEditor customerId={conversation.customer_id} />
         <AssignmentPanel customerId={conversation.customer_id} />
+        <HandoffControls conversation={conversation} />
       </div>
 
       {/* Timeline + filters */}

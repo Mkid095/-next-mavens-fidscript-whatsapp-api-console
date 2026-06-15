@@ -13,3 +13,6 @@ export { useNotes } from './useNotes.js';
 export { useTeams, useTeamMembers } from './useTeams.js';
 export { useSLAPolicies } from './useSLAPolicies.js';
 export { useAssignment } from './useAssignment.js';
+export { useAgents, useAgentPermissions } from './useAgents.js';
+export { useAIRules } from './useAIRules.js';
+export { useFlows, useFlow } from './useFlows.js';

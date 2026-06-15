@@ -11,6 +11,7 @@ import { apiInfo } from './utils/apiInfo.js';
 import { registerSearchIndexer } from './modules/platform/search/index.js';
 import { registerAnalyticsProjectors } from './modules/platform/analytics/index.js';
 import { registerInboundPipeline } from './modules/ai/index.js';
+import { registerAutomations } from './modules/automation/index.js';
 
 import authRoutes from './routes/auth.js';
 
@@ -30,7 +31,8 @@ async function startServer() {
     registerSearchIndexer();
     registerAnalyticsProjectors();
     registerInboundPipeline();
-    console.log('✅ Event bus subscribers registered (search, analytics, AI)');
+    registerAutomations();
+    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations)');
 
     // Prune expired idempotency keys on every startup (7-day TTL)
     try {

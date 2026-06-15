@@ -7,6 +7,9 @@ import analyticsRoutes from './analytics.js';
 import groupsRoutes from './groups.js';
 import teamsRoutes from './teams.js';
 import slaRoutes from './sla.js';
+import agentsRoutes from './agents.js';
+import automationRulesRoutes from './automationRules.js';
+import automationsRoutes from './automations.js';
 
 // Platform API — customer-centric reads + operational writes.
 // All routes use clientJwtAuth (workspace-scoped via req.client.id).
@@ -20,5 +23,8 @@ router.use('/analytics', analyticsRoutes);
 router.use('/groups', groupsRoutes);
 router.use('/teams', teamsRoutes);
 router.use('/sla-policies', slaRoutes);
+router.use('/agents', agentsRoutes);
+router.use('/automation-rules', automationRulesRoutes);
+router.use('/automations', automationsRoutes);
 
 export default router;

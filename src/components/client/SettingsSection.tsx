@@ -2,7 +2,8 @@ import React from 'react';
 import { Settings as SettingsIcon, LogOut } from 'lucide-react';
 import type { Client } from '../../services/api';
 import { TeamsPanel } from '../../features/workspace/index.js';
-import { SLAPolicyEditor } from '../../features/automation/index.js';
+import { SLAPolicyEditor, AutomationList } from '../../features/automation/index.js';
+import { AgentList, KeywordRuleEditor } from '../../features/agents/index.js';
 
 interface SettingsSectionProps {
   client: Client;
@@ -54,6 +55,19 @@ export default function SettingsSection({ client, onLogout }: SettingsSectionPro
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4"><TeamsPanel /></div>
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4"><SLAPolicyEditor /></div>
+        </div>
+      </div>
+
+      {/* Phase 4 — AI agents, keyword rules, automations */}
+      <div className="bg-white border border-[#eaebe4] rounded-3xl p-6 shadow-sm space-y-6">
+        <div>
+          <h3 className="text-sm font-bold text-forest-deep">AI &amp; automation</h3>
+          <p className="text-xs text-graphite mt-0.5">Governed agents, keyword rules, and trigger→condition→action flows.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4"><AgentList /></div>
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4"><KeywordRuleEditor /></div>
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 md:col-span-2"><AutomationList /></div>
         </div>
       </div>
     </div>
