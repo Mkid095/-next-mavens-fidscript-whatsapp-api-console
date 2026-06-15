@@ -19,6 +19,7 @@ export default function StatCards({
 }: StatCardsProps) {
   const safeTokens = Number.isNaN(totalTokens) ? 0 : totalTokens;
   const safeToday = Number.isNaN(msgCountToday) ? 0 : msgCountToday;
+  const safeBalance = typeof tokenBalance === 'number' ? tokenBalance : 0;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -29,7 +30,7 @@ export default function StatCards({
           </div>
           <p className="text-[10px] text-stone-500 font-bold uppercase">Token Balance</p>
         </div>
-        <p className="text-xl font-black text-forest-deep font-mono">{tokenBalance.toLocaleString()}</p>
+        <p className="text-xl font-black text-forest-deep font-mono">{safeBalance.toLocaleString()}</p>
         <p className="text-[10px] text-stone-400 mt-1">1 token = 1 text message</p>
       </div>
 
