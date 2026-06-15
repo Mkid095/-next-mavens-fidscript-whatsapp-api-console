@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "gen:openapi": "tsx scripts/gen-openapi.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,7 +22,8 @@
     "morgan": "^1.10.0",
     "resend": "^4.8.0",
     "sql.js": "^1.10.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

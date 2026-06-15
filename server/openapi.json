@@ -1,0 +1,841 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FIDScript WhatsApp API",
+    "version": "v1",
+    "description": "Send and receive WhatsApp messages, manage groups, chats, profile and instance lifecycle. Authenticate every request with `X-API-Key: fidscript_live_…`. All responses use `{ success, data?, error? }`."
+  },
+  "servers": [
+    {
+      "url": "https://whatsapp.fidscript.com/api/v1",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Platform",
+      "description": "Auth, usage & the OpenAPI spec"
+    },
+    {
+      "name": "Messaging",
+      "description": "Send WhatsApp messages of every type"
+    },
+    {
+      "name": "Groups",
+      "description": "Create & manage WhatsApp groups"
+    },
+    {
+      "name": "Chats",
+      "description": "Chat operations & presence"
+    },
+    {
+      "name": "Profile",
+      "description": "Profile, privacy & business"
+    },
+    {
+      "name": "Settings",
+      "description": "Instance settings"
+    },
+    {
+      "name": "Instance",
+      "description": "Connection lifecycle & QR"
+    },
+    {
+      "name": "Receiving",
+      "description": "Inbound webhook events"
+    }
+  ],
+  "paths": {
+    "/whoami": {
+      "get": {
+        "operationId": "platform.whoami",
+        "summary": "Validate Key",
+        "description": "Confirm an API key is active and resolve the owning client. No side effects — ideal for a connection test.",
+        "tags": [
+          "Platform"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "client": "Kennedy Mwangi",
+                    "key_id": "key_1718..."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/usage": {
+      "get": {
+        "operationId": "platform.usage",
+        "summary": "Usage Analytics",
+        "description": "Aggregate API usage for the authenticated client: requests today/this month, sends this month, token spend, and failed requests.",
+        "tags": [
+          "Platform"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "requestsToday": 42,
+                    "requestsMonth": 1180,
+                    "sendsMonth": 612,
+                    "tokenSpendMonth": 935,
+                    "failedRequestsMonth": 3
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "operationId": "platform.openapi",
+        "summary": "OpenAPI Spec",
+        "description": "The machine-readable OpenAPI 3.0 document for the entire API. Import into Postman, Insomnia, or an AI agent. A YAML mirror is at /api/v1/openapi.yaml.",
+        "tags": [
+          "Platform"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "openapi": "3.0.3",
+                  "info": {
+                    "title": "FIDScript WhatsApp API",
+                    "version": "v1"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        },
+        "security": []
+      }
+    },
+    "/messages/text/{instance}": {
+      "post": {
+        "operationId": "messages.sendText",
+        "summary": "Send Text",
+        "description": "Send a plain-text WhatsApp message.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Phone number in international format, no +.",
+                    "type": "string"
+                  },
+                  "message": {
+                    "description": "Message",
+                    "type": "string",
+                    "format": "textarea"
+                  }
+                },
+                "required": [
+                  "to",
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "message": "Hello from FIDScript!"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/media/{instance}": {
+      "post": {
+        "operationId": "messages.sendMedia",
+        "summary": "Send Media",
+        "description": "Send an image, video, document or audio file by URL.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "media_url": {
+                    "description": "Public HTTPS URL of the media.",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "description": "Media type",
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "video",
+                      "document",
+                      "audio"
+                    ]
+                  },
+                  "caption": {
+                    "description": "Caption",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to",
+                  "media_url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "media_url": "https://…/photo.jpg",
+                    "media_type": "image"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/location/{instance}": {
+      "post": {
+        "operationId": "messages.sendLocation",
+        "summary": "Send Location",
+        "description": "Share a geographic location pin.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "latitude": {
+                    "description": "Latitude",
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "description": "Longitude",
+                    "type": "number"
+                  },
+                  "name": {
+                    "description": "Name",
+                    "type": "string"
+                  },
+                  "address": {
+                    "description": "Address",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to",
+                  "latitude",
+                  "longitude"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "location": {
+                      "latitude": -1.2921,
+                      "longitude": 36.8219,
+                      "name": "Nairobi CBD"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/contact/{instance}": {
+      "post": {
+        "operationId": "messages.sendContact",
+        "summary": "Send Contact",
+        "description": "Share one or more contact cards.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "contact": {
+                    "description": "Array of contact cards.",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "fullName": {
+                          "description": "Full name",
+                          "type": "string"
+                        },
+                        "wuid": {
+                          "description": "WhatsApp ID",
+                          "type": "string"
+                        },
+                        "phoneNumber": {
+                          "description": "Phone",
+                          "type": "string"
+                        },
+                        "organization": {
+                          "description": "Organization",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "fullName",
+                        "phoneNumber"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "to",
+                  "contact"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "contact": {
+                      "fullName": "Jane Doe",
+                      "phoneNumber": "254712345678"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/reaction/{instance}": {
+      "post": {
+        "operationId": "messages.sendReaction",
+        "summary": "Send Reaction",
+        "description": "React to an existing message (emoji).",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "The key of the message to react to.",
+                    "type": "object",
+                    "properties": {
+                      "remoteJid": {
+                        "description": "Remote JID",
+                        "type": "string"
+                      },
+                      "fromMe": {
+                        "description": "From me",
+                        "type": "boolean"
+                      },
+                      "id": {
+                        "description": "Message ID",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "remoteJid",
+                      "id"
+                    ]
+                  },
+                  "reaction": {
+                    "description": "A single emoji, or empty to remove.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to",
+                  "key",
+                  "reaction"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "reaction": "👍"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/poll/{instance}": {
+      "post": {
+        "operationId": "messages.sendPoll",
+        "summary": "Send Poll",
+        "description": "Send an interactive poll.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Question",
+                    "type": "string"
+                  },
+                  "selectableCount": {
+                    "description": "How many options a voter may pick.",
+                    "type": "number"
+                  },
+                  "values": {
+                    "description": "At least 2 option strings.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "to",
+                  "name",
+                  "selectableCount",
+                  "values"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "poll": {
+                      "name": "Where shall we meet?",
+                      "selectableCount": 1,
+                      "values": [
+                        "Cafe",
+                        "Office"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/list/{instance}": {
+      "post": {
+        "operationId": "messages.sendList",
+        "summary": "Send List",
+        "description": "Send an interactive list message with selectable sections.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "Title",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Description",
+                    "type": "string"
+                  },
+                  "buttonText": {
+                    "description": "Button text",
+                    "type": "string"
+                  },
+                  "footerText": {
+                    "description": "Footer",
+                    "type": "string"
+                  },
+                  "sections": {
+                    "description": "Sections",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "description": "Section title",
+                          "type": "string"
+                        },
+                        "rows": {
+                          "description": "Rows",
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "description": "Row title",
+                                "type": "string"
+                              },
+                              "description": {
+                                "description": "Row description",
+                                "type": "string"
+                              },
+                              "rowId": {
+                                "description": "Row ID",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "title",
+                              "rowId"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "rows"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "to",
+                  "title",
+                  "buttonText",
+                  "sections"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "list": {
+                      "title": "Menu",
+                      "buttonText": "Options"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "A fidscript_live_ API key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
