@@ -56,6 +56,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
   // Handle CONNECTION_UPDATE
   if (event === 'connection.update') {
     const state = data?.state as string | undefined;
+    const wuid = data?.wuid as string | undefined;
 
     let status: 'connected' | 'connecting' | 'disconnected' = 'disconnected';
     if (state === 'open') {
@@ -66,9 +67,14 @@ router.post('/evolution', async (req: Request, res: Response) => {
       status = 'disconnected';
     }
 
-    // Phone number is not in the CONNECTION_UPDATE payload — fetch it from connectionState
+    // Extract phone number directly from wuid in the payload (e.g. "254732203353@s.whatsapp.net")
     let phoneNumber: string | null = null;
-    if (status === 'connected') {
+    if (wuid) {
+      phoneNumber = extractPhoneFromJid(wuid);
+    }
+
+    // Fallback: fetch from Evolution API if not in payload
+    if (!phoneNumber && status === 'connected') {
       try {
         const evoName = instance.evolution_name || decodedName;
         const evoRes = await callEvolutionAPI('GET', `/instance/connectionState/${evoName}`);
