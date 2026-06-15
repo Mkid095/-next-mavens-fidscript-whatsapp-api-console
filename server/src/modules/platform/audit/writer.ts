@@ -25,7 +25,7 @@ export function logAuditAction(
 ): void {
   db.prepare(`
     INSERT INTO audit_logs
-      (id, workspace_id, actor_user_id, action, resource_type, resource_id,
+      (id, workspace_id, actor_user_id, action, entity_type, entity_id,
        before_json, after_json, ip_address, timestamp)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
