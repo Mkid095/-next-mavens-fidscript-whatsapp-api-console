@@ -85,6 +85,16 @@ export const settings = {
   set: (i: string, k: string, b: ProfileArgs) => v1Req('POST', `/api/v1/settings/set/${i}`, k, { body: b }),
 };
 
+type InstanceArgs = Record<string, unknown>;
+export const instance = {
+  connectionState: (i: string, k: string) => v1Req('GET', `/api/v1/instance/connection-state/${i}`, k),
+  connect: (i: string, k: string, number?: string) => v1Req('GET', `/api/v1/instance/connect/${i}${number ? `?number=${encodeURIComponent(number)}` : ''}`, k),
+  restart: (i: string, k: string, confirm = true) => v1Req('POST', `/api/v1/instance/restart/${i}`, k, { body: { confirm } }),
+  logout: (i: string, k: string) => v1Req('DELETE', `/api/v1/instance/logout/${i}`, k),
+  setPresence: (i: string, k: string, presence: 'available' | 'unavailable') => v1Req('POST', `/api/v1/instance/set-presence/${i}`, k, { body: { presence } }),
+  qr: (i: string, k: string, number?: string) => v1Req('GET', `/api/v1/instance/qr/${i}${number ? `?number=${encodeURIComponent(number)}` : ''}`, k),
+};
+
 export const apiV1 = {
   /** Validate an API key with no side effects. */
   whoami: (apiKey: string) =>

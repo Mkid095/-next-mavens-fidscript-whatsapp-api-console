@@ -10,6 +10,7 @@ import groupsRouter from './groups.js';
 import chatsRouter from './chats.js';
 import profileRouter from './profile.js';
 import settingsRouter from './settings.js';
+import instanceRouter from './instance.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -57,5 +58,8 @@ router.use('/profile', v1Limiter, profileRouter);
 
 // Instance settings — reads V1_READ, updates V1_STRICT (both free, no tokens).
 router.use('/settings', v1Limiter, settingsRouter);
+
+// Instance lifecycle — connection-state, connect/QR, restart (confirm-guarded), logout, set-presence.
+router.use('/instance', v1Limiter, instanceRouter);
 
 export default router;

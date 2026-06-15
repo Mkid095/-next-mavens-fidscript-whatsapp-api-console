@@ -3070,6 +3070,257 @@
           }
         }
       }
+    },
+    "/instance/connection-state/{instance}": {
+      "get": {
+        "operationId": "instance.connectionState",
+        "summary": "Connection State",
+        "description": "Get the current connection state and phone number.",
+        "tags": [
+          "Instance"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/instance/connect/{instance}": {
+      "get": {
+        "operationId": "instance.connect",
+        "summary": "Connect / QR",
+        "description": "Generate a new QR code and start the WhatsApp session. Use /instance/connection-state to poll until connected.",
+        "tags": [
+          "Instance"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Specific phone number to use (optional).",
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/instance/restart/{instance}": {
+      "post": {
+        "operationId": "instance.restart",
+        "summary": "Restart",
+        "description": "Restart the WhatsApp session. Requires {\"confirm\":true} in the body or X-Confirm-Restart: true header — 428 otherwise.",
+        "tags": [
+          "Instance"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "confirm": {
+                    "description": "Must be true to proceed.",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "confirm"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/instance/logout/{instance}": {
+      "delete": {
+        "operationId": "instance.logout",
+        "summary": "Logout",
+        "description": "Disconnect and log out of the WhatsApp session.",
+        "tags": [
+          "Instance"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/instance/set-presence/{instance}": {
+      "post": {
+        "operationId": "instance.setPresence",
+        "summary": "Set Presence",
+        "description": "Broadcast your presence (available or unavailable).",
+        "tags": [
+          "Instance"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "presence": {
+                    "description": "Presence",
+                    "type": "string",
+                    "enum": [
+                      "available",
+                      "unavailable"
+                    ]
+                  }
+                },
+                "required": [
+                  "presence"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/instance/qr/{instance}": {
+      "get": {
+        "operationId": "instance.qr",
+        "summary": "Fetch QR",
+        "description": "Fetch the current QR code without triggering a new connection. Returns 204 if no QR is pending.",
+        "tags": [
+          "Instance"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
     }
   },
   "components": {

@@ -15,6 +15,7 @@ import { receivingEndpoints } from './receiving';
 import { groupEndpoints } from './groups';
 import { chatEndpoints } from './chats';
 import { profileEndpoints, settingsEndpoints } from './profile';
+import { instanceEndpoints } from './instance';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'array' | 'object';
@@ -88,6 +89,7 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
   ...chatEndpoints,
   ...profileEndpoints,
   ...settingsEndpoints,
+  ...instanceEndpoints,
   ...receivingEndpoints,
 ];
 
