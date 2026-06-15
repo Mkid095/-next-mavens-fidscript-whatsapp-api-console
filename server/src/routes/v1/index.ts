@@ -7,6 +7,7 @@ import messagesRouter from './messages.js';
 import openapiRouter from './openapi.js';
 import usageRouter from './usage.js';
 import groupsRouter from './groups.js';
+import chatsRouter from './chats.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -45,5 +46,8 @@ router.use('/messages', v1Limiter, clientApiKeyAuth, clientRateLimit, messagesRo
 
 // Group management — free ops, V1_MUTATE limiter (auth applied per-route in the router).
 router.use('/groups', v1Limiter, groupsRouter);
+
+// Chat management — reads V1_READ, mutations V1_MUTATE (both free, no tokens).
+router.use('/chats', v1Limiter, chatsRouter);
 
 export default router;

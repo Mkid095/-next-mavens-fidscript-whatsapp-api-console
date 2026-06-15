@@ -13,6 +13,7 @@ import { messagingEndpoints } from './messaging';
 import { platformEndpoints } from './platform';
 import { receivingEndpoints } from './receiving';
 import { groupEndpoints } from './groups';
+import { chatEndpoints } from './chats';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'array' | 'object';
@@ -83,6 +84,7 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
   ...platformEndpoints,
   ...messagingEndpoints,
   ...groupEndpoints,
+  ...chatEndpoints,
   ...receivingEndpoints,
 ];
 

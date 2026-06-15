@@ -53,6 +53,23 @@ export const groups = {
   updateSetting: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/update-setting/${i}`, k, { body: b }),
 };
 
+type ChatArgs = Record<string, unknown>;
+export const chats = {
+  markRead: (i: string, k: string, b: ChatArgs) => v1Req('POST', `/api/v1/chats/mark-read/${i}`, k, { body: b }),
+  markUnread: (i: string, k: string, b: ChatArgs) => v1Req('POST', `/api/v1/chats/mark-unread/${i}`, k, { body: b }),
+  archive: (i: string, k: string, b: ChatArgs) => v1Req('POST', `/api/v1/chats/archive/${i}`, k, { body: b }),
+  presence: (i: string, k: string, b: ChatArgs) => v1Req('POST', `/api/v1/chats/presence/${i}`, k, { body: b }),
+  deleteForEveryone: (i: string, k: string, b: ChatArgs) => v1Req('DELETE', `/api/v1/chats/delete-for-everyone/${i}`, k, { body: b }),
+  updateMessage: (i: string, k: string, b: ChatArgs) => v1Req('POST', `/api/v1/chats/update-message/${i}`, k, { body: b }),
+  findChats: (i: string, k: string) => v1Req('POST', `/api/v1/chats/find-chats/${i}`, k),
+  findContacts: (i: string, k: string, where?: ChatArgs) => v1Req('POST', `/api/v1/chats/find-contacts/${i}`, k, { body: where }),
+  findMessages: (i: string, k: string, where?: ChatArgs) => v1Req('POST', `/api/v1/chats/find-messages/${i}`, k, { body: where }),
+  findStatus: (i: string, k: string, where?: ChatArgs, limit = 10) => v1Req('POST', `/api/v1/chats/find-status/${i}`, k, { body: { where, limit } }),
+  isWhatsApp: (i: string, k: string, numbers: string[]) => v1Req('POST', `/api/v1/chats/is-whatsapp/${i}`, k, { body: { numbers } }),
+  getBase64: (i: string, k: string, b: ChatArgs) => v1Req('POST', `/api/v1/chats/base64/${i}`, k, { body: b }),
+  profilePicUrl: (i: string, k: string, number: string) => v1Req('GET', `/api/v1/chats/profile-pic-url/${i}`, k, { query: { number } }),
+};
+
 export const apiV1 = {
   /** Validate an API key with no side effects. */
   whoami: (apiKey: string) =>

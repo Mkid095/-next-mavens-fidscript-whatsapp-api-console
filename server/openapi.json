@@ -1954,6 +1954,749 @@
           }
         }
       }
+    },
+    "/chats/mark-read/{instance}": {
+      "post": {
+        "operationId": "chats.markRead",
+        "summary": "Mark Read",
+        "description": "Mark one or more messages as read.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "readMessages": {
+                    "description": "Array of message key objects.",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "description": "Key",
+                          "type": "object",
+                          "properties": {
+                            "remoteJid": {
+                              "description": "Remote JID",
+                              "type": "string"
+                            },
+                            "fromMe": {
+                              "description": "From me",
+                              "type": "boolean"
+                            },
+                            "id": {
+                              "description": "Message ID",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "remoteJid",
+                            "fromMe",
+                            "id"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "key"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "readMessages"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/mark-unread/{instance}": {
+      "post": {
+        "operationId": "chats.markUnread",
+        "summary": "Mark Unread",
+        "description": "Mark a chat as unread.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chat": {
+                    "description": "Chat JID",
+                    "type": "string"
+                  },
+                  "lastMessage": {
+                    "description": "Last message",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "chat"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/archive/{instance}": {
+      "post": {
+        "operationId": "chats.archive",
+        "summary": "Archive Chat",
+        "description": "Archive or unarchive a chat.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chat": {
+                    "description": "Chat JID",
+                    "type": "string"
+                  },
+                  "archive": {
+                    "description": "Archive",
+                    "type": "boolean"
+                  },
+                  "lastMessage": {
+                    "description": "Last message",
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "chat",
+                  "archive"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/presence/{instance}": {
+      "post": {
+        "operationId": "chats.presence",
+        "summary": "Send Presence",
+        "description": "Broadcast a presence update (typing, online, etc.).",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Number",
+                    "type": "string"
+                  },
+                  "options": {
+                    "description": "Presence options.",
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "number"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/delete-for-everyone/{instance}": {
+      "delete": {
+        "operationId": "chats.deleteForEveryone",
+        "summary": "Delete for Everyone",
+        "description": "Delete a message for everyone in the chat.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Message ID",
+                    "type": "string"
+                  },
+                  "remoteJid": {
+                    "description": "Remote JID",
+                    "type": "string"
+                  },
+                  "fromMe": {
+                    "description": "From me",
+                    "type": "boolean"
+                  },
+                  "participant": {
+                    "description": "Participant",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "remoteJid",
+                  "fromMe"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/update-message/{instance}": {
+      "post": {
+        "operationId": "chats.updateMessage",
+        "summary": "Update Message",
+        "description": "Edit the text of a message you sent.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Number",
+                    "type": "number"
+                  },
+                  "text": {
+                    "description": "New text",
+                    "type": "string"
+                  },
+                  "key": {
+                    "description": "Key",
+                    "type": "object",
+                    "properties": {
+                      "remoteJid": {
+                        "description": "Remote JID",
+                        "type": "string"
+                      },
+                      "fromMe": {
+                        "description": "From me",
+                        "type": "boolean"
+                      },
+                      "id": {
+                        "description": "Message ID",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "remoteJid",
+                      "fromMe",
+                      "id"
+                    ]
+                  }
+                },
+                "required": [
+                  "number",
+                  "text",
+                  "key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/find-chats/{instance}": {
+      "post": {
+        "operationId": "chats.findChats",
+        "summary": "Find Chats",
+        "description": "List all open chats.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/find-contacts/{instance}": {
+      "post": {
+        "operationId": "chats.findContacts",
+        "summary": "Find Contacts",
+        "description": "Search contacts with optional filter.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "where": {
+                    "description": "Mongo-style filter, e.g. { displayName: /Ken/ }.",
+                    "type": "object"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/find-messages/{instance}": {
+      "post": {
+        "operationId": "chats.findMessages",
+        "summary": "Find Messages",
+        "description": "Search messages with optional filter.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "where": {
+                    "description": "Mongo-style filter.",
+                    "type": "object"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/find-status/{instance}": {
+      "post": {
+        "operationId": "chats.findStatus",
+        "summary": "Find Status",
+        "description": "Search status updates.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "where": {
+                    "description": "Filter",
+                    "type": "object"
+                  },
+                  "limit": {
+                    "description": "Limit",
+                    "type": "number"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/is-whatsapp/{instance}": {
+      "post": {
+        "operationId": "chats.isWhatsApp",
+        "summary": "Is WhatsApp",
+        "description": "Check which numbers are registered on WhatsApp.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "numbers": {
+                    "description": "Phone numbers to check.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "numbers"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/base64/{instance}": {
+      "post": {
+        "operationId": "chats.getBase64",
+        "summary": "Get Base64",
+        "description": "Retrieve media as base64 (for re-uploading or forwarding).",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "description": "The full message object.",
+                    "type": "object"
+                  },
+                  "convertToMp4": {
+                    "description": "Convert to MP4",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/chats/profile-pic-url/{instance}": {
+      "get": {
+        "operationId": "chats.profilePicUrl",
+        "summary": "Profile Pic URL",
+        "description": "Get the profile picture URL for a number.",
+        "tags": [
+          "Chats"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Number",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "number"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
     }
   },
   "components": {
