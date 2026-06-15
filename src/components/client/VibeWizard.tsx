@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Copy, Check, Eye, EyeOff, ChevronRight, ChevronDown, Bot, Settings, Zap, Globe, CheckSquare, Square, ArrowRight, AlertCircle } from 'lucide-react';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint, type BodyField } from '../../data/apiEndpoints/index';
@@ -334,7 +334,7 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 
 // ── Step 1: Credentials ────────────────────────────────────────────────────────
 
-function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelectedKeyId, selectedInstance, setSelectedInstance, onNext, onKeySelect }: {
+function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelectedKeyId, selectedInstance, setSelectedInstance, onNext }: {
   apiKey: string;
   apiKeys: VibeWizardProps['apiKeys'];
   instances: VibeWizardProps['instances'];
@@ -343,7 +343,8 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
   selectedInstance: string;
   setSelectedInstance: (name: string) => void;
   onNext: () => void;
-}) {
+})
+{
   const [revealed, setRevealed] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
@@ -369,9 +370,7 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
           <select
             value={selectedKeyId}
             onChange={e => {
-              const id = e.target.value;
-              setSelectedKeyId(id);
-              if (onKeySelect) onKeySelect(id, apiKeys.find(k => k.id === id)?.key || '');
+              setSelectedKeyId(e.target.value);
             }}
             className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
           >
@@ -686,40 +685,21 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Persist the key secret in a ref so it survives across apiKeys re-fetches without stale-closure issues
-  const keySecretRef = useRef<string>(apiKey);
-
   // Which API key is selected in Step 1
   const [selectedKeyId, setSelectedKeyId] = useState<string>('');
 
-  // Auto-select key whenever apiKeys changes
+  // Auto-select first available key when apiKeys first loads
   useEffect(() => {
     if (apiKeys.length === 0) return;
-    // If the selected key still has its secret in the fresh apiKeys, keep it — ref is already set
-    const currentKey = selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId) : null;
-    if (selectedKeyId && currentKey?.key) {
-      keySecretRef.current = currentKey.key;
-      return;
-    }
-    // Selected key missing secret (apiKeys was re-fetched) — try to preserve ref
-    const firstWithSecret = apiKeys.find(k => k.key);
-    const first = apiKeys[0];
-    const target = firstWithSecret || first;
-    if (target) {
-      setSelectedKeyId(target.id);
-      keySecretRef.current = target.key || apiKey;
-    }
+    if (selectedKeyId && apiKeys.find(k => k.id === selectedKeyId)) return; // already selected
+    setSelectedKeyId(apiKeys[0]?.id || '');
   }, [apiKeys]);
 
   // Container selection — optional, starts empty
   const [selectedInstance, setSelectedInstance] = useState<string>('');
 
-  // Derive the actual key string: selected key's secret in apiKeys > ref > prop fallback
-  const activeKey =
-    (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null)
-    || keySecretRef.current
-    || apiKey
-    || '';
+  // Derive the actual key string from selected key
+  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || apiKey || '';
 
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
@@ -761,9 +741,6 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}
               onNext={() => setStep(2)}
-              onKeySelect={(_id, secret) => {
-                keySecretRef.current = secret || apiKey;
-              }}
             />
           </motion.div>
         )}
