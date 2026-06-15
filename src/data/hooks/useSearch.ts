@@ -3,17 +3,18 @@
 // Debounced; returns grouped hits across customers/messages/orders/etc.
 // =============================================================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { platformApi } from '../api/platform.js';
 import type { SearchHit } from '../api/platform.js';
 
-interface UseSearchState {
+export interface UseSearchResult {
   hits: SearchHit[];
+  grouped: Record<string, SearchHit[]>;
   loading: boolean;
   error: string | null;
 }
 
-export function useSearch(query: string, types?: string[], debounceMs = 250): UseSearchState {
+export function useSearch(query: string, types?: string[], debounceMs = 250): UseSearchResult {
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,11 +36,11 @@ export function useSearch(query: string, types?: string[], debounceMs = 250): Us
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, types?.join(','), debounceMs]);
 
-  // Group hits by entity type for UI rendering
-  const grouped: Record<string, SearchHit[]> = {};
-  hits.forEach((h) => {
-    (grouped[h.entityType] ??= []).push(h);
-  });
+  const grouped = useMemo(() => {
+    const out: Record<string, SearchHit[]> = {};
+    hits.forEach((h) => { (out[h.entityType] ??= []).push(h); });
+    return out;
+  }, [hits]);
 
-  return { hits, loading, error } as UseSearchState & { grouped: Record<string, SearchHit[]> };
+  return { hits, grouped, loading, error };
 }

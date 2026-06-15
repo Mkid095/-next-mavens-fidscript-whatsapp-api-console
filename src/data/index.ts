@@ -46,5 +46,12 @@ export {
   useSearch,
   useAnalyticsOverview,
   useInbox,
+  useGroupInfo,
+  useTags,
+  useNotes,
+  useTeams,
+  useTeamMembers,
+  useSLAPolicies,
+  useAssignment,
 } from './hooks/index.js';
 export type { ConversationFilters } from './hooks/index.js';

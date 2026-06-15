@@ -65,6 +65,8 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
 export const apiGet = <T>(endpoint: string) => fetchApi<T>(endpoint, { method: 'GET' });
 export const apiPost = <T>(endpoint: string, body?: unknown) =>
   fetchApi<T>(endpoint, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
+export const apiPut = <T>(endpoint: string, body?: unknown) =>
+  fetchApi<T>(endpoint, { method: 'PUT', body: body ? JSON.stringify(body) : undefined });
 export const apiPatch = <T>(endpoint: string, body?: unknown) =>
   fetchApi<T>(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined });
 export const apiDelete = <T>(endpoint: string) => fetchApi<T>(endpoint, { method: 'DELETE' });

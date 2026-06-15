@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { User, Tag, Clock3, ChevronDown } from 'lucide-react';
+import { User, Clock3, ChevronDown } from 'lucide-react';
 import type { Conversation } from '../../services/api';
-import { useCustomer, platformApi } from '../../data';
+import { useCustomer, platformApi, useTimeline } from '../../data';
 import { aiStateMeta } from './helpers';
-import CustomerTimeline from './CustomerTimeline';
+import { TagsManager, NotesEditor, AssignmentPanel, TimelineFilters, toggleFilter } from '../customers/index.js';
+import type { TimelineFilterSet } from '../customers/index.js';
 
-// Right pane — Customer Intelligence drawer (§19): identity, tags, AI-state,
-// assignment/priority/status controls, and the timeline.
+// Right pane — Customer Intelligence drawer (§19): identity, AI-state,
+// assignment/priority/status controls, plus the Phase 3 tags/notes/owner
+// surfaces. Timeline is filterable.
 interface CustomerDrawerProps {
   conversation: Conversation | null;
   onUpdated: () => void;
@@ -16,8 +18,9 @@ const STATUSES = ['open', 'pending', 'waiting_on_customer', 'resolved', 'closed'
 const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
 
 export default function CustomerDrawer({ conversation, onUpdated }: CustomerDrawerProps) {
-  const { customer, loading } = useCustomer(conversation?.customer_id ?? null);
+  const { customer } = useCustomer(conversation?.customer_id ?? null);
   const [saving, setSaving] = useState(false);
+  const [filter, setFilter] = useState<TimelineFilterSet>(new Set());
   const ai = aiStateMeta(conversation?.ai_state);
 
   const update = async (body: Record<string, unknown>) => {
@@ -49,33 +52,54 @@ export default function CustomerDrawer({ conversation, onUpdated }: CustomerDraw
           </div>
         </div>
         <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${ai.badge}`}>{ai.label}</span>
-
-        {/* Tags */}
-        {customer?.tags?.length ? (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {customer.tags.map((t) => (
-              <span key={t.tag} className="flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] text-stone-600">
-                <Tag size={9} />{t.tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </div>
 
-      {/* Assignment controls */}
+      {/* Conversation-level controls */}
       <div className="space-y-2 border-b border-stone-200 p-4">
         <SelectRow label="Status" value={conversation.status} options={STATUSES as unknown as string[]} disabled={saving} onChange={(v) => update({ status: v as Conversation['status'] })} />
         <SelectRow label="Priority" value={conversation.priority} options={PRIORITIES as unknown as string[]} disabled={saving} onChange={(v) => update({ priority: v as Conversation['priority'] })} />
       </div>
 
-      {/* Timeline */}
+      {/* Customer-level (Phase 3) — tags, notes, account owner */}
+      <div className="space-y-4 border-b border-stone-200 p-4">
+        <TagsManager customerId={conversation.customer_id} />
+        <NotesEditor customerId={conversation.customer_id} />
+        <AssignmentPanel customerId={conversation.customer_id} />
+      </div>
+
+      {/* Timeline + filters */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="flex items-center gap-1.5 px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-stone-400">
           <Clock3 size={12} /> Timeline
         </div>
-        <CustomerTimeline customerId={conversation.customer_id} />
+        <div className="px-4 pb-2">
+          <TimelineFilters
+            active={filter}
+            onToggle={(k) => setFilter((prev) => toggleFilter(prev, k))}
+            onClear={() => setFilter(new Set())}
+          />
+        </div>
+        <FilteredTimeline customerId={conversation.customer_id} filter={filter} />
       </div>
     </aside>
+  );
+}
+
+function FilteredTimeline({ customerId, filter }: { customerId: string; filter: TimelineFilterSet }) {
+  const { events, loading, error } = useTimeline(customerId);
+  if (loading) return <p className="px-4 text-xs text-stone-400">Loading…</p>;
+  if (error) return <p className="px-4 text-xs text-red-600">{error}</p>;
+  const filtered = filter.size === 0 ? events : events.filter((e) => filter.has(e.type));
+  if (!filtered.length) return <p className="px-4 text-xs text-stone-400">No events</p>;
+  return (
+    <ul className="space-y-1 px-4 pb-4">
+      {filtered.map((e) => (
+        <li key={e.id} className="rounded-lg border border-stone-200 bg-stone-50 p-2 text-[11px]">
+          <p className="font-medium text-stone-700">{e.type}</p>
+          <p className="text-stone-400">{new Date(e.created_at).toLocaleString()}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 

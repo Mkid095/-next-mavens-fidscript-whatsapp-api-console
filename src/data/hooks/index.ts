@@ -8,3 +8,8 @@ export { useSearch } from './useSearch.js';
 export { useAnalyticsOverview } from './useAnalytics.js';
 export { useInbox } from './useInbox.js';
 export { useGroupInfo } from './useGroupInfo.js';
+export { useTags } from './useTags.js';
+export { useNotes } from './useNotes.js';
+export { useTeams, useTeamMembers } from './useTeams.js';
+export { useSLAPolicies } from './useSLAPolicies.js';
+export { useAssignment } from './useAssignment.js';

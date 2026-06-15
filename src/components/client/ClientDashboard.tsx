@@ -6,6 +6,7 @@ import BottomNav from '../shared/BottomNav';
 import { UpdateToast } from '../shared/UpdateToast';
 import ClientContent from './ClientContent';
 import { useInstanceSSE, type InstanceStateChange } from './whatsapp/useInstanceSSE';
+import { CommandKTrigger } from '../../features/search/index.js';
 
 interface ClientDashboardProps {
   client: Client;
@@ -149,6 +150,7 @@ export default function ClientDashboard({
       </div>
 
       <UpdateToast />
+      <CommandKTrigger />
     </div>
   );
 }
