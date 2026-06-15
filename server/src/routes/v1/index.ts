@@ -8,6 +8,8 @@ import openapiRouter from './openapi.js';
 import usageRouter from './usage.js';
 import groupsRouter from './groups.js';
 import chatsRouter from './chats.js';
+import profileRouter from './profile.js';
+import settingsRouter from './settings.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -49,5 +51,11 @@ router.use('/groups', v1Limiter, groupsRouter);
 
 // Chat management — reads V1_READ, mutations V1_MUTATE (both free, no tokens).
 router.use('/chats', v1Limiter, chatsRouter);
+
+// Profile & privacy — reads V1_READ, updates V1_STRICT (both free, no tokens).
+router.use('/profile', v1Limiter, profileRouter);
+
+// Instance settings — reads V1_READ, updates V1_STRICT (both free, no tokens).
+router.use('/settings', v1Limiter, settingsRouter);
 
 export default router;

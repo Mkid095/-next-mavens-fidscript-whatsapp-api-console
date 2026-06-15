@@ -2697,6 +2697,379 @@
           }
         }
       }
+    },
+    "/profile/fetch/{instance}": {
+      "post": {
+        "operationId": "profile.fetch",
+        "summary": "Fetch Profile",
+        "description": "Fetch a contact's full profile by phone number.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Number",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "number"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/profile/fetch-privacy/{instance}": {
+      "get": {
+        "operationId": "profile.fetchPrivacy",
+        "summary": "Fetch Privacy",
+        "description": "Fetch the instance owner's privacy settings.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/profile/update-name/{instance}": {
+      "post": {
+        "operationId": "profile.updateName",
+        "summary": "Update Name",
+        "description": "Update the display name shown to contacts.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/profile/update-status/{instance}": {
+      "post": {
+        "operationId": "profile.updateStatus",
+        "summary": "Update Status",
+        "description": "Update your WhatsApp status (bio text).",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "description": "Status",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/profile/update-picture/{instance}": {
+      "post": {
+        "operationId": "profile.updatePicture",
+        "summary": "Update Picture",
+        "description": "Set your profile picture from an image URL.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "picture": {
+                    "description": "Image URL",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "picture"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/profile/remove-picture/{instance}": {
+      "delete": {
+        "operationId": "profile.removePicture",
+        "summary": "Remove Picture",
+        "description": "Remove your profile picture.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/settings/find/{instance}": {
+      "get": {
+        "operationId": "settings.find",
+        "summary": "Find Settings",
+        "description": "Fetch the current instance settings.",
+        "tags": [
+          "Settings"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/settings/set/{instance}": {
+      "post": {
+        "operationId": "settings.set",
+        "summary": "Set Settings",
+        "description": "Update instance settings (call rejection, online status, history sync, etc.).",
+        "tags": [
+          "Settings"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rejectCall": {
+                    "description": "Reject calls",
+                    "type": "boolean"
+                  },
+                  "msgCall": {
+                    "description": "Call message",
+                    "type": "string"
+                  },
+                  "groupsIgnore": {
+                    "description": "Ignore groups",
+                    "type": "boolean"
+                  },
+                  "alwaysOnline": {
+                    "description": "Always online",
+                    "type": "boolean"
+                  },
+                  "readMessages": {
+                    "description": "Read messages",
+                    "type": "boolean"
+                  },
+                  "readStatus": {
+                    "description": "Read status",
+                    "type": "boolean"
+                  },
+                  "syncFullHistory": {
+                    "description": "Sync full history",
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
     }
   },
   "components": {

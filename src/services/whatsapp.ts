@@ -70,6 +70,21 @@ export const chats = {
   profilePicUrl: (i: string, k: string, number: string) => v1Req('GET', `/api/v1/chats/profile-pic-url/${i}`, k, { query: { number } }),
 };
 
+type ProfileArgs = Record<string, unknown>;
+export const profile = {
+  fetch: (i: string, k: string, number: string) => v1Req('POST', `/api/v1/profile/fetch/${i}`, k, { body: { number } }),
+  fetchPrivacy: (i: string, k: string) => v1Req('GET', `/api/v1/profile/fetch-privacy/${i}`, k),
+  updateName: (i: string, k: string, name: string) => v1Req('POST', `/api/v1/profile/update-name/${i}`, k, { body: { name } }),
+  updateStatus: (i: string, k: string, status: string) => v1Req('POST', `/api/v1/profile/update-status/${i}`, k, { body: { status } }),
+  updatePicture: (i: string, k: string, picture: string) => v1Req('POST', `/api/v1/profile/update-picture/${i}`, k, { body: { picture } }),
+  removePicture: (i: string, k: string) => v1Req('DELETE', `/api/v1/profile/remove-picture/${i}`, k),
+};
+
+export const settings = {
+  find: (i: string, k: string) => v1Req('GET', `/api/v1/settings/find/${i}`, k),
+  set: (i: string, k: string, b: ProfileArgs) => v1Req('POST', `/api/v1/settings/set/${i}`, k, { body: b }),
+};
+
 export const apiV1 = {
   /** Validate an API key with no side effects. */
   whoami: (apiKey: string) =>
