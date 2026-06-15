@@ -46,7 +46,7 @@ export const cciBars: BarData[] = [
 export const regionRecyclingData: ClientData[] = [
   {
     country: 'Safaricom PLC',
-    flag: '🟢',
+    flag: 'healthy',
     factories: '42 instances',
     recycledText: '99.98%',
     isHigh: true,
@@ -57,7 +57,7 @@ export const regionRecyclingData: ClientData[] = [
   },
   {
     country: 'Equity Bank Kenya',
-    flag: '🟤',
+    flag: 'warning',
     factories: '28 instances',
     recycledText: '99.95%',
     isHigh: true,
@@ -68,7 +68,7 @@ export const regionRecyclingData: ClientData[] = [
   },
   {
     country: 'Carrefour Kenya',
-    flag: '🔵',
+    flag: 'neutral',
     factories: '14 instances',
     recycledText: '99.20%',
     isHigh: true,
@@ -79,7 +79,7 @@ export const regionRecyclingData: ClientData[] = [
   },
   {
     country: 'KCB Bank Limited',
-    flag: '🟡',
+    flag: 'pending',
     factories: '35 instances',
     recycledText: '98.50%',
     isHigh: false,

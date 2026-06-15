@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { InboxMessage } from '../../../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Calendar, CheckCircle, RotateCcw, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
+import { Mail, Calendar, CheckCircle, RotateCcw, ExternalLink, ChevronDown, ChevronRight, ArrowDown, ArrowUp } from 'lucide-react';
 
 interface MessageDetailProps {
   message: InboxMessage | null;
@@ -40,7 +40,9 @@ export default function MessageDetail({ message, onReplay, isReplaying }: Messag
                   ? 'bg-blue-50 text-blue-700 border-blue-200'
                   : 'bg-amber-50 text-amber-700 border-amber-200'
               }`}>
-                {message.direction === 'incoming' ? '↓ INCOMING' : '↑ OUTGOING'}
+                {message.direction === 'incoming'
+                  ? <React.Fragment><ArrowDown size={11} /> INCOMING</React.Fragment>
+                  : <React.Fragment><ArrowUp size={11} /> OUTGOING</React.Fragment>}
               </span>
             )}
           </div>

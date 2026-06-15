@@ -1,4 +1,12 @@
 import React from 'react';
+import { CircleCheck, CircleAlert, CircleDot, Clock } from 'lucide-react';
+
+const STATUS_ICON: Record<string, { Icon: typeof CircleCheck; cls: string }> = {
+  healthy: { Icon: CircleCheck, cls: 'text-emerald-500' },
+  warning: { Icon: CircleAlert,  cls: 'text-amber-500' },
+  neutral: { Icon: CircleDot,    cls: 'text-sky-500' },
+  pending: { Icon: Clock,        cls: 'text-yellow-500' },
+};
 
 interface ClientData {
   country: string;
@@ -39,7 +47,14 @@ export default function TopClientsTable({ clients }: TopClientsTableProps) {
               {clients.map((reg, idx) => (
                 <tr key={idx} className="group hover:bg-eco-bg/20 transition-colors">
                   <td className="py-3 font-semibold text-forest-deep flex items-center gap-1.5">
-                    <span className="text-sm">{reg.flag}</span>
+                    <span className="text-sm">
+                      {(() => {
+                        const m = STATUS_ICON[reg.flag];
+                        if (!m) return null;
+                        const { Icon, cls } = m;
+                        return <Icon size={14} className={cls} />;
+                      })()}
+                    </span>
                     <span>{reg.country}</span>
                   </td>
                   <td className="py-3 font-mono text-[#556c60]">{reg.factories}</td>

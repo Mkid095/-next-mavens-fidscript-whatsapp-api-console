@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Copy, Check, ChevronRight, ChevronDown, Bot, Settings, CheckSquare, Square, ArrowRight, AlertCircle } from 'lucide-react';
+import { Copy, Check, ChevronRight, ChevronDown, Bot, Settings, CheckSquare, Square, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint, type BodyField } from '../../data/apiEndpoints/index';
 import { buildCurl, buildCodeSnippet, type CodeLang } from '../../utils/codegen';
 
@@ -559,7 +559,7 @@ function Step2Select({ state, setState, onBack, onNext }: {
       </div>
 
       <div className="flex gap-3">
-        <button onClick={onBack} className="px-4 py-2.5 border border-stone-200 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-50 transition-colors">← Back</button>
+        <button onClick={onBack} className="px-4 py-2.5 border border-stone-200 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1"><ArrowLeft size={12} /> Back</button>
         <button onClick={onNext} disabled={selectedCount === 0}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-forest-deep hover:bg-[#33301a] disabled:bg-stone-300 text-white text-xs font-bold rounded-xl transition-all">
           Generate Prompt ({selectedCount} endpoint{selectedCount !== 1 ? 's' : ''}) <ArrowRight className="w-4 h-4" />
@@ -657,8 +657,8 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
       </div>
 
       <button onClick={onBack}
-        className="px-4 py-2.5 border border-stone-200 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-50 transition-colors">
-        ← Edit Selection
+        className="px-4 py-2.5 border border-stone-200 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-50 transition-colors inline-flex items-center gap-1">
+        <ArrowLeft size={12} /> Edit Selection
       </button>
     </div>
   );
@@ -695,7 +695,7 @@ export default function VibeWizard({ clientName, instances }: VibeWizardProps) {
         {([1, 2, 3] as WizardStep[]).map((s, i) => (
           <React.Fragment key={s}>
             <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-colors ${step === s ? 'bg-forest-deep text-white' : s < step ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-500'}`}>
-              <span className="w-4 h-4 rounded-full bg-current flex items-center justify-center text-[8px] shrink-0">{s < step ? '✓' : s}</span>
+              <span className="w-4 h-4 rounded-full bg-current flex items-center justify-center text-[8px] shrink-0">{s < step ? <Check size={8} /> : s}</span>
               <span className="hidden sm:inline">{stepLabels[i]}</span>
             </div>
             {i < 2 && <div className={`flex-1 h-0.5 mx-1 min-w-4 ${s < step ? 'bg-green-400' : 'bg-stone-200'}`} />}

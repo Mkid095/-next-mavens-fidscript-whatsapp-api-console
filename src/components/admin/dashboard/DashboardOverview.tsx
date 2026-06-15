@@ -1,4 +1,5 @@
 import React from 'react';
+import { Mail, CheckCircle2, Smartphone } from 'lucide-react';
 import type { Instance } from '../../../services/api';
 import type { Client } from '../../../services/api';
 import type { SystemLog } from '../../../types';
@@ -38,7 +39,7 @@ export default function DashboardOverview({
           value="204,502 msgs"
           trend="volume trigger today"
           trendValue="+18.3%"
-          icon={<span>📨</span>}
+          icon={<Mail size={18} />}
           iconBgClass="bg-[#102e24]"
           iconColor="text-emerald-400"
           cardBgClass="bg-[#0b1b16]"
@@ -52,7 +53,7 @@ export default function DashboardOverview({
           value="99.98 / 100"
           trend="Stable uptime"
           trendValue=""
-          icon={<span>✅</span>}
+          icon={<CheckCircle2 size={18} />}
           iconBgClass="bg-emerald-100"
           iconColor="text-emerald-800"
           cardBgClass="bg-white"
@@ -65,7 +66,7 @@ export default function DashboardOverview({
           value={`${instances.length} / 50`}
           trend="private subnets provisioned"
           trendValue="+4 new"
-          icon={<span>📱</span>}
+          icon={<Smartphone size={18} />}
           iconBgClass="bg-[#10231d]/5"
           iconColor="text-[#10231d]"
           cardBgClass="bg-white"
