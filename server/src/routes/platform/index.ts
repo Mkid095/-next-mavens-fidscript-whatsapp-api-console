@@ -3,6 +3,7 @@ import customersRoutes from './customers.js';
 import conversationsRoutes from './conversations.js';
 import searchRoutes from './search.js';
 import analyticsRoutes from './analytics.js';
+import groupsRoutes from './groups.js';
 
 // Platform API — customer-centric reads + operational writes.
 // All routes use clientJwtAuth (workspace-scoped via req.client.id).
@@ -12,5 +13,6 @@ router.use('/customers', customersRoutes);
 router.use('/conversations', conversationsRoutes);
 router.use('/search', searchRoutes);
 router.use('/analytics', analyticsRoutes);
+router.use('/groups', groupsRoutes);
 
 export default router;

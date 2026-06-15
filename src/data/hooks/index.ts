@@ -7,3 +7,4 @@ export { useTimeline } from './useTimeline.js';
 export { useSearch } from './useSearch.js';
 export { useAnalyticsOverview } from './useAnalytics.js';
 export { useInbox } from './useInbox.js';
+export { useGroupInfo } from './useGroupInfo.js';

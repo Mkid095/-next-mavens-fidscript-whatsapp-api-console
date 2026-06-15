@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { MessagesSquare } from 'lucide-react';
 import type { Conversation, Instance } from '../../services/api';
-import { useInbox } from '../../data';
+import { useInbox, useGroupInfo } from '../../data';
 import MessageBubble from './MessageBubble';
 import MessageComposer from './MessageComposer';
 import { useTypingIndicator } from './useTypingIndicator';
@@ -17,6 +17,8 @@ interface ConversationThreadPaneProps {
 export default function ConversationThreadPane({ conversation, instances, onTokenDeduct }: ConversationThreadPaneProps) {
   const { messages, loading, error, refresh } = useInbox(conversation?.id ?? null);
   const typing = useTypingIndicator(conversation?.chat_id ?? null);
+  const isGroup = !!conversation?.chat_id.includes('@g.us');
+  const group = useGroupInfo(isGroup ? conversation?.chat_id ?? null : null);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length, conversation?.id]);
@@ -32,16 +34,18 @@ export default function ConversationThreadPane({ conversation, instances, onToke
 
   const prio = priorityStyle(conversation.priority);
   const ai = aiStateMeta(conversation.ai_state);
+  const headerName = isGroup
+    ? (group.subject || conversation.customer_name || conversation.chat_id)
+    : (conversation.customer_name || conversation.chat_id);
+  const headerSub = isGroup ? `${group.size || '—'} members` : conversation.chat_id;
 
   return (
     <div className="flex min-w-0 flex-1 flex-col bg-stone-50">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-2.5">
         <div className="min-w-0">
-          <h2 className="truncate text-sm font-semibold text-stone-800">
-            {conversation.customer_name || conversation.chat_id}
-          </h2>
-          <p className="truncate text-[11px] text-stone-400">{conversation.chat_id}</p>
+          <h2 className="truncate text-sm font-semibold text-stone-800">{headerName}</h2>
+          <p className="truncate text-[11px] text-stone-400">{headerSub}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`flex items-center gap-1 text-[11px] ${prio.text}`}><span className={`h-1.5 w-1.5 rounded-full ${prio.dot}`} />{prio.label}</span>

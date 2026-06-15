@@ -1,8 +1,10 @@
-import { Bot } from 'lucide-react';
+import { Bot, Users } from 'lucide-react';
 import type { Conversation } from '../../data';
+import { useGroupInfo } from '../../data';
 import { timeAgo, priorityStyle } from './helpers';
 
-// A single conversation row in the list pane.
+// A single conversation row in the list pane. For groups, resolves the group
+// subject via useGroupInfo so the user sees "Family Group" instead of the JID.
 interface ConversationListItemProps {
   conversation: Conversation;
   selected: boolean;
@@ -10,7 +12,13 @@ interface ConversationListItemProps {
 }
 
 export default function ConversationListItem({ conversation, selected, onSelect }: ConversationListItemProps) {
-  const name = conversation.customer_name || conversation.chat_id || 'Unknown';
+  const isGroup = (conversation.channel === 'whatsapp') && conversation.chat_id.includes('@g.us');
+  const group = useGroupInfo(isGroup ? conversation.chat_id : null);
+
+  const displayName = isGroup
+    ? (group.subject || conversation.customer_name || conversation.chat_id)
+    : (conversation.customer_name || conversation.chat_id || 'Unknown');
+  const initial = displayName.slice(0, 2).toUpperCase();
   const prio = priorityStyle(conversation.priority);
   const isAi = conversation.ai_state === 'ai_active';
 
@@ -21,12 +29,12 @@ export default function ConversationListItem({ conversation, selected, onSelect 
         selected ? 'border-forest-deep bg-stone-100' : 'border-transparent hover:bg-stone-50'
       }`}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-200 text-xs font-medium text-stone-600">
-        {name.slice(0, 2).toUpperCase()}
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-200 text-stone-600">
+        {isGroup ? <Users size={15} /> : initial}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-medium text-stone-800">{name}</span>
+          <span className="truncate text-sm font-medium text-stone-800">{displayName}</span>
           <span className="shrink-0 text-[10px] text-stone-400">
             {timeAgo(conversation.last_message_at)}
           </span>

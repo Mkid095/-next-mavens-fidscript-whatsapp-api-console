@@ -106,4 +106,8 @@ export const platformApi = {
     return apiGet<SearchHit[]>(`/api/platform/search?${params.toString()}`);
   },
   analyticsOverview: () => apiGet<Record<string, number>>(`/api/platform/analytics/overview`),
+
+  // Group metadata
+  getGroupInfo: (chatId: string) =>
+    apiGet<{ subject: string; size: number; owner: string | null }>(`/api/platform/groups/${encodeURIComponent(chatId)}/info`),
 };

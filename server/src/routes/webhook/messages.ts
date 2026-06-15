@@ -6,6 +6,7 @@ import { logAuditAction } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import { resolveConversation } from '../../modules/customers/index.js';
 import { dispatchMessageReceived } from '../../modules/platform/events/index.js';
+import { warmGroupCache } from '../../services/whatsapp/groupMetadata.js';
 import { buildWsCtx, chatIdFromJid, type WebhookInstance } from './shared.js';
 
 // messages.upsert — inbound message: resolve customer/conversation, persist, emit.
@@ -63,6 +64,10 @@ export async function handleMessagesUpsert(
   }
 
   autoProvisionContact(instance, phone, pushName, req);
+
+  // Eagerly warm group-metadata cache so the inbox can show the group subject
+  // immediately instead of raw JID on the first arrival.
+  if (isGroup) { warmGroupCache(chatId).catch(() => { /* best-effort */ }); }
   emitNewMessage(instance.name, {
     id: msgId, from_number: phone || senderJid || '', from_name: pushName || '',
     message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl,
