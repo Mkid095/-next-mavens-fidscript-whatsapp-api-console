@@ -2,10 +2,60 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../database.js';
 import { clientJwtAuth } from '../middleware/auth.js';
-import { callEvolutionAPI } from '../utils/evolution.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
+import { dispatchCampaignMessage, emitCampaignStarted, emitCampaignCompleted, type CampaignMessageKind } from '../modules/campaigns/index.js';
+import { getInstanceForClient } from '../services/whatsapp/shared.js';
+import {
+  TOKEN_COST_TEXT, TOKEN_COST_MEDIA, TOKEN_COST_LOCATION, TOKEN_COST_CONTACT,
+} from '../utils/tokenCosts.js';
 
 const router = Router();
+
+// =============================================================================
+// Phase 5 Slice A refactor:
+//   - POST /:id/send now routes through modules/campaigns/dispatch.ts which
+//     calls the SHARED /api/v1 senders (sendText/sendMedia/sendLocation/sendContact).
+//     1:1 chat and campaigns never drift. Per-recipient idempotency. Failed
+//     sends refund automatically. message.sent event fires per send.
+//   - campaign.started / campaign.completed events on the bus (timeline +
+//     analytics subscribers react).
+//   - Upfront token deduction replaced with a pre-flight balance check; the
+//     shared senders charge per-send so a campaign with 90/100 failures only
+//     costs 10 sends' worth of tokens.
+// =============================================================================
+
+function tokenCostFor(kind: CampaignMessageKind): number {
+  switch (kind) {
+    case 'text': return TOKEN_COST_TEXT;
+    case 'media': return TOKEN_COST_MEDIA;
+    case 'location': return TOKEN_COST_LOCATION;
+    case 'contact': return TOKEN_COST_CONTACT;
+  }
+}
+
+interface CampaignRow {
+  id: string;
+  client_id: string;
+  workspace_id?: string | null;
+  name: string;
+  instance_name: string;
+  message_type: string;
+  content: string | null;
+  media_url: string | null;
+  caption: string | null;
+  status: string;
+  type?: string | null;
+}
+
+interface RecipientRow {
+  id: string;
+  campaign_id: string;
+  phone: string;
+  status: string;
+  sent_at: string | null;
+  failed_at: string | null;
+  error_message: string | null;
+}
 
 // GET /api/campaigns - List all campaigns for the client
 router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
@@ -26,7 +76,7 @@ router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
 // POST /api/campaigns - Create a new campaign
 router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
-    const { name, instance_name, message_type, content, media_url, caption, scheduled_at, phone_numbers, group_id } = req.body;
+    const { name, instance_name, message_type, content, media_url, caption, scheduled_at, phone_numbers, group_id, type, template_vars } = req.body;
 
     if (!name || !instance_name) {
       return res.status(400).json({ success: false, error: 'name and instance_name are required' });
@@ -46,7 +96,6 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
     // Resolve phone numbers: from group_id or from phone_numbers array
     let resolvedPhones: string[] = [];
     if (group_id) {
-      // Verify group belongs to client
       const group = db.prepare(
         'SELECT * FROM contact_groups WHERE id = ? AND client_id = ?'
       ).get(group_id, req.client!.id);
@@ -65,11 +114,21 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
 
     const campaignId = `camp_${uuidv4().substring(0, 8)}`;
     const status = scheduled_at ? 'scheduled' : 'draft';
+    const campaignType = type || 'broadcast';
 
     db.prepare(`
-      INSERT INTO campaigns (id, client_id, name, instance_name, message_type, content, media_url, caption, status, scheduled_at, total_recipients, group_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(campaignId, req.client!.id, name, instance_name, message_type || 'text', content || '', media_url || null, caption || '', status, scheduled_at || null, resolvedPhones.length, group_id || null);
+      INSERT INTO campaigns
+        (id, client_id, workspace_id, created_by, name, instance_name, message_type, content, media_url, caption, status, scheduled_at, total_recipients, group_id, type, template_vars, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(
+      campaignId,
+      req.client!.id,
+      req.client!.id, // workspace_id = client_id bridge (P11)
+      req.client!.id, // created_by = client (no per-user distinction in slice A)
+      name, instance_name, message_type || 'text', content || '', media_url || null, caption || '',
+      status, scheduled_at || null, resolvedPhones.length, group_id || null,
+      campaignType, template_vars ? JSON.stringify(template_vars) : null
+    );
 
     // Insert recipients
     const insertRecipient = db.prepare(`
@@ -104,12 +163,12 @@ router.get('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/campaigns/:id/send - Send a campaign's queued messages via Evolution API
+// POST /api/campaigns/:id/send - Send a campaign's queued messages via the SHARED /api/v1 senders
 router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const campaign = db.prepare(
       'SELECT * FROM campaigns WHERE id = ? AND client_id = ?'
-    ).get(req.params.id, req.client!.id) as any;
+    ).get(req.params.id, req.client!.id) as CampaignRow | undefined;
     if (!campaign) {
       return res.status(404).json({ success: false, error: 'Campaign not found' });
     }
@@ -117,10 +176,8 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Campaign already sent or sending' });
     }
 
-    // Get instance for this campaign
-    const instance = db.prepare(
-      'SELECT * FROM instances WHERE name = ? AND client_id = ?'
-    ).get(campaign.instance_name, req.client!.id) as any;
+    // Resolve instance via the shared loader (used by /api/v1 senders)
+    const instance = getInstanceForClient(campaign.instance_name, req.client!.id);
     if (!instance) {
       return res.status(400).json({ success: false, error: 'Instance not found' });
     }
@@ -128,89 +185,92 @@ router.post('/:id/send', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Instance is not connected' });
     }
 
-    const recipients = db.prepare(
+    const recipients = (db.prepare(
       'SELECT * FROM campaign_recipients WHERE campaign_id = ? ORDER BY created_at ASC'
-    ).all(req.params.id) as any[];
+    ).all(req.params.id) as unknown as RecipientRow[]);
 
-    const tokenCost = campaign.message_type === 'text' || campaign.message_type === 'location'
-      ? recipients.length
-      : recipients.length * 2;
-
-    const client = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(req.client!.id) as { token_balance: number };
-    if (client.token_balance < tokenCost) {
-      return res.status(402).json({ success: false, error: `Insufficient tokens. Need ${tokenCost}, have ${client.token_balance}` });
+    if (recipients.length === 0) {
+      return res.status(400).json({ success: false, error: 'No recipients' });
     }
 
-    db.prepare('UPDATE clients SET token_balance = token_balance - ? WHERE id = ?').run(tokenCost, req.client!.id);
-    db.prepare('INSERT INTO token_transactions (id, client_id, type, amount, reference) VALUES (?, ?, ?, ?, ?)')
-      .run(`txn_${uuidv4().substring(0, 8)}`, req.client!.id, 'sent', -tokenCost, `campaign_${campaign.id}`);
+    // Pre-flight balance check (fast-fail if zero balance). Per-send charge
+    // happens inside dispatchCampaignMessage via chargeAndEmit, so partial
+    // success only costs the successful sends.
+    const kind = (campaign.message_type as CampaignMessageKind) || 'text';
+    const perSendCost = tokenCostFor(kind);
+    const totalCost = perSendCost * recipients.length;
+    const client = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(req.client!.id) as { token_balance: number };
+    if (!client || client.token_balance < perSendCost) {
+      return res.status(402).json({ success: false, error: `Insufficient tokens. Need at least ${perSendCost}, have ${client?.token_balance ?? 0}` });
+    }
 
-    db.prepare("UPDATE campaigns SET status = 'sending', started_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.params.id);
+    db.prepare("UPDATE campaigns SET status = 'sending', started_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.params.id);
     db.prepare("UPDATE campaign_recipients SET status = 'queued' WHERE campaign_id = ?").run(req.params.id);
 
-    // Resolve evolution instance name
-    const evolutionName = instance.evolution_name || `${req.client!.id}_${instance.name}`;
+    // Build SendContext ONCE (used by every per-recipient send).
+    // req.client!.id is the workspace_id bridge (P11).
+    const ctx = { instance: { ...instance, client_id: req.client!.id }, client: req.client!, req };
 
-    // Send messages asynchronously (don't wait for all to complete)
-    const sendMessages = async () => {
+    // Fire campaign.started on the bus. Wrapped in try/catch so a subscriber
+    // failure never breaks the send loop.
+    emitCampaignStarted(
+      { workspaceId: req.client!.id, actorUserId: req.client!.id, roleId: 'role_0', perms: ['*'] },
+      { campaignId: campaign.id, stats: { totalRecipients: recipients.length } }
+    ).catch(err => console.error('[campaigns] emit started failed:', err));
+
+    // Async fan-out — fire and forget. Each send is per-recipient idempotent.
+    const sendAll = async () => {
       let sentCount = 0;
-      let deliveredCount = 0;
       let failedCount = 0;
+      const now = new Date().toISOString();
 
       for (const recipient of recipients) {
-        try {
-          if (campaign.message_type === 'text' || !campaign.message_type) {
-            const evoRes: any = await callEvolutionAPI('POST', `/message/sendText/${evolutionName}`, {
-              number: recipient.phone,
-              text: campaign.content,
-            });
-            const msgKey = Object.keys(evoRes || {}).find(k => k.includes('message') || k.includes('id'));
-            if (evoRes && !evoRes?.erro && !evoRes?.error) {
-              db.prepare("UPDATE campaign_recipients SET status = 'sent', sent_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
-              sentCount++;
-              deliveredCount++; // Evolution marks delivered when queued
-            } else {
-              db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
-              failedCount++;
-            }
-          } else if (campaign.message_type === 'media' && campaign.media_url) {
-            const evoRes: any = await callEvolutionAPI('POST', `/message/sendMedia/${evolutionName}`, {
-              number: recipient.phone,
-              mediatype: 'image',
-              media: campaign.media_url,
-              caption: campaign.content || campaign.caption || '',
-            });
-            if (evoRes && !evoRes?.erro && !evoRes?.error) {
-              db.prepare("UPDATE campaign_recipients SET status = 'sent', sent_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
-              sentCount++;
-              deliveredCount++;
-            } else {
-              db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
-              failedCount++;
-            }
-          } else {
-            db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
-            failedCount++;
-          }
-        } catch (err) {
-          db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = CURRENT_TIMESTAMP WHERE id = ?").run(recipient.id);
+        const result = await dispatchCampaignMessage(ctx, {
+          recipientId: recipient.id,
+          to: recipient.phone,
+          kind,
+          text: campaign.content || undefined,
+          mediaUrl: campaign.media_url || undefined,
+          caption: campaign.caption || undefined,
+        });
+        if (result.ok) {
+          db.prepare("UPDATE campaign_recipients SET status = 'sent', sent_at = ?, error_message = NULL WHERE id = ?")
+            .run(now, recipient.id);
+          sentCount++;
+        } else {
+          db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = ?, error_message = ? WHERE id = ?")
+            .run(now, result.error || 'unknown', recipient.id);
           failedCount++;
         }
-
-        // Small delay between messages to avoid rate limiting
+        // Pace sends to respect the per-client msg/min rate limit.
         await new Promise(r => setTimeout(r, 500));
       }
 
-      // Mark campaign complete
-      db.prepare(
-        "UPDATE campaigns SET status = 'completed', completed_at = CURRENT_TIMESTAMP, sent_count = ?, delivered_count = ?, failed_count = ? WHERE id = ?"
-      ).run(sentCount, deliveredCount, failedCount, req.params.id);
+      db.prepare(`
+        UPDATE campaigns
+        SET status = 'completed', completed_at = ?, sent_count = ?, delivered_count = ?, failed_count = ?, updated_at = ?
+        WHERE id = ?
+      `).run(now, sentCount, sentCount, failedCount, now, campaign.id);
+
+      emitCampaignCompleted(
+        { workspaceId: req.client!.id, actorUserId: req.client!.id, roleId: 'role_0', perms: ['*'] },
+        { campaignId: campaign.id, stats: { sent: sentCount, delivered: sentCount, failed: failedCount } }
+      ).catch(err => console.error('[campaigns] emit completed failed:', err));
+
       emitDashboardRefresh(req.client!.id);
     };
 
-    sendMessages().catch(console.error);
+    sendAll().catch(err => console.error('[campaigns] sendAll failed:', err));
 
-    res.json({ success: true, data: { campaign_id: campaign.id, tokens_deducted: tokenCost } });
+    res.json({
+      success: true,
+      data: {
+        campaign_id: campaign.id,
+        recipients: recipients.length,
+        estimated_tokens: totalCost,
+        mode: 'per_send_charged',
+      },
+    });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }
@@ -228,9 +288,15 @@ router.post('/:id/duplicate', clientJwtAuth, async (req: Request, res: Response)
 
     const newId = `camp_${uuidv4().substring(0, 8)}`;
     db.prepare(`
-      INSERT INTO campaigns (id, client_id, name, instance_name, message_type, content, media_url, caption, status, group_id, total_recipients)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)
-    `).run(newId, req.client!.id, `${original.name} (Copy)`, original.instance_name, original.message_type, original.content, original.media_url, original.caption, original.group_id, original.total_recipients);
+      INSERT INTO campaigns
+        (id, client_id, workspace_id, created_by, name, instance_name, message_type, content, media_url, caption, status, group_id, total_recipients, type, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(
+      newId, req.client!.id, req.client!.id, req.client!.id,
+      `${original.name} (Copy)`, original.instance_name, original.message_type,
+      original.content, original.media_url, original.caption, original.group_id, original.total_recipients,
+      original.type || 'broadcast'
+    );
 
     // Copy all recipients
     const origRecipients = db.prepare('SELECT phone FROM campaign_recipients WHERE campaign_id = ?').all(req.params.id) as { phone: string }[];

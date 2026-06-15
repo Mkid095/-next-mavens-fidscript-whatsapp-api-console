@@ -6,6 +6,7 @@ import { createSchema } from './schema.js';
 import { seedData } from './seed.js';
 import { runWorkspaceMigrations } from '../modules/platform/workspace/migrations.js';
 import { runPhase3Migrations } from './phase3.js';
+import { runPhase5Migrations } from './phase5.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,7 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   createSchema(db);
   runWorkspaceMigrations(db); // workspace + RBAC + customer + conversation tables
   runPhase3Migrations(db);     // customer_assignments + SLA timing columns
+  runPhase5Migrations(db);     // campaign type/workspace_id + segments/steps/triggers/media_assets/status_posts skeletons
   await seedData(db);
   saveDatabase();
 
