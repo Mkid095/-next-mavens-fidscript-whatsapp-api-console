@@ -211,6 +211,21 @@ export function runWorkspaceMigrations(db: Database): void {
     )
   `);
 
+  // ai_keyword_rules (Phase 2 — simple keyword → reply + handoff)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ai_keyword_rules (
+      id TEXT PRIMARY KEY,
+      workspace_id TEXT NOT NULL,
+      keyword TEXT NOT NULL,
+      reply TEXT NOT NULL,
+      confidence_threshold REAL DEFAULT 0.7,
+      escalate_on_low_confidence INTEGER DEFAULT 1,
+      set_ai_state TEXT DEFAULT 'escalated',
+      enabled INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // integrations (reserved Phase 6)
   db.run(`
     CREATE TABLE IF NOT EXISTS integrations (
