@@ -5,6 +5,8 @@ import { parseIncomingMessage } from '../utils/messageParser.js';
 import { logAuditAction } from '../utils/audit.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 import { normalizePhone } from '../utils/phone.js';
+import { resolveConversation } from '../modules/customers/index.js';
+import { dispatchMessageReceived } from '../modules/platform/events/index.js';
 
 const router = Router();
 
@@ -102,8 +104,6 @@ router.post('/evolution', async (req: Request, res: Response) => {
       const senderJid = (sender as string | undefined) || key.remoteJid;
       const remoteJid = key.remoteJid || '';
       const isGroup = remoteJid.includes('@g.us');
-      // Canonical sender phone. Group thread = group JID; individual thread = the
-      // normalized sender phone, so incoming + outgoing for the same person join.
       const rawPhone = senderJid ? extractPhoneFromJid(senderJid) : null;
       const phone = rawPhone ? normalizePhone(rawPhone) : null;
       const chatId: string = isGroup ? (remoteJid || '') : (phone || remoteJid);
@@ -112,26 +112,64 @@ router.post('/evolution', async (req: Request, res: Response) => {
 
       const parsed = parseIncomingMessage(data ?? {});
       const timestamp = new Date().toISOString();
+
+      // Resolve customer + conversation (the one chokepoint)
+      const workspaceId = instance.client_id; // client_id = workspace_id bridge
+      const ctx = { workspaceId, userId: workspaceId, roleId: 'role_0', perms: ['*'] };
+      let customerId = '';
+      let conversationId = '';
+
+      try {
+        const resolved = await resolveConversation(
+          ctx,
+          'whatsapp',
+          chatId,
+          String(instance.id),
+          null,
+          pushName
+        );
+        customerId = resolved.customerId;
+        conversationId = resolved.conversationId;
+      } catch (err) {
+        console.error('[WEBHOOK] resolveConversation failed:', err);
+      }
+
       try {
         db.prepare(`
-          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction, extra, raw_payload, chat_id, is_group)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming', ?, ?, ?, ?)
+          INSERT OR IGNORE INTO inbox_messages
+            (id, instance_id, client_id, from_number, from_name, message_type, content,
+             media_url, is_read, direction, extra, raw_payload, chat_id, is_group,
+             conversation_id, customer_id, workspace_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming', ?, ?, ?, ?, ?, ?, ?)
         `).run(
           msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '',
           parsed.messageType, parsed.content, parsed.mediaUrl,
           JSON.stringify(parsed.extra), JSON.stringify(rawBody),
           chatId, isGroup ? 1 : 0,
+          conversationId || null, customerId || null, workspaceId,
         );
-        // Update last_active on both instance and client when a message is received
         db.prepare('UPDATE instances SET last_active = ? WHERE id = ?').run(timestamp, instance.id);
         db.prepare('UPDATE clients SET last_active = ? WHERE id = ?').run(timestamp, instance.client_id);
       } catch {
         // Duplicate message ID — ignore
       }
 
+      // Emit message.received event (dispatch fills domain_events)
+      if (customerId && conversationId) {
+        dispatchMessageReceived(ctx, {
+          conversationId,
+          customerId,
+          channel: 'whatsapp',
+          messageId: msgId,
+          messageType: parsed.messageType,
+          content: parsed.content,
+          mediaUrl: parsed.mediaUrl,
+          fromNumber: phone || senderJid || '',
+          fromName: pushName || null,
+        }).catch(err => console.error('[WEBHOOK] dispatchMessageReceived failed:', err));
+      }
+
       if (phone && !isGroup) {
-        // Auto-provision: any new number that texts in becomes a contact (deduped
-        // by canonical phone) so it resolves to a name instead of a raw number.
         const existing = db.prepare('SELECT id, name FROM contacts WHERE client_id = ? AND phone = ?').get(instance.client_id, phone) as { id: string; name: string | null } | undefined;
         if (!existing) {
           db.prepare('INSERT INTO contacts (id, client_id, phone, name, tags) VALUES (?, ?, ?, ?, ?)')
@@ -147,7 +185,6 @@ router.post('/evolution', async (req: Request, res: Response) => {
         }
       }
 
-      // Broadcast new message to SSE for real-time inbox — include chat_id and is_group
       emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl, timestamp, chat_id: chatId, is_group: isGroup ? 1 : 0 });
       emitInstanceStateChange(instance.name, 'connected', phone || null);
       emitDashboardRefresh(instance.client_id);

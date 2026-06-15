@@ -52,6 +52,9 @@ export function createTables(db: Database): void {
   try { db.run('ALTER TABLE inbox_messages ADD COLUMN raw_payload TEXT'); } catch (e: any) { /* already exists */ }
   try { db.run('ALTER TABLE inbox_messages ADD COLUMN chat_id TEXT'); } catch (e: any) { /* already exists */ }
   try { db.run('ALTER TABLE inbox_messages ADD COLUMN is_group INTEGER DEFAULT 0'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN conversation_id TEXT'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN customer_id TEXT'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN workspace_id TEXT'); } catch (e: any) { /* already exists */ }
   try { db.run("ALTER TABLE payments ADD COLUMN token_count INTEGER"); } catch (e: any) { /* already exists */ }
   db.run(`
     CREATE TABLE IF NOT EXISTS api_logs (

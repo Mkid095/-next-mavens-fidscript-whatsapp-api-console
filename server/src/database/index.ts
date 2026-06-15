@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createSchema } from './schema.js';
 import { seedData } from './seed.js';
+import { runWorkspaceMigrations } from '../modules/platform/workspace/migrations.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +25,7 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
 
   db.run('PRAGMA foreign_keys = ON');
   createSchema(db);
+  runWorkspaceMigrations(db); // workspace + RBAC + customer + conversation tables
   await seedData(db);
   saveDatabase();
 

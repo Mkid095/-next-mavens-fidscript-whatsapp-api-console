@@ -6,6 +6,7 @@ import { emitTokenUpdate } from '../../utils/evolution.js';
 import { logApiRequest } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import { normalizePhone } from '../../utils/phone.js';
+import { dispatchMessageSent } from '../../modules/platform/events/index.js';
 
 export interface SendContext {
   instance: Instance & { client_id: string };
@@ -76,6 +77,7 @@ export function refundTokens(ctx: SendContext, amount: number, reference: string
 export function saveSentMessage(
   instanceId: string,
   clientId: string,
+  workspaceId: string,
   msgId: string,
   to: string,
   content: string,
@@ -83,16 +85,21 @@ export function saveSentMessage(
   mediaUrl?: string,
   chatId?: string,
   isGroup = 0,
+  conversationId?: string,
+  customerId?: string,
 ) {
-  // Store the recipient in canonical form so outgoing rows join the SAME thread
-  // as incoming rows for that contact. Group JIDs and non-numeric targets
-  // ('status') fall back gracefully.
   const normalized = normalizePhone(to);
   const chat = chatId || normalized || null;
   db.prepare(`
-    INSERT INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction, chat_id, is_group)
-    VALUES (?, ?, ?, ?, '', ?, ?, ?, 1, 'outgoing', ?, ?)
-  `).run(msgId, instanceId, clientId, normalized || to, messageType, content, mediaUrl || null, chat, isGroup);
+    INSERT INTO inbox_messages
+      (id, instance_id, client_id, workspace_id, from_number, from_name, message_type,
+       content, media_url, is_read, direction, chat_id, is_group, conversation_id, customer_id)
+    VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, 1, 'outgoing', ?, ?, ?, ?)
+  `).run(
+    msgId, instanceId, clientId, workspaceId,
+    normalized || to, messageType, content, mediaUrl || null,
+    chat, isGroup, conversationId || null, customerId || null,
+  );
 }
 
 export function updateCounters(instanceName: string, clientId: string) {
@@ -110,11 +117,26 @@ export function finalize(
   logBody: string,
   chatId?: string,
   isGroup = 0,
+  conversationId?: string,
+  customerId?: string,
 ) {
+  const workspaceId = ctx.instance.client_id; // client_id = workspace_id bridge
   updateCounters(ctx.instance.name, ctx.instance.client_id);
-  saveSentMessage(ctx.instance.id, ctx.instance.client_id, msgId, to, content, type, mediaUrl, chatId, isGroup);
+  saveSentMessage(
+    ctx.instance.id, ctx.instance.client_id, workspaceId,
+    msgId, to, content, type, mediaUrl, chatId, isGroup,
+    conversationId, customerId,
+  );
   logApiRequest(ctx.req, ctx.instance.id, ctx.instance.client_id, 200, logBody);
   emitDashboardRefresh(ctx.instance.client_id);
+
+  // Emit message.sent event so subscribers (search, analytics, timeline) can react
+  if (conversationId && customerId) {
+    dispatchMessageSent(
+      { workspaceId, actorUserId: workspaceId, roleId: 'role_0', perms: ['*'] },
+      { conversationId, customerId, messageId: msgId, messageType: type, content, toNumber: to }
+    ).catch(err => console.error('[shared] dispatchMessageSent failed:', err));
+  }
 }
 
 /**
