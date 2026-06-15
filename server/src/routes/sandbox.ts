@@ -33,10 +33,10 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'No active API key found. Generate one in API Keys first.' });
     }
 
-    // Build the /api/v1 path — substitute instanceName if present
-    let v1Path = endpoint;
+    // Strip /api/v1 prefix — PUBLIC_API_BASE already includes it
+    let v1Path = endpoint.replace(/^\/api\/v1/, '');
     if (instanceName && endpoint.includes(':instanceName')) {
-      v1Path = endpoint.replace(':instanceName', encodeURIComponent(instanceName));
+      v1Path = v1Path.replace(':instanceName', encodeURIComponent(instanceName));
     }
 
     const apiBase = process.env.PUBLIC_API_BASE || 'https://whatsapp.fidscript.com/api';
