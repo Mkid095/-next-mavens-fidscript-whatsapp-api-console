@@ -7,6 +7,7 @@ import { buildCurl, buildCodeSnippet, type CodeLang } from '../../utils/codegen'
 interface VibeWizardProps {
   clientName?: string;
   instances: Array<{ id: string; name: string; display_name?: string; phone_number?: string; status: string }>;
+  activeKeys: Array<{ id: string; name: string; key_prefix?: string; last_used: string | null }>;
 }
 
 // ── Step types ────────────────────────────────────────────────────────────────
@@ -332,17 +333,20 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 
 // ── Step 1: Credentials ────────────────────────────────────────────────────────
 
-function Step1Credentials({ pastedKey, setPastedKey, instances, selectedInstance, setSelectedInstance, onNext }: {
+function Step1Credentials({ pastedKey, setPastedKey, instances, selectedInstance, setSelectedInstance, activeKeys, onNext }: {
   pastedKey: string;
   setPastedKey: (key: string) => void;
   instances: VibeWizardProps['instances'];
   selectedInstance: string;
   setSelectedInstance: (name: string) => void;
+  activeKeys: VibeWizardProps['activeKeys'];
   onNext: () => void;
 }) {
   const [confirmed, setConfirmed] = useState(false);
 
   const isValidKey = pastedKey.startsWith('fidscript_live_') || pastedKey.startsWith('fidscript_test_');
+  const detectedPrefix = isValidKey ? pastedKey.substring(0, 20) : null;
+  const matchedKey = activeKeys.find(k => k.key_prefix && detectedPrefix && k.key_prefix === detectedPrefix);
 
   return (
     <div className="space-y-5">
@@ -370,7 +374,12 @@ function Step1Credentials({ pastedKey, setPastedKey, instances, selectedInstance
           {pastedKey && !isValidKey && (
             <p className="text-[9px] text-red-500 mt-1">Key must start with fidscript_live_ or fidscript_test_</p>
           )}
-          {isValidKey && (
+          {matchedKey && (
+            <p className="text-[9px] text-green-600 mt-1 flex items-center gap-1">
+              <Check className="w-3 h-3" /> Matches “{matchedKey.name}”
+            </p>
+          )}
+          {isValidKey && !matchedKey && (
             <p className="text-[9px] text-green-600 mt-1 flex items-center gap-1">
               <Check className="w-3 h-3" /> Valid key format
             </p>
@@ -381,6 +390,28 @@ function Step1Credentials({ pastedKey, setPastedKey, instances, selectedInstance
             </p>
           )}
         </div>
+
+        {/* Active keys reference list */}
+        {activeKeys.length > 0 && (
+          <div>
+            <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Your Active Keys</label>
+            <div className="rounded-xl border border-[#eaebe4] bg-stone-50 divide-y divide-[#eaebe4]/60 max-h-32 overflow-y-auto">
+              {activeKeys.map(k => {
+                const isMatch = matchedKey?.id === k.id;
+                return (
+                  <div key={k.id} className={`flex items-center justify-between gap-2 px-3 py-2 text-[10px] ${isMatch ? 'bg-green-50/60' : ''}`}>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-forest-deep truncate">{k.name}</p>
+                      <p className="font-mono text-stone-500 truncate">{k.key_prefix || 'fidscript_live_'}••••••••</p>
+                    </div>
+                    <span className="text-[8px] text-stone-400 shrink-0">{k.last_used || 'Never used'}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[9px] text-stone-400 mt-1">Keys are not retrievable from the server — paste the secret you saved at creation. The matching key is highlighted as you type.</p>
+          </div>
+        )}
 
         {/* Container dropdown — truly optional */}
         <div>
@@ -666,7 +697,7 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 
 // ── Main wizard ──────────────────────────────────────────────────────────────
 
-export default function VibeWizard({ clientName, instances }: VibeWizardProps) {
+export default function VibeWizard({ clientName, instances, activeKeys }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
   // The API key is pasted by the user — it's not retrievable from the server after creation
@@ -712,6 +743,7 @@ export default function VibeWizard({ clientName, instances }: VibeWizardProps) {
               instances={instances}
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}
+              activeKeys={activeKeys}
               onNext={() => setStep(2)}
             />
           </motion.div>
