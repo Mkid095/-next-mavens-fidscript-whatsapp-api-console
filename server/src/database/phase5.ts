@@ -19,6 +19,10 @@ export function runPhase5Migrations(db: Database): void {
   try { db.run(`ALTER TABLE campaigns ADD COLUMN updated_at TEXT`); } catch (_) { /* ok */ }
   try { db.run(`ALTER TABLE campaigns ADD COLUMN template_vars TEXT`); } catch (_) { /* ok */ }
   try { db.run(`ALTER TABLE campaigns ADD COLUMN idempotency_key TEXT`); } catch (_) { /* ok */ }
+  // group_id was in the original schema for tables.ts but the prod DB was
+  // created from an earlier deploy that didn't have it — CREATE TABLE IF NOT
+  // EXISTS is a no-op on existing tables, so the column was never added.
+  try { db.run(`ALTER TABLE campaigns ADD COLUMN group_id TEXT`); } catch (_) { /* ok */ }
 
   db.run(`CREATE INDEX IF NOT EXISTS idx_campaigns_workspace ON campaigns(workspace_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_campaigns_type ON campaigns(workspace_id, type)`);
