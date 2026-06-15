@@ -7,6 +7,7 @@ import { logApiRequest } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import { normalizePhone } from '../../utils/phone.js';
 import { dispatchMessageSent } from '../../modules/platform/events/index.js';
+import { resolveConversation } from '../../modules/customers/index.js';
 
 export interface SendContext {
   instance: Instance & { client_id: string };
@@ -107,7 +108,34 @@ export function updateCounters(instanceName: string, clientId: string) {
   db.prepare('UPDATE clients SET msg_count_today = msg_count_today + 1, total_messages = total_messages + 1 WHERE id = ?').run(clientId);
 }
 
-export function finalize(
+/**
+ * Resolve the recipient to a customer + conversation for an outbound send.
+ * Uses normalizePhone (group JIDs pass through); returns empty ids for
+ * non-resolvable targets like 'status' so the invariant holds where it can.
+ * Never throws — a resolution failure must not break the send path.
+ */
+async function resolveOutbound(
+  ctx: SendContext,
+  to: string
+): Promise<{ conversationId?: string; customerId?: string }> {
+  const identifier = normalizePhone(to);
+  if (!identifier) return {};
+  const workspaceId = ctx.instance.client_id; // client_id = workspace_id bridge
+  try {
+    const resolved = await resolveConversation(
+      { workspaceId, userId: workspaceId, roleId: 'role_0', perms: ['*'] },
+      'whatsapp',
+      identifier,
+      String(ctx.instance.id)
+    );
+    return { conversationId: resolved.conversationId, customerId: resolved.customerId };
+  } catch (err) {
+    console.error('[shared] resolveOutbound failed:', err);
+    return {};
+  }
+}
+
+export async function finalize(
   ctx: SendContext,
   msgId: string,
   to: string,
@@ -119,22 +147,33 @@ export function finalize(
   isGroup = 0,
   conversationId?: string,
   customerId?: string,
-) {
+): Promise<void> {
   const workspaceId = ctx.instance.client_id; // client_id = workspace_id bridge
+
+  // Resolve the recipient to customer/conversation ids unless the caller
+  // already supplied them (every outbound message must carry these — P2).
+  let convId = conversationId;
+  let custId = customerId;
+  if (!convId || !custId) {
+    const resolved = await resolveOutbound(ctx, to);
+    convId = convId ?? resolved.conversationId;
+    custId = custId ?? resolved.customerId;
+  }
+
   updateCounters(ctx.instance.name, ctx.instance.client_id);
   saveSentMessage(
     ctx.instance.id, ctx.instance.client_id, workspaceId,
     msgId, to, content, type, mediaUrl, chatId, isGroup,
-    conversationId, customerId,
+    convId, custId,
   );
   logApiRequest(ctx.req, ctx.instance.id, ctx.instance.client_id, 200, logBody);
   emitDashboardRefresh(ctx.instance.client_id);
 
-  // Emit message.sent event so subscribers (search, analytics, timeline) can react
-  if (conversationId && customerId) {
+  // Emit message.sent so subscribers (search, analytics, timeline) react.
+  if (convId && custId) {
     dispatchMessageSent(
       { workspaceId, actorUserId: workspaceId, roleId: 'role_0', perms: ['*'] },
-      { conversationId, customerId, messageId: msgId, messageType: type, content, toNumber: to }
+      { conversationId: convId, customerId: custId, messageId: msgId, messageType: type, content, toNumber: to }
     ).catch(err => console.error('[shared] dispatchMessageSent failed:', err));
   }
 }

@@ -26,7 +26,7 @@ export const sendText = wrapSend(async (ctx, args: { to: string; message: string
   const msgId = newMsgId();
   const res = await callEvolutionAPIChecked('POST', `/message/sendText/${evolutionName(ctx)}`, { number: args.to, text: args.message });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_TEXT, `refund_send_text_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send text'); }
-  finalize(ctx, msgId, args.to, args.message, 'text', undefined, JSON.stringify({ msgId, to: args.to }));
+  await finalize(ctx, msgId, args.to, args.message, 'text', undefined, JSON.stringify({ msgId, to: args.to }));
   return { ok: true, data: { messageId: msgId, to: args.to, message: args.message, timestamp: now() } };
 });
 
@@ -37,7 +37,7 @@ export const sendMedia = wrapSend(async (ctx, args: { to: string; media_url: str
   const msgType = args.media_type || 'image';
   const res = await callEvolutionAPIChecked('POST', `/message/sendMedia/${evolutionName(ctx)}`, { number: args.to, mediatype: msgType, media: args.media_url, caption: args.caption || '', fileName: args.media_url.split('/').pop() || 'file' });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_MEDIA, `refund_send_media_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send media'); }
-  finalize(ctx, msgId, args.to, args.caption || '', msgType, args.media_url, JSON.stringify({ msgId, to: args.to, media_type: msgType }));
+  await finalize(ctx, msgId, args.to, args.caption || '', msgType, args.media_url, JSON.stringify({ msgId, to: args.to, media_type: msgType }));
   return { ok: true, data: { messageId: msgId, to: args.to, media_url: args.media_url, media_type: msgType, caption: args.caption, timestamp: now() } };
 });
 
@@ -48,7 +48,7 @@ export const sendLocation = wrapSend(async (ctx, args: { to: string; latitude: n
   const res = await callEvolutionAPIChecked('POST', `/message/sendLocation/${evolutionName(ctx)}`, { number: args.to, latitude: args.latitude, longitude: args.longitude, name: args.name || '', address: args.address || '' });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_LOCATION, `refund_send_location_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send location'); }
   const content = `${args.name || ''} ${args.address || ''} (${args.latitude},${args.longitude})`.trim();
-  finalize(ctx, msgId, args.to, content, 'location', undefined, JSON.stringify({ msgId, to: args.to }));
+  await finalize(ctx, msgId, args.to, content, 'location', undefined, JSON.stringify({ msgId, to: args.to }));
   return { ok: true, data: { messageId: msgId, to: args.to, location: { latitude: args.latitude, longitude: args.longitude, name: args.name, address: args.address }, timestamp: now() } };
 });
 
@@ -59,7 +59,7 @@ export const sendContact = wrapSend(async (ctx, args: { to: string; contact: Con
   const res = await callEvolutionAPIChecked('POST', `/message/sendContact/${evolutionName(ctx)}`, { number: args.to, contact: args.contact });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_CONTACT, `refund_send_contact_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send contact'); }
   const contactName = args.contact[0]?.fullName || 'Contact';
-  finalize(ctx, msgId, args.to, contactName, 'contact', undefined, JSON.stringify({ msgId, to: args.to }));
+  await finalize(ctx, msgId, args.to, contactName, 'contact', undefined, JSON.stringify({ msgId, to: args.to }));
   return { ok: true, data: { messageId: msgId, to: args.to, contact: args.contact[0], timestamp: now() } };
 });
 
@@ -69,7 +69,7 @@ export const sendReaction = wrapSend(async (ctx, args: { to: string; key: Messag
   const msgId = newMsgId();
   const res = await callEvolutionAPIChecked('POST', `/message/sendReaction/${evolutionName(ctx)}`, { key: args.key, reaction: args.reaction });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_REACTION, `refund_send_reaction_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send reaction'); }
-  finalize(ctx, msgId, args.to, args.reaction, 'reaction', undefined, JSON.stringify({ msgId, to: args.to, reaction: args.reaction }));
+  await finalize(ctx, msgId, args.to, args.reaction, 'reaction', undefined, JSON.stringify({ msgId, to: args.to, reaction: args.reaction }));
   return { ok: true, data: { messageId: msgId, to: args.to, reaction: args.reaction, timestamp: now() } };
 });
 
@@ -79,7 +79,7 @@ export const sendPoll = wrapSend(async (ctx, args: { to: string; name: string; s
   const msgId = newMsgId();
   const res = await callEvolutionAPIChecked('POST', `/message/sendPoll/${evolutionName(ctx)}`, { number: args.to, name: args.name, selectableCount: args.selectableCount, values: args.values });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_POLL, `refund_send_poll_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send poll'); }
-  finalize(ctx, msgId, args.to, args.name, 'poll', undefined, JSON.stringify({ msgId, to: args.to, name: args.name }));
+  await finalize(ctx, msgId, args.to, args.name, 'poll', undefined, JSON.stringify({ msgId, to: args.to, name: args.name }));
   return { ok: true, data: { messageId: msgId, to: args.to, poll: { name: args.name, selectableCount: args.selectableCount, values: args.values }, timestamp: now() } };
 });
 
@@ -89,7 +89,7 @@ export const sendList = wrapSend(async (ctx, args: { to: string; title: string; 
   const msgId = newMsgId();
   const res = await callEvolutionAPIChecked('POST', `/message/sendList/${evolutionName(ctx)}`, { number: args.to, title: args.title, description: args.description || '', buttonText: args.buttonText, footerText: args.footerText || '', sections: args.sections });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_LIST, `refund_send_list_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send list message'); }
-  finalize(ctx, msgId, args.to, args.title, 'list', undefined, JSON.stringify({ msgId, to: args.to, title: args.title }));
+  await finalize(ctx, msgId, args.to, args.title, 'list', undefined, JSON.stringify({ msgId, to: args.to, title: args.title }));
   return { ok: true, data: { messageId: msgId, to: args.to, list: { title: args.title, description: args.description, buttonText: args.buttonText, footerText: args.footerText, sections: args.sections }, timestamp: now() } };
 });
 
@@ -99,7 +99,7 @@ export const sendAudio = wrapSend(async (ctx, args: { to: string; audio: string 
   const msgId = newMsgId();
   const res = await callEvolutionAPIChecked('POST', `/message/sendWhatsAppAudio/${evolutionName(ctx)}`, { number: args.to, audio: args.audio });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_AUDIO, `refund_send_audio_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send audio'); }
-  finalize(ctx, msgId, args.to, 'Voice message', 'audio', args.audio, JSON.stringify({ msgId, to: args.to }));
+  await finalize(ctx, msgId, args.to, 'Voice message', 'audio', args.audio, JSON.stringify({ msgId, to: args.to }));
   return { ok: true, data: { messageId: msgId, to: args.to, audio: args.audio, timestamp: now() } };
 });
 
@@ -109,7 +109,7 @@ export const sendSticker = wrapSend(async (ctx, args: { to: string; sticker: str
   const msgId = newMsgId();
   const res = await callEvolutionAPIChecked('POST', `/message/sendSticker/${evolutionName(ctx)}`, { number: args.to, sticker: args.sticker });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_STICKER, `refund_send_sticker_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send sticker'); }
-  finalize(ctx, msgId, args.to, 'Sticker', 'sticker', args.sticker, JSON.stringify({ msgId, to: args.to }));
+  await finalize(ctx, msgId, args.to, 'Sticker', 'sticker', args.sticker, JSON.stringify({ msgId, to: args.to }));
   return { ok: true, data: { messageId: msgId, to: args.to, sticker: args.sticker, timestamp: now() } };
 });
 
@@ -123,6 +123,6 @@ export const sendStatus = wrapSend(async (ctx, args: { type: 'text' | 'image' | 
     allContacts: args.allContacts ?? true, statusJidList: args.statusJidList || [],
   });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_STATUS, `refund_send_status_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send status'); }
-  finalize(ctx, msgId, 'status', args.content, 'status', args.type === 'image' ? args.content : undefined, JSON.stringify({ msgId, type: args.type }));
+  await finalize(ctx, msgId, 'status', args.content, 'status', args.type === 'image' ? args.content : undefined, JSON.stringify({ msgId, type: args.type }));
   return { ok: true, data: { messageId: msgId, type: args.type, content: args.content, timestamp: now() } };
 });

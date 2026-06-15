@@ -12,7 +12,10 @@ import type { DomainEventPayload } from '../events/catalog.js';
 
 export interface AnalyticsProjector {
   handles: string[];
-  project(payload: DomainEventPayload, wsId: string): void;
+  // eventType is the bus event type (known at subscribe time); it is NOT a
+  // field on the payload, so projectors must branch on this param, not on a
+  // payload field.
+  project(payload: DomainEventPayload, wsId: string, eventType: string): void;
 }
 
 function p(payload: DomainEventPayload): Record<string, unknown> {
@@ -24,15 +27,13 @@ function byConv(payload: DomainEventPayload): string | null {
   return r.conversationId ? String(r.conversationId) : null;
 }
 
-function byCustomer(payload: DomainEventPayload): string | null {
-  const r = p(payload);
-  return r.customerId ? String(r.customerId) : null;
-}
-
 function byEntity(payload: DomainEventPayload, field: string): string | null {
   const r = p(payload);
   return r[field] ? String(r[field]) : null;
 }
+
+const PERIODS_ALL: Period[] = ['hour', 'day', 'week', 'month'];
+const PERIODS_DAY_UP: Period[] = ['day', 'week', 'month'];
 
 // ---------------------------------------------------------------------------
 // MessageProjector
@@ -41,18 +42,16 @@ function byEntity(payload: DomainEventPayload, field: string): string | null {
 const messageProjector: AnalyticsProjector = {
   handles: ['message.received', 'message.sent', 'message.failed'],
 
-  project(payload, wsId) {
-    const r = p(payload);
+  project(payload, wsId, eventType) {
     const convId = byConv(payload);
-    const kind = r.type === 'message.received'
-      ? 'messages_received'
-      : r.type === 'message.sent'
-        ? 'messages_sent'
-        : null;
+    const kind: MetricType | null =
+      eventType === 'message.received' ? 'messages_received'
+      : eventType === 'message.sent' ? 'messages_sent'
+      : null;
     if (!kind) return;
     const extra = convId ? { conversationId: convId } : undefined;
-    (['hour', 'day', 'week', 'month'] as Period[]).forEach(period => {
-      upsertMetric(wsId, kind as MetricType, 'message', convId, period, 1, extra);
+    PERIODS_ALL.forEach(period => {
+      upsertMetric(wsId, kind, 'message', convId, period, 1, extra);
     });
   },
 };
@@ -64,18 +63,18 @@ const messageProjector: AnalyticsProjector = {
 const conversationProjector: AnalyticsProjector = {
   handles: ['conversation.created', 'conversation.status_changed'],
 
-  project(payload, wsId) {
+  project(payload, wsId, eventType) {
     const r = p(payload);
     const convId = byConv(payload);
 
-    if (r.type === 'conversation.created') {
-      (['day', 'week', 'month'] as Period[]).forEach(period => {
+    if (eventType === 'conversation.created') {
+      PERIODS_DAY_UP.forEach(period => {
         upsertMetric(wsId, 'conversations_created', 'conversation', convId, period, 1);
       });
     }
 
-    if (r.type === 'conversation.status_changed' && r.status === 'resolved') {
-      (['day', 'week', 'month'] as Period[]).forEach(period => {
+    if (eventType === 'conversation.status_changed' && r.status === 'resolved') {
+      PERIODS_DAY_UP.forEach(period => {
         upsertMetric(wsId, 'conversations_resolved', 'conversation', convId, period, 1);
       });
     }
@@ -92,7 +91,7 @@ const slaProjector: AnalyticsProjector = {
   project(payload, wsId) {
     const r = p(payload);
     const convId = byConv(payload);
-    (['day', 'week', 'month'] as Period[]).forEach(period => {
+    PERIODS_DAY_UP.forEach(period => {
       upsertMetric(wsId, 'sla_breached', 'conversation', convId, period, 1, {
         kind: r.kind,
         policyId: r.policyId,
@@ -108,15 +107,15 @@ const slaProjector: AnalyticsProjector = {
 const campaignProjector: AnalyticsProjector = {
   handles: ['campaign.started', 'campaign.completed'],
 
-  project(payload, wsId) {
+  project(payload, wsId, eventType) {
     const r = p(payload);
     const campaignId = byEntity(payload, 'campaignId');
     const stats = r.stats as { sent?: number; delivered?: number; failed?: number; totalRecipients?: number } | undefined;
 
-    if (r.type === 'campaign.started') {
+    if (eventType === 'campaign.started') {
       upsertMetric(wsId, 'campaign_sent', 'campaign', campaignId, 'day', stats?.totalRecipients ?? 0);
     }
-    if (r.type === 'campaign.completed' && stats) {
+    if (eventType === 'campaign.completed' && stats) {
       upsertMetric(wsId, 'campaign_sent', 'campaign', campaignId, 'day', stats.sent ?? 0);
       upsertMetric(wsId, 'campaign_delivered', 'campaign', campaignId, 'day', stats.delivered ?? 0);
       upsertMetric(wsId, 'campaign_failed', 'campaign', campaignId, 'day', stats.failed ?? 0);
@@ -131,10 +130,10 @@ const campaignProjector: AnalyticsProjector = {
 const aiProjector: AnalyticsProjector = {
   handles: ['ai.reply.generated', 'ai.handoff_requested'],
 
-  project(payload, wsId) {
+  project(payload, wsId, eventType) {
     const r = p(payload);
     const convId = byConv(payload);
-    const metric: MetricType = r.type === 'ai.reply.generated'
+    const metric: MetricType = eventType === 'ai.reply.generated'
       ? 'ai_replies_generated'
       : 'ai_handoffs_requested';
     upsertMetric(wsId, metric, 'conversation', convId, 'day', 1, {
@@ -151,10 +150,9 @@ const aiProjector: AnalyticsProjector = {
 const automationProjector: AnalyticsProjector = {
   handles: ['flow.started', 'flow.completed'],
 
-  project(payload, wsId) {
-    const r = p(payload);
+  project(payload, wsId, eventType) {
     const flowId = byEntity(payload, 'flowId');
-    const metric: MetricType = r.type === 'flow.started'
+    const metric: MetricType = eventType === 'flow.started'
       ? 'automation_flows_started'
       : 'automation_flows_completed';
     upsertMetric(wsId, metric, 'automation_flow', flowId, 'day', 1);
@@ -196,11 +194,12 @@ export function registerAnalyticsProjectors(): void {
   ALL_PROJECTORS.forEach(projector => {
     projector.handles.forEach(type => {
       bus().subscribe(type as never, (payload: DomainEventPayload) => {
+        // workspaceId is stamped onto the payload envelope by dispatch.emit()
         const r = p(payload);
-        const wsId = String(r.workspaceId ?? r.customerId ?? '');
+        const wsId = String(r.workspaceId ?? '');
         if (!wsId) return;
         try {
-          projector.project(payload, wsId);
+          projector.project(payload, wsId, type);
         } catch (err) {
           console.error(`[analytics.${type}] failed:`, err);
         }

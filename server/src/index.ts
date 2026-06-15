@@ -8,6 +8,9 @@ import { initializeDatabase, saveDatabase } from './database.js';
 import db from './database.js';
 import { registerRoutes } from './routes/index.js';
 import { apiInfo } from './utils/apiInfo.js';
+import { registerSearchIndexer } from './modules/platform/search/index.js';
+import { registerAnalyticsProjectors } from './modules/platform/analytics/index.js';
+import { registerInboundPipeline } from './modules/ai/index.js';
 
 import authRoutes from './routes/auth.js';
 
@@ -20,6 +23,14 @@ app.set('trust proxy', 1);
 async function startServer() {
   try {
     await initializeDatabase();
+
+    // Register event-bus subscribers — the event-driven spine (§5).
+    // Without these, bus().emit() fires into the void: search index,
+    // analytics rollups, and the AI inbound pipeline would never run.
+    registerSearchIndexer();
+    registerAnalyticsProjectors();
+    registerInboundPipeline();
+    console.log('✅ Event bus subscribers registered (search, analytics, AI)');
 
     // Prune expired idempotency keys on every startup (7-day TTL)
     try {

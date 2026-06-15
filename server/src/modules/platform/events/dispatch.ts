@@ -52,7 +52,17 @@ async function emit<T extends DomainEventType>(
   payload: DomainEventPayload,
   ctx: DispatchContext
 ): Promise<void> {
-  await bus().emit(type, payload);
+  // Stamp workspaceId + actorUserId onto the payload envelope so in-process
+  // subscribers (search, analytics, AI) can scope their writes. These metadata
+  // fields are NOT part of the catalog payload shapes — subscribers read them
+  // via a Record<string,unknown> cast. domain_events stores the original payload.
+  const enriched = {
+    ...(payload as unknown as Record<string, unknown>),
+    workspaceId: ctx.workspaceId,
+    actorUserId: ctx.actorUserId ?? null,
+  } as unknown as DomainEventPayload;
+
+  await bus().emit(type, enriched);
   logDomainEvent(ctx.workspaceId, type, payload, ctx.actorUserId ?? null);
 }
 

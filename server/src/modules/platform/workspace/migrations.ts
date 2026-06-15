@@ -263,4 +263,32 @@ export function runWorkspaceMigrations(db: Database): void {
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // -------------------------------------------------------------------------
+  // Indexes on platform tables. These MUST run here (after table/column
+  // creation), not in database/indexes.ts — those tables/columns do not exist
+  // at createSchema() time, so indexing them there would crash a fresh DB.
+  // -------------------------------------------------------------------------
+  // Workspace / RBAC
+  db.run(`CREATE INDEX IF NOT EXISTS idx_workspace_members_ws ON workspace_members(workspace_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_team_members_team ON team_members(team_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id)`);
+  // Customers + conversations
+  db.run(`CREATE INDEX IF NOT EXISTS idx_customers_ws ON customers(workspace_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_customer_identifiers_customer ON customer_identifiers(customer_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_customer_identifiers_value ON customer_identifiers(value)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_conversations_ws ON conversations(workspace_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_conversations_customer ON conversations(customer_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_conversations_chat ON conversations(chat_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_customer_tags_customer ON customer_tags(customer_id)`);
+  // domain_events (timeline source)
+  db.run(`CREATE INDEX IF NOT EXISTS idx_domain_events_ws ON domain_events(workspace_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_domain_events_customer ON domain_events(customer_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_domain_events_conv ON domain_events(conversation_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_domain_events_type ON domain_events(type)`);
+  // audit_logs.workspace_id (column added above)
+  db.run(`CREATE INDEX IF NOT EXISTS idx_audit_logs_ws ON audit_logs(workspace_id)`);
+  // search_index
+  db.run(`CREATE INDEX IF NOT EXISTS idx_search_index_ws ON search_index(workspace_id)`);
 }
