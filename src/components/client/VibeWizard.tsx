@@ -685,14 +685,17 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Which API key is selected in Step 1
-  const [selectedKeyId, setSelectedKeyId] = useState<string>('');
+  // Initialize selectedKeyId from the first key that has a secret — runs synchronously on mount
+  const [selectedKeyId, setSelectedKeyId] = useState<string>(() => {
+    const firstWithSecret = apiKeys.find(k => k.key);
+    return firstWithSecret?.id || apiKeys[0]?.id || '';
+  });
 
-  // Auto-select first available key when apiKeys first loads
+  // Sync selectedKeyId if apiKeys changes to a longer list (e.g. new key created)
   useEffect(() => {
     if (apiKeys.length === 0) return;
-    if (selectedKeyId && apiKeys.find(k => k.id === selectedKeyId)) return; // already selected
-    setSelectedKeyId(apiKeys[0]?.id || '');
+    if (apiKeys.find(k => k.id === selectedKeyId)) return; // still valid
+    setSelectedKeyId(apiKeys.find(k => k.key)?.id || apiKeys[0]?.id || '');
   }, [apiKeys]);
 
   // Container selection — optional, starts empty
