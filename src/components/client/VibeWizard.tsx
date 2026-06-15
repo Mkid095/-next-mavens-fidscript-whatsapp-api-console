@@ -372,9 +372,9 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
             className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
           >
             <option value="">— Select a key —</option>
-            {apiKeys.filter(k => k.key).map(k => (
+            {apiKeys.map(k => (
               <option key={k.id} value={k.id}>
-                {k.name} — {k.key_prefix || k.key?.substring(0, 20)}…
+                {k.name} — {k.key_prefix || (k.key ? k.key.substring(0, 12) : '••••••••')}{k.key ? '…' : ''} [{k.status}]
               </option>
             ))}
           </select>
