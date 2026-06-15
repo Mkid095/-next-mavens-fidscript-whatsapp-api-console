@@ -15,7 +15,7 @@ interface QRPairingModalProps {
   onRegenerate: () => void;
 }
 
-const QR_TTL_SECONDS = 60;
+const QR_TTL_SECONDS = 300; // 5 minutes
 
 // SVG circle progress — r=44, circumference = 2π × 44 ≈ 276.46
 const RADIUS = 44;
