@@ -7,6 +7,8 @@ import { buildCurl, buildCodeSnippet, type CodeLang } from '../../utils/codegen'
 interface VibeWizardProps {
   apiKey: string;
   clientName?: string;
+  apiKeys: Array<{ id: string; name: string; key?: string; key_prefix?: string; status: string }>;
+  instances: Array<{ id: string; name: string; display_name?: string; phone_number?: string; status: string }>;
 }
 
 // ── Step types ────────────────────────────────────────────────────────────────
@@ -324,9 +326,21 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 
 // ── Step 1: Credentials ────────────────────────────────────────────────────────
 
-function Step1Credentials({ apiKey, clientName, onNext }: { apiKey: string; clientName?: string; onNext: () => void }) {
+function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelectedKeyId, selectedInstance, setSelectedInstance, onNext }: {
+  apiKey: string;
+  apiKeys: VibeWizardProps['apiKeys'];
+  instances: VibeWizardProps['instances'];
+  selectedKeyId: string;
+  setSelectedKeyId: (id: string) => void;
+  selectedInstance: string;
+  setSelectedInstance: (name: string) => void;
+  onNext: () => void;
+}) {
   const [revealed, setRevealed] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  // Resolve the actual key string from selected key ID
+  const activeKey = apiKeys.find(k => k.id === selectedKeyId)?.key || apiKey;
 
   return (
     <div className="space-y-6">
@@ -341,22 +355,52 @@ function Step1Credentials({ apiKey, clientName, onNext }: { apiKey: string; clie
       </div>
 
       <div className="space-y-4">
+        {/* API Key dropdown */}
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Your API Key</label>
+          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Select API Key</label>
+          <select
+            value={selectedKeyId}
+            onChange={e => setSelectedKeyId(e.target.value)}
+            className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
+          >
+            {apiKeys.length === 0 && <option value="">No active keys</option>}
+            {apiKeys.map(k => (
+              <option key={k.id} value={k.id}>
+                {k.name} — {k.key_prefix || k.key?.substring(0, 20) || '••••'}…
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Container dropdown */}
+        <div>
+          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">WhatsApp Container</label>
+          <select
+            value={selectedInstance}
+            onChange={e => setSelectedInstance(e.target.value)}
+            className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
+          >
+            {instances.length === 0 && <option value="">No containers — create one first</option>}
+            {instances.map(i => (
+              <option key={i.id} value={i.name}>
+                {(i.display_name || i.name)} {i.phone_number ? `· ${i.phone_number}` : ''} [{i.status}]
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Key reveal + base URL */}
+        <div className="p-3 bg-stone-50 border border-[#eaebe4] rounded-xl space-y-2">
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs font-mono bg-stone-100 border border-[#eaebe4] px-3 py-2.5 rounded-xl text-stone-700 select-all truncate">
-              {revealed ? apiKey : apiKey.substring(0, 16) + '••••••••••••••••••••'}
+            <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700 select-all truncate">
+              {revealed ? activeKey : activeKey.substring(0, 16) + '••••••••••••••••••••'}
             </code>
-            <button onClick={() => setRevealed(v => !v)} className="p-2.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors shrink-0">
+            <button onClick={() => setRevealed(v => !v)} className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors shrink-0">
               {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Base URL</label>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs font-mono bg-stone-100 border border-[#eaebe4] px-3 py-2.5 rounded-xl text-stone-700">{PUBLIC_API_BASE}</code>
+            <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700">{PUBLIC_API_BASE}</code>
             <CopyButton text={PUBLIC_API_BASE} label="Copy" />
           </div>
         </div>
@@ -364,7 +408,7 @@ function Step1Credentials({ apiKey, clientName, onNext }: { apiKey: string; clie
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
           <p className="text-[10px] text-amber-900 leading-relaxed">
-            This prompt will embed your API key. Only use this wizard on a trusted device and paste the resulting prompt into your AI coding assistant (Cursor, Claude Code, Copilot, etc.) — never share the raw key publicly.
+            This prompt will embed your API key and container name. Only use this wizard on a trusted device and paste the resulting prompt into your AI coding assistant (Cursor, Claude Code, Copilot, etc.) — never share the raw key publicly.
           </p>
         </div>
 
@@ -373,11 +417,11 @@ function Step1Credentials({ apiKey, clientName, onNext }: { apiKey: string; clie
             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${confirmed ? 'bg-forest-deep border-forest-deep' : 'border-stone-300'}`}>
             {confirmed && <Check className="w-3 h-3 text-white" />}
           </button>
-          <span className="text-[11px] text-graphite">I understand the key will be embedded in the generated prompt</span>
+          <span className="text-[11px] text-graphite">I understand the credentials will be embedded in the generated prompt</span>
         </label>
       </div>
 
-      <button onClick={onNext} disabled={!confirmed}
+      <button onClick={onNext} disabled={!confirmed || (apiKeys.length > 0 && !selectedKeyId)}
         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-forest-deep hover:bg-[#33301a] disabled:bg-stone-300 text-white text-xs font-bold rounded-xl transition-all">
         Continue to Endpoint Selection <ArrowRight className="w-4 h-4" />
       </button>
@@ -621,8 +665,21 @@ function Step3Prompt({ apiKey, clientName, selectedEps, onBack }: {
 
 // ── Main wizard ──────────────────────────────────────────────────────────────
 
-export default function VibeWizard({ apiKey, clientName }: VibeWizardProps) {
+export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
+
+  // Which API key is selected in Step 1
+  const [selectedKeyId, setSelectedKeyId] = useState<string>(apiKeys[0]?.id || '');
+  // Which container is selected in Step 1
+  const [selectedInstance, setSelectedInstance] = useState<string>(
+    instances.find(i => i.status === 'connected')?.name
+    || instances[0]?.name
+    || ''
+  );
+
+  // Derive the actual key string from selected key ID
+  const activeKey = apiKeys.find(k => k.id === selectedKeyId)?.key || apiKey;
+
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
     categories: {},
@@ -654,7 +711,16 @@ export default function VibeWizard({ apiKey, clientName }: VibeWizardProps) {
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div key="step1" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-            <Step1Credentials apiKey={apiKey} clientName={clientName} onNext={() => setStep(2)} />
+            <Step1Credentials
+              apiKey={apiKey}
+              apiKeys={apiKeys}
+              instances={instances}
+              selectedKeyId={selectedKeyId}
+              setSelectedKeyId={setSelectedKeyId}
+              selectedInstance={selectedInstance}
+              setSelectedInstance={setSelectedInstance}
+              onNext={() => setStep(2)}
+            />
           </motion.div>
         )}
         {step === 2 && (
@@ -664,7 +730,12 @@ export default function VibeWizard({ apiKey, clientName }: VibeWizardProps) {
         )}
         {step === 3 && (
           <motion.div key="step3" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-            <Step3Prompt apiKey={apiKey} clientName={clientName} selectedEps={selectedEps} onBack={() => setStep(2)} />
+            <Step3Prompt
+              apiKey={activeKey}
+              clientName={clientName}
+              selectedEps={selectedEps}
+              onBack={() => setStep(2)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

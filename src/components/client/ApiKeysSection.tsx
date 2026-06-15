@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, Zap, RefreshCw, CheckCircle, XCircle, ChevronRight, Terminal, Bot } from 'lucide-react';
+import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, RefreshCw, CheckCircle, XCircle, Terminal, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { clientKeysApi } from '../../services/api';
+import { clientKeysApi, instancesApi } from '../../services/api';
 import { PUBLIC_API_BASE } from '../../data/apiEndpoints/index';
 import type { ClientApiKey } from './types';
+import type { Instance } from '../../services/types';
 import VibeWizard from './VibeWizard';
 
 interface ApiKeysSectionProps {
@@ -22,7 +23,8 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
   const [apiKeys, setApiKeys] = useState<KeyWithStats[]>([]);
   const [showKeyValue, setShowKeyValue] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'keys' | 'reference' | 'vibe'>('keys');
+  const [activeTab, setActiveTab] = useState<'keys' | 'vibe'>('keys');
+  const [clientInstances, setClientInstances] = useState<Instance[]>([]);
   const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; ok: boolean; msg: string } | null>(null);
   const [regeneratingKeyId, setRegeneratingKeyId] = useState<string | null>(null);
@@ -40,6 +42,11 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
 
   useEffect(() => {
     fetchKeys();
+    if (clientToken) {
+      instancesApi.getClientInstances().then(res => {
+        if (res.success && res.data) setClientInstances(res.data);
+      });
+    }
   }, [clientToken]);
 
   const handleCreateApiKey = async (e: React.FormEvent) => {
@@ -126,7 +133,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
       {/* Tab bar */}
       <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm">
         <div className="flex items-center gap-1.5 p-1.5 bg-[#f9f9f2] border-b border-[#eaebe4]">
-          {(['keys', 'reference', 'vibe'] as const).map((tab) => (
+          {(['keys', 'vibe'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -134,7 +141,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
                 activeTab === tab ? 'bg-forest-deep text-white' : 'text-stone-600 hover:text-black hover:bg-stone-100'
               }`}
             >
-              {tab === 'keys' ? 'My API Keys' : tab === 'reference' ? 'API Reference' : <span className="flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Vibe Coding</span>}
+              {tab === 'keys' ? 'My API Keys' : <span className="flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Vibe Coding</span>}
             </button>
           ))}
         </div>
@@ -256,12 +263,12 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
           </div>
         )}
 
-        {activeTab === 'reference' && <ApiReference />}
-
         {activeTab === 'vibe' && (
           <VibeWizard
             apiKey={apiKeys.find(k => k.status === 'Active' && k.key)?.key || ''}
             clientName={undefined}
+            apiKeys={apiKeys.filter(k => k.status === 'Active')}
+            instances={clientInstances}
           />
         )}
       </div>
@@ -325,112 +332,3 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   );
 }
 
-/** Full API reference section */
-function ApiReference() {
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  const endpoints = [
-    {
-      group: 'Messaging',
-      items: [
-        {
-          method: 'POST', path: '/sendText/:instance', name: 'Send Text Message', cost: '1 token',
-          desc: 'Send a plain text message to a WhatsApp number.',
-          body: { to: '254712345678', message: 'Hello!' },
-          response: { success: true, data: { messageId: 'msg_abc123', to: '254712345678', timestamp: '2026-06-14T10:00:00Z' } },
-        },
-        {
-          method: 'POST', path: '/sendMedia/:instance', name: 'Send Media', cost: '2 tokens',
-          desc: 'Send an image, video, audio, or document. Media is hosted externally and referenced by URL.',
-          body: { to: '254712345678', media_url: 'https://example.com/image.jpg', media_type: 'image', caption: 'Check this out!' },
-          response: { success: true, data: { messageId: 'msg_abc123', to: '254712345678', media_type: 'image', timestamp: '2026-06-14T10:00:00Z' } },
-        },
-        {
-          method: 'POST', path: '/sendLocation/:instance', name: 'Send Location', cost: '1 token',
-          desc: 'Send a location pin with optional name and address.',
-          body: { to: '254712345678', latitude: -1.2921, longitude: 36.8219, name: 'Nairobi CBD', address: 'City Square' },
-          response: { success: true, data: { messageId: 'msg_abc123', to: '254712345678', location: { latitude: -1.2921, longitude: 36.8219 } } },
-        },
-      ],
-    },
-    {
-      group: 'Instance',
-      items: [
-        {
-          method: 'GET', path: '/connectionState/:instance', name: 'Get Connection State', cost: '0',
-          desc: 'Check if a WhatsApp container is connected, connecting, or disconnected.',
-          response: { success: true, data: { name: 'my-container', status: 'connected', phone_number: '+254700000000' } },
-        },
-        {
-          method: 'DELETE', path: '/logout/:instance', name: 'Disconnect', cost: '0',
-          desc: 'Log out of WhatsApp and reset the container to disconnected state.',
-          response: { success: true, message: 'Disconnected successfully' },
-        },
-      ],
-    },
-  ];
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl p-4">
-        <p className="text-[10px] font-bold text-forest-deep mb-2">Authentication</p>
-        <div className="bg-[#13120d] text-[#e3ded2] rounded-xl p-3 font-mono text-[11px] space-y-1">
-          <p className="text-[9px] font-bold text-[#b8ab81] mb-1">Header</p>
-          <p><span className="text-blue-400">X-API-Key</span>: <span className="text-yellow-300">fidscript_live_your_key_here</span></p>
-          <p><span className="text-blue-400">Content-Type</span>: <span className="text-green-300">application/json</span></p>
-        </div>
-      </div>
-
-      {endpoints.map((group) => (
-        <div key={group.group} className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#3d3311] pb-2 border-b border-[#eaebe4]">{group.group}</h4>
-          {group.items.map((ep) => (
-            <div key={ep.path + ep.method} className="border border-[#eaebe4] rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setExpanded(expanded === ep.path + ep.method ? null : ep.path + ep.method)}
-                className="w-full p-4 flex items-center justify-between text-left hover:bg-stone-50 transition-colors"
-              >
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded font-mono ${ep.method === 'POST' ? 'bg-yellow-600 text-stone-950' : ep.method === 'GET' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'}`}>{ep.method}</span>
-                  <code className="text-[11px] font-mono font-bold text-forest-deep">{ep.path}</code>
-                  <span className="text-[10px] text-graphite ml-1">{ep.name}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {ep.cost !== '0' && <span className="text-[10px] font-bold text-yellow-700 font-mono">{ep.cost}</span>}
-                  <ChevronRight className={`w-4 h-4 text-stone-400 transition-transform ${expanded === ep.path + ep.method ? 'rotate-90' : ''}`} />
-                </div>
-              </button>
-              <AnimatePresence>
-                {expanded === ep.path + ep.method && (
-                  <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                    <div className="p-4 border-t border-[#eaebe4] bg-[#f9f9f2] space-y-4">
-                      <p className="text-[11px] text-graphite leading-relaxed">{ep.desc}</p>
-                      {ep.body && (
-                        <div>
-                          <p className="text-[9px] font-bold text-forest-deep mb-1.5 uppercase">Request Body</p>
-                          <pre className="bg-[#13120d] text-yellow-100 rounded-xl p-3 text-[11px] font-mono overflow-x-auto">{JSON.stringify(ep.body, null, 2)}</pre>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-[9px] font-bold text-forest-deep mb-1.5 uppercase">Response</p>
-                        <pre className="bg-[#13120d] text-green-100 rounded-xl p-3 text-[11px] font-mono overflow-x-auto">{JSON.stringify(ep.response, null, 2)}</pre>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
-      ))}
-
-      <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl text-[11px] text-graphite space-y-2">
-        <p className="font-bold text-forest-deep text-xs">Rate Limits</p>
-        <div className="grid grid-cols-2 gap-4">
-          <div><p className="font-bold text-forest-deep">30 messages/minute</p><p className="text-stone-500">Per container</p></div>
-          <div><p className="font-bold text-forest-deep">1 token = 1 text</p><p className="text-stone-500">Media costs 2+ tokens</p></div>
-        </div>
-      </div>
-    </div>
-  );
-}

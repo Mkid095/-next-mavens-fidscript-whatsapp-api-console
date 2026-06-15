@@ -196,54 +196,58 @@ export default function DocsSection({ client }: { client?: { api_key?: string } 
       {/* Left sidebar */}
       <div className="w-72 shrink-0 bg-white border border-[#eaebe4] rounded-3xl overflow-hidden flex flex-col shadow-sm">
         <div className="p-4 bg-[#f9f9f2] border-b border-[#eaebe4]">
-          <div className="flex items-center justify-between mb-1.5">
-            <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5"><BookOpen className="w-4 h-4 text-yellow-700" /> API Reference</h3>
-            <button
-              onClick={() => {
-                const doc = buildMarkdownReference(API_ENDPOINTS, client?.api_key);
-                const blob = new Blob([doc], { type: 'text/markdown' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'fidscript-api-reference.md';
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg border border-yellow-200 transition-colors"
-              title="Download full API reference"
-            >
-              <Download className="w-3 h-3" /> Export All
-            </button>
-            <button
-              onClick={() => {
-                window.open(`${PUBLIC_API_BASE}/postman-collection.json`, '_blank');
-              }}
-              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
-              title="Download Postman collection"
-            >
-              <Download className="w-3 h-3" /> Postman
-            </button>
-            <button
-              onClick={() => {
-                const sdks = [
-                  { file: 'fidscript.js', label: 'JS/TS' },
-                  { file: 'fidscript.py', label: 'Python' },
-                  { file: 'fidscript.php', label: 'PHP' },
-                  { file: 'fidscript.go', label: 'Go' },
-                ];
-                const menu = prompt(`Enter SDK number to download:\n${sdks.map((s, i) => `${i + 1}. ${s.label}`).join('\n')}\n\nOr visit: ${PUBLIC_API_BASE}/sdk/fidscript.js`);
-                const idx = parseInt(menu || '') - 1;
-                if (idx >= 0 && sdks[idx]) {
-                  window.open(`${PUBLIC_API_BASE}/sdk/${sdks[idx].file}`, '_blank');
-                }
-              }}
-              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors"
-              title="Download SDK"
-            >
-              <Download className="w-3 h-3" /> SDK
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5 w-full sm:w-auto"><BookOpen className="w-4 h-4 text-yellow-700" /> API Reference</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const doc = buildMarkdownReference(API_ENDPOINTS, client?.api_key);
+                  const blob = new Blob([doc], { type: 'text/markdown' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'fidscript-api-reference.md';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-[9px] font-bold text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg border border-yellow-200 transition-colors shrink-0"
+                title="Download full API reference"
+              >
+                <Download className="w-3 h-3" /> Export All
+              </button>
+              <button
+                onClick={() => {
+                  window.open(`${PUBLIC_API_BASE}/postman-collection.json`, '_blank');
+                }}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-[9px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors shrink-0"
+                title="Download Postman collection"
+              >
+                <Download className="w-3 h-3" /> Postman
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    const sdks = [
+                      { file: 'fidscript.js', label: 'JS/TS' },
+                      { file: 'fidscript.py', label: 'Python' },
+                      { file: 'fidscript.php', label: 'PHP' },
+                      { file: 'fidscript.go', label: 'Go' },
+                    ];
+                    const menu = prompt(`Enter SDK number:\n${sdks.map((s, i) => `${i + 1}. ${s.label}`).join('\n')}\n\nOr visit: ${PUBLIC_API_BASE}/sdk/fidscript.js`);
+                    const idx = parseInt(menu || '') - 1;
+                    if (idx >= 0 && sdks[idx]) {
+                      window.open(`${PUBLIC_API_BASE}/sdk/${sdks[idx].file}`, '_blank');
+                    }
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-[9px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors shrink-0"
+                  title="Download SDK"
+                >
+                  <Download className="w-3 h-3" /> SDK
+                </button>
+              </div>
+            </div>
           </div>
-          <p className="text-[10px] text-graphite">All FIDScript WhatsApp API endpoints.</p>
+          <p className="text-[10px] text-graphite hidden sm:block">All FIDScript WhatsApp API endpoints.</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {DOC_GROUPS.map(group => (
