@@ -25,13 +25,12 @@ function extractPhoneFromJid(sender: string): string | null {
 }
 
 /**
- * POST /api/webhook/evolution
  * Receives CONNECTION_UPDATE and MESSAGES_UPSERT events from Evolution API.
- * Authenticated via X-API-Key header matching our Evolution API key.
+ * Authenticated via apikey in the JSON body (Evolution sends it there, not in a header).
  */
 router.post('/evolution', async (req: Request, res: Response) => {
-  const apiKey = req.headers['x-api-key'] as string;
-  console.log('[WEBHOOK] Raw headers x-api-key:', apiKey ? 'present' : 'missing');
+  const apiKey = (req.body as { apikey?: string }).apikey;
+  console.log('[WEBHOOK] apikey in body:', apiKey ? 'present' : 'missing');
   console.log('[WEBHOOK] Raw body:', JSON.stringify(req.body).slice(0, 500));
 
   if (apiKey !== EVOLUTION_API_KEY) {
