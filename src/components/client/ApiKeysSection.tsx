@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, Zap, RefreshCw, CheckCircle, XCircle, ChevronRight, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { clientKeysApi, API_BASE_URL } from '../../services/api';
+import { clientKeysApi } from '../../services/api';
+import { PUBLIC_API_BASE } from '../../data/apiEndpoints/index';
 import type { ClientApiKey } from './types';
 
 interface ApiKeysSectionProps {
@@ -13,7 +14,6 @@ interface KeyWithStats extends ClientApiKey {
 }
 
 /** Public surface for external integrators (always the production URL, regardless of where the dashboard runs). */
-const PUBLIC_API_BASE = 'https://whatsapp.fidscript.com/api/v1';
 
 export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [showNewKeyModal, setShowNewKeyModal] = useState(false);
@@ -73,7 +73,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     setTestingKeyId(k.id);
     setTestResult(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/whoami`, {
+      const res = await fetch(`${PUBLIC_API_BASE}/whoami`, {
         method: 'GET',
         headers: { 'X-API-Key': k.key },
       });
