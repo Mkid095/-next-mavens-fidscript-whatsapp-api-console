@@ -68,6 +68,8 @@ The frame the team must adopt:
 | P8 | **Build for the question** | Every decision must survive: *"Will this still work when we add teams, AI agents, automations, commerce, CRM, analytics, and developer apps?"* If not, redesign before implementing. |
 | P9 | **Reserve the seam, ship the slice** | Define every table/event/permission now (cheap). Implement only the slice a phase needs. Never let a later feature be blocked by a missing seam. |
 | P10 | **The system is the product; surfaces expose it** | The inbox, CRM, campaigns, analytics are thin UIs over the same event-driven core. Build the core first; the surfaces follow. |
+| P11 | **Tenant isolation is a security guarantee** | Every read/write is implicitly scoped by `workspaceId` through a WorkspaceContext. No unscoped queries exist. One business can never see another's data — by construction, not convention. |
+| P12 | **Interface, then implementation** | Cross-cutting machinery (event bus, search, analytics, queue) is consumed through an interface with one Phase-2 implementation. Swapping SQLite-FTS for Meilisearch, or the in-process bus for Redis, is then a one-impl change — not a rewrite. |
 
 ---
 
@@ -108,9 +110,12 @@ The frame the team must adopt:
 1. **Workspace & access-control seam (§4)** — every request resolves to `(user, workspace, permissions)`. No feature adds ad-hoc role checks; all go through `can(user, perm, scope)`.
 2. **Channel seam** — `server/src/channels/` exposes one interface (`send`, `receive`, `parse`, `identity`). Adding a channel = a folder.
 3. **Integration/connector seam (§12)** — `server/src/integrations/connectors/<name>/` publishes events into the bus and exposes actions through internal services.
-4. **Event bus (§5)** — the single place domain changes are announced. Every cross-cutting feature subscribes here.
+4. **Event bus (§5)** — the single place domain changes are announced, consumed through an `EventBus` interface (in-process now, Redis/Kafka/NATS later). Every cross-cutting feature subscribes here.
 5. **Internal service seam** — `server/src/services/domain/` (Catalog, Orders, Knowledge, Media). AI/automations depend on these, never on third parties.
 6. **Data-layer seam (frontend, §16)** — components depend on hooks; swapping cache or transport touches one layer.
+7. **Tenant-isolation seam (§4.6)** — a WorkspaceContext threads `workspaceId` through every repository; unscoped queries cannot exist (P11).
+8. **Audit seam (§6.4)** — every privileged mutation writes a before/after audit row, separate from domain events.
+9. **Swap seams (P12)** — bus, search, and analytics are interface-first; Phase-2 implementations are replaceable without rewrites.
 
 ---
 
@@ -169,13 +174,33 @@ workspace.members.manage · workspace.billing · workspace.settings
 
 `client_id = workspace_id` during transition (one workspace per client). Existing `client_id` columns are valid workspace scopes. The owner of each client becomes a `users` row with the `Owner` system role in their workspace. No big-bang rename; new tables key off `workspace_id`, a helper `workspaceIdOf(client)` bridges reads.
 
+### 4.6 Tenant isolation (WorkspaceContext) — a security guarantee
+
+Cross-tenant data leakage is the highest-severity bug class for a multi-business platform. Prevent it structurally, not by convention.
+
+- A **WorkspaceContext** (`{ workspaceId, userId, role, perms }`) is attached to every request by the auth middleware and threaded through every repository/service.
+- **Every query is workspace-scoped.** Repositories take the context and bake `WHERE workspace_id = ?` into every statement. A bare `SELECT * FROM conversations` with no workspace filter must not exist anywhere.
+- Enforced by a repository base class that requires `workspaceId`, plus a review/lint rule — unscoped access is never the default.
+
+This is P11: one business can never read another's data, by construction.
+
 ---
 
 ## 5. Event-driven core (the spine)
 
 Build the skeleton in Phase 2; every later feature is a subscriber. This is the principle that prevents the second rewrite.
 
-### 5.1 Event bus
+### 5.1 Event bus — interface first, in-process now
+
+The bus is consumed through an interface (P12) so the transport is replaceable. Phase 2 ships `InProcessBus`; Redis/Kafka/NATS drop in later without touching subscribers or dispatch helpers.
+
+```ts
+interface EventBus {
+  emit<T>(type: EventType, payload: T): Promise<void>;                         // notify + persist + (Phase 7) webhook fan-out
+  subscribe<T>(type: EventType | '*', handler: (p: T) => void | Promise<void>): () => void;
+}
+// Phase 2 impl: InProcessBus (Node EventEmitter). Reserved: RedisBus, KafkaBus, NatsBus.
+```
 
 ```
 server/src/events/
@@ -185,7 +210,7 @@ server/src/events/
 └── log.ts            # persists every event to domain_events (timeline + replay + analytics + webhooks)
 ```
 
-`emit()` does three things: notify in-process subscribers, append to `domain_events`, and (Phase 7) fan out to outbound webhooks. Subscribers (AI, automations, analytics, timeline, search, webhooks) register at boot in `server/src/index.ts`.
+`emit()` does three things: notify in-process subscribers, append to `domain_events`, and (Phase 7) fan out to outbound webhooks. Subscribers (AI, automations, analytics projectors, search indexer, webhooks) register at boot in `server/src/index.ts`. **Nothing in the codebase calls `EventEmitter` directly — only `bus()`.**
 
 **Every dispatch helper sets `workspace_id`, `customer_id`, `conversation_id` where applicable** — this is what makes the timeline (§7) and analytics (§13) work.
 
@@ -218,11 +243,12 @@ All subscribers read only from this catalog.
 ### 5.3 Subscribers register, features don't inline
 
 ```
-// server/src/index.ts (boot)
-subscribe('message.received', runInboundPipeline);   // AI + automations (§10/§11)
-subscribe('*',             indexForSearch);          // §8
-subscribe('*',             projectAnalytics);        // §13
-subscribe('*',             fanOutWebhooks);          // §14 (Phase 7)
+// server/src/index.ts (boot) — register subscribers against bus()
+bus().subscribe('message.received', runInboundPipeline);               // AI + automations (§10/§11)
+bus().subscribe('*',               searchIndexer.index);              // §8 SearchProvider
+analyticProjectors.forEach(p => bus().subscribe(p.handles, p.project)); // §13 — one subscriber per projector
+bus().subscribe('*',               writeAuditTrail);                  // §6.4 (privileged mutations)
+bus().subscribe('*',               fanOutWebhooks);                   // §14 (Phase 7)
 // timeline needs no subscriber — it reads domain_events directly (§7)
 ```
 
@@ -245,6 +271,7 @@ The customer is the center of gravity. Today the closest thing is `contacts`; me
 | `customer_assignments` | `id, customer_id, owner_user_id, team_id` | 3 |
 | `customer_ai_summaries` | `id, customer_id, summary, model, generated_at` | 4 |
 | `domain_events` | Durable event log + timeline source. `id, workspace_id, type, entity_type, entity_id, customer_id, conversation_id, actor_user_id, payload(json), created_at` | 2 |
+| `audit_logs` *(extended)* | Compliance/security log — **distinct from** `domain_events`. `id, workspace_id, actor_user_id, action, resource_type, resource_id, before_json, after_json, created_at` | 2 |
 
 ### 6.2 Identity & conversation resolution (the one chokepoint)
 
@@ -264,6 +291,15 @@ This is what lets inbox, CRM, campaigns, AI, timeline, and search all agree on *
 ### 6.3 Backfill
 
 Per distinct existing `chat_id`: create a customer (from matching `contacts` row, else `from_name`/phone), an identifier, and a conversation; stamp historical `inbox_messages` with `conversation_id` + `customer_id`. `contacts` becomes a legacy alias onto `customers`.
+
+### 6.4 Audit log (compliance & security) — distinct from domain events
+
+Two records, two purposes:
+
+- **Domain event** (`domain_events`): *what happened in the system* — `conversation.assigned`. Feeds timeline, analytics, search, webhooks.
+- **Audit log** (`audit_logs`): *who did what, to what, with before/after* — "Jane reassigned Conversation #391 from Support Team to Sales Team". Feeds security review, compliance, enterprise audit exports, debugging.
+
+The existing `audit_logs` table + `utils/audit.ts` (`logAuditAction`, `logApiRequest`) are the seed; promote them to the workspace-scoped, `actor_user_id` + `before_json`/`after_json` model. Every mutating privileged action — assignment, role/permission change, API-key creation, customer delete, agent publish, campaign launch, integration connect — writes an audit row. Read via `GET /api/audit?resource=&actor=&since=` behind an `audit.view` permission.
 
 ---
 
@@ -315,16 +351,25 @@ Because *every* subsystem emits events (messages, AI, automations, integrations,
 
 A platform service, not an inbox feature. Without it the platform becomes unusable at scale.
 
-### 8.1 Index
+### 8.1 Index + provider interface
 
-A unified, workspace-scoped index over every searchable entity:
+Search is consumed through a `SearchProvider` interface (P12) — SQLite FTS5 now, Meilisearch/Typesense/OpenSearch later, swappable without touching the indexer or query UI.
+
+```ts
+interface SearchProvider {
+  index(wsId, entityType: string, entityId: string, body: string, tags?: string[]): Promise<void>;
+  remove(wsId, entityType: string, entityId: string): Promise<void>;
+  query(wsId, q: string, opts?: { types?: string[]; limit?: number }): Promise<SearchHit[]>;
+}
+// Phase 2 impl: SqliteFtsProvider. Reserved: MeilisearchProvider, TypesenseProvider, OpenSearchProvider.
+```
 
 ```
 search_index (id, workspace_id, entity_type, entity_id, body, tags, updated_at)
 search_index_fts                           -- SQLite FTS5 virtual table over `body`
 ```
 
-(If the sql.js build lacks FTS5, fall back to a trigram/LIKE index behind the same interface — the service abstracts it.)
+(If the sql.js build lacks FTS5, the `SqliteFtsProvider` falls back to a trigram/LIKE index behind the same interface.)
 
 ### 8.2 Indexer = event subscriber
 
@@ -441,11 +486,13 @@ Rules are the floor; businesses will want multi-step flows. Reserve the flow mod
 
 ```
 automation_flows        (id, workspace_id, name, trigger_event, enabled, version)
-automation_nodes        (id, flow_id, type[trigger|condition|action|wait|branch|ai],
-                         config(json), next_id, branch_next_id)
+automation_nodes        (id, flow_id, type[trigger|condition|action|wait|branch|ai], config(json))
+automation_edges        (id, flow_id, from_node_id, to_node_id, label)   -- DAG edges (canonical model)
 automation_executions   (id, flow_id, customer_id, conversation_id, status,
-                         current_node_id, started_at, completed_at, context(json))
+                         current_node_ids(json), started_at, completed_at, context(json))
 ```
+
+The canonical flow model is a **DAG** (`automation_edges`) so multi-branch, parallel, and merge patterns never require a schema change. Phase 4 may expose a `next_id`/`branch_next_id` convenience for the simplest linear/branch flows, but it is a UI shortcut over the DAG, not the storage model. `current_node_ids` is a **set**, supporting parallel branches simultaneously in flight.
 
 ### 11.2 Node model
 
@@ -532,9 +579,28 @@ metric_rollups (workspace_id, metric_key, period[day|hour], period_start, value,
 | agent.performance (per user) | conversation.assigned + message.sent |
 | integration.orders / revenue | order.* |
 
-### 13.3 Subscriber
+### 13.3 Projectors (not one giant subscriber)
 
-`subscribe('*', projectAnalytics)` increments rollups keyed by `(workspace, metric, period, dimensions)`. Dashboards read pre-aggregated rollups (cheap); no on-the-fly scans of `domain_events` for render.
+Analytics is consumed through an `AnalyticsProjector` interface (P12) so each domain owns its metrics independently — no monolithic `projectAnalytics` handler that grows unbounded:
+
+```ts
+interface AnalyticsProjector {
+  handles: EventType[] | '*';
+  project(event: DomainEvent): Promise<void>;   // upsert metric_rollups for this projector's metrics
+}
+```
+
+Each projector is a focused subscriber:
+
+- `MessageMetricsProjector` — sent/received/read/failed, response times.
+- `ConversationMetricsProjector` — opened/resolved/reopened, resolution time.
+- `SLAMetricsProjector` — breach count, time-to-first-response.
+- `CampaignMetricsProjector` — sent/delivered/failed/conversions.
+- `AIMetricsProjector` — replies/tokens/handoffs/avg confidence.
+- `AutomationMetricsProjector` — triggers/flow completions.
+- `IntegrationMetricsProjector` — orders/revenue.
+
+Each increments `metric_rollups` keyed by `(workspace, metric, period, dimensions)`. Dashboards read pre-aggregated rollups (cheap); no on-the-fly `domain_events` scans at render.
 
 ---
 
@@ -632,10 +698,16 @@ src/
 
 ```
 server/src/
-├── modules/{inbox,customers,campaigns,automation,agents,integrations,catalog,media,search,analytics,developers}
-├── auth/                      # workspace/role/permission model + can() + middleware
-├── events/                    # §5 bus + catalog
-├── integrations/connectors/   # §12
+├── modules/
+│   ├── platform/             # PLATFORM SERVICES — everything depends on these; no business logic
+│   │   ├── events/           # EventBus interface + InProcessBus + catalog (§5)
+│   │   ├── auth/             # workspace/role/permission + can() + WorkspaceContext (§4)
+│   │   ├── audit/            # audit_logs write/read (§6.4)
+│   │   ├── workspace/        # workspaces/members/teams (§4)
+│   │   ├── search/           # SearchProvider + indexer (§8)
+│   │   └── analytics/        # AnalyticsProjector + rollups (§13)
+│   └── {inbox,customers,campaigns,automation,agents,integrations,catalog,media,developers}  # business modules
+├── integrations/connectors/  # §12
 ├── channels/                  # §12.4 (whatsapp first)
 ├── services/domain/           # internal services (Catalog, Orders, Knowledge, Media)
 ├── database/ · middleware/ · routes/
@@ -725,7 +797,7 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 | Phase | Theme | Ships |
 |---|---|---|
-| **2 (now)** | **System foundations + Inbox surface** | workspace/auth/RBAC + `can()`; event bus + full catalog; customer model + `resolveConversation`; conversation model (assignment/priority/status/SLA/AI-state); `domain_events` + timeline read; search index + indexer; analytics subscriber + rollups; AI governance seam + inbound pipeline (keyword rule only); connector/channel interface; workflow node schema. **Surface:** 3-pane inbox + Customer Intelligence drawer (timeline, tags, assignee, AI-state). Receipt/typing/presence webhook + SSE. |
+| **2 (now)** | **System foundations + Inbox surface** | `modules/platform/` services: `EventBus` interface (InProcessBus) + catalog; workspace/auth/RBAC + `can()` + **WorkspaceContext (tenant isolation)**; **`audit_logs` writer**; customer model + `resolveConversation`; conversation model (assignment/priority/status/SLA/AI-state); `domain_events` + timeline read; `SearchProvider` (FTS) + indexer; `AnalyticsProjector` projectors + rollups; AI governance seam + inbound pipeline (keyword rule only); connector/channel interface; workflow DAG schema. **Surface:** 3-pane inbox + Customer Intelligence drawer (timeline, tags, assignee, AI-state). Receipt/typing/presence webhook + SSE. |
 | **3** | Customer intelligence + team collaboration | notes, tags manager, assignment UI, teams, SLA policy editor, universal-search Command-K, customer timeline filters. |
 | **4** | AI agents + automation | agent registry UI, knowledge hub ingestion, `canAgent` enforcement UI, human-handoff UX, rule + simple-flow automation engine. |
 | **5** | Marketing center | campaign types (segmented/trigger/drip), media library, status module. |
@@ -734,8 +806,8 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 **Phase 2 internal slices (the immediate work):**
 
-- **A — Foundations (no UI):** `auth/` + workspace/RBAC tables + `can()`; `events/` bus + catalog; `resolveConversation` wired into webhook + send; `domain_events` populated. Customer/conversation rows created for all messages. *Verify: messages still flow; each now carries customer/conversation ids; `domain_events` grows.*
-- **B — Subsystem skeletons (no UI):** search indexer subscriber; analytics subscriber + rollups; AI inbound pipeline (keyword rule, governance seam, handoff states on conversation); connector/channel interface. *Verify: index + rollups populate on events; keyword auto-reply works; handoff state flips.*
+- **A — Foundations (no UI):** `modules/platform/{events,auth,workspace,audit}` — `EventBus` interface + `InProcessBus` + catalog; workspace/RBAC tables + `can()` + **WorkspaceContext**; `audit_logs` writer; `resolveConversation` wired into webhook + send; `domain_events` populated. Customer/conversation rows created for all messages. *Verify: messages still flow; each carries customer/conversation ids; `domain_events` + `audit_logs` grow; every query is workspace-scoped.*
+- **B — Subsystem skeletons (no UI):** `SearchProvider` (SqliteFts) + indexer subscriber; `AnalyticsProjector` projectors + rollups; AI inbound pipeline (keyword rule, governance seam, handoff states on conversation); connector/channel interface. *Verify: index + rollups populate on events; keyword auto-reply works; handoff state flips.*
 - **C — Frontend data layer:** `src/data/{api,hooks,providers,events.ts}`; `AppProviders`; migrate services. *Verify: app works unchanged through the new layer.*
 - **D — Inbox surface:** `features/inbox` 3-pane + Customer Intelligence drawer (timeline, tags, assignee, AI-state); ConversationList queues; unified multi-instance. *Verify: inbox works, drawer shows timeline.*
 - **E — Realtime + icon sweep:** receipt/typing/presence webhook + SSE (blue ticks, typing); profile-pic cache; group metadata; replace all emoji chrome with lucide; split touched oversized files.
@@ -746,7 +818,7 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 **Code:** no `any`; `{ success, data?, error? }`; files ≤150 lines; one component per file; feature folders with public barrels; components never call the API directly (P7).
 
-**Backend:** `encodeURIComponent` on Evolution paths; `logApiRequest` on every op; `X-API-Version: v1` on `/api/v1`; every privileged action asserts `req.can('<perm>')`; every domain mutation dispatches a catalog event with `workspace_id`/`customer_id`/`conversation_id`; internal services are the only path to third parties (P6).
+**Backend:** `encodeURIComponent` on Evolution paths; `logApiRequest` on every op; `X-API-Version: v1` on `/api/v1`; every privileged action asserts `req.can('<perm>')`; **every read/write is workspace-scoped via WorkspaceContext — no unscoped queries exist (P11)**; every domain mutation dispatches a catalog event with `workspace_id`/`customer_id`/`conversation_id`; **every privileged mutation writes a before/after `audit_logs` row (§6.4)**; analytics computed by per-domain projectors, never a monolithic subscriber; internal services are the only path to third parties (P6).
 
 **AI:** every agent action gated by `canAgent(agent, action, ctx)`; denials audited; handoff states authoritative on the conversation.
 
