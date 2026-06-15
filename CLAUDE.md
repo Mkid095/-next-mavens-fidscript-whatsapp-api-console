@@ -131,6 +131,27 @@ The deploy script automatically records each deployment with:
 
 ## API Endpoints
 
+### Public Integrator API (`/api/v1`)
+
+**Base URL:** `https://whatsapp.fidscript.com/api/v1`
+**Auth:** `X-API-Key: fidscript_live_…` header on every request. All responses carry `X-API-Version: v1`. Response shape: `{ success, data?, error? }`.
+
+Token model: **sends cost tokens; management/read ops are free.** Rate limits per category: sends = plan `clientRateLimit` (per-client msg/min); reads `V1_READ` = 600/min; mutations `V1_MUTATE` = 120/min; profile/restart `V1_STRICT` = 30/min. Idempotency: send endpoints accept `Idempotency-Key: <uuid>` header — retries return cached result with no re-charge.
+
+Webhook storage: inbound `messages.upsert` events store both `extra` (normalized JSON: `{messageType, content, mediaUrl, mediaMimetype}`) and the full `raw_payload` (Evolution's complete event JSON) in `inbox_messages`.
+
+| Category | Ops | Cost | Rate Limit |
+|---|---|---|---|
+| Messaging (10 sends) | text/media/location/contact/reaction/poll/list/audio/sticker/status | tokens | clientRateLimit (plan-based) |
+| Groups | 16 ops | free | V1_MUTATE |
+| Chats | 13 ops | free | V1_READ / V1_MUTATE |
+| Profile/Privacy | 6 ops | free | V1_READ / V1_STRICT |
+| Settings | 2 ops | free | V1_READ / V1_STRICT |
+| Instance | 6 ops (connection-state, connect/QR, restart [confirm-guarded], logout, set-presence, qr) | free | V1_MUTATE / V1_STRICT |
+| Platform | whoami, usage, openapi.json/yaml | free | V1_READ |
+
+Full OpenAPI spec at `GET /api/v1/openapi.json`. Registry-driven: `src/data/apiEndpoints/index.ts` is the single source of truth for Docs, Sandbox, ApiReference, and OpenAPI generation (`npm run gen:openapi` from server/).
+
 ### Admin Auth
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -213,18 +234,19 @@ The deploy script automatically records each deployment with:
 
 ## Simulated vs Real
 
-### Simulated (NOT connected to backend)
-- `ApiConsoleView` - Demo REST tester UI
-- `DashboardOverview` charts - Static UI mockups
-- `LogsAndAnalyticsView` telemetry charts - Mocked metrics
+### Simulated
+- `ApiConsoleView` — Demo REST tester UI (uses raw Evolution proxy, not `/api/v1`)
+- `DashboardOverview` charts — Static UI mockups
+- `LogsAndAnalyticsView` telemetry charts — Mocked metrics
 
 ### Real (connected)
 - All instance operations
 - Client CRUD
 - Token purchases
 - Contact imports
-- Message sending
+- Message sending + API-key sends
 - API key management
+- **DocsSection, SandboxSection, ApiKeysSection** — all read from the live registry and execute real `/api/v1` calls
 
 ## Conventions
 
@@ -298,14 +320,38 @@ server/src/
 │   ├── admin/
 │   │   ├── analytics.ts
 │   │   └── logs.ts
+│   ├── v1/
+│   │   ├── index.ts          # Mounts all /api/v1 routers
+│   │   ├── messages.ts       # 10 send types
+│   │   ├── groups.ts         # 16 group ops
+│   │   ├── chats.ts          # 13 chat ops
+│   │   ├── profile.ts        # 6 profile ops
+│   │   ├── settings.ts       # 2 settings ops
+│   │   ├── instance.ts       # lifecycle + QR
+│   │   ├── usage.ts          # API usage analytics
+│   │   └── openapi.ts       # Serves openapi.json/yaml
 │   ├── clients.ts
 │   ├── plans.ts
 │   └── uploads.ts
+├── services/whatsapp/
+│   ├── shared.ts      # evolutionNameOf, chargeAndEmit, wrapSend (idempotency), SendContext/Result types
+│   ├── messaging.ts   # 10 send wrappers (wrapSend)
+│   ├── groups.ts     # 16 group ops via run()
+│   ├── chats.ts      # 13 chat ops via run()
+│   ├── profile.ts    # 6 profile + 2 settings ops via run()
+│   ├── instanceOps.ts # connectionState, restart, logout, connect, setPresence
+│   └── http.ts      # buildSendCtx, respondSendResult (shared by all v1 routes)
 ├── middleware/
-│   └── auth.ts             # JWT + API key middleware
+│   ├── auth/
+│   │   ├── jwt.ts         # Admin JWT
+│   │   ├── clientJwt.ts    # Client JWT
+│   │   ├── clientApiKey.ts # API-key auth for /api/v1
+│   │   └── v1Limits.ts   # V1_READ/MUTATE/STRICT limiters
+│   └── v1Version.ts  # X-API-Version: v1 header
 ├── utils/
-│   ├── evolution.ts        # Shared Evolution API caller (URL-encode instance names!)
-│   ├── audit.ts            # Shared logAuditAction
+│   ├── evolution.ts        # callEvolutionAPI + callEvolutionAPIChecked (URL-encode instance names!)
+│   ├── audit.ts            # logAuditAction + logApiRequest
+│   ├── messageParser.ts    # parseIncomingMessage (12 inbound types)
 │   └── errors.ts           # Shared error helpers
 └── database.ts
 ```

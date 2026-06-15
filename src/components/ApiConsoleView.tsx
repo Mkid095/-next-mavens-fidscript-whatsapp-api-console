@@ -98,7 +98,7 @@ export default function ApiConsoleView() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold tracking-tight text-forest-deep">
-          Evolution API REST Sandbox
+          FIDScript REST Sandbox
         </h1>
         <p className="text-xs text-graphite mt-1">
           Dry-run secure POST / GET requests to check WhatsApp payload parameters and Daraja callback events.

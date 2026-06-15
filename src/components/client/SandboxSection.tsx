@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Terminal, Copy, Check, Zap, X, MessageSquare, Smartphone, Users, Settings, Building, Tag, Wrench } from 'lucide-react';
+import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Terminal, Copy, Check, Zap, X, MessageSquare, Smartphone, Users, Settings, Building, Tag, Wrench, Compass, Inbox } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { instancesApi } from '../../services/api';
 import type { Instance } from '../../services/api';
+import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint } from '../../data/apiEndpoints/index';
 
 interface SandboxSectionProps {
   clientToken?: string;
@@ -30,98 +31,51 @@ interface CategoryGroup {
   endpoints: EndpointDef[];
 }
 
-const ICON_MAP: Record<string, React.ReactNode> = { MessageSquare: <MessageSquare className="w-4 h-4 text-yellow-600" />, Smartphone: <Smartphone className="w-4 h-4 text-yellow-600" />, Users: <Users className="w-4 h-4 text-yellow-600" />, Settings: <Settings className="w-4 h-4 text-yellow-600" />, Building: <Building className="w-4 h-4 text-yellow-600" />, Tag: <Tag className="w-4 h-4 text-yellow-600" />, Wrench: <Wrench className="w-4 h-4 text-yellow-600" /> }; const ENDPOINT_GROUPS: CategoryGroup[] = [
-  {
-    name: 'Messaging',
-    icon: 'MessageSquare',
-    endpoints: [
-      { method: 'POST', path: '/message/sendText/:instanceName', name: 'Send Text', desc: 'Send a plain text message to a WhatsApp number.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'text', label: 'Message', type: 'text', placeholder: 'Hello!', required: true }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendMedia/:instanceName', name: 'Send Media', desc: 'Send image, video, audio, or document via URL.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'mediatype', label: 'Media Type', type: 'string', placeholder: 'image | video | audio | document', required: true }, { key: 'media', label: 'Media URL', type: 'string', placeholder: 'https://example.com/file.jpg', required: true }, { key: 'caption', label: 'Caption', type: 'text', placeholder: 'Optional caption' }], cost: 2, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendLocation/:instanceName', name: 'Send Location', desc: 'Share GPS coordinates with a name and address.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'latitude', label: 'Latitude', type: 'number', placeholder: '-1.2921', required: true }, { key: 'longitude', label: 'Longitude', type: 'number', placeholder: '36.8219', required: true }, { key: 'name', label: 'Name', type: 'string', placeholder: 'Nairobi CBD' }, { key: 'address', label: 'Address', type: 'string', placeholder: 'City Square, Nairobi' }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendContact/:instanceName', name: 'Send Contact', desc: 'Share a contact card (vCard format).', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'contact', label: 'Contact JSON', type: 'text', placeholder: '{"name":"John Doe","phones":["254700000000"]}', required: true }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendReaction/:instanceName', name: 'Send Reaction', desc: 'React to a message with an emoji.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'key', label: 'Message Key (JSDrive)', type: 'text', placeholder: '{"id":"false_254700000000@us.c","from":"254700000000@us.c"}', required: true }, { key: 'reaction', label: 'Emoji Reaction', type: 'string', placeholder: '👍', required: true }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendPoll/:instanceName', name: 'Send Poll', desc: 'Create an interactive poll message.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'poll', label: 'Poll JSON', type: 'text', placeholder: '{"title":"Vote?","options":["Yes","No","Maybe"]}', required: true }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendList/:instanceName', name: 'Send List', desc: 'Interactive list message with sections and rows.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'list', label: 'List JSON', type: 'text', placeholder: '{"title":"Menu","sections":[{"title":"Options","rows":[{"title":"Option 1","description":"Desc 1","rowId":"1"},{"title":"Option 2","description":"Desc 2","rowId":"2"}]}]}', required: true }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendButtons/:instanceName', name: 'Send Buttons', desc: 'Message with interactive button replies.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'buttons', label: 'Buttons JSON', type: 'text', placeholder: '{"text":"Choose an option","buttons":[{"type":"reply","reply":{"id":"1","title":"Yes"}},{"type":"reply","reply":{"id":"2","title":"No"}}]}', required: true }], cost: 1, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendWhatsAppAudio/:instanceName', name: 'Send Audio', desc: 'Send a WhatsApp-format audio file (OGG).', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'audio', label: 'Audio URL', type: 'string', placeholder: 'https://example.com/audio.ogg', required: true }], cost: 2, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendSticker/:instanceName', name: 'Send Sticker', desc: 'Send a sticker image (webp format).', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'sticker', label: 'Sticker URL', type: 'string', placeholder: 'https://example.com/sticker.webp', required: true }], cost: 2, category: 'Messaging' },
-      { method: 'POST', path: '/message/sendStatus/:instanceName', name: 'Send Status', desc: 'Post a status update (story) to your own account.', pathParams: ['instanceName'], bodyFields: [{ key: 'status', label: 'Status JSON', type: 'text', placeholder: '{"type":"text","content":"My status!","backgroundColor":"#128C7E"}', required: true }], cost: 1, category: 'Messaging' },
-    ],
-  },
-  {
-    name: 'Instance',
-    icon: 'Smartphone',
-    endpoints: [
-      { method: 'GET', path: '/instance/connectionState/:instanceName', name: 'Connection State', desc: 'Get the current connection status of an instance.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
-      { method: 'GET', path: '/instance/connect/:instanceName', name: 'Generate QR Code', desc: 'Generate a new QR code for linking WhatsApp.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
-      { method: 'POST', path: '/instance/restart/:instanceName', name: 'Restart Instance', desc: 'Restart the WhatsApp instance connection.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
-      { method: 'DELETE', path: '/instance/logout/:instanceName', name: 'Disconnect', desc: 'Log out and disconnect the WhatsApp session.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
-      { method: 'DELETE', path: '/instance/delete/:instanceName', name: 'Delete Instance', desc: 'Permanently delete the instance and all its data.', pathParams: ['instanceName'], bodyFields: [], category: 'Instance' },
-      { method: 'POST', path: '/instance/setPresence/:instanceName', name: 'Set Presence', desc: 'Set your online presence status.', pathParams: ['instanceName'], bodyFields: [{ key: 'presence', label: 'Presence', type: 'string', placeholder: 'available | composing | recording | paused', required: true }], category: 'Instance' },
-    ],
-  },
-  {
-    name: 'Chat',
-    icon: 'MessageSquare',
-    endpoints: [
-      { method: 'POST', path: '/chat/findContacts/:instanceName', name: 'Find Contacts', desc: 'Search contacts in the instance contact list.', pathParams: ['instanceName'], bodyFields: [{ key: 'search', label: 'Search Query', type: 'string', placeholder: 'John' }], category: 'Chat' },
-      { method: 'POST', path: '/chat/findChats/:instanceName', name: 'Find Chats', desc: 'Search chat threads.', pathParams: ['instanceName'], bodyFields: [{ key: 'search', label: 'Search Query', type: 'string', placeholder: 'Sales' }], category: 'Chat' },
-      { method: 'POST', path: '/chat/whatsappNumbers/:instanceName', name: 'Check WhatsApp Numbers', desc: 'Validate if phone numbers have WhatsApp.', pathParams: ['instanceName'], bodyFields: [{ key: 'numbers', label: 'Phone Numbers (JSON array)', type: 'text', placeholder: '["254712345678","254798765432"]', required: true }], category: 'Chat' },
-      { method: 'POST', path: '/chat/markMessageAsRead/:instanceName', name: 'Mark Message Read', desc: 'Mark a specific message as read.', pathParams: ['instanceName'], bodyFields: [{ key: 'key', label: 'Message Key JSON', type: 'text', placeholder: '{"id":"false_254700000000@us.c","from":"254700000000@us.c"}', required: true }], category: 'Chat' },
-      { method: 'POST', path: '/chat/updateBlockStatus/:instanceName', name: 'Update Block Status', desc: 'Block or unblock a contact.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'type', label: 'Type', type: 'string', placeholder: 'block | unblock', required: true }], category: 'Chat' },
-      { method: 'POST', path: '/chat/sendPresence/:instanceName', name: 'Send Presence', desc: 'Broadcast presence (typing, recording) to a chat.', pathParams: ['instanceName'], bodyFields: [{ key: 'to', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }, { key: 'presence', label: 'Presence', type: 'string', placeholder: 'typing | recording | paused' }], category: 'Chat' },
-      { method: 'POST', path: '/chat/fetchProfilePictureUrl/:instanceName', name: 'Fetch Profile Picture', desc: 'Get the profile picture URL for a contact.', pathParams: ['instanceName'], bodyFields: [{ key: 'number', label: 'Phone', type: 'string', placeholder: '254712345678', required: true }], category: 'Chat' },
-    ],
-  },
-  {
-    name: 'Group',
-    icon: 'Users',
-    endpoints: [
-      { method: 'POST', path: '/group/create/:instanceName', name: 'Create Group', desc: 'Create a new WhatsApp group.', pathParams: ['instanceName'], bodyFields: [{ key: 'subject', label: 'Group Subject', type: 'string', placeholder: 'Sales Team', required: true }, { key: 'participants', label: 'Participants (JSON array)', type: 'text', placeholder: '["254712345678","254798765432"]', required: true }], category: 'Group' },
-      { method: 'POST', path: '/group/updateGroupSubject/:instanceName', name: 'Update Group Subject', desc: 'Change the group name/subject.', pathParams: ['instanceName'], bodyFields: [{ key: 'groupJid', label: 'Group JID', type: 'string', placeholder: '123456789-987654321@g.us', required: true }, { key: 'subject', label: 'New Subject', type: 'string', placeholder: 'New Group Name', required: true }], category: 'Group' },
-      { method: 'POST', path: '/group/updateGroupDescription/:instanceName', name: 'Update Group Description', desc: 'Change the group description.', pathParams: ['instanceName'], bodyFields: [{ key: 'groupJid', label: 'Group JID', type: 'string', placeholder: '123456789-987654321@g.us', required: true }, { key: 'description', label: 'Description', type: 'text', placeholder: 'Group description text' }], category: 'Group' },
-      { method: 'POST', path: '/group/addParticipants/:instanceName', name: 'Add Participants', desc: 'Add members to a group.', pathParams: ['instanceName'], bodyFields: [{ key: 'groupJid', label: 'Group JID', type: 'string', placeholder: '123456789-987654321@g.us', required: true }, { key: 'participants', label: 'Participants (JSON array)', type: 'text', placeholder: '["254712345678"]', required: true }], category: 'Group' },
-      { method: 'POST', path: '/group/removeParticipants/:instanceName', name: 'Remove Participants', desc: 'Remove members from a group.', pathParams: ['instanceName'], bodyFields: [{ key: 'groupJid', label: 'Group JID', type: 'string', placeholder: '123456789-987654321@g.us', required: true }, { key: 'participants', label: 'Participants (JSON array)', type: 'text', placeholder: '["254712345678"]', required: true }], category: 'Group' },
-      { method: 'POST', path: '/group/join/:instanceName', name: 'Join Group via Invite', desc: 'Join a group using an invite code.', pathParams: ['instanceName'], bodyFields: [{ key: 'inviteCode', label: 'Invite Code', type: 'string', placeholder: 'ABC123XYZ', required: true }], category: 'Group' },
-      { method: 'GET', path: '/group/findGroupInfos/:instanceName', name: 'Find Group Info', desc: 'Get group metadata by invite code.', pathParams: ['instanceName'], bodyFields: [{ key: 'inviteCode', label: 'Invite Code', type: 'string', placeholder: 'ABC123XYZ', required: true }], category: 'Group' },
-      { method: 'GET', path: '/group/fetchAllGroups/:instanceName', name: 'List All Groups', desc: 'Get all groups the instance is part of.', pathParams: ['instanceName'], bodyFields: [], category: 'Group' },
-    ],
-  },
-  {
-    name: 'Settings',
-    icon: 'Settings',
-    endpoints: [
-      { method: 'GET', path: '/settings/:instanceName', name: 'Get Settings', desc: 'Fetch current instance settings.', pathParams: ['instanceName'], bodyFields: [], category: 'Settings' },
-      { method: 'POST', path: '/settings/:instanceName', name: 'Update Settings', desc: 'Update instance settings (webhooks, presence, etc.).', pathParams: ['instanceName'], bodyFields: [{ key: 'settings', label: 'Settings JSON', type: 'text', placeholder: '{"webhook":{"url":"https://yoursite.com/webhook","enabled":true},"presence":"available"}', required: true }], category: 'Settings' },
-      { method: 'POST', path: '/webhook/set/:instanceName', name: 'Set Webhook', desc: 'Configure webhook URL and events for an instance.', pathParams: ['instanceName'], bodyFields: [{ key: 'enabled', label: 'Enabled', type: 'boolean', placeholder: 'true' }, { key: 'url', label: 'Webhook URL', type: 'string', placeholder: 'https://yoursite.com/webhook' }, { key: 'webhookByEvents', label: 'By Events', type: 'boolean', placeholder: 'false' }, { key: 'events', label: 'Events (JSON array)', type: 'text', placeholder: '["CONNECTION_UPDATE","MESSAGES_UPSERT"]' }], category: 'Settings' },
-    ],
-  },
-  {
-    name: 'Business',
-    icon: 'Building',
-    endpoints: [
-      { method: 'GET', path: '/business/fetchBusinessProfile/:instanceName', name: 'Fetch Business Profile', desc: 'Get the WhatsApp Business profile info.', pathParams: ['instanceName'], bodyFields: [], category: 'Business' },
-      { method: 'POST', path: '/business/updateBusinessProfile/:instanceName', name: 'Update Business Profile', desc: 'Update business profile (name, description, logo, etc.).', pathParams: ['instanceName'], bodyFields: [{ key: 'businessProfile', label: 'Profile JSON', type: 'text', placeholder: '{"about":"Your business description","website":"https://yoursite.com"}', required: true }], category: 'Business' },
-    ],
-  },
-  {
-    name: 'Labels',
-    icon: 'Tag',
-    endpoints: [
-      { method: 'GET', path: '/label/findLabels/:instanceName', name: 'List Labels', desc: 'Get all labels (tags) for the instance.', pathParams: ['instanceName'], bodyFields: [], category: 'Labels' },
-      { method: 'POST', path: '/label/create/:instanceName', name: 'Create Label', desc: 'Create a new label/tag.', pathParams: ['instanceName'], bodyFields: [{ key: 'label', label: 'Label Name', type: 'string', placeholder: 'VIP Customer', required: true }], category: 'Labels' },
-      { method: 'POST', path: '/label/delete/:instanceName', name: 'Delete Label', desc: 'Delete a label by ID.', pathParams: ['instanceName'], bodyFields: [{ key: 'labelId', label: 'Label ID', type: 'string', placeholder: 'label_id', required: true }], category: 'Labels' },
-    ],
-  },
-  {
-    name: 'Utils',
-    icon: 'Wrench',
-    endpoints: [
-      { method: 'GET', path: '/health', name: 'Health Check', desc: 'Check if the Evolution API server is running.', pathParams: [], bodyFields: [], category: 'Utils' },
-      { method: 'GET', path: '/instance/fetchInstances', name: 'Fetch All Instances', desc: 'List all instances on the Evolution API server.', pathParams: [], bodyFields: [], category: 'Utils' },
-    ],
-  },
-];
+const ICON_MAP: Record<string, React.ReactNode> = {
+  MessageSquare: <MessageSquare className="w-4 h-4 text-yellow-600" />,
+  Smartphone: <Smartphone className="w-4 h-4 text-yellow-600" />,
+  Users: <Users className="w-4 h-4 text-yellow-600" />,
+  Settings: <Settings className="w-4 h-4 text-yellow-600" />,
+  Building: <Building className="w-4 h-4 text-yellow-600" />,
+  Tag: <Tag className="w-4 h-4 text-yellow-600" />,
+  Wrench: <Wrench className="w-4 h-4 text-yellow-600" />,
+  Compass: <Compass className="w-4 h-4 text-yellow-600" />,
+  Send: <Send className="w-4 h-4 text-yellow-600" />,
+  Inbox: <Inbox className="w-4 h-4 text-yellow-600" />,
+};
+
+/** Derive Sandbox groups from the live registry. Only real /api/v1 routes. */
+function toSandboxEndpoint(ep: ApiEndpoint): EndpointDef {
+  return {
+    method: ep.method,
+    // Convert /api/v1/messages/text/:instance → /messages/text/:instanceName
+    path: ep.path.replace('/api/v1', '').replace(':instance', ':instanceName'),
+    name: ep.name,
+    desc: ep.desc,
+    pathParams: ep.pathParams.map(p => p.name),
+    bodyFields: ep.bodyFields.map(f => ({
+      key: f.key,
+      label: f.label,
+      type: f.type as 'string' | 'number' | 'boolean' | 'text',
+      placeholder: f.placeholder || (f.enum ? f.enum.join(' | ') : ''),
+      required: f.required,
+    })),
+    cost: ep.cost,
+    category: ep.category,
+  };
+}
+
+const ENDPOINT_GROUPS: CategoryGroup[] =
+  API_CATEGORIES
+    .filter(cat => cat.name !== 'Receiving')
+    .map(cat => ({
+      name: cat.name,
+      icon: cat.icon,
+      endpoints: API_ENDPOINTS
+        .filter((ep: ApiEndpoint) => ep.category === cat.name && ep.path.startsWith('/api/v1'))
+        .map(toSandboxEndpoint),
+    }))
+    .filter(g => g.endpoints.length > 0);
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-blue-600 text-white',
@@ -175,7 +129,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
 
   const buildCurl = (): string => {
     if (!selectedEndpoint || !instanceName) return '';
-    const base = 'https://whatsapp.fidscript.com/api/instance';
+    const base = PUBLIC_API_BASE;
     const path = selectedEndpoint.path.replace(':instanceName', instanceName);
     const method = selectedEndpoint.method;
     const lines = [`curl -X ${method} ${base}${path}`];
@@ -202,25 +156,25 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     setResponseStatus(null);
 
     try {
-      const body: Record<string, unknown> = {};
+      const reqBody: Record<string, unknown> = {};
       if (selectedEndpoint.bodyFields) {
         selectedEndpoint.bodyFields.forEach(f => {
           if (bodyValues[f.key] !== undefined && bodyValues[f.key] !== '') {
-            body[f.key] = f.type === 'number' ? Number(bodyValues[f.key]) : bodyValues[f.key];
+            reqBody[f.key] = f.type === 'number' ? Number(bodyValues[f.key]) : bodyValues[f.key];
           }
         });
       }
 
-      const res = await fetch('/api/sandbox/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clientToken}` },
-        body: JSON.stringify({
-          method: selectedEndpoint.method,
-          endpoint: selectedEndpoint.path,
-          pathParams: { instanceName },
-          body: Object.keys(body).length > 0 ? body : undefined,
-          instanceName,
-        }),
+      // Call the real /api/v1 endpoint directly with the client's JWT token
+      // (sandbox uses the dashboard auth, not an API key — the backend issues a temporary key)
+      const fullPath = selectedEndpoint.path.replace(':instanceName', instanceName);
+      const res = await fetch(`${PUBLIC_API_BASE}${fullPath}`, {
+        method: selectedEndpoint.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${clientToken}`,
+        },
+        body: ['GET', 'HEAD'].includes(selectedEndpoint.method) ? undefined : JSON.stringify(reqBody),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -463,7 +417,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                 <Terminal className="w-8 h-8 text-yellow-300" />
               </div>
               <p className="font-bold text-forest-deep text-sm">Select an endpoint to start</p>
-              <p className="text-xs text-graphite max-w-sm">Choose any Evolution API endpoint from the browser on the left to build and execute a live request.</p>
+              <p className="text-xs text-graphite max-w-sm">Choose any FIDScript API endpoint from the browser on the left to build and execute a live request.</p>
             </div>
           )}
         </div>
