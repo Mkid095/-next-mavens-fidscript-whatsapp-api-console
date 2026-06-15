@@ -10,8 +10,12 @@ import { logAuditAction } from '../utils/audit.js';
 import {
   TOKEN_COST_TEXT, TOKEN_COST_MEDIA, TOKEN_COST_LOCATION, TOKEN_COST_CONTACT,
 } from '../utils/tokenCosts.js';
+import statusRoutes from './statuses.js';
 
 const router = Router();
+
+// Mount status routes under /api/campaigns/statuses/* (Slice E)
+router.use('/statuses', statusRoutes);
 
 // =============================================================================
 // Phase 5 Slice A refactor:

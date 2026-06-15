@@ -1,25 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Megaphone, Image as ImageIcon, Users, Sparkles } from 'lucide-react';
+import { Megaphone, Image as ImageIcon, Users, Sparkles, Radio } from 'lucide-react';
 import { contactsApi, campaignsApi } from '../../services/api';
 import type { Instance, Contact } from '../../services/api';
 import CampaignList from './CampaignList';
 import CampaignBuilder from './CampaignBuilder';
 import { MediaLibrary } from '../media/index.js';
 import { SegmentList, SegmentBuilder } from '../segments/index.js';
+import { StatusPane } from '../statuses/index.js';
 
 interface MarketingCenterProps {
   clientToken?: string;
   instances: Instance[];
 }
 
-type Tab = 'campaigns' | 'library' | 'segments';
+type Tab = 'campaigns' | 'library' | 'segments' | 'statuses';
 
 /**
- * Phase 5 Marketing Center — Slice A + B + C. The hub for non-bulk campaign work.
+ * Phase 5 Marketing Center — Slices A-E. The hub for non-bulk campaign work.
  * Slice A: Broadcast builder + list view with type filter.
  * Slice B: Media library tab (reusable assets referenced by campaigns).
  * Slice C: Segments tab (named audience filters with preview).
- * Future slices add: Trigger/drip flows (D), Status (E) — each as its own tab.
+ * Slice D: Drip + trigger flows (embedded in CampaignBuilder type=drip|trigger).
+ * Slice E: Statuses tab (text/image/audio to the WhatsApp status feed).
  */
 export default function MarketingCenter({ clientToken, instances }: MarketingCenterProps) {
   const [tab, setTab] = useState<Tab>('campaigns');
@@ -49,13 +51,13 @@ export default function MarketingCenter({ clientToken, instances }: MarketingCen
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-forest-deep">Marketing Center</p>
           <p className="text-[10px] text-graphite">
-            Broadcasts · Media library · Segments · Trigger &amp; drip flows coming next. Shares the same send pipeline as 1:1 chat — failed sends refund tokens automatically.
+            Broadcasts · Media library · Segments · Drip flows · Status posts. Shares the same send pipeline as 1:1 chat — failed sends refund tokens automatically.
           </p>
         </div>
         <Megaphone className="w-5 h-5 text-yellow-700 shrink-0" />
       </div>
 
-      <div className="flex items-center gap-1 p-1 bg-[#f9f9f2] border border-[#eaebe4] rounded-xl w-fit">
+      <div className="flex items-center gap-1 p-1 bg-[#f9f9f2] border border-[#eaebe4] rounded-xl w-fit flex-wrap">
         <button onClick={() => setTab('campaigns')}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'campaigns' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
           <Megaphone className="w-3.5 h-3.5" /> Campaigns
@@ -68,6 +70,10 @@ export default function MarketingCenter({ clientToken, instances }: MarketingCen
           className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'segments' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
           <Users className="w-3.5 h-3.5" /> Segments
         </button>
+        <button onClick={() => setTab('statuses')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'statuses' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          <Radio className="w-3.5 h-3.5" /> Statuses
+        </button>
       </div>
 
       {tab === 'library' ? (
@@ -78,6 +84,8 @@ export default function MarketingCenter({ clientToken, instances }: MarketingCen
         ) : (
           <SegmentBuilder onBack={() => setSegView('list')} onSaved={() => setSegView('list')} />
         )
+      ) : tab === 'statuses' ? (
+        <StatusPane instances={instances} />
       ) : view === 'list' ? (
         <CampaignList
           key={refreshKey}

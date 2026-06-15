@@ -226,6 +226,37 @@ export interface DripEnrollment {
   customer_name: string | null;
 }
 
+// ---- Phase 5 Slice E — Status posts (§15.6) ----
+export type StatusPostKind = 'text' | 'image' | 'audio';
+export type StatusPostState = 'draft' | 'scheduled' | 'posting' | 'posted' | 'failed' | 'cancelled';
+
+export interface StatusPost {
+  id: string;
+  workspace_id: string;
+  instance_id: string;
+  kind: StatusPostKind;
+  content: string | null;
+  media_id: string | null;
+  caption: string | null;
+  scheduled_at: string | null;
+  posted_at: string | null;
+  post_state: StatusPostState;
+  cross_post_json: string | null;
+  error_message: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface CreateStatusPostInput {
+  instance_id: string;
+  kind: StatusPostKind;
+  content?: string;
+  media_id?: string;
+  caption?: string;
+  scheduled_at?: string | null;
+  cross_post?: string[];
+}
+
 // ---- API functions ----
 export const platformApi = {
   // Customers
@@ -353,4 +384,16 @@ export const platformApi = {
   previewSegment: (id: string) => apiPost<SegmentPreview>(`/api/platform/segments/${id}/preview`, {}),
   previewAdhocSegment: (filter: SegmentFilter) =>
     apiPost<SegmentPreview>(`/api/platform/segments/preview-adhoc`, { filter }),
+
+  // Status posts (Phase 5 Slice E §15.6) — /api/campaigns/statuses/*
+  listStatusPosts: () => apiGet<StatusPost[]>(`/api/campaigns/statuses`),
+  createStatusPost: (body: CreateStatusPostInput) =>
+    apiPost<StatusPost>(`/api/campaigns/statuses`, body),
+  updateStatusPost: (id: string, body: Partial<CreateStatusPostInput>) =>
+    apiPatch<StatusPost>(`/api/campaigns/statuses/${id}`, body),
+  deleteStatusPost: (id: string) => apiDelete<null>(`/api/campaigns/statuses/${id}`),
+  scheduleStatusPost: (id: string, scheduled_at: string) =>
+    apiPost<StatusPost>(`/api/campaigns/statuses/${id}/schedule`, { scheduled_at }),
+  cancelStatusPost: (id: string) => apiPost<StatusPost>(`/api/campaigns/statuses/${id}/cancel`, {}),
+  postStatusNow: (id: string) => apiPost<StatusPost>(`/api/campaigns/statuses/${id}/post`, {}),
 };
