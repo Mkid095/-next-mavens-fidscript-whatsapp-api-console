@@ -26,12 +26,14 @@ export default function CampaignsView({ clientToken, instances, onTokenDeduct }:
         <p className="text-xs text-graphite mt-0.5">Create and manage bulk messaging campaigns</p>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
-        <BulkMessagingPanel
-          instances={instances.filter(i => i.status === 'connected')}
-          savedContacts={savedContacts}
-          clientToken={clientToken}
-          onTokenDeduct={onTokenDeduct}
-        />
+        <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm h-full flex flex-col">
+          <BulkMessagingPanel
+            instances={instances.filter(i => i.status === 'connected')}
+            savedContacts={savedContacts}
+            clientToken={clientToken}
+            onTokenDeduct={onTokenDeduct}
+          />
+        </div>
       </div>
     </div>
   );
