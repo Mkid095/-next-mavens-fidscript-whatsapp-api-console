@@ -176,4 +176,7 @@ export const clientKeysApi = {
     fetchApi<ClientApiKey>('/api/client/keys', { method: 'POST', body: JSON.stringify({ name }) }),
 
   revoke: (id: string) => fetchApi<void>(`/api/client/keys/${id}`, { method: 'DELETE' }),
+
+  regenerate: (id: string) =>
+    fetchApi<{ id: string; key: string }>(`/api/client/keys/${id}/regenerate`, { method: 'POST' }),
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, Zap, RefreshCw, CheckCircle, XCircle, ChevronRight, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { clientKeysApi } from '../../services/api';
+import { clientKeysApi, API_BASE_URL } from '../../services/api';
 import type { ClientApiKey } from './types';
 
 interface ApiKeysSectionProps {
@@ -11,6 +11,9 @@ interface ApiKeysSectionProps {
 interface KeyWithStats extends ClientApiKey {
   request_count?: number;
 }
+
+/** Public surface for external integrators (always the production URL, regardless of where the dashboard runs). */
+const PUBLIC_API_BASE = 'https://whatsapp.fidscript.com/api/v1';
 
 export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [showNewKeyModal, setShowNewKeyModal] = useState(false);
@@ -43,7 +46,10 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     if (!newKeyName.trim() || !clientToken) return;
     const res = await clientKeysApi.create(newKeyName.trim());
     if (res.success && res.data) {
-      setApiKeys((prev) => [{ ...res.data, last_used: 'Just now' } as KeyWithStats, ...prev]);
+      const created = { ...res.data, last_used: 'Just now' } as KeyWithStats;
+      setApiKeys((prev) => [created, ...prev]);
+      // Reveal the full secret once so the owner can copy it before it's masked forever.
+      setShowKeyValue((prev) => new Set(prev).add(created.id));
       setNewKeyName('');
       setShowNewKeyModal(false);
     }
@@ -67,15 +73,12 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     setTestingKeyId(k.id);
     setTestResult(null);
     try {
-      const res = await fetch('https://whatsapp.fidscript.com/api/instance/connectionState/ping', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/whoami`, {
         method: 'GET',
-        headers: {
-          'X-API-Key': k.key,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'X-API-Key': k.key },
       });
       const data = await res.json().catch(() => ({}));
-      setTestResult({ id: k.id, ok: res.ok, msg: res.ok ? 'Key is valid!' : (data?.error || `HTTP ${res.status}`) });
+      setTestResult({ id: k.id, ok: res.ok, msg: res.ok ? 'Key is valid and active!' : (data?.error || `HTTP ${res.status}`) });
     } catch (err: unknown) {
       setTestResult({ id: k.id, ok: false, msg: err instanceof Error ? err.message : 'Connection failed' });
     }
@@ -83,18 +86,16 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   };
 
   const handleRegenerateKey = async () => {
-    if (!regenerateKeyId || !clientToken) return;
+    if (!regenerateKeyId) return;
     setRegeneratingKeyId(regenerateKeyId);
     try {
-      // Revoke old key
-      await clientKeysApi.revoke(regenerateKeyId);
-      // Create new key with same name
-      const res = await clientKeysApi.create(regenerateKeyName);
+      const res = await clientKeysApi.regenerate(regenerateKeyId);
       if (res.success && res.data) {
-        setApiKeys((prev) => [
-          ...prev.filter((k) => k.id !== regenerateKeyId).map((k) => k.id === regenerateKeyId ? { ...k, status: 'Revoked' as const } : k),
-          { ...res.data, last_used: 'Just now' } as KeyWithStats,
-        ]);
+        const newKey = res.data.key;
+        setApiKeys((prev) => prev.map((k) => k.id === regenerateKeyId
+          ? { ...k, key: newKey, key_prefix: newKey.substring(0, 20), last_used: 'Just now' }
+          : k));
+        setShowKeyValue((prev) => new Set(prev).add(regenerateKeyId));
         setShowRegenerateModal(false);
         setRegenerateKeyId(null);
         setRegenerateKeyName('');
@@ -143,8 +144,8 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
             <div className="bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl p-4">
               <p className="text-[10px] font-bold text-forest-deep mb-2">FidScript API Base URL</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-xl text-forest-deep">https://whatsapp.fidscript.com/api/instance</code>
-                <button onClick={() => navigator.clipboard.writeText('https://whatsapp.fidsapp.com/api/instance')}
+                <code className="flex-1 text-xs font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-xl text-forest-deep">{PUBLIC_API_BASE}</code>
+                <button onClick={() => navigator.clipboard.writeText(PUBLIC_API_BASE)}
                   className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors" title="Copy URL">
                   <Copy className="w-4 h-4" />
                 </button>
@@ -175,6 +176,10 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
                 </div>
               ) : apiKeys.map((k) => {
                 const isRevoked = k.status === 'Revoked';
+                // The full secret is only in memory right after create/regenerate (show-once).
+                const hasSecret = !!k.key;
+                const revealed = showKeyValue.has(k.id) && hasSecret && !isRevoked;
+                const masked = `${k.key_prefix || k.key?.substring(0, 20) || 'fidscript_live_'}••••••••••••`;
                 return (
                   <div key={k.id} className={`p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-[#eaebe4] rounded-2xl ${isRevoked ? 'opacity-50 bg-stone-50' : ''}`}>
                     <div className="space-y-2 flex-1 min-w-0">
@@ -184,14 +189,14 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         <code className="flex-1 text-[11px] font-mono bg-stone-100 px-2 py-1.5 rounded text-stone-700 select-all truncate max-w-lg">
-                          {showKeyValue.has(k.id) && !isRevoked ? k.key : `${k.key?.substring(0, 24)}••••••••••••`}
+                          {revealed ? k.key : masked}
                         </code>
-                        {!isRevoked && (
+                        {!isRevoked && hasSecret && (
                           <>
-                            <button onClick={() => toggleShowKey(k.id)} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors" title={showKeyValue.has(k.id) ? 'Hide' : 'Reveal'}>
-                              {showKeyValue.has(k.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            <button onClick={() => toggleShowKey(k.id)} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors" title={revealed ? 'Hide' : 'Reveal'}>
+                              {revealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                             </button>
-                            <button onClick={() => handleCopyKey(k.id, k.key || '')} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors" title="Copy">
+                            <button onClick={() => handleCopyKey(k.id, k.key || '')} className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg transition-colors" title="Copy full key">
                               {copiedKeyId === k.id ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </>
@@ -213,9 +218,9 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => handleTestKey(k)}
-                          disabled={testingKeyId === k.id}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-600 border border-stone-200 rounded-xl transition-all"
-                          title="Test this key"
+                          disabled={testingKeyId === k.id || !hasSecret}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-600 border border-stone-200 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={hasSecret ? 'Test this key against the live API' : 'Secret not in memory — regenerate to test'}
                         >
                           <Terminal className="w-3.5 h-3.5" />
                           {testingKeyId === k.id ? 'Testing...' : 'Test'}

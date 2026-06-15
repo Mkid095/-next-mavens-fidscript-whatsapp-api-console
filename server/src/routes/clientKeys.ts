@@ -46,4 +46,22 @@ router.delete('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   }
 });
 
+// Regenerate API key — issues a new secret, returns it ONCE (rotates the row).
+// Lets owners recover/copy access again without permanently exposing keys via GET.
+router.post('/:id/regenerate', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    const existing = db.prepare('SELECT id FROM client_api_keys WHERE id = ? AND client_id = ? AND status = ?')
+      .get(req.params.id, req.client!.id, 'Active') as { id: string } | undefined;
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Active key not found' });
+    }
+    const apiKey = `fidscript_live_${crypto.randomBytes(16).toString('hex')}`;
+    db.prepare('UPDATE client_api_keys SET api_key = ?, created_at = CURRENT_TIMESTAMP WHERE id = ? AND client_id = ?')
+      .run(apiKey, req.params.id, req.client!.id);
+    res.json({ success: true, data: { id: req.params.id, key: apiKey } });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 export default router;
