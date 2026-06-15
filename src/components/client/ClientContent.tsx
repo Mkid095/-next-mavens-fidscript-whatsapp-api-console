@@ -6,7 +6,7 @@ import WhatsAppContainers from './whatsapp/WhatsAppContainers';
 import ApiKeysSection from './ApiKeysSection';
 import DocsSection from './DocsSection';
 import SandboxSection from './SandboxSection';
-import MessagesView from './MessagesView';
+import { InboxPage } from '../../features/inbox';
 import CampaignsView from './CampaignsView';
 import ContactsSection from './contacts/ContactsSection';
 import TokenStoreSection from './TokenStoreSection';
@@ -53,6 +53,15 @@ export default function ClientContent({
     );
   }
 
+  // Inbox is a full-height 3-pane surface — render outside the padded wrapper.
+  if (activeSection === 'messages') {
+    return (
+      <div className="h-[calc(100vh-1rem)] p-2 lg:p-3">
+        <InboxPage instances={instances} onTokenDeduct={onTokenDeduct} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 lg:p-6 space-y-6 max-w-7xl mx-auto">
       <TokenBalanceBar balance={tokenBalance} previousBalance={previousBalance} />
@@ -86,13 +95,6 @@ export default function ClientContent({
           clientToken={clientToken}
           instances={instances}
           tokenBalance={tokenBalance}
-          onTokenDeduct={onTokenDeduct}
-        />
-      )}
-      {activeSection === 'messages' && (
-        <MessagesView
-          clientToken={clientToken}
-          instances={instances}
           onTokenDeduct={onTokenDeduct}
         />
       )}
