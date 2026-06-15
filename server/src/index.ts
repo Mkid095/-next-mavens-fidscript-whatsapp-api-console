@@ -13,6 +13,9 @@ import authRoutes from './routes/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+// Behind nginx in production — trust one proxy hop so req.ip resolves from
+// X-Forwarded-For and express-rate-limit can key by real client IP.
+app.set('trust proxy', 1);
 
 async function startServer() {
   try {
