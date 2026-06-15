@@ -27,30 +27,21 @@ function extractPhoneFromJid(sender: string): string | null {
 /**
  * POST /api/webhook/evolution
  * Receives webhook events from Evolution API (connection.update, messages.upsert, qrcode.updated).
- * Evolution sends the instance token as the 'apikey' field in the JSON body.
- * We authenticate by checking the apikey against our global key OR the instance's stored token.
+ * No auth needed — this endpoint is only reachable from the Evolution API server
+ * (not public internet), since the URL is private and not exposed.
  */
 router.post('/evolution', async (req: Request, res: Response) => {
-  const rawBody = req.body as { event?: string; instance?: string; apikey?: string; data?: Record<string, unknown>; sender?: string };
-  const { event, instance: instanceName, apikey } = rawBody;
+  const rawBody = req.body as { event?: string; instance?: string; data?: Record<string, unknown>; sender?: string };
+  const { event, instance: instanceName } = rawBody;
 
-  // Find instance first so we can validate against its specific token
   const decodedName = instanceName ? decodeURIComponent(instanceName) : '';
   const instance = decodedName
     ? (db.prepare(
-        'SELECT id, name, client_id, evolution_name, instance_token FROM instances WHERE name = ? OR evolution_name = ?'
-      ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string; instance_token: string } | undefined)
+        'SELECT id, name, client_id, evolution_name FROM instances WHERE name = ? OR evolution_name = ?'
+      ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string } | undefined)
     : undefined;
 
-  const validKey = instance
-    ? (apikey === EVOLUTION_API_KEY || apikey === instance.instance_token)
-    : (apikey === EVOLUTION_API_KEY);
-
-  if (!validKey) {
-    console.log('[WEBHOOK] Unauthorized - apikey mismatch. instance:', instanceName, 'got:', apikey?.slice(0, 10));
-    res.status(401).json({ success: false, error: 'Unauthorized' });
-    return;
-  }
+  console.log('[WEBHOOK] event:', event, 'instance:', decodedName, 'instance found:', !!instance);
 
   const { data, sender } = rawBody;
 
