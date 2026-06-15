@@ -20,7 +20,15 @@ interface EndpointDef {
   name: string;
   desc: string;
   pathParams?: string[];
-  bodyFields?: { key: string; label: string; type: 'string' | 'number' | 'boolean' | 'text'; placeholder?: string; required?: boolean; enum?: string[] }[];
+  bodyFields?: {
+    key: string;
+    label: string;
+    type: 'string' | 'number' | 'boolean' | 'text' | 'array';
+    placeholder?: string;
+    required?: boolean;
+    enum?: string[];
+    fields?: Array<{ key: string; label: string; type: string; placeholder?: string; required?: boolean }>;
+  }[];
   cost?: number;
   category: string;
 }
@@ -54,10 +62,11 @@ function toSandboxEndpoint(ep: ApiEndpoint): EndpointDef {
     bodyFields: ep.bodyFields.map(f => ({
       key: f.key,
       label: f.label,
-      type: f.type as 'string' | 'number' | 'boolean' | 'text',
+      type: f.type as 'string' | 'number' | 'boolean' | 'text' | 'array',
       placeholder: f.placeholder || (f.enum ? f.enum.join(' | ') : ''),
       required: f.required,
       enum: f.enum,
+      fields: f.fields as EndpointDef['bodyFields'][0]['fields'],
     })),
     cost: ep.cost,
     category: ep.category,
@@ -109,8 +118,8 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [contactItems, setContactItems] = useState<Array<{ fullName: string; phoneNumber: string; wuid?: string; organization?: string }>>([]);
 
   const responseRef = useRef<HTMLDivElement>(null);
 
@@ -150,6 +159,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     setResponse(null);
     setResponseStatus(null);
     setPollOptions(['', '']);
+    setContactItems([]);
   };
 
   const buildCurl = (): string => {
@@ -202,14 +212,11 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
         if (data.success && data.data?.url) {
           const url = data.data.url;
           setBodyValues(prev => ({ ...prev, [fieldKey]: url }));
-          // Auto-detect media_type
           if (file.type.startsWith('image/')) setBodyValues(prev => ({ ...prev, media_type: 'image' }));
           else if (file.type.startsWith('video/')) setBodyValues(prev => ({ ...prev, media_type: 'video' }));
           else if (file.type.startsWith('audio/')) setBodyValues(prev => ({ ...prev, media_type: 'audio' }));
           else if (file.type === 'application/pdf') setBodyValues(prev => ({ ...prev, media_type: 'document' }));
-        } else {
-          alert(data.error || 'Upload failed');
-        }
+        } else { alert(data.error || 'Upload failed'); }
       } catch (err) { alert(String(err)); }
       finally { setUploadingMedia(false); }
     };
@@ -262,7 +269,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
       setMediaRecorder(recorder);
       setAudioChunks(chunks);
       setRecordingAudio(true);
-    } catch (err) { alert('Microphone access denied or not available: ' + String(err)); }
+    } catch (err) { alert('Microphone access denied: ' + String(err)); }
   };
 
   const handleExecute = async () => {
@@ -277,14 +284,15 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
         instanceName,
         keyId: selectedKeyId,
       };
-      // Poll options special handling
       if (selectedEndpoint.path.includes('/poll/')) {
-        const options = pollOptions.filter(o => o.trim());
-        reqBody.options = options;
+        reqBody.options = pollOptions.filter(o => o.trim());
+      }
+      if (selectedEndpoint.path.includes('/contact/') && contactItems.length > 0) {
+        reqBody.contact = contactItems;
       }
       if (selectedEndpoint.bodyFields) {
         selectedEndpoint.bodyFields.forEach(f => {
-          if (f.key === 'options' || f.key === 'list') return; // handled separately
+          if (['options', 'list', 'contact'].includes(f.key)) return;
           if (bodyValues[f.key] !== undefined && bodyValues[f.key] !== '') {
             reqBody[f.key] = f.type === 'number' ? Number(bodyValues[f.key]) : bodyValues[f.key];
           }
@@ -312,15 +320,64 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     : ENDPOINT_GROUPS;
 
   const isMediaField = (key: string) => ['media_url', 'url', 'image', 'audio', 'video', 'sticker', 'content'].some(k => key.toLowerCase().includes(k));
-  const isLocationField = (key: string) => key.toLowerCase().includes('latitude') || key.toLowerCase().includes('longitude') || key.toLowerCase().includes('location');
-  const isContactField = (key: string) => key.toLowerCase().includes('contact') || key.toLowerCase().includes('vcard') || key.toLowerCase().includes('phone');
+  const isLocationField = (key: string) => key.toLowerCase().includes('latitude') || key.toLowerCase().includes('longitude');
+  const isContactField = (key: string) => key.toLowerCase().includes('contact') || key.toLowerCase().includes('vcard');
   const isPollOptions = (key: string) => key.toLowerCase().includes('option') || key.toLowerCase().includes('list');
   const isStatusType = (key: string) => key.toLowerCase().includes('type') && selectedEndpoint?.path.includes('status');
 
   const getFieldComponent = (field: EndpointDef['bodyFields'][0]) => {
-    const { key, label, type, placeholder, required, enum: enumVals } = field;
+    const { key, label, type, placeholder, required, enum: enumVals, fields: subFields } = field;
 
-    // Contact picker
+    // Contact array UI
+    if (type === 'array' && subFields && subFields.length > 0) {
+      return (
+        <div className="space-y-2">
+          {contactItems.map((item, i) => (
+            <div key={i} className="p-3 border border-[#eaebe4] rounded-xl space-y-2 bg-stone-50">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-stone-500">Contact {i + 1}</span>
+                {contactItems.length > 1 && (
+                  <button onClick={() => setContactItems(prev => prev.filter((_, j) => j !== i))} className="p-1 text-red-400 hover:text-red-600">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              {subFields.map(sub => (
+                <div key={sub.key}>
+                  <label className="block text-[9px] font-bold text-stone-500 mb-0.5">{sub.label}</label>
+                  <input
+                    type="text"
+                    value={item[sub.key as keyof typeof item] || ''}
+                    onChange={e => setContactItems(prev => prev.map((c, j) => j === i ? { ...c, [sub.key]: e.target.value } : c))}
+                    placeholder={sub.placeholder || sub.label}
+                    className="w-full px-2.5 py-1.5 border border-[#eaebe4] rounded-lg text-xs font-mono focus:outline-none focus:border-yellow-500"
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+          <div className="flex items-center gap-2">
+            <button onClick={() => setContactItems(prev => [...prev, { fullName: '', phoneNumber: '' }])} className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800">
+              <Plus className="w-3 h-3" /> Add contact
+            </button>
+            {contacts.length > 0 && (
+              <select
+                onChange={e => {
+                  const c = contacts.find(ct => ct.id === e.target.value);
+                  if (c) setContactItems(prev => [...prev, { fullName: c.name, phoneNumber: c.phone }]);
+                }}
+                className="px-2 py-1.5 border border-[#eaebe4] rounded-lg text-xs text-stone-600 focus:outline-none focus:border-yellow-500"
+              >
+                <option value="">+ From contacts list</option>
+                {contacts.map(c => <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>)}
+              </select>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Contact picker (simple phone field)
     if (isContactField(key) && key.toLowerCase().includes('contact')) {
       return (
         <div className="space-y-1.5">
@@ -365,11 +422,8 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
       return (
         <div className="flex flex-wrap gap-2">
           {enumVals.map(opt => (
-            <button
-              key={opt}
-              onClick={() => setBodyValues(prev => ({ ...prev, [key]: opt }))}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-xl border transition-colors ${bodyValues[key] === opt ? 'bg-forest-deep text-white border-forest-deep' : 'border-[#eaebe4] text-stone-600 hover:border-yellow-300'}`}
-            >
+            <button key={opt} onClick={() => setBodyValues(prev => ({ ...prev, [key]: opt }))}
+              className={`px-3 py-1.5 text-[10px] font-bold rounded-xl border transition-colors ${bodyValues[key] === opt ? 'bg-forest-deep text-white border-forest-deep' : 'border-[#eaebe4] text-stone-600 hover:border-yellow-300'}`}>
               {opt.charAt(0).toUpperCase() + opt.slice(1)}
             </button>
           ))}
@@ -383,22 +437,9 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
         <div className="space-y-2">
           {pollOptions.map((opt, i) => (
             <div key={i} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={opt}
-                onChange={e => {
-                  const updated = [...pollOptions];
-                  updated[i] = e.target.value;
-                  setPollOptions(updated);
-                }}
-                placeholder={`Option ${i + 1}`}
-                className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
-              />
-              {pollOptions.length > 2 && (
-                <button onClick={() => setPollOptions(prev => prev.filter((_, j) => j !== i))} className="p-2 text-red-400 hover:text-red-600">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <input type="text" value={opt} onChange={e => { const u = [...pollOptions]; u[i] = e.target.value; setPollOptions(u); }}
+                placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500" />
+              {pollOptions.length > 2 && <button onClick={() => setPollOptions(prev => prev.filter((_, j) => j !== i))} className="p-2 text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>}
             </div>
           ))}
           <button onClick={() => setPollOptions(prev => [...prev, ''])} className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800">
@@ -408,28 +449,18 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
       );
     }
 
-    // Emoji picker for reaction
+    // Emoji picker
     if (key.toLowerCase().includes('reaction') || key.toLowerCase().includes('emoji')) {
       return (
         <div className="space-y-1.5">
           <div className="flex flex-wrap gap-1">
             {EMOJIS.map(e => (
-              <button
-                key={e}
-                onClick={() => setBodyValues(prev => ({ ...prev, [key]: e }))}
-                className={`w-8 h-8 rounded-lg text-sm flex items-center justify-center transition-colors ${bodyValues[key] === e ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'bg-stone-100 hover:bg-yellow-50'}`}
-              >
-                {e}
-              </button>
+              <button key={e} onClick={() => setBodyValues(prev => ({ ...prev, [key]: e }))}
+                className={`w-8 h-8 rounded-lg text-sm flex items-center justify-center transition-colors ${bodyValues[key] === e ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'bg-stone-100 hover:bg-yellow-50'}`}>{e}</button>
             ))}
           </div>
-          <input
-            type="text"
-            value={bodyValues[key] || ''}
-            onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
-            placeholder="Or type emoji"
-            className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
-          />
+          <input type="text" value={bodyValues[key] || ''} onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
+            placeholder="Or type emoji" className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500" />
         </div>
       );
     }
@@ -437,11 +468,8 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     // Enum select
     if (enumVals && enumVals.length > 0) {
       return (
-        <select
-          value={bodyValues[key] || ''}
-          onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
-          className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
-        >
+        <select value={bodyValues[key] || ''} onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
+          className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500">
           <option value="">-- Select --</option>
           {enumVals.map(opt => <option key={opt} value={opt}>{opt}</option>)}
         </select>
@@ -452,12 +480,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     if (type === 'boolean') {
       return (
         <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={bodyValues[key] === 'true'}
-            onChange={e => setBodyValues(prev => ({ ...prev, [key]: String(e.target.checked) }))}
-            className="w-4 h-4 accent-yellow-600"
-          />
+          <input type="checkbox" checked={bodyValues[key] === 'true'} onChange={e => setBodyValues(prev => ({ ...prev, [key]: String(e.target.checked) }))} className="w-4 h-4 accent-yellow-600" />
           <span className="text-xs text-stone-500">{placeholder || 'true / false'}</span>
         </label>
       );
@@ -466,49 +489,37 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     // Textarea
     if (type === 'text') {
       return (
-        <textarea
-          value={bodyValues[key] || ''}
-          onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
-          placeholder={placeholder}
-          rows={3}
-          className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 resize-none"
-        />
+        <textarea value={bodyValues[key] || ''} onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
+          placeholder={placeholder} rows={3} className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 resize-none" />
       );
     }
 
-    // Audio record button
+    // Audio record + upload
     if (key.toLowerCase().includes('audio') || key.toLowerCase().includes('media')) {
       return (
         <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={bodyValues[key] || ''}
-            onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
-            placeholder={placeholder}
-            className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
-          />
-          <button onClick={() => handleRecordAudio(key)} disabled={uploadingMedia} className={`flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold border rounded-xl transition-colors shrink-0 disabled:opacity-50 ${recordingAudio ? 'bg-red-100 text-red-700 border-red-200' : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200'}`}>
+          <input type="text" value={bodyValues[key] || ''} onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
+            placeholder={placeholder} className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500" />
+          <button onClick={() => handleRecordAudio(key)} disabled={uploadingMedia}
+            className={`flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold border rounded-xl transition-colors shrink-0 disabled:opacity-50 ${recordingAudio ? 'bg-red-100 text-red-700 border-red-200' : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200'}`}>
             {recordingAudio ? <><Mic className="w-3.5 h-3.5 animate-pulse" /> Recording…</> : <><Mic className="w-3.5 h-3.5" /> Record</>}
           </button>
-          <button onClick={() => handleMediaUpload(key)} disabled={uploadingMedia} className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl shrink-0 disabled:opacity-50">
+          <button onClick={() => handleMediaUpload(key)} disabled={uploadingMedia}
+            className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl shrink-0 disabled:opacity-50">
             {uploadingMedia ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Upload
           </button>
         </div>
       );
     }
 
-    // Default text/number input with optional upload
+    // Default: text/number input with optional upload
     return (
       <div className="flex items-center gap-2">
-        <input
-          type={type === 'number' ? 'number' : 'text'}
-          value={bodyValues[key] || ''}
-          onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
-          placeholder={placeholder}
-          className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
-        />
+        <input type={type === 'number' ? 'number' : 'text'} value={bodyValues[key] || ''} onChange={e => setBodyValues(prev => ({ ...prev, [key]: e.target.value }))}
+          placeholder={placeholder} className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500" />
         {isMediaField(key) && (
-          <button onClick={() => handleMediaUpload(key)} disabled={uploadingMedia} className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl shrink-0 disabled:opacity-50">
+          <button onClick={() => handleMediaUpload(key)} disabled={uploadingMedia}
+            className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl shrink-0 disabled:opacity-50">
             {uploadingMedia ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Upload
           </button>
         )}
@@ -561,7 +572,8 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                   {expandedCategories.has(group.name) && (
                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
                       {group.endpoints.map(ep => (
-                        <button key={ep.path + ep.method} onClick={() => selectEndpoint(ep)} className={`w-full flex items-center gap-2 px-4 py-2 text-[11px] hover:bg-stone-50 transition-colors text-left border-b border-[#eaebe4]/50 ${selectedEndpoint?.path === ep.path && selectedEndpoint?.method === ep.method ? 'bg-yellow-50 border-l-2 border-l-yellow-500' : ''}`}>
+                        <button key={ep.path + ep.method} onClick={() => selectEndpoint(ep)}
+                          className={`w-full flex items-center gap-2 px-4 py-2 text-[11px] hover:bg-stone-50 transition-colors text-left border-b border-[#eaebe4]/50 ${selectedEndpoint?.path === ep.path && selectedEndpoint?.method === ep.method ? 'bg-yellow-50 border-l-2 border-l-yellow-500' : ''}`}>
                           <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[ep.method]}`}>{ep.method}</span>
                           <div className="min-w-0"><p className="font-bold text-forest-deep truncate">{ep.name}</p><p className="text-[9px] text-stone-400 font-mono truncate">{ep.path.replace(':instanceName', instanceName || ':instance')}</p></div>
                           {ep.cost !== undefined && ep.cost > 0 && <span className="ml-auto text-[9px] font-bold text-yellow-700 shrink-0">{ep.cost}t</span>}
@@ -593,7 +605,6 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                   )}
                 </div>
 
-                {/* Tip for reaction */}
                 {selectedEndpoint.path.includes('/reaction/') && (
                   <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl text-[10px] text-blue-800">
                     <MessageCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -601,7 +612,6 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                   </div>
                 )}
 
-                {/* Body fields */}
                 {selectedEndpoint.bodyFields && selectedEndpoint.bodyFields.length > 0 && (
                   <div className="grid gap-3">
                     {selectedEndpoint.bodyFields.map(field => (
@@ -616,11 +626,13 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                 )}
 
                 <div className="flex items-center gap-3 pt-2">
-                  <button onClick={handleExecute} disabled={loading || !instanceName || !selectedKeyId} className="flex items-center gap-2 px-4 py-2 bg-forest-deep hover:bg-[#33301a] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition-colors">
+                  <button onClick={handleExecute} disabled={loading || !instanceName || !selectedKeyId}
+                    className="flex items-center gap-2 px-4 py-2 bg-forest-deep hover:bg-[#33301a] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition-colors">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                     {loading ? 'Executing…' : 'Execute Request'}
                   </button>
-                  <button onClick={handleCopyCurl} className="flex items-center gap-1.5 px-3 py-2 border border-[#eaebe4] hover:border-yellow-300 text-stone-600 text-xs font-bold rounded-xl transition-colors">
+                  <button onClick={handleCopyCurl}
+                    className="flex items-center gap-1.5 px-3 py-2 border border-[#eaebe4] hover:border-yellow-300 text-stone-600 text-xs font-bold rounded-xl transition-colors">
                     {copied ? <><Check className="w-3.5 h-3.5 text-green-600" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy cURL</>}
                   </button>
                 </div>
@@ -690,7 +702,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                 <h4 className="font-bold text-sm">Pick Location</h4>
                 <button onClick={() => setShowLocationPicker(false)} className="text-gray-400 hover:text-black"><X className="w-4 h-4" /></button>
               </div>
-              <p className="text-[10px] text-graphite">Enter coordinates manually or use the Google Maps link below.</p>
+              <p className="text-[10px] text-graphite">Enter coordinates manually or use Google Maps to find them.</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[10px] font-bold text-graphite uppercase mb-1">Latitude</label>
