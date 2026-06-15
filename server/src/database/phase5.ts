@@ -127,6 +127,14 @@ export function runPhase5Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_media_assets_workspace ON media_assets(workspace_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_media_assets_kind ON media_assets(workspace_id, kind)`);
 
+  // media_assets: Slice B added public_id (Cloudinary), width, height — guarded
+  // ALTERS because the table was first created in an earlier deploy that
+  // didn't have these columns (CREATE TABLE IF NOT EXISTS is a no-op on
+  // existing tables, just like the campaigns.group_id fix).
+  try { db.run(`ALTER TABLE media_assets ADD COLUMN public_id TEXT`); } catch (_) { /* ok */ }
+  try { db.run(`ALTER TABLE media_assets ADD COLUMN width INTEGER`); } catch (_) { /* ok */ }
+  try { db.run(`ALTER TABLE media_assets ADD COLUMN height INTEGER`); } catch (_) { /* ok */ }
+
   // -------------------------------------------------------------------
   // Status posts (Slice E) — text/image/video to the WhatsApp status feed.
   // cross_post_json = array of additional instance_ids to mirror to.
