@@ -132,7 +132,8 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     <div className="space-y-6">
       {/* Tab bar */}
       <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm">
-        <div className="flex items-center gap-1.5 p-1.5 bg-[#f9f9f2] border-b border-[#eaebe4]">
+        <div className="px-6 pt-6 pb-0">
+          <div className="flex items-center gap-1.5 p-1.5 bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl">
           {(['keys', 'vibe'] as const).map((tab) => (
             <button
               key={tab}
@@ -144,6 +145,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
               {tab === 'keys' ? 'My API Keys' : <span className="flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Vibe Coding</span>}
             </button>
           ))}
+        </div>
         </div>
 
         {activeTab === 'keys' && (
