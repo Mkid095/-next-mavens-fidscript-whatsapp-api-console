@@ -279,7 +279,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
           <VibeWizard
             apiKey={apiKeys.find(k => k.status === 'Active' && k.key)?.key || ''}
             clientName={undefined}
-            apiKeys={apiKeys.filter(k => k.status === 'Active').map(k => ({ ...k, key: k.key || undefined }))}
+            apiKeys={apiKeys.filter(k => k.status === 'Active').map(k => ({ ...k, key: k.key ?? knownKeySecrets.current[k.id] ?? undefined }))}
             instances={clientInstances}
           />
         )}
