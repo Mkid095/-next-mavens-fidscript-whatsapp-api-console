@@ -1,6 +1,7 @@
 /**
- * Convert the blue-on-white QR from Evolution API to forest-deep brown,
- * then overlay a transparent logo in the center (white backing for contrast).
+ * Convert the blue-on-white QR from Evolution API to forest-deep brown
+ * (matching the modal's dark background), then overlay the transparent logo
+ * in a recess of the same color so it blends in seamlessly.
  */
 export async function overlayLogoOnQR(
   qrDataUrl: string,
@@ -20,42 +21,39 @@ export async function overlayLogoOnQR(
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
 
-      // Iterate every pixel: if it's blue-ish (the QR modules), make it forest-deep brown
-      // Evolution QR uses blue modules — detect via B > R and B > G
+      // Change blue QR modules to forest-deep brown (#14130a)
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
-        // Blue module: B is dominant, R is low (white bg has high R, blue modules have low R)
         if (b > r && b > g && b > 80 && r < 200) {
-          data[i] = 20;     // R = 20  (forest-deep: #14130a)
-          data[i + 1] = 19; // G = 19
-          data[i + 2] = 10; // B = 10
+          data[i] = 20;     // #14130a
+          data[i + 1] = 19;
+          data[i + 2] = 10;
         }
-        // White/light background: leave as-is
       }
 
       ctx.putImageData(imageData, 0, 0);
 
-      // Overlay transparent logo — larger and with a white backing rectangle
+      // Overlay transparent logo — larger, in a recess of the same QR-module color
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       logoImg.onload = () => {
-        const logoSize = Math.round(canvas.width * 0.22); // 22% of QR size — bigger
+        const logoSize = Math.round(canvas.width * 0.22); // 22% — bigger
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        // White backing rectangle so logo stands out against QR modules
-        const padding = Math.round(logoSize * 0.12);
-        ctx.fillStyle = '#ffffff';
+        // Recess square in the same forest-deep color (same as QR modules)
+        // This makes the logo look like it sits flush in the QR — no border, no contrast
+        ctx.fillStyle = '#14130a';
         ctx.fillRect(
-          cx - logoSize / 2 - padding,
-          cy - logoSize / 2 - padding,
-          logoSize + padding * 2,
-          logoSize + padding * 2
+          cx - logoSize / 2,
+          cy - logoSize / 2,
+          logoSize,
+          logoSize
         );
 
-        // Draw logo as plain square on top
+        // Draw logo on top, filling the recess
         ctx.drawImage(
           logoImg,
           cx - logoSize / 2,
