@@ -119,7 +119,7 @@ export default function QRPairingModal({
             </svg>
 
             {/* QR + spinner overlay */}
-            <div className="w-52 h-52 flex items-center justify-center rounded-2xl bg-stone-50 border border-[#eaebe4] relative overflow-hidden">
+            <div className="w-52 h-52 flex items-center justify-center rounded-2xl bg-[#14130a] border border-[#33301a] relative overflow-hidden">
               {generatingQR || regeneratingQR ? (
                 <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center gap-2">
                   <span className="w-8 h-8 border-[3px] border-yellow-500 border-t-transparent rounded-full animate-spin" />
