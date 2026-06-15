@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Copy, Check, Eye, EyeOff, ChevronRight, ChevronDown, Bot, Settings, Zap, Globe, CheckSquare, Square, ArrowRight, AlertCircle } from 'lucide-react';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint, type BodyField } from '../../data/apiEndpoints/index';
@@ -682,9 +682,16 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Which API key is selected in Step 1 — default to first key that has a usable value
-  const firstUsableKey = apiKeys.find(k => k.key) || apiKeys[0];
-  const [selectedKeyId, setSelectedKeyId] = useState<string>(firstUsableKey?.id || '');
+  // Auto-select: use first key with a secret if available, otherwise first key by name order
+  const [selectedKeyId, setSelectedKeyId] = useState<string>('');
+
+  // Sync selectedKeyId whenever apiKeys changes (e.g. new key created in same session)
+  useEffect(() => {
+    if (selectedKeyId && apiKeys.find(k => k.id === selectedKeyId)) return; // already selected, skip
+    const firstWithSecret = apiKeys.find(k => k.key);
+    const first = apiKeys[0];
+    setSelectedKeyId(firstWithSecret?.id || first?.id || '');
+  }, [apiKeys]);
 
   // Container selection — optional, starts empty
   const [selectedInstance, setSelectedInstance] = useState<string>('');
