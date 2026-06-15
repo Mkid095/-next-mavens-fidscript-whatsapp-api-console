@@ -3,7 +3,13 @@ import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Term
 import { motion, AnimatePresence } from 'motion/react';
 import { instancesApi, clientKeysApi, contactsApi } from '../../services/api';
 import type { Instance } from '../../services/api';
-import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE, type ApiEndpoint } from '../../data/apiEndpoints/index';
+import { PUBLIC_API_BASE } from '../../data/apiEndpoints/index';
+import {
+  ICON_MAP, METHOD_COLORS, EMOJIS, STATUS_MEDIA_TYPES,
+  ENDPOINT_GROUPS, toSandboxEndpoint,
+  isMediaField, isLocationField, isContactField, isPollOptions, isStatusType,
+  type EndpointDef, type SandboxField, type CategoryGroup,
+} from './sandboxHelpers.js';
 
 interface SandboxSectionProps {
   clientToken?: string;
@@ -14,87 +20,6 @@ interface SandboxSectionProps {
 
 // ─── Endpoint definitions ───────────────────────────────────────────────────
 
-interface EndpointDef {
-  method: 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT';
-  path: string;
-  name: string;
-  desc: string;
-  pathParams?: string[];
-  bodyFields?: {
-    key: string;
-    label: string;
-    type: 'string' | 'number' | 'boolean' | 'text' | 'array';
-    placeholder?: string;
-    required?: boolean;
-    enum?: string[];
-    fields?: Array<{ key: string; label: string; type: string; placeholder?: string; required?: boolean }>;
-  }[];
-  cost?: number;
-  category: string;
-}
-
-interface CategoryGroup {
-  name: string;
-  icon: string;
-  endpoints: EndpointDef[];
-}
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  MessageSquare: <MessageSquare className="w-4 h-4 text-yellow-600" />,
-  Smartphone: <Smartphone className="w-4 h-4 text-yellow-600" />,
-  Users: <Users className="w-4 h-4 text-yellow-600" />,
-  Settings: <Settings className="w-4 h-4 text-yellow-600" />,
-  Building: <Building className="w-4 h-4 text-yellow-600" />,
-  Tag: <Tag className="w-4 h-4 text-yellow-600" />,
-  Wrench: <Wrench className="w-4 h-4 text-yellow-600" />,
-  Compass: <Compass className="w-4 h-4 text-yellow-600" />,
-  Send: <Send className="w-4 h-4 text-yellow-600" />,
-  Inbox: <Inbox className="w-4 h-4 text-yellow-600" />,
-};
-
-function toSandboxEndpoint(ep: ApiEndpoint): EndpointDef {
-  return {
-    method: ep.method,
-    path: ep.path.replace('/api/v1', '').replace(':instance', ':instanceName'),
-    name: ep.name,
-    desc: ep.desc,
-    pathParams: ep.pathParams.map(p => p.name),
-    bodyFields: ep.bodyFields.map(f => ({
-      key: f.key,
-      label: f.label,
-      type: f.type as 'string' | 'number' | 'boolean' | 'text' | 'array',
-      placeholder: f.placeholder || (f.enum ? f.enum.join(' | ') : ''),
-      required: f.required,
-      enum: f.enum,
-      fields: f.fields as EndpointDef['bodyFields'][0]['fields'],
-    })),
-    cost: ep.cost,
-    category: ep.category,
-  };
-}
-
-const ENDPOINT_GROUPS: CategoryGroup[] =
-  API_CATEGORIES
-    .filter(cat => cat.name !== 'Receiving')
-    .map(cat => ({
-      name: cat.name,
-      icon: cat.icon,
-      endpoints: API_ENDPOINTS
-        .filter((ep: ApiEndpoint) => ep.category === cat.name && ep.path.startsWith('/api/v1'))
-        .map(toSandboxEndpoint),
-    }))
-    .filter(g => g.endpoints.length > 0);
-
-const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-blue-600 text-white',
-  POST: 'bg-yellow-600 text-stone-950',
-  DELETE: 'bg-red-600 text-white',
-  PATCH: 'bg-orange-500 text-white',
-  PUT: 'bg-purple-600 text-white',
-};
-
-const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🙌', '👏', '🔥', '💯'];
-const STATUS_MEDIA_TYPES = ['text', 'image', 'audio'];
 
 export default function SandboxSection({ clientToken, instances, tokenBalance, onTokenDeduct }: SandboxSectionProps) {
   const [selectedEndpoint, setSelectedEndpoint] = useState<EndpointDef | null>(null);

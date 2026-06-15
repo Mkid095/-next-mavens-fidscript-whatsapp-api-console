@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, Send, Library } from 'lucide-react';
+import { ArrowLeft, Save, Send } from 'lucide-react';
 import { campaignsApi } from '../../services/api';
 import type { Instance, Contact } from '../../services/api';
 import AudiencePicker, { type AudienceMode } from './AudiencePicker.js';
 import CampaignTypeSelector, { type CampaignFormType } from './CampaignTypeSelector.js';
 import DripBuilderPanel from './DripBuilderPanel.js';
-import { MediaPicker } from '../media/index.js';
-import type { MediaAsset } from '../../data/api/platform.js';
+import MessageBlock from './MessageBlock.js';
 
 interface CampaignBuilderProps {
   clientToken?: string;
@@ -41,7 +40,6 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
   const [segmentPhones, setSegmentPhones] = useState<string[]>([]);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
@@ -123,35 +121,14 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
 
       {type === 'broadcast' && (
         <>
-          <div>
-            <label className="block text-[10px] font-bold text-graphite uppercase mb-1">Message</label>
-            <div className="flex items-center gap-1.5 mb-2">
-              {MESSAGE_TYPES.map(t => (
-                <button key={t.value} onClick={() => setMessageType(t.value as 'text' | 'media')}
-                  className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border ${messageType === t.value ? 'bg-forest-deep text-white border-forest-deep' : 'bg-white text-stone-600 border-stone-200'}`}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-            {messageType === 'text' ? (
-              <textarea value={content} onChange={e => setContent(e.target.value)} rows={4}
-                placeholder="Your message. {{name}} will be replaced per recipient."
-                className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500" />
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="https://… (or pick from library)"
-                    className="flex-1 px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500 font-mono" />
-                  <button type="button" onClick={() => setPickerOpen(true)}
-                    className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold bg-white border border-stone-200 text-stone-700 rounded-xl hover:bg-stone-50 shrink-0">
-                    <Library className="w-3.5 h-3.5" /> From library
-                  </button>
-                </div>
-                <textarea value={content} onChange={e => setContent(e.target.value)} rows={2} placeholder="Optional caption"
-                  className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500" />
-              </div>
-            )}
-          </div>
+          <MessageBlock
+            messageType={messageType}
+            setMessageType={setMessageType}
+            content={content}
+            setContent={setContent}
+            mediaUrl={mediaUrl}
+            setMediaUrl={setMediaUrl}
+          />
 
           <AudiencePicker
             mode={audienceMode}
@@ -173,14 +150,6 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
       )}
 
       {error && <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">{error}</p>}
-
-      {pickerOpen && (
-        <MediaPicker
-          kindFilter="image"
-          onSelect={(a: MediaAsset) => { setMediaUrl(a.url); setPickerOpen(false); }}
-          onClose={() => setPickerOpen(false)}
-        />
-      )}
 
       <div className="flex items-center gap-2 justify-end pt-2 border-t border-stone-100">
         <button onClick={onBack} className="px-3 py-2 text-xs font-bold bg-white border border-stone-200 text-stone-700 rounded-xl">Cancel</button>
