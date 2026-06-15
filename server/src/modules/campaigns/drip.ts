@@ -54,10 +54,18 @@ async function tick(): Promise<void> {
 }
 
 async function processOne(enr: EnrollmentRow): Promise<void> {
+  // Look up the campaign's workspace + client once (sql.js doesn't accept
+  // object bind values — must extract primitives before passing to .get()).
+  const campaign = db.prepare('SELECT workspace_id, client_id FROM campaigns WHERE id = ?').get(enr.campaign_id) as { workspace_id: string; client_id: string } | undefined;
+  if (!campaign) {
+    db.prepare(`UPDATE drip_enrollments SET state = 'failed' WHERE id = ?`).run(enr.id);
+    return;
+  }
+
   const customer = db.prepare(`
     SELECT id, (SELECT value FROM customer_identifiers ci WHERE ci.customer_id = c.id AND ci.channel = 'whatsapp' ORDER BY ci.created_at ASC LIMIT 1) AS phone
     FROM customers c WHERE c.id = ? AND c.workspace_id = ?
-  `).get(enr.customer_id, db.prepare('SELECT workspace_id FROM campaigns WHERE id = ?').get(enr.campaign_id)) as CustomerRow | undefined;
+  `).get(enr.customer_id, campaign.workspace_id) as CustomerRow | undefined;
   if (!customer) {
     db.prepare(`UPDATE drip_enrollments SET state = 'failed' WHERE id = ?`).run(enr.id);
     return;
@@ -75,10 +83,7 @@ async function processOne(enr: EnrollmentRow): Promise<void> {
   }
 
   const step = steps[enr.current_step];
-  const ctx = {
-    workspaceId: (db.prepare('SELECT workspace_id FROM campaigns WHERE id = ?').get(enr.campaign_id) as { workspace_id: string }).workspace_id,
-    client: { id: (db.prepare('SELECT client_id FROM campaigns WHERE id = ?').get(enr.campaign_id) as { client_id: string }).client_id },
-  };
+  const ctx = { workspaceId: campaign.workspace_id, client: { id: campaign.client_id } };
 
   const result = await executeStep(ctx, step, customer);
   if (!result.ok) {
