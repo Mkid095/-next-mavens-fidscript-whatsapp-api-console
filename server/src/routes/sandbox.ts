@@ -24,11 +24,14 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'endpoint is required' });
     }
 
-    // Look up the client's active API key (first active key found)
-    const activeKey = db.prepare(
-      `SELECT api_key FROM client_api_keys WHERE client_id = ? AND status = 'Active' ORDER BY created_at DESC LIMIT 1`
-    ).get(req.client!.id) as { api_key: string } | undefined;
-
+    // Look up the client's active API key by ID
+    const { keyId } = req.body as { keyId?: string };
+    let activeKey: { api_key: string } | undefined;
+    if (keyId) {
+      activeKey = db.prepare(
+        `SELECT api_key FROM client_api_keys WHERE id = ? AND client_id = ? AND status = 'Active'`
+      ).get(keyId, req.client!.id) as { api_key: string } | undefined;
+    }
     if (!activeKey) {
       return res.status(400).json({ success: false, error: 'No active API key found. Generate one in API Keys first.' });
     }
