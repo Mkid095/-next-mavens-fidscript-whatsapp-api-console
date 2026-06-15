@@ -2,9 +2,9 @@ import { Router, Request, Response } from 'express';
 import { clientApiKeyAuth, clientRateLimit } from '../../middleware/auth.js';
 import {
   sendText, sendMedia, sendLocation, sendContact,
-  sendReaction, sendPoll, sendList,
-} from '../../services/messaging.js';
-import { buildSendCtx, respondSendResult } from '../../services/messagingHttp.js';
+  sendReaction, sendPoll, sendList, sendAudio, sendSticker, sendStatus,
+} from '../../services/whatsapp/messaging.js';
+import { buildSendCtx, respondSendResult } from '../../services/whatsapp/http.js';
 
 const router = Router();
 
@@ -76,6 +76,36 @@ router.post('/list/:instance', clientApiKeyAuth, clientRateLimit, async (req: Re
   if (!ctx) return;
   try { respondSendResult(res, await sendList(ctx, { to, title, description, buttonText, footerText, sections })); }
   catch (e) { console.error('v1 sendList error:', e); res.status(500).json({ success: false, error: 'Failed to send list message' }); }
+});
+
+// POST /api/v1/messages/audio/:instance — native voice message (PTT)
+router.post('/audio/:instance', clientApiKeyAuth, clientRateLimit, async (req: Request, res: Response) => {
+  const { to, audio } = req.body;
+  if (!to || !audio) return res.status(400).json({ success: false, error: 'Recipient (to) and audio URL are required' });
+  const ctx = buildSendCtx(req, res, req.params.instance);
+  if (!ctx) return;
+  try { respondSendResult(res, await sendAudio(ctx, { to, audio })); }
+  catch (e) { console.error('v1 sendAudio error:', e); res.status(500).json({ success: false, error: 'Failed to send audio' }); }
+});
+
+// POST /api/v1/messages/sticker/:instance
+router.post('/sticker/:instance', clientApiKeyAuth, clientRateLimit, async (req: Request, res: Response) => {
+  const { to, sticker } = req.body;
+  if (!to || !sticker) return res.status(400).json({ success: false, error: 'Recipient (to) and sticker URL are required' });
+  const ctx = buildSendCtx(req, res, req.params.instance);
+  if (!ctx) return;
+  try { respondSendResult(res, await sendSticker(ctx, { to, sticker })); }
+  catch (e) { console.error('v1 sendSticker error:', e); res.status(500).json({ success: false, error: 'Failed to send sticker' }); }
+});
+
+// POST /api/v1/messages/status/:instance — post a status/story update
+router.post('/status/:instance', clientApiKeyAuth, clientRateLimit, async (req: Request, res: Response) => {
+  const { type, content } = req.body;
+  if (!type || !content) return res.status(400).json({ success: false, error: 'type (text|image|audio) and content are required' });
+  const ctx = buildSendCtx(req, res, req.params.instance);
+  if (!ctx) return;
+  try { respondSendResult(res, await sendStatus(ctx, { type, content, caption: req.body.caption, backgroundColor: req.body.backgroundColor, font: req.body.font, allContacts: req.body.allContacts, statusJidList: req.body.statusJidList })); }
+  catch (e) { console.error('v1 sendStatus error:', e); res.status(500).json({ success: false, error: 'Failed to send status' }); }
 });
 
 export default router;

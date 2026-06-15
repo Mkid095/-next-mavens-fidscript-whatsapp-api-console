@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { getInstanceForClient, type SendContext, type SendResult } from './messaging.js';
+import { getInstanceForClient, isOkResult, type SendContext, type SendResult } from './shared.js';
 
 /**
  * Shared HTTP-layer helpers for messaging routes. Both the JWT dashboard routes
@@ -19,9 +19,9 @@ export function buildSendCtx(req: Request, res: Response, name: string): SendCon
 
 /** Map a SendResult to the standard { success, data?, error? } response. */
 export function respondSendResult(res: Response, result: SendResult): void {
-  if (!result.ok) {
-    res.status(result.status).json({ success: false, error: result.error });
+  if (isOkResult(result)) {
+    res.json({ success: true, data: result.data });
     return;
   }
-  res.json({ success: true, data: result.data });
+  res.status(result.status).json({ success: false, error: result.error });
 }

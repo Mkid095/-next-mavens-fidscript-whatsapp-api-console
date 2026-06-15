@@ -21,6 +21,9 @@ function toOpenApiPath(ep: ApiEndpoint): string {
 
 const paths: Record<string, Record<string, unknown>> = {};
 for (const ep of API_ENDPOINTS) {
+  // Only emit real API routes. Doc-only entries (e.g. inbound webhook events we
+  // deliver to clients, whose path isn't a real /api/v1 route) stay in Docs/Sandbox.
+  if (!ep.path.startsWith('/api/v1')) continue;
   const p = toOpenApiPath(ep);
   paths[p] = paths[p] || {};
   const op = endpointToOpenApiOperation(ep);

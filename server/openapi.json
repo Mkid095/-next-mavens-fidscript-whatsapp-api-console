@@ -821,6 +821,251 @@
           }
         }
       }
+    },
+    "/messages/audio/{instance}": {
+      "post": {
+        "operationId": "messages.sendAudio",
+        "summary": "Send Audio",
+        "description": "Send a native WhatsApp voice message (PTT) from an audio URL.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "audio": {
+                    "description": "Public HTTPS URL of the audio (prefer .ogg/opus for PTT).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to",
+                  "audio"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "audio": "https://…/voice.ogg"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/sticker/{instance}": {
+      "post": {
+        "operationId": "messages.sendSticker",
+        "summary": "Send Sticker",
+        "description": "Send a WhatsApp sticker from an image URL.",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Recipient",
+                    "type": "string"
+                  },
+                  "sticker": {
+                    "description": "Public HTTPS URL of a .webp sticker image.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to",
+                  "sticker"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "sticker": "https://…/sticker.webp"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/messages/status/{instance}": {
+      "post": {
+        "operationId": "messages.sendStatus",
+        "summary": "Send Status",
+        "description": "Post a status/story update (text, image, or audio).",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "Type",
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "image",
+                      "audio"
+                    ]
+                  },
+                  "content": {
+                    "description": "Text for text/audio, or a media URL for image.",
+                    "type": "string"
+                  },
+                  "caption": {
+                    "description": "Optional caption for image/video.",
+                    "type": "string"
+                  },
+                  "backgroundColor": {
+                    "description": "Background",
+                    "type": "string"
+                  },
+                  "font": {
+                    "description": "1=SERIF 2=NORICAN 3=BRYNDAN 4=BEBAS_NEUE.",
+                    "type": "number"
+                  },
+                  "allContacts": {
+                    "description": "true = all contacts, false = use statusJidList.",
+                    "type": "boolean"
+                  },
+                  "statusJidList": {
+                    "description": "Recipient phone numbers (when allContacts is false).",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "messageId": "msg_3f8a1c2b9d4e",
+                    "to": "254712345678",
+                    "timestamp": "2026-06-15T09:30:00.000Z",
+                    "type": "text",
+                    "content": "On vacation!"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
     }
   },
   "components": {

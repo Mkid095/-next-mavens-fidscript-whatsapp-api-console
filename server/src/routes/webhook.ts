@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../database.js';
 import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage } from '../utils/evolution.js';
+import { parseIncomingMessage } from '../utils/messageParser.js';
 import { logAuditAction } from '../utils/audit.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 
@@ -102,26 +103,17 @@ router.post('/evolution', async (req: Request, res: Response) => {
       const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
       const pushName = data?.pushName as string | undefined;
 
-      const msgObj = data?.message as Record<string, unknown> || {};
-      const content = (msgObj.conversation as string)
-        || (msgObj.extendedTextMessage as { text?: string })?.text
-        || (msgObj.imageMessage as { caption?: string })?.caption
-        || (msgObj.videoMessage as { caption?: string })?.caption
-        || (msgObj.documentMessage as { title?: string })?.title
-        || '';
-      const msgType = (data?.messageType as string) || 'text';
-
-      const mediaUrl = (msgObj.imageMessage as { url?: string; mimetype?: string })?.url
-        || (msgObj.videoMessage as { url?: string; mimetype?: string })?.url
-        || (msgObj.documentMessage as { url?: string; mimetype?: string })?.url
-        || null;
-
+      const parsed = parseIncomingMessage(data ?? {});
       const timestamp = new Date().toISOString();
       try {
         db.prepare(`
-          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming')
-        `).run(msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '', msgType, content, mediaUrl);
+          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction, extra, raw_payload)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming', ?, ?)
+        `).run(
+          msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '',
+          parsed.messageType, parsed.content, parsed.mediaUrl,
+          JSON.stringify(parsed.extra), JSON.stringify(rawBody),
+        );
         // Update last_active on both instance and client when a message is received
         db.prepare('UPDATE instances SET last_active = ? WHERE id = ?').run(timestamp, instance.id);
         db.prepare('UPDATE clients SET last_active = ? WHERE id = ?').run(timestamp, instance.client_id);
@@ -138,7 +130,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
       }
 
       // Broadcast new message to SSE for real-time inbox
-      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: msgType, content, media_url: mediaUrl, timestamp });
+      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl, timestamp });
       emitInstanceStateChange(instance.name, 'connected', phone || null);
       emitDashboardRefresh(instance.client_id);
     }

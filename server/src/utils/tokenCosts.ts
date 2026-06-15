@@ -5,3 +5,6 @@ export const TOKEN_COST_CONTACT = 1;
 export const TOKEN_COST_REACTION = 1;
 export const TOKEN_COST_POLL = 1;
 export const TOKEN_COST_LIST = 1;
+export const TOKEN_COST_AUDIO = 2;
+export const TOKEN_COST_STICKER = 2;
+export const TOKEN_COST_STATUS = 2;

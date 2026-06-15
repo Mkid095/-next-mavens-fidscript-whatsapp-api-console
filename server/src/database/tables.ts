@@ -43,6 +43,8 @@ export function createTables(db: Database): void {
   try { db.run('ALTER TABLE instances ADD COLUMN evolution_name TEXT'); } catch (e: any) { /* already exists */ }
 
   try { db.run("ALTER TABLE inbox_messages ADD COLUMN direction TEXT DEFAULT 'incoming'"); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN extra TEXT'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN raw_payload TEXT'); } catch (e: any) { /* already exists */ }
   try { db.run("ALTER TABLE payments ADD COLUMN token_count INTEGER"); } catch (e: any) { /* already exists */ }
   db.run(`
     CREATE TABLE IF NOT EXISTS api_logs (
@@ -108,6 +110,14 @@ export function createTables(db: Database): void {
       id TEXT PRIMARY KEY, client_id TEXT REFERENCES clients(id), name TEXT NOT NULL,
       api_key TEXT NOT NULL UNIQUE, status TEXT DEFAULT 'Active',
       created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_used TEXT
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS idempotency_keys (
+      id TEXT PRIMARY KEY, client_id TEXT REFERENCES clients(id),
+      response_json TEXT NOT NULL, status_code INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

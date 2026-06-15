@@ -11,6 +11,7 @@
  */
 import { messagingEndpoints } from './messaging';
 import { platformEndpoints } from './platform';
+import { receivingEndpoints } from './receiving';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'array' | 'object';
@@ -80,6 +81,7 @@ export const PUBLIC_API_BASE = 'https://whatsapp.fidscript.com/api/v1';
 export const API_ENDPOINTS: ApiEndpoint[] = [
   ...platformEndpoints,
   ...messagingEndpoints,
+  ...receivingEndpoints,
 ];
 
 /** All distinct :param tokens used across pathParams (for the sandbox form). */
