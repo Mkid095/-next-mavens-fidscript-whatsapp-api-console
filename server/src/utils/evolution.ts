@@ -90,7 +90,7 @@ export function emitInstanceStateChange(instanceName: string, state: string, pho
  * Emit a new inbox message event for an instance.
  * Used by webhook to broadcast incoming messages to subscribed clients.
  */
-export function emitNewMessage(instanceName: string, message: { id: string; from_number: string; from_name: string; message_type: string; content: string; media_url: string | null; timestamp: string }) {
+export function emitNewMessage(instanceName: string, message: { id: string; from_number: string; from_name: string; message_type: string; content: string; media_url: string | null; timestamp: string; chat_id: string; is_group: number }) {
   instanceEmitter.emit('newMessage', instanceName, message);
 }
 

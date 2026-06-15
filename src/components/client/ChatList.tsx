@@ -1,14 +1,15 @@
 import React from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Users } from 'lucide-react';
 import type { ClientMessage } from '../../services/api';
 
 interface ConversationContact {
-  phone: string;
+  chatId: string;
   name: string;
   lastMessage: string;
   lastTime: string;
   unread: number;
   instanceName: string;
+  isGroup: boolean;
 }
 
 interface ChatListProps {
@@ -35,21 +36,23 @@ export default function ChatList({ contacts, selectedPhone, onSelect, formatTime
     <div className="flex-1 overflow-y-auto">
       {contacts.map(contact => (
         <button
-          key={contact.phone}
-          onClick={() => onSelect(contact.phone)}
+          key={contact.chatId}
+          onClick={() => onSelect(contact.chatId)}
           className={`w-full p-3 flex items-start gap-2.5 hover:bg-stone-100 transition-all text-left border-b border-[#eaebe4]/40 ${
-            selectedPhone === contact.phone ? 'bg-yellow-50 border-l-2 border-l-yellow-500' : ''
+            selectedPhone === contact.chatId ? 'bg-yellow-50 border-l-2 border-l-yellow-500' : ''
           }`}
         >
           <div className="w-10 h-10 rounded-full bg-forest-deep flex items-center justify-center text-xs font-bold text-white shrink-0">
-            {(contact.name || contact.phone).charAt(0).toUpperCase()}
+            {contact.isGroup
+              ? <Users className="w-5 h-5" />
+              : (contact.name || contact.chatId).charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-forest-deep truncate">{contact.name || contact.phone}</span>
+              <span className="text-xs font-bold text-forest-deep truncate">{contact.name || contact.chatId}</span>
               <span className="text-[9px] text-stone-400 shrink-0 ml-1">{formatTime(contact.lastTime)}</span>
             </div>
-            <p className="text-[10px] text-stone-500 font-mono truncate">{contact.phone}</p>
+            <p className="text-[10px] text-stone-500 font-mono truncate">{contact.isGroup ? 'Group' : contact.chatId}</p>
             <p className="text-[10px] text-stone-400 truncate mt-0.5">{contact.lastMessage}</p>
           </div>
           {contact.unread > 0 && (

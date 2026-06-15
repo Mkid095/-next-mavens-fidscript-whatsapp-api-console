@@ -13,12 +13,13 @@ import EmptyState from './EmptyState';
 import ContactProfilePanel from './contacts/ContactProfilePanel';
 
 interface ConversationContact {
-  phone: string;
+  chatId: string; // phone number for individual, group JID for group
   name: string;
   lastMessage: string;
   lastTime: string;
   unread: number;
   instanceName: string;
+  isGroup: boolean;
 }
 
 interface MessagesViewProps {
@@ -82,18 +83,23 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
     const savedContactMap = new Map(savedContacts.map(c => [c.phone, c.name || c.phone]));
     const map = new Map<string, ConversationContact>();
     messages.forEach(msg => {
+      const isGroup = !!msg.is_group;
+      const chatId = msg.chat_id || msg.from_number;
       const phone = msg.from_number;
-      const savedName = savedContactMap.get(phone);
-      const displayName = savedName || msg.from_name || phone;
-      if (!map.has(phone)) {
-        map.set(phone, { phone, name: displayName, lastMessage: msg.content || `[${msg.message_type}]`, lastTime: msg.timestamp, unread: msg.is_read === 0 ? 1 : 0, instanceName: msg.instance_name });
+      // For groups: display the group name or the group JID. For individual: phone.
+      const savedName = !isGroup ? savedContactMap.get(phone) : null;
+      const displayName = isGroup
+        ? (msg.from_name || msg.chat_id?.replace('@g.us', '') || 'Group')
+        : (savedName || msg.from_name || phone);
+      if (!map.has(chatId)) {
+        map.set(chatId, { chatId, name: displayName, lastMessage: msg.content || `[${msg.message_type}]`, lastTime: msg.timestamp, unread: msg.is_read === 0 ? 1 : 0, instanceName: msg.instance_name, isGroup });
       } else {
-        const existing = map.get(phone)!;
+        const existing = map.get(chatId)!;
         if (new Date(msg.timestamp) > new Date(existing.lastTime)) {
-          map.set(phone, { ...existing, lastMessage: msg.content || `[${msg.message_type}]`, lastTime: msg.timestamp });
+          map.set(chatId, { ...existing, lastMessage: msg.content || `[${msg.message_type}]`, lastTime: msg.timestamp });
         }
         if (msg.is_read === 0) {
-          map.set(phone, { ...existing, unread: existing.unread + 1 });
+          map.set(chatId, { ...existing, unread: existing.unread + 1 });
         }
       }
     });
@@ -114,14 +120,17 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   }, [replyText]);
 
   const filteredContacts = contacts.filter(c =>
-    c.phone.includes(search) || c.name.toLowerCase().includes(search.toLowerCase())
+    c.chatId.includes(search) || c.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const conversationMessages = messages
-    .filter(m => selectedPhone ? m.from_number === selectedPhone : true)
+    .filter(m => {
+      const chatId = m.chat_id || m.from_number;
+      return selectedPhone ? chatId === selectedPhone : true;
+    })
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-  const selectedContact = contacts.find(c => c.phone === selectedPhone);
+  const selectedContact = contacts.find(c => c.chatId === selectedPhone);
   const selectedContactDetails = savedContacts.find(c => c.phone === selectedPhone);
 
   const handleSendReply = async () => {

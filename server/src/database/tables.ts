@@ -50,6 +50,8 @@ export function createTables(db: Database): void {
   try { db.run("ALTER TABLE inbox_messages ADD COLUMN direction TEXT DEFAULT 'incoming'"); } catch (e: any) { /* already exists */ }
   try { db.run('ALTER TABLE inbox_messages ADD COLUMN extra TEXT'); } catch (e: any) { /* already exists */ }
   try { db.run('ALTER TABLE inbox_messages ADD COLUMN raw_payload TEXT'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN chat_id TEXT'); } catch (e: any) { /* already exists */ }
+  try { db.run('ALTER TABLE inbox_messages ADD COLUMN is_group INTEGER DEFAULT 0'); } catch (e: any) { /* already exists */ }
   try { db.run("ALTER TABLE payments ADD COLUMN token_count INTEGER"); } catch (e: any) { /* already exists */ }
   db.run(`
     CREATE TABLE IF NOT EXISTS api_logs (
@@ -99,7 +101,8 @@ export function createTables(db: Database): void {
       id TEXT PRIMARY KEY, instance_id TEXT REFERENCES instances(id),
       client_id TEXT REFERENCES clients(id), from_number TEXT NOT NULL, from_name TEXT,
       message_type TEXT DEFAULT 'text', content TEXT, media_url TEXT,
-      is_read INTEGER DEFAULT 0, timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+      is_read INTEGER DEFAULT 0, timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+      chat_id TEXT, is_group INTEGER DEFAULT 0
     )
   `);
 

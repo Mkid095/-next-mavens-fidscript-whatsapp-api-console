@@ -99,6 +99,13 @@ router.post('/evolution', async (req: Request, res: Response) => {
     const key = data?.key as { remoteJid?: string; fromMe?: boolean; id?: string } | undefined;
     if (key && !key.fromMe) {
       const senderJid = (sender as string | undefined) || key.remoteJid;
+      const remoteJid = key.remoteJid || '';
+      const isGroup = remoteJid.includes('@g.us');
+      // For groups: chat_id = the group JID, from_number = the sender's phone
+      // For individual: chat_id = sender's phone, from_number = sender's phone
+      const chatId: string = isGroup
+        ? (remoteJid || '')
+        : (senderJid ? (extractPhoneFromJid(senderJid) || remoteJid) : remoteJid);
       const phone = senderJid ? extractPhoneFromJid(senderJid) : null;
       const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
       const pushName = data?.pushName as string | undefined;
@@ -107,12 +114,13 @@ router.post('/evolution', async (req: Request, res: Response) => {
       const timestamp = new Date().toISOString();
       try {
         db.prepare(`
-          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction, extra, raw_payload)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming', ?, ?)
+          INSERT OR IGNORE INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction, extra, raw_payload, chat_id, is_group)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming', ?, ?, ?, ?)
         `).run(
           msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '',
           parsed.messageType, parsed.content, parsed.mediaUrl,
           JSON.stringify(parsed.extra), JSON.stringify(rawBody),
+          chatId, isGroup ? 1 : 0,
         );
         // Update last_active on both instance and client when a message is received
         db.prepare('UPDATE instances SET last_active = ? WHERE id = ?').run(timestamp, instance.id);
@@ -121,7 +129,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
         // Duplicate message ID — ignore
       }
 
-      if (phone) {
+      if (phone && !isGroup) {
         const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
         if (!current?.phone_number) {
           db.prepare('UPDATE instances SET phone_number = ? WHERE name = ?').run(phone, instance.name);
@@ -129,8 +137,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
         }
       }
 
-      // Broadcast new message to SSE for real-time inbox
-      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl, timestamp });
+      // Broadcast new message to SSE for real-time inbox — include chat_id and is_group
+      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl, timestamp, chat_id: chatId, is_group: isGroup ? 1 : 0 });
       emitInstanceStateChange(instance.name, 'connected', phone || null);
       emitDashboardRefresh(instance.client_id);
     }

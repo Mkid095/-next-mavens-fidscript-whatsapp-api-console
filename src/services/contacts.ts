@@ -20,6 +20,8 @@ export interface ClientMessage {
   timestamp: string;
   instance_name: string;
   direction?: 'incoming' | 'outgoing';
+  chat_id?: string;
+  is_group?: number;
 }
 
 export interface ClientApiKey {
