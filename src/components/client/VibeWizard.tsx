@@ -334,7 +334,7 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 
 // ── Step 1: Credentials ────────────────────────────────────────────────────────
 
-function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelectedKeyId, selectedInstance, setSelectedInstance, onNext }: {
+function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelectedKeyId, selectedInstance, setSelectedInstance, onNext, onKeySelect }: {
   apiKey: string;
   apiKeys: VibeWizardProps['apiKeys'];
   instances: VibeWizardProps['instances'];
@@ -368,7 +368,11 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
           <label className="block text-[10px] font-bold text-graphite uppercase mb-2">API Key</label>
           <select
             value={selectedKeyId}
-            onChange={e => setSelectedKeyId(e.target.value)}
+            onChange={e => {
+              const id = e.target.value;
+              setSelectedKeyId(id);
+              if (onKeySelect) onKeySelect(id, apiKeys.find(k => k.id === id)?.key || '');
+            }}
             className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
           >
             <option value="">— Select a key —</option>
@@ -682,22 +686,32 @@ function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: 
 export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Auto-select: use first key with a secret if available, otherwise first key by name order
+  // Persist the key secret in wizard-local state so it survives across apiKeys re-fetches
+  const [keySecret, setKeySecret] = useState<string>(apiKey);
+
+  // Which API key is selected in Step 1
   const [selectedKeyId, setSelectedKeyId] = useState<string>('');
 
-  // Sync selectedKeyId whenever apiKeys changes (e.g. new key created in same session)
+  // Auto-select key whenever apiKeys changes
   useEffect(() => {
-    if (selectedKeyId && apiKeys.find(k => k.id === selectedKeyId)) return; // already selected, skip
+    if (apiKeys.length === 0) return;
+    // If currently selected key still has its secret in apiKeys, keep it selected
+    if (selectedKeyId && apiKeys.find(k => k.id === selectedKeyId)?.key) return;
+    // Otherwise pick first key with a secret, or just the first key
     const firstWithSecret = apiKeys.find(k => k.key);
     const first = apiKeys[0];
-    setSelectedKeyId(firstWithSecret?.id || first?.id || '');
+    const target = firstWithSecret || first;
+    if (target) {
+      setSelectedKeyId(target.id);
+      setKeySecret(target.key || apiKey);
+    }
   }, [apiKeys]);
 
   // Container selection — optional, starts empty
   const [selectedInstance, setSelectedInstance] = useState<string>('');
 
-  // Derive the actual key string from selected key ID
-  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || apiKey || '';
+  // Derive the actual key string: wizard-local secret > apiKeys secret > prop fallback
+  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || keySecret || apiKey || '';
 
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
@@ -739,6 +753,9 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}
               onNext={() => setStep(2)}
+              onKeySelect={(_id, secret) => {
+                setKeySecret(secret || apiKey);
+              }}
             />
           </motion.div>
         )}
