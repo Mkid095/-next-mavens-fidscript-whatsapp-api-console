@@ -28,4 +28,10 @@ export type {
   SegmentFilter,
   SegmentRule,
   SegmentPreview,
+  CampaignStep,
+  CampaignTrigger,
+  DripEnrollment,
+  StepActionType,
+  StepActionConfig,
+  TriggerEvent,
 } from './platform.js';

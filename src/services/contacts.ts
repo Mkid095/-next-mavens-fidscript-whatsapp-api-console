@@ -123,6 +123,25 @@ export const campaignsApi = {
     fetchApi<Campaign>(`/api/campaigns/${id}/duplicate`, { method: 'POST' }),
 
   delete: (id: string) => fetchApi<void>(`/api/campaigns/${id}`, { method: 'DELETE' }),
+
+  // Phase 5 Slice D — Trigger + Drip
+  listSteps: (campaignId: string) => fetchApi<unknown[]>(`/api/campaigns/${campaignId}/steps`),
+  createStep: (campaignId: string, body: { step_order?: number; delay_seconds?: number; action_type: string; action_config?: unknown }) =>
+    fetchApi<unknown>(`/api/campaigns/${campaignId}/steps`, { method: 'POST', body: JSON.stringify(body) }),
+  updateStep: (campaignId: string, stepId: string, body: Partial<{ step_order: number; delay_seconds: number; action_type: string; action_config: unknown }>) =>
+    fetchApi<void>(`/api/campaigns/${campaignId}/steps/${stepId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteStep: (campaignId: string, stepId: string) =>
+    fetchApi<void>(`/api/campaigns/${campaignId}/steps/${stepId}`, { method: 'DELETE' }),
+
+  listTriggers: (campaignId: string) => fetchApi<unknown[]>(`/api/campaigns/${campaignId}/triggers`),
+  createTrigger: (campaignId: string, body: { event: string; filter_json?: unknown }) =>
+    fetchApi<unknown>(`/api/campaigns/${campaignId}/triggers`, { method: 'POST', body: JSON.stringify(body) }),
+  deleteTrigger: (campaignId: string, triggerId: string) =>
+    fetchApi<void>(`/api/campaigns/${campaignId}/triggers/${triggerId}`, { method: 'DELETE' }),
+
+  enroll: (campaignId: string, customerId: string) =>
+    fetchApi<{ enrollmentId: string }>(`/api/campaigns/${campaignId}/enroll`, { method: 'POST', body: JSON.stringify({ customer_id: customerId }) }),
+  listEnrollments: (campaignId: string) => fetchApi<unknown[]>(`/api/campaigns/${campaignId}/enrollments`),
 };
 
 export interface ContactGroup {

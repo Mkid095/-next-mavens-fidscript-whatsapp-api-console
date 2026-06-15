@@ -173,6 +173,59 @@ export interface SegmentPreview {
   computed_at: string;
 }
 
+// ---- Phase 5 Slice D — Trigger + Drip types (§15.4-15.5) ----
+export type StepActionType = 'send_text' | 'send_media' | 'add_tag' | 'set_status' | 'wait_branch';
+
+export interface StepActionConfig {
+  // send_text
+  text?: string;
+  // send_media
+  media_url?: string;
+  caption?: string;
+  // both: which instance to use (defaults to first connected)
+  instance_name?: string;
+  // add_tag
+  tag?: string;
+  // set_status
+  status?: 'open' | 'pending' | 'waiting_on_customer' | 'resolved' | 'closed';
+  // wait_branch
+  delay_seconds?: number;
+  condition?: 'tag_added' | 'replied' | 'opened';
+}
+
+export interface CampaignStep {
+  id: string;
+  campaign_id: string;
+  step_order: number;
+  delay_seconds: number;
+  action_type: StepActionType;
+  action_config: StepActionConfig;
+}
+
+export type TriggerEvent = 'customer.created' | 'customer.tagged' | 'conversation.created' | 'order.created';
+
+export interface CampaignTrigger {
+  id: string;
+  campaign_id: string;
+  event: TriggerEvent;
+  filter_json: Record<string, unknown>;
+  enabled: number;
+  created_at: string;
+}
+
+export interface DripEnrollment {
+  id: string;
+  customer_id: string;
+  campaign_id: string;
+  current_step: number;
+  enrolled_at: string;
+  last_step_at: string | null;
+  next_step_at: string | null;
+  completed_at: string | null;
+  state: 'active' | 'completed' | 'failed' | 'paused';
+  customer_name: string | null;
+}
+
 // ---- API functions ----
 export const platformApi = {
   // Customers

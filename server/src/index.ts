@@ -12,6 +12,8 @@ import { registerSearchIndexer } from './modules/platform/search/index.js';
 import { registerAnalyticsProjectors } from './modules/platform/analytics/index.js';
 import { registerInboundPipeline } from './modules/ai/index.js';
 import { registerAutomations } from './modules/automation/index.js';
+import { registerTriggers } from './modules/campaigns/triggers.js';
+import { startDripScheduler } from './modules/campaigns/drip.js';
 
 import authRoutes from './routes/auth.js';
 
@@ -32,7 +34,9 @@ async function startServer() {
     registerAnalyticsProjectors();
     registerInboundPipeline();
     registerAutomations();
-    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations)');
+    registerTriggers();
+    startDripScheduler();
+    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations, triggers) + drip scheduler started');
 
     // Prune expired idempotency keys on every startup (7-day TTL)
     try {
