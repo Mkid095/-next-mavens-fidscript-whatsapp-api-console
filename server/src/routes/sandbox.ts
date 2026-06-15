@@ -26,8 +26,8 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
 
     // Look up the client's active API key (first active key found)
     const activeKey = db.prepare(
-      `SELECT key FROM client_api_keys WHERE client_id = ? AND status = 'Active' ORDER BY created_at DESC LIMIT 1`
-    ).get(req.client!.id) as { key: string } | undefined;
+      `SELECT api_key FROM client_api_keys WHERE client_id = ? AND status = 'Active' ORDER BY created_at DESC LIMIT 1`
+    ).get(req.client!.id) as { api_key: string } | undefined;
 
     if (!activeKey) {
       return res.status(400).json({ success: false, error: 'No active API key found. Generate one in API Keys first.' });
@@ -39,7 +39,7 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
       v1Path = v1Path.replace(':instanceName', encodeURIComponent(instanceName));
     }
 
-    const apiBase = process.env.PUBLIC_API_BASE || 'https://whatsapp.fidscript.com/api';
+    const apiBase = (process.env.PUBLIC_API_BASE || 'https://whatsapp.fidscript.com/api') + '/v1';
     const url = `${apiBase}${v1Path}`;
 
     const fetchOptions: RequestInit = {
