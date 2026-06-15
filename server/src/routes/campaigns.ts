@@ -4,6 +4,7 @@ import db from '../database.js';
 import { clientJwtAuth } from '../middleware/auth.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 import { dispatchCampaignMessage, emitCampaignStarted, emitCampaignCompleted, type CampaignMessageKind } from '../modules/campaigns/index.js';
+import { enrollCustomer } from '../modules/campaigns/drip.js';
 import { getInstanceForClient } from '../services/whatsapp/shared.js';
 import { logAuditAction } from '../utils/audit.js';
 import {
@@ -470,7 +471,6 @@ router.post('/:id/enroll', clientJwtAuth, (req: Request, res: Response) => {
     if (!ownedCampaign(req)) { res.status(404).json({ success: false, error: 'Not found' }); return; }
     const { customer_id } = req.body ?? {};
     if (!customer_id) { res.status(400).json({ success: false, error: 'customer_id is required' }); return; }
-    const { enrollCustomer } = require('../modules/campaigns/drip.js') as typeof import('../modules/campaigns/drip.js');
     const result = enrollCustomer(customer_id, req.params.id);
     if (!result.ok) { res.status(400).json({ success: false, error: result.error }); return; }
     logAuditAction(req, 'DRIP_ENROLLED', 'campaign', req.params.id, customer_id);
