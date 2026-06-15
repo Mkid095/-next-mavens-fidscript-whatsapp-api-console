@@ -319,7 +319,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
             onTokenDeduct={onTokenDeduct}
           />
         ) : (
-          <EmptyState onNewChat={() => setShowNewChatInline(true)} />
+          <EmptyState savedContacts={savedContacts} onNewChat={() => setShowNewChatInline(true)} />
         )}
       </div>
 
