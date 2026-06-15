@@ -28,7 +28,7 @@ export default function DashboardHome({
     );
   }
   const connectedInstances = instances.filter(i => i.status === 'connected').length;
-  const totalTokens = dailyUsage.reduce((sum, d) => sum + d.tokens_used, 0);
+  const totalTokens = dailyUsage.reduce((sum, d) => sum + (d.tokens_used ?? 0), 0);
 
   const chartData = dailyUsage.length > 0 ? dailyUsage : [
     { date: 'Mon', messages_sent: 0, tokens_used: 0, messages_delivered: 0 },

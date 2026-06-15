@@ -1,5 +1,5 @@
 import React from 'react';
-import { CreditCard, MessageSquare, Send, Zap } from 'lucide-react';
+import { CreditCard, MessageSquare, Send, Activity } from 'lucide-react';
 import type { Instance } from '../../services/api';
 
 interface StatCardsProps {
@@ -17,6 +17,9 @@ export default function StatCards({
   msgCountToday,
   totalTokens,
 }: StatCardsProps) {
+  const safeTokens = Number.isNaN(totalTokens) ? 0 : totalTokens;
+  const safeToday = Number.isNaN(msgCountToday) ? 0 : msgCountToday;
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <div className="bg-white border border-[#eaebe4] rounded-2xl p-4">
@@ -48,18 +51,18 @@ export default function StatCards({
           </div>
           <p className="text-[10px] text-stone-500 font-bold uppercase">Messages Today</p>
         </div>
-        <p className="text-xl font-black text-forest-deep font-mono">{msgCountToday || 0}</p>
+        <p className="text-xl font-black text-forest-deep font-mono">{safeToday.toLocaleString()}</p>
         <p className="text-[10px] text-stone-400 mt-1">Rate: 30/min max</p>
       </div>
 
       <div className="bg-white border border-[#eaebe4] rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center">
-            <Zap className="w-4 h-4 text-purple-600" />
+            <Activity className="w-4 h-4 text-purple-600" />
           </div>
           <p className="text-[10px] text-stone-500 font-bold uppercase">Tokens Used</p>
         </div>
-        <p className="text-xl font-black text-forest-deep font-mono">{totalTokens.toLocaleString()}</p>
+        <p className="text-xl font-black text-forest-deep font-mono">{safeTokens.toLocaleString()}</p>
         <p className="text-[10px] text-stone-400 mt-1">Last 7 days</p>
       </div>
     </div>

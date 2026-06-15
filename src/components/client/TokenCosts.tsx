@@ -1,5 +1,5 @@
 import React from 'react';
-import { Inbox, MessageSquare, Send, Zap } from 'lucide-react';
+import { Inbox, MessageSquare, Send, Activity } from 'lucide-react';
 
 const TOKEN_COSTS = [
   { action: 'Send Text Message', cost: 1, icon: MessageSquare },
@@ -7,7 +7,7 @@ const TOKEN_COSTS = [
   { action: 'Send Document', cost: 3, icon: MessageSquare },
   { action: 'Send Audio', cost: 4, icon: MessageSquare },
   { action: 'Bulk Campaign', cost: 1, icon: Send },
-  { action: 'OTP Message', cost: 1, icon: Zap },
+  { action: 'OTP Message', cost: 1, icon: Activity },
 ];
 
 export default function TokenCosts() {
