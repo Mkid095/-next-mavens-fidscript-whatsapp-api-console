@@ -76,7 +76,7 @@ router.get('/', clientJwtAuth, async (req: Request, res: Response) => {
 // POST /api/campaigns - Create a new campaign
 router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
-    const { name, instance_name, message_type, content, media_url, caption, scheduled_at, phone_numbers, group_id, type, template_vars } = req.body;
+    const { name, instance_name, message_type, content, media_url, caption, scheduled_at, phone_numbers, group_id, segment_id, type, template_vars } = req.body;
 
     if (!name || !instance_name) {
       return res.status(400).json({ success: false, error: 'name and instance_name are required' });
@@ -93,7 +93,7 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Instance is not connected' });
     }
 
-    // Resolve phone numbers: from group_id or from phone_numbers array
+    // Resolve phone numbers: from group_id, segment_id, or phone_numbers array
     let resolvedPhones: string[] = [];
     if (group_id) {
       const group = db.prepare(
@@ -106,10 +106,27 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
         'SELECT c.phone FROM contact_group_members cgm JOIN contacts c ON cgm.contact_id = c.id WHERE cgm.group_id = ?'
       ).all(group_id) as { phone: string }[];
       resolvedPhones = members.map(m => m.phone);
+    } else if (segment_id) {
+      // Slice C: resolve the segment to its phone list via the same resolver
+      // the segments route uses, so the campaign recipients always match the
+      // current segment definition (no drift between segment and campaign).
+      const segment = db.prepare(
+        'SELECT * FROM campaign_segments WHERE id = ? AND workspace_id = ?'
+      ).get(segment_id, req.client!.id) as { filter_json: string } | undefined;
+      if (!segment) {
+        return res.status(404).json({ success: false, error: 'Segment not found' });
+      }
+      const { resolveSegment } = await import('../modules/campaigns/segments.js');
+      const filter = JSON.parse(segment.filter_json);
+      const result = resolveSegment(filter, req.client!.id);
+      resolvedPhones = result.phones;
+      // Cache the count for the segment row
+      db.prepare('UPDATE campaign_segments SET contact_count = ?, last_computed_at = ? WHERE id = ?')
+        .run(result.customer_count, result.computed_at, segment_id);
     } else if (Array.isArray(phone_numbers) && phone_numbers.length > 0) {
       resolvedPhones = phone_numbers;
     } else {
-      return res.status(400).json({ success: false, error: 'Provide either group_id or phone_numbers' });
+      return res.status(400).json({ success: false, error: 'Provide group_id, segment_id, or phone_numbers' });
     }
 
     const campaignId = `camp_${uuidv4().substring(0, 8)}`;

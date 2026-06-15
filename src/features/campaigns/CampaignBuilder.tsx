@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Save, Send, Library } from 'lucide-react';
 import { campaignsApi } from '../../services/api';
 import type { Instance, Contact } from '../../services/api';
-import AudiencePicker from './AudiencePicker.js';
+import AudiencePicker, { type AudienceMode } from './AudiencePicker.js';
 import { MediaPicker } from '../media/index.js';
 import type { MediaAsset } from '../../data/api/platform.js';
 
@@ -20,9 +20,11 @@ const MESSAGE_TYPES = [
 ];
 
 /**
- * Slice A: broadcast builder only. Segmented, trigger, drip builders come in
- * later slices (C, D). The form is intentionally minimal — name, instance,
- * audience, content, save-as-draft, or save+launch.
+ * Phase 5 — broadcast campaign builder.
+ * Slice A: name + instance + text/media content + save/launch
+ * Slice B: media message can pull from the library
+ * Slice C: audience source can be paste / contacts / segment
+ * Future slices add: trigger/drip flows (D), status posts (E).
  */
 export default function CampaignBuilder({ instances, savedContacts, onBack, onCreated }: CampaignBuilderProps) {
   const [name, setName] = useState('');
@@ -30,16 +32,20 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
   const [messageType, setMessageType] = useState<'text' | 'media'>('text');
   const [content, setContent] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
-  const [audienceMode, setAudienceMode] = useState<'paste' | 'contacts'>('paste');
+  const [audienceMode, setAudienceMode] = useState<AudienceMode>('paste');
   const [pastedPhones, setPastedPhones] = useState('');
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
+  const [segmentPhones, setSegmentPhones] = useState<string[]>([]);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const resolvedPhones = audienceMode === 'paste'
     ? pastedPhones.split(/[\s,;\n]+/).map(s => s.trim()).filter(Boolean)
-    : savedContacts.filter(c => selectedContactIds.has(c.id)).map(c => c.phone);
+    : audienceMode === 'contacts'
+      ? savedContacts.filter(c => selectedContactIds.has(c.id)).map(c => c.phone)
+      : segmentPhones;
 
   const canSave = name.trim() && instanceName && resolvedPhones.length > 0 &&
     (messageType === 'text' ? content.trim() : mediaUrl.trim());
@@ -56,6 +62,7 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
         media_url: mediaUrl || undefined,
         phone_numbers: resolvedPhones,
         type: 'broadcast',
+        segment_id: selectedSegmentId || undefined,
       });
       if (!res.success || !res.data) {
         setError(res.error || 'Failed to create campaign');
@@ -138,6 +145,11 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
         selectedContactIds={selectedContactIds}
         setSelectedContactIds={setSelectedContactIds}
         savedContacts={savedContacts}
+        selectedSegmentId={selectedSegmentId}
+        onSegmentPicked={(id, phones) => {
+          setSelectedSegmentId(id);
+          setSegmentPhones(phones);
+        }}
       />
       <p className="text-[10px] text-stone-400 -mt-3">{resolvedPhones.length} recipient{resolvedPhones.length === 1 ? '' : 's'}</p>
 

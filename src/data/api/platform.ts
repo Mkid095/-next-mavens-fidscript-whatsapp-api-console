@@ -144,6 +144,35 @@ export interface MediaAsset {
   created_at: string;
 }
 
+// ---- Phase 5 Slice C — Segments types (§15.2) ----
+export type SegmentRule =
+  | { field: 'tag'; op: 'has_any_of' | 'has_all_of' | 'has_none_of'; value: string[] }
+  | { field: 'last_seen'; op: 'within_days' | 'before_days' | 'never'; value?: number }
+  | { field: 'created'; op: 'within_days' | 'before_days'; value: number }
+  | { field: 'name'; op: 'contains' | 'equals' | 'starts_with'; value: string }
+  | { field: 'channel'; op: 'is'; value: 'whatsapp' | 'sms' | 'email' };
+
+export interface SegmentFilter { logic: 'AND' | 'OR'; rules: SegmentRule[]; }
+
+export interface Segment {
+  id: string;
+  workspace_id: string;
+  name: string;
+  description: string | null;
+  filter: SegmentFilter;
+  contact_count: number;
+  last_computed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SegmentPreview {
+  customer_count: number;
+  phones: string[];
+  sample_phones: string[];
+  computed_at: string;
+}
+
 // ---- API functions ----
 export const platformApi = {
   // Customers
@@ -260,4 +289,15 @@ export const platformApi = {
   updateMedia: (id: string, body: { name?: string; tags?: string[] }) =>
     apiPatch<null>(`/api/platform/media/${id}`, body),
   deleteMedia: (id: string) => apiDelete<null>(`/api/platform/media/${id}`),
+
+  // Segments (Phase 5 Slice C §15.2)
+  listSegments: () => apiGet<Segment[]>(`/api/platform/segments`),
+  createSegment: (body: { name: string; description?: string; filter: SegmentFilter }) =>
+    apiPost<Segment>(`/api/platform/segments`, body),
+  updateSegment: (id: string, body: Partial<{ name: string; description: string; filter: SegmentFilter }>) =>
+    apiPatch<null>(`/api/platform/segments/${id}`, body),
+  deleteSegment: (id: string) => apiDelete<null>(`/api/platform/segments/${id}`),
+  previewSegment: (id: string) => apiPost<SegmentPreview>(`/api/platform/segments/${id}/preview`, {}),
+  previewAdhocSegment: (filter: SegmentFilter) =>
+    apiPost<SegmentPreview>(`/api/platform/segments/preview-adhoc`, { filter }),
 };

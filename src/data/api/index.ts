@@ -24,4 +24,8 @@ export type {
   SearchHit,
   MediaAsset,
   MediaKind,
+  Segment,
+  SegmentFilter,
+  SegmentRule,
+  SegmentPreview,
 } from './platform.js';
