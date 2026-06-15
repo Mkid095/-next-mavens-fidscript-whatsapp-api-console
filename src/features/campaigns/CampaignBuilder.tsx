@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, Send } from 'lucide-react';
+import { ArrowLeft, Save, Send, Library } from 'lucide-react';
 import { campaignsApi } from '../../services/api';
 import type { Instance, Contact } from '../../services/api';
 import AudiencePicker from './AudiencePicker.js';
+import { MediaPicker } from '../media/index.js';
+import type { MediaAsset } from '../../data/api/platform.js';
 
 interface CampaignBuilderProps {
   clientToken?: string;
@@ -31,6 +33,7 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
   const [audienceMode, setAudienceMode] = useState<'paste' | 'contacts'>('paste');
   const [pastedPhones, setPastedPhones] = useState('');
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,8 +116,14 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
             className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500" />
         ) : (
           <div className="space-y-2">
-            <input value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="https://… (publicly accessible image URL)"
-              className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500 font-mono" />
+            <div className="flex items-center gap-2">
+              <input value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="https://… (or pick from library)"
+                className="flex-1 px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500 font-mono" />
+              <button type="button" onClick={() => setPickerOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold bg-white border border-stone-200 text-stone-700 rounded-xl hover:bg-stone-50 shrink-0">
+                <Library className="w-3.5 h-3.5" /> From library
+              </button>
+            </div>
             <textarea value={content} onChange={e => setContent(e.target.value)} rows={2} placeholder="Optional caption"
               className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500" />
           </div>
@@ -133,6 +142,14 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
       <p className="text-[10px] text-stone-400 -mt-3">{resolvedPhones.length} recipient{resolvedPhones.length === 1 ? '' : 's'}</p>
 
       {error && <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">{error}</p>}
+
+      {pickerOpen && (
+        <MediaPicker
+          kindFilter="image"
+          onSelect={(a: MediaAsset) => { setMediaUrl(a.url); setPickerOpen(false); }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
 
       <div className="flex items-center gap-2 justify-end pt-2 border-t border-stone-100">
         <button onClick={() => create(false)} disabled={!canSave || saving}

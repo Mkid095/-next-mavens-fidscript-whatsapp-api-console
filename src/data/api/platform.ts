@@ -125,6 +125,25 @@ export interface FlowExecution {
   completed_at: string | null;
 }
 
+// ---- Phase 5 Slice B — Media library types (§15.3) ----
+export type MediaKind = 'image' | 'video' | 'audio' | 'document';
+
+export interface MediaAsset {
+  id: string;
+  workspace_id: string;
+  name: string;
+  kind: MediaKind;
+  mime: string;
+  url: string;
+  public_id: string | null;
+  size_bytes: number | null;
+  width: number | null;
+  height: number | null;
+  tags: string[];
+  created_by: string | null;
+  created_at: string;
+}
+
 // ---- API functions ----
 export const platformApi = {
   // Customers
@@ -226,4 +245,19 @@ export const platformApi = {
     apiPatch<null>(`/api/platform/automations/${id}`, body),
   deleteFlow: (id: string) => apiDelete<null>(`/api/platform/automations/${id}`),
   listFlowExecutions: (id: string) => apiGet<FlowExecution[]>(`/api/platform/automations/${id}/executions`),
+
+  // Media library (Phase 5 Slice B §15.3)
+  listMedia: (filters?: { kind?: MediaKind; tag?: string; q?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.kind) params.set('kind', filters.kind);
+    if (filters?.tag) params.set('tag', filters.tag);
+    if (filters?.q) params.set('q', filters.q);
+    const qs = params.toString();
+    return apiGet<MediaAsset[]>(`/api/platform/media${qs ? `?${qs}` : ''}`);
+  },
+  createMedia: (body: { url?: string; image?: string; name?: string; mime?: string; tags?: string[] }) =>
+    apiPost<MediaAsset>(`/api/platform/media`, body),
+  updateMedia: (id: string, body: { name?: string; tags?: string[] }) =>
+    apiPatch<null>(`/api/platform/media/${id}`, body),
+  deleteMedia: (id: string) => apiDelete<null>(`/api/platform/media/${id}`),
 };

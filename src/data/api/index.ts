@@ -22,4 +22,6 @@ export type {
   ConversationPriority,
   ConversationMessage,
   SearchHit,
+  MediaAsset,
+  MediaKind,
 } from './platform.js';

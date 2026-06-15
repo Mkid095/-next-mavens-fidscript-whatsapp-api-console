@@ -1,22 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Megaphone, Sparkles } from 'lucide-react';
+import { Megaphone, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { contactsApi, campaignsApi } from '../../services/api';
 import type { Instance, Contact } from '../../services/api';
 import CampaignList from './CampaignList';
 import CampaignBuilder from './CampaignBuilder';
+import { MediaLibrary } from '../media/index.js';
 
 interface MarketingCenterProps {
   clientToken?: string;
   instances: Instance[];
 }
 
+type Tab = 'campaigns' | 'library';
+
 /**
- * Phase 5 Marketing Center — Slice A. The hub for non-bulk campaign work.
- * Currently hosts: Broadcast builder + a list view with type filter.
- * Future slices add: segments (C), trigger/drip flows (D), media library (B),
- * status module (E) — each as its own tab here.
+ * Phase 5 Marketing Center — Slice A + B. The hub for non-bulk campaign work.
+ * Slice A: Broadcast builder + list view with type filter.
+ * Slice B: Media library tab (reusable assets referenced by campaigns).
+ * Future slices add: Segments (C), Trigger/drip flows (D), Status (E) — each
+ * as its own tab here.
  */
 export default function MarketingCenter({ clientToken, instances }: MarketingCenterProps) {
+  const [tab, setTab] = useState<Tab>('campaigns');
   const [view, setView] = useState<'list' | 'builder'>('list');
   const [refreshKey, setRefreshKey] = useState(0);
   const [savedContacts, setSavedContacts] = useState<Contact[]>([]);
@@ -42,13 +47,26 @@ export default function MarketingCenter({ clientToken, instances }: MarketingCen
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-forest-deep">Marketing Center</p>
           <p className="text-[10px] text-graphite">
-            Broadcasts today · Segments · Trigger &amp; drip flows coming next. Shares the same send pipeline as 1:1 chat — failed sends refund tokens automatically.
+            Broadcasts today · Media library · Segments, trigger &amp; drip flows coming next. Shares the same send pipeline as 1:1 chat — failed sends refund tokens automatically.
           </p>
         </div>
         <Megaphone className="w-5 h-5 text-yellow-700 shrink-0" />
       </div>
 
-      {view === 'list' ? (
+      <div className="flex items-center gap-1 p-1 bg-[#f9f9f2] border border-[#eaebe4] rounded-xl w-fit">
+        <button onClick={() => setTab('campaigns')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'campaigns' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          <Megaphone className="w-3.5 h-3.5" /> Campaigns
+        </button>
+        <button onClick={() => setTab('library')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'library' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          <ImageIcon className="w-3.5 h-3.5" /> Media library
+        </button>
+      </div>
+
+      {tab === 'library' ? (
+        <MediaLibrary />
+      ) : view === 'list' ? (
         <CampaignList
           key={refreshKey}
           clientToken={clientToken}

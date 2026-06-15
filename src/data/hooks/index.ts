@@ -16,3 +16,4 @@ export { useAssignment } from './useAssignment.js';
 export { useAgents, useAgentPermissions } from './useAgents.js';
 export { useAIRules } from './useAIRules.js';
 export { useFlows, useFlow } from './useFlows.js';
+export { useMediaAssets } from './useMediaAssets.js';

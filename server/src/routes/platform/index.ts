@@ -10,6 +10,7 @@ import slaRoutes from './sla.js';
 import agentsRoutes from './agents.js';
 import automationRulesRoutes from './automationRules.js';
 import automationsRoutes from './automations.js';
+import mediaRoutes from './media.js';
 
 // Platform API — customer-centric reads + operational writes.
 // All routes use clientJwtAuth (workspace-scoped via req.client.id).
@@ -26,5 +27,6 @@ router.use('/sla-policies', slaRoutes);
 router.use('/agents', agentsRoutes);
 router.use('/automation-rules', automationRulesRoutes);
 router.use('/automations', automationsRoutes);
+router.use('/media', mediaRoutes);
 
 export default router;
