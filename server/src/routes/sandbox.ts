@@ -12,49 +12,46 @@ const router = Router();
  */
 router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
   try {
-    const { method = 'GET', endpoint, pathParams, body, instanceName } = req.body as {
-      method: string;
-      endpoint: string;
-      pathParams?: Record<string, string>;
-      body?: Record<string, unknown>;
-      instanceName?: string;
-    };
+    const { method, endpoint, instanceName, keyId, ...rest } = req.body as Record<string, unknown>;
+    const httpMethod = (typeof method === 'string' ? method : 'GET') as 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT';
+    const ep = typeof endpoint === 'string' ? endpoint : '';
+    const inst = typeof instanceName === 'string' ? instanceName : '';
+    const kid = typeof keyId === 'string' ? keyId : '';
 
-    if (!endpoint) {
+    if (!ep) {
       return res.status(400).json({ success: false, error: 'endpoint is required' });
     }
 
     // Look up the client's active API key by ID
-    const { keyId } = req.body as { keyId?: string };
     let activeKey: { api_key: string } | undefined;
-    if (keyId) {
+    if (kid) {
       activeKey = db.prepare(
         `SELECT api_key FROM client_api_keys WHERE id = ? AND client_id = ? AND status = 'Active'`
-      ).get(keyId, req.client!.id) as { api_key: string } | undefined;
+      ).get(kid, req.client!.id) as { api_key: string } | undefined;
     }
     if (!activeKey) {
       return res.status(400).json({ success: false, error: 'No active API key found. Generate one in API Keys first.' });
     }
 
     // Strip /api/v1 prefix — PUBLIC_API_BASE already includes it
-    let v1Path = endpoint.replace(/^\/api\/v1/, '');
-    if (instanceName && endpoint.includes(':instanceName')) {
-      v1Path = v1Path.replace(':instanceName', encodeURIComponent(instanceName));
+    let v1Path = ep.replace(/^\/api\/v1/, '');
+    if (inst && ep.includes(':instanceName')) {
+      v1Path = v1Path.replace(':instanceName', encodeURIComponent(inst));
     }
 
     const apiBase = (process.env.PUBLIC_API_BASE || 'https://whatsapp.fidscript.com/api') + '/v1';
     const url = `${apiBase}${v1Path}`;
 
     const fetchOptions: RequestInit = {
-      method: method.toUpperCase(),
+      method: httpMethod,
       headers: {
         'Content-Type': 'application/json',
         'X-API-Key': activeKey.api_key,
       },
     };
 
-    if (!['GET', 'HEAD'].includes(fetchOptions.method!) && body) {
-      fetchOptions.body = JSON.stringify(body);
+    if (!['GET', 'HEAD'].includes(httpMethod) && Object.keys(rest).length > 0) {
+      fetchOptions.body = JSON.stringify(rest);
     }
 
     const result = await fetch(url, fetchOptions);
