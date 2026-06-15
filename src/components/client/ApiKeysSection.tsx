@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, Zap, RefreshCw, CheckCircle, XCircle, ChevronRight, Terminal } from 'lucide-react';
+import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, Zap, RefreshCw, CheckCircle, XCircle, ChevronRight, Terminal, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clientKeysApi } from '../../services/api';
 import { PUBLIC_API_BASE } from '../../data/apiEndpoints/index';
 import type { ClientApiKey } from './types';
+import VibeWizard from './VibeWizard';
 
 interface ApiKeysSectionProps {
   clientToken?: string;
@@ -21,7 +22,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
   const [apiKeys, setApiKeys] = useState<KeyWithStats[]>([]);
   const [showKeyValue, setShowKeyValue] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'keys' | 'reference'>('keys');
+  const [activeTab, setActiveTab] = useState<'keys' | 'reference' | 'vibe'>('keys');
   const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; ok: boolean; msg: string } | null>(null);
   const [regeneratingKeyId, setRegeneratingKeyId] = useState<string | null>(null);
@@ -125,7 +126,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
       {/* Tab bar */}
       <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm">
         <div className="flex items-center gap-1.5 p-1.5 bg-[#f9f9f2] border-b border-[#eaebe4]">
-          {(['keys', 'reference'] as const).map((tab) => (
+          {(['keys', 'reference', 'vibe'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -133,7 +134,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
                 activeTab === tab ? 'bg-forest-deep text-white' : 'text-stone-600 hover:text-black hover:bg-stone-100'
               }`}
             >
-              {tab === 'keys' ? 'My API Keys' : 'API Reference'}
+              {tab === 'keys' ? 'My API Keys' : tab === 'reference' ? 'API Reference' : <span className="flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> Vibe Coding</span>}
             </button>
           ))}
         </div>
@@ -176,7 +177,6 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
                 </div>
               ) : apiKeys.map((k) => {
                 const isRevoked = k.status === 'Revoked';
-                // The full secret is only in memory right after create/regenerate (show-once).
                 const hasSecret = !!k.key;
                 const revealed = showKeyValue.has(k.id) && hasSecret && !isRevoked;
                 const masked = `${k.key_prefix || k.key?.substring(0, 20) || 'fidscript_live_'}••••••••••••`;
@@ -257,6 +257,13 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
         )}
 
         {activeTab === 'reference' && <ApiReference />}
+
+        {activeTab === 'vibe' && (
+          <VibeWizard
+            apiKey={apiKeys.find(k => k.status === 'Active' && k.key)?.key || ''}
+            clientName={undefined}
+          />
+        )}
       </div>
 
       {/* New key modal */}
