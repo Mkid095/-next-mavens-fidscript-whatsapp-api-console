@@ -55,6 +55,30 @@ export async function callEvolutionAPI(method: string, endpoint: string, body?: 
 }
 
 /**
+ * Checked variant for management/read operations (groups, chats, profile,
+ * instance). Unlike callEvolutionAPI, this exposes the HTTP status so callers
+ * can distinguish success from gateway errors. `ok` mirrors response.ok.
+ */
+export interface CheckedResult {
+  ok: boolean;
+  status: number;
+  data: EvolutionAPIResponse;
+}
+
+export async function callEvolutionAPIChecked(method: string, endpoint: string, body?: object): Promise<CheckedResult> {
+  const url = `${EVOLUTION_API_URL}${endpoint}`;
+  const options: RequestInit = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
+  };
+  if (body) options.body = JSON.stringify(body);
+  const response = await fetch(url, options);
+  let data: EvolutionAPIResponse = {};
+  try { data = await response.json() as EvolutionAPIResponse; } catch { /* non-JSON body */ }
+  return { ok: response.ok, status: response.status, data };
+}
+
+/**
  * Emit a connection state change event for an instance.
  * Used by SSE route to broadcast to subscribed clients.
  */

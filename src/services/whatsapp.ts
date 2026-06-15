@@ -25,6 +25,34 @@ function v1Send<T = SendResponse>(path: string, apiKey: string, body: Record<str
   return fetchApi<T>(path, { method: 'POST', headers, body: JSON.stringify(body) });
 }
 
+/** Generic v1 call for management/read ops (any method, optional body + query). */
+function v1Req<T = unknown>(method: string, path: string, apiKey: string, opts: { body?: Record<string, unknown>; query?: Record<string, unknown> } = {}): Promise<ApiResponse<T>> {
+  const qs = opts.query
+    ? '?' + Object.entries(opts.query).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')
+    : '';
+  return fetchApi<T>(`${path}${qs}`, { method, headers: { 'X-API-Key': apiKey }, body: opts.body ? JSON.stringify(opts.body) : undefined });
+}
+
+type GroupArgs = Record<string, unknown>;
+export const groups = {
+  create: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/create/${i}`, k, { body: b }),
+  updateSubject: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/update-subject/${i}`, k, { body: b }),
+  updateDescription: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/update-description/${i}`, k, { body: b }),
+  updatePicture: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/update-picture/${i}`, k, { body: b }),
+  fetchAll: (i: string, k: string, getParticipants = false) => v1Req('GET', `/api/v1/groups/fetch-all/${i}`, k, { query: { getParticipants } }),
+  find: (i: string, k: string, groupJid: string) => v1Req('GET', `/api/v1/groups/find/${i}`, k, { query: { groupJid } }),
+  findMembers: (i: string, k: string, groupJid: string) => v1Req('GET', `/api/v1/groups/find-members/${i}`, k, { query: { groupJid } }),
+  updateParticipant: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/update-participant/${i}`, k, { body: b }),
+  inviteCode: (i: string, k: string, groupJid: string) => v1Req('GET', `/api/v1/groups/invite-code/${i}`, k, { query: { groupJid } }),
+  revokeInvite: (i: string, k: string, groupJid: string) => v1Req('POST', `/api/v1/groups/revoke-invite/${i}`, k, { body: { groupJid } }),
+  findByInvite: (i: string, k: string, inviteCode: string) => v1Req('GET', `/api/v1/groups/find-by-invite/${i}`, k, { query: { inviteCode } }),
+  acceptInvite: (i: string, k: string, inviteCode: string) => v1Req('GET', `/api/v1/groups/accept-invite/${i}`, k, { query: { inviteCode } }),
+  sendInvite: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/send-invite/${i}`, k, { body: b }),
+  leave: (i: string, k: string, groupJid: string) => v1Req('DELETE', `/api/v1/groups/leave/${i}`, k, { query: { groupJid } }),
+  toggleEphemeral: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/toggle-ephemeral/${i}`, k, { body: b }),
+  updateSetting: (i: string, k: string, b: GroupArgs) => v1Req('POST', `/api/v1/groups/update-setting/${i}`, k, { body: b }),
+};
+
 export const apiV1 = {
   /** Validate an API key with no side effects. */
   whoami: (apiKey: string) =>

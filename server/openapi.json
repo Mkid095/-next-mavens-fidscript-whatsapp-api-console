@@ -1066,6 +1066,894 @@
           }
         }
       }
+    },
+    "/groups/create/{instance}": {
+      "post": {
+        "operationId": "groups.create",
+        "summary": "Create Group",
+        "description": "Create a new WhatsApp group with an initial participant list.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "description": "Subject",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Description",
+                    "type": "string"
+                  },
+                  "participants": {
+                    "description": "Phone numbers to add.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "subject",
+                  "participants"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/update-subject/{instance}": {
+      "post": {
+        "operationId": "groups.updateSubject",
+        "summary": "Update Subject",
+        "description": "Rename a group.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "subject": {
+                    "description": "Subject",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "subject"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/update-description/{instance}": {
+      "post": {
+        "operationId": "groups.updateDescription",
+        "summary": "Update Description",
+        "description": "Change the group description.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Description",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/update-picture/{instance}": {
+      "post": {
+        "operationId": "groups.updatePicture",
+        "summary": "Update Picture",
+        "description": "Set the group picture from an image URL.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "image": {
+                    "description": "Image URL",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "image"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/fetch-all/{instance}": {
+      "get": {
+        "operationId": "groups.fetchAll",
+        "summary": "Fetch All Groups",
+        "description": "List every group the instance belongs to.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "getParticipants": {
+                    "description": "Pass true to include member lists.",
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/find/{instance}": {
+      "get": {
+        "operationId": "groups.find",
+        "summary": "Find Group",
+        "description": "Get info for a single group by JID.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/find-members/{instance}": {
+      "get": {
+        "operationId": "groups.findMembers",
+        "summary": "Find Members",
+        "description": "List the members of a group.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/update-participant/{instance}": {
+      "post": {
+        "operationId": "groups.updateParticipant",
+        "summary": "Update Participant",
+        "description": "Add, remove, promote or demote members.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "action": {
+                    "description": "Action",
+                    "type": "string",
+                    "enum": [
+                      "add",
+                      "remove",
+                      "promote",
+                      "demote"
+                    ]
+                  },
+                  "participants": {
+                    "description": "Phone numbers.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "action",
+                  "participants"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/invite-code/{instance}": {
+      "get": {
+        "operationId": "groups.inviteCode",
+        "summary": "Invite Code",
+        "description": "Fetch the group invite code.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/revoke-invite/{instance}": {
+      "post": {
+        "operationId": "groups.revokeInvite",
+        "summary": "Revoke Invite",
+        "description": "Revoke and rotate the group invite code.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/find-by-invite/{instance}": {
+      "get": {
+        "operationId": "groups.findByInvite",
+        "summary": "Find By Invite",
+        "description": "Look up group metadata from an invite code.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inviteCode": {
+                    "description": "Invite code",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "inviteCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/accept-invite/{instance}": {
+      "get": {
+        "operationId": "groups.acceptInvite",
+        "summary": "Accept Invite",
+        "description": "Join a group via its invite code.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inviteCode": {
+                    "description": "Invite code",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "inviteCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/send-invite/{instance}": {
+      "post": {
+        "operationId": "groups.sendInvite",
+        "summary": "Send Invite",
+        "description": "Send a group invite link to numbers (as a message).",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Description",
+                    "type": "string"
+                  },
+                  "numbers": {
+                    "description": "Recipients to invite.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "numbers"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/leave/{instance}": {
+      "delete": {
+        "operationId": "groups.leave",
+        "summary": "Leave Group",
+        "description": "Leave a group.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "groupJid"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/toggle-ephemeral/{instance}": {
+      "post": {
+        "operationId": "groups.toggleEphemeral",
+        "summary": "Toggle Ephemeral",
+        "description": "Enable/disable disappearing messages. expiration = seconds (0 to disable).",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "expiration": {
+                    "description": "Expiration (s)",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "expiration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
+    },
+    "/groups/update-setting/{instance}": {
+      "post": {
+        "operationId": "groups.updateSetting",
+        "summary": "Update Setting",
+        "description": "Toggle announcement / lock state.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your WhatsApp instance name"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupJid": {
+                    "description": "The group JID (@g.us).",
+                    "type": "string"
+                  },
+                  "action": {
+                    "description": "Action",
+                    "type": "string",
+                    "enum": [
+                      "announcement",
+                      "not_announcement",
+                      "locked",
+                      "unlocked"
+                    ]
+                  }
+                },
+                "required": [
+                  "groupJid",
+                  "action"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Insufficient token balance"
+          }
+        }
+      }
     }
   },
   "components": {

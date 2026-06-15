@@ -26,9 +26,12 @@ export interface MessageKey { remoteJid: string; fromMe: boolean; id: string; }
 export interface ListSectionRow { title: string; description?: string; rowId: string; }
 export interface ListSection { title: string; rows: ListSectionRow[]; }
 
-/** Resolve the Evolution instance name for an instance record. */
-export const evolutionName = (ctx: SendContext): string =>
-  ctx.instance.evolution_name || `${ctx.instance.client_id}_${ctx.instance.name}`;
+/** Resolve the Evolution instance name from an instance record. */
+export const evolutionNameOf = (instance: { evolution_name?: string; client_id: string; name: string }): string =>
+  instance.evolution_name || `${instance.client_id}_${instance.name}`;
+
+/** Resolve the Evolution instance name for a request context. */
+export const evolutionName = (ctx: SendContext): string => evolutionNameOf(ctx.instance);
 
 /** Load an instance owned by a client (client_id promoted to a flat string). */
 export function getInstanceForClient(name: string, clientId: string): (Instance & { client_id: string }) | null {

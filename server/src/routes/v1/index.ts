@@ -6,6 +6,7 @@ import { v1VersionHeader } from '../../middleware/v1Version.js';
 import messagesRouter from './messages.js';
 import openapiRouter from './openapi.js';
 import usageRouter from './usage.js';
+import groupsRouter from './groups.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -41,5 +42,8 @@ router.use('/usage', v1Limiter, clientApiKeyAuth, V1_READ, usageRouter);
 
 // Messaging sends — plan-based rate limit (msg_per_min) on top of the IP bucket.
 router.use('/messages', v1Limiter, clientApiKeyAuth, clientRateLimit, messagesRouter);
+
+// Group management — free ops, V1_MUTATE limiter (auth applied per-route in the router).
+router.use('/groups', v1Limiter, groupsRouter);
 
 export default router;
