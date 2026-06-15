@@ -33,7 +33,10 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
   const [regenerateKeyName, setRegenerateKeyName] = useState('');
 
   // Track key secrets so they survive getAll() calls (which strip secrets for security)
-  const knownKeySecrets = useRef<Record<string, string>>({});
+  // Persisted to localStorage so secrets survive page refreshes
+  const knownKeySecrets = useRef<Record<string, string>>(
+    JSON.parse(localStorage.getItem('fidscript_key_secrets') || '{}')
+  );
 
   const fetchKeys = async () => {
     if (!clientToken) return;
@@ -64,6 +67,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     if (res.success && res.data) {
       const created = { ...res.data, last_used: 'Just now' } as KeyWithStats;
       knownKeySecrets.current[created.id] = created.key; // persist secret
+      localStorage.setItem('fidscript_key_secrets', JSON.stringify(knownKeySecrets.current));
       setApiKeys((prev) => [created, ...prev]);
       // Reveal the full secret once so the owner can copy it before it's masked forever.
       setShowKeyValue((prev) => new Set(prev).add(created.id));
@@ -110,6 +114,7 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
       if (res.success && res.data) {
         const newKey = res.data.key;
         knownKeySecrets.current[regenerateKeyId] = newKey; // persist new secret
+        localStorage.setItem('fidscript_key_secrets', JSON.stringify(knownKeySecrets.current));
         setApiKeys((prev) => prev.map((k) => k.id === regenerateKeyId
           ? { ...k, key: newKey, key_prefix: newKey.substring(0, 20), last_used: 'Just now' }
           : k));
