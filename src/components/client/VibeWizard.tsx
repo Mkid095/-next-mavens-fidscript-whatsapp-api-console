@@ -52,6 +52,7 @@ function generatePrompt(
   selectedEps: ApiEndpoint[],
   lang: CodeLang,
   baseUrl: string,
+  instanceName?: string,
 ): string {
   const lines: string[] = [];
   const nl = (s = '') => lines.push(s);
@@ -73,13 +74,20 @@ function generatePrompt(
   nl(`| Variable | Value |`);
   nl(`|---|---|`);
   nl(`| Base URL | \`${baseUrl}\` |`);
-  nl(`| API Key | \`${apiKey}\` |`);
+  if (apiKey) {
+    nl(`| API Key | \`${apiKey}\` |`);
+  }
+  if (instanceName) {
+    nl(`| Instance | \`${instanceName}\` |`);
+  }
   nl('');
-  nl(`**Auth header** required on every request:`);
-  nl('```');
-  nl(`X-API-Key: ${apiKey}`);
-  nl('```');
-  nl('');
+  if (apiKey) {
+    nl(`**Auth header** required on every request:`);
+    nl('```');
+    nl(`X-API-Key: ${apiKey}`);
+    nl('```');
+    nl('');
+  }
   nl(`## Quick Reference`);
   nl('');
   nl(`| What | Detail |`);
@@ -340,10 +348,10 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
   const [confirmed, setConfirmed] = useState(false);
 
   // Resolve the actual key string from selected key ID
-  const activeKey = apiKeys.find(k => k.id === selectedKeyId)?.key || apiKey;
+  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || apiKey || '';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center gap-3 p-4 bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl">
         <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
           <Bot className="w-5 h-5 text-blue-700" />
@@ -357,30 +365,33 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
       <div className="space-y-4">
         {/* API Key dropdown */}
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Select API Key</label>
+          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">API Key</label>
           <select
             value={selectedKeyId}
             onChange={e => setSelectedKeyId(e.target.value)}
             className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
           >
-            {apiKeys.length === 0 && <option value="">No active keys</option>}
-            {apiKeys.map(k => (
+            <option value="">— Select a key —</option>
+            {apiKeys.filter(k => k.key).map(k => (
               <option key={k.id} value={k.id}>
-                {k.name} — {k.key_prefix || k.key?.substring(0, 20) || '••••'}…
+                {k.name} — {k.key_prefix || k.key?.substring(0, 20)}…
               </option>
             ))}
           </select>
+          {apiKeys.length === 0 && (
+            <p className="text-[9px] text-amber-600 mt-1">No API keys found. Generate one in the "My API Keys" tab first.</p>
+          )}
         </div>
 
-        {/* Container dropdown */}
+        {/* Container dropdown — truly optional */}
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">WhatsApp Container</label>
+          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">WhatsApp Container <span className="normal-case font-normal text-stone-400">(optional)</span></label>
           <select
             value={selectedInstance}
             onChange={e => setSelectedInstance(e.target.value)}
             className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep"
           >
-            {instances.length === 0 && <option value="">No containers — create one first</option>}
+            <option value="">— Leave unset —</option>
             {instances.map(i => (
               <option key={i.id} value={i.name}>
                 {(i.display_name || i.name)} {i.phone_number ? `· ${i.phone_number}` : ''} [{i.status}]
@@ -389,26 +400,28 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
           </select>
         </div>
 
-        {/* Key reveal + base URL */}
-        <div className="p-3 bg-stone-50 border border-[#eaebe4] rounded-xl space-y-2">
-          <div className="flex items-center gap-2">
-            <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700 select-all truncate">
-              {revealed ? activeKey : activeKey.substring(0, 16) + '••••••••••••••••••••'}
-            </code>
-            <button onClick={() => setRevealed(v => !v)} className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors shrink-0">
-              {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+        {/* Key reveal + base URL — only show if we have a key */}
+        {activeKey && (
+          <div className="p-3 bg-stone-50 border border-[#eaebe4] rounded-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700 select-all truncate">
+                {revealed ? activeKey : activeKey.substring(0, 16) + '••••••••••••••••••••'}
+              </code>
+              <button onClick={() => setRevealed(v => !v)} className="p-2 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-xl transition-colors shrink-0">
+                {revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700">{PUBLIC_API_BASE}</code>
+              <CopyButton text={PUBLIC_API_BASE} label="Copy" />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 text-[11px] font-mono bg-white border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700">{PUBLIC_API_BASE}</code>
-            <CopyButton text={PUBLIC_API_BASE} label="Copy" />
-          </div>
-        </div>
+        )}
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
           <p className="text-[10px] text-amber-900 leading-relaxed">
-            This prompt will embed your API key and container name. Only use this wizard on a trusted device and paste the resulting prompt into your AI coding assistant (Cursor, Claude Code, Copilot, etc.) — never share the raw key publicly.
+            This prompt will embed your API key and container name if set. Only use this wizard on a trusted device and paste the result into your AI coding assistant.
           </p>
         </div>
 
@@ -417,11 +430,11 @@ function Step1Credentials({ apiKey, apiKeys, instances, selectedKeyId, setSelect
             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${confirmed ? 'bg-forest-deep border-forest-deep' : 'border-stone-300'}`}>
             {confirmed && <Check className="w-3 h-3 text-white" />}
           </button>
-          <span className="text-[11px] text-graphite">I understand the credentials will be embedded in the generated prompt</span>
+          <span className="text-[11px] text-graphite">I understand credentials may be embedded in the generated prompt</span>
         </label>
       </div>
 
-      <button onClick={onNext} disabled={!confirmed || (apiKeys.length > 0 && !selectedKeyId)}
+      <button onClick={onNext} disabled={!confirmed}
         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-forest-deep hover:bg-[#33301a] disabled:bg-stone-300 text-white text-xs font-bold rounded-xl transition-all">
         Continue to Endpoint Selection <ArrowRight className="w-4 h-4" />
       </button>
@@ -571,16 +584,17 @@ function Step2Select({ state, setState, onBack, onNext }: {
 
 // ── Step 3: Generated Prompt ────────────────────────────────────────────────
 
-function Step3Prompt({ apiKey, clientName, selectedEps, onBack }: {
+function Step3Prompt({ apiKey, clientName, selectedEps, instanceName, onBack }: {
   apiKey: string;
   clientName?: string;
   selectedEps: ApiEndpoint[];
+  instanceName?: string;
   onBack: () => void;
 }) {
   const [lang, setLang] = useState<CodeLang>('node');
   const [showFull, setShowFull] = useState(false);
 
-  const prompt = useMemo(() => generatePrompt(apiKey, clientName, selectedEps, lang, PUBLIC_API_BASE), [apiKey, clientName, selectedEps, lang]);
+  const prompt = useMemo(() => generatePrompt(apiKey, clientName, selectedEps, lang, PUBLIC_API_BASE, instanceName), [apiKey, clientName, selectedEps, lang, instanceName]);
 
   const LANG_OPTIONS: { id: CodeLang; label: string }[] = [
     { id: 'node', label: 'JavaScript' },
@@ -668,17 +682,15 @@ function Step3Prompt({ apiKey, clientName, selectedEps, onBack }: {
 export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
 
-  // Which API key is selected in Step 1
-  const [selectedKeyId, setSelectedKeyId] = useState<string>(apiKeys[0]?.id || '');
-  // Which container is selected in Step 1
-  const [selectedInstance, setSelectedInstance] = useState<string>(
-    instances.find(i => i.status === 'connected')?.name
-    || instances[0]?.name
-    || ''
-  );
+  // Which API key is selected in Step 1 — default to first key that has a usable value
+  const firstUsableKey = apiKeys.find(k => k.key) || apiKeys[0];
+  const [selectedKeyId, setSelectedKeyId] = useState<string>(firstUsableKey?.id || '');
+
+  // Container selection — optional, starts empty
+  const [selectedInstance, setSelectedInstance] = useState<string>('');
 
   // Derive the actual key string from selected key ID
-  const activeKey = apiKeys.find(k => k.id === selectedKeyId)?.key || apiKey;
+  const activeKey = (selectedKeyId ? apiKeys.find(k => k.id === selectedKeyId)?.key : null) || apiKey || '';
 
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
@@ -694,7 +706,7 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
   const stepLabels = ['Verify Credentials', 'Select Endpoints', 'AI Integration Prompt'];
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Step indicator */}
       <div className="flex items-center gap-0 flex-wrap">
         {([1, 2, 3] as WizardStep[]).map((s, i) => (
@@ -734,6 +746,7 @@ export default function VibeWizard({ apiKey, clientName, apiKeys, instances }: V
               apiKey={activeKey}
               clientName={clientName}
               selectedEps={selectedEps}
+              instanceName={selectedInstance}
               onBack={() => setStep(2)}
             />
           </motion.div>
