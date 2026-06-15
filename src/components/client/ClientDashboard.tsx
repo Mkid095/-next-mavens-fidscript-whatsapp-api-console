@@ -5,6 +5,7 @@ import Sidebar, { ClientSection } from '../Sidebar';
 import BottomNav from '../shared/BottomNav';
 import { UpdateToast } from '../shared/UpdateToast';
 import ClientContent from './ClientContent';
+import { useInstanceSSE, type InstanceStateChange } from './whatsapp/useInstanceSSE';
 
 interface ClientDashboardProps {
   client: Client;
@@ -72,6 +73,23 @@ export default function ClientDashboard({
   const [previousBalance, setPreviousBalance] = useState<number | undefined>();
 
   const activeSection = pathToSection(location.pathname);
+
+  // Always-on real-time bridge: keeps SSE alive on every page (messages,
+  // dashboard, etc.), not just the containers grid. Updates flow back through
+  // onInstancesChange so every consumer re-renders with fresh status.
+  useInstanceSSE(instances, (name: string, change: InstanceStateChange) => {
+    onInstancesChange(prev =>
+      prev.map(i =>
+        i.name === name
+          ? {
+              ...i,
+              status: change.state,
+              phone_number: change.state === 'disconnected' ? null : (change.phoneNumber || i.phone_number),
+            }
+          : i,
+      ),
+    );
+  });
 
   const handleSectionChange = useCallback((section: ClientSection) => {
     navigate(sectionToPath(section));

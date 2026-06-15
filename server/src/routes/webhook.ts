@@ -4,6 +4,7 @@ import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage } from '../ut
 import { parseIncomingMessage } from '../utils/messageParser.js';
 import { logAuditAction } from '../utils/audit.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
+import { normalizePhone } from '../utils/phone.js';
 
 const router = Router();
 
@@ -101,12 +102,11 @@ router.post('/evolution', async (req: Request, res: Response) => {
       const senderJid = (sender as string | undefined) || key.remoteJid;
       const remoteJid = key.remoteJid || '';
       const isGroup = remoteJid.includes('@g.us');
-      // For groups: chat_id = the group JID, from_number = the sender's phone
-      // For individual: chat_id = sender's phone, from_number = sender's phone
-      const chatId: string = isGroup
-        ? (remoteJid || '')
-        : (senderJid ? (extractPhoneFromJid(senderJid) || remoteJid) : remoteJid);
-      const phone = senderJid ? extractPhoneFromJid(senderJid) : null;
+      // Canonical sender phone. Group thread = group JID; individual thread = the
+      // normalized sender phone, so incoming + outgoing for the same person join.
+      const rawPhone = senderJid ? extractPhoneFromJid(senderJid) : null;
+      const phone = rawPhone ? normalizePhone(rawPhone) : null;
+      const chatId: string = isGroup ? (remoteJid || '') : (phone || remoteJid);
       const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
       const pushName = data?.pushName as string | undefined;
 
@@ -130,6 +130,16 @@ router.post('/evolution', async (req: Request, res: Response) => {
       }
 
       if (phone && !isGroup) {
+        // Auto-provision: any new number that texts in becomes a contact (deduped
+        // by canonical phone) so it resolves to a name instead of a raw number.
+        const existing = db.prepare('SELECT id, name FROM contacts WHERE client_id = ? AND phone = ?').get(instance.client_id, phone) as { id: string; name: string | null } | undefined;
+        if (!existing) {
+          db.prepare('INSERT INTO contacts (id, client_id, phone, name, tags) VALUES (?, ?, ?, ?, ?)')
+            .run(`auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, instance.client_id, phone, pushName || '', 'auto');
+        } else if (pushName && !existing.name) {
+          db.prepare('UPDATE contacts SET name = ? WHERE id = ?').run(pushName, existing.id);
+        }
+
         const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
         if (!current?.phone_number) {
           db.prepare('UPDATE instances SET phone_number = ? WHERE name = ?').run(phone, instance.name);

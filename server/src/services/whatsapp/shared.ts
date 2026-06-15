@@ -5,6 +5,7 @@ import type { Instance, Client } from '../../types.js';
 import { emitTokenUpdate } from '../../utils/evolution.js';
 import { logApiRequest } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
+import { normalizePhone } from '../../utils/phone.js';
 
 export interface SendContext {
   instance: Instance & { client_id: string };
@@ -63,11 +64,35 @@ export function chargeAndEmit(ctx: SendContext, cost: number, reference: string)
   return true;
 }
 
-export function saveSentMessage(instanceId: string, clientId: string, msgId: string, to: string, content: string, messageType = 'text', mediaUrl?: string) {
+/** Refund a previously-charged amount when a send fails at the gateway. */
+export function refundTokens(ctx: SendContext, amount: number, reference: string): void {
+  db.prepare('UPDATE clients SET token_balance = token_balance + ? WHERE id = ?').run(amount, ctx.instance.client_id);
+  const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(ctx.instance.client_id) as { token_balance: number };
+  db.prepare('INSERT INTO token_transactions (id, client_id, type, amount, reference) VALUES (?, ?, ?, ?, ?)')
+    .run(`txn_${uuidv4().substring(0, 8)}`, ctx.instance.client_id, 'refund', amount, reference);
+  emitTokenUpdate(ctx.instance.name, updated?.token_balance ?? 0);
+}
+
+export function saveSentMessage(
+  instanceId: string,
+  clientId: string,
+  msgId: string,
+  to: string,
+  content: string,
+  messageType = 'text',
+  mediaUrl?: string,
+  chatId?: string,
+  isGroup = 0,
+) {
+  // Store the recipient in canonical form so outgoing rows join the SAME thread
+  // as incoming rows for that contact. Group JIDs and non-numeric targets
+  // ('status') fall back gracefully.
+  const normalized = normalizePhone(to);
+  const chat = chatId || normalized || null;
   db.prepare(`
-    INSERT INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction)
-    VALUES (?, ?, ?, ?, '', ?, ?, ?, 1, 'outgoing')
-  `).run(msgId, instanceId, clientId, to, messageType, content, mediaUrl || null);
+    INSERT INTO inbox_messages (id, instance_id, client_id, from_number, from_name, message_type, content, media_url, is_read, direction, chat_id, is_group)
+    VALUES (?, ?, ?, ?, '', ?, ?, ?, 1, 'outgoing', ?, ?)
+  `).run(msgId, instanceId, clientId, normalized || to, messageType, content, mediaUrl || null, chat, isGroup);
 }
 
 export function updateCounters(instanceName: string, clientId: string) {
@@ -75,9 +100,19 @@ export function updateCounters(instanceName: string, clientId: string) {
   db.prepare('UPDATE clients SET msg_count_today = msg_count_today + 1, total_messages = total_messages + 1 WHERE id = ?').run(clientId);
 }
 
-export function finalize(ctx: SendContext, msgId: string, to: string, content: string, type: string, mediaUrl: string | undefined, logBody: string) {
+export function finalize(
+  ctx: SendContext,
+  msgId: string,
+  to: string,
+  content: string,
+  type: string,
+  mediaUrl: string | undefined,
+  logBody: string,
+  chatId?: string,
+  isGroup = 0,
+) {
   updateCounters(ctx.instance.name, ctx.instance.client_id);
-  saveSentMessage(ctx.instance.id, ctx.instance.client_id, msgId, to, content, type, mediaUrl);
+  saveSentMessage(ctx.instance.id, ctx.instance.client_id, msgId, to, content, type, mediaUrl, chatId, isGroup);
   logApiRequest(ctx.req, ctx.instance.id, ctx.instance.client_id, 200, logBody);
   emitDashboardRefresh(ctx.instance.client_id);
 }

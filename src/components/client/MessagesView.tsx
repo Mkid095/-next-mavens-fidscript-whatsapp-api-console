@@ -6,6 +6,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clientMessagesApi, contactsApi, instancesApi, refreshDashboard } from '../../services/api';
 import type { ClientMessage, Contact, Instance } from '../../services/api';
+import { normalizePhone } from '../../utils/phone';
 import ChatList from './ChatList';
 import ChatPanel from './ChatPanel';
 import NewChatPanelInline from './NewChatPanelInline';
@@ -80,17 +81,17 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
   }, []);
 
   useEffect(() => {
-    const savedContactMap = new Map(savedContacts.map(c => [c.phone, c.name || c.phone]));
+    const savedContactMap = new Map(savedContacts.map(c => [normalizePhone(c.phone), c.name || c.phone]));
     const map = new Map<string, ConversationContact>();
     messages.forEach(msg => {
       const isGroup = !!msg.is_group;
-      const chatId = msg.chat_id || msg.from_number;
-      const phone = msg.from_number;
-      // For groups: display the group name or the group JID. For individual: phone.
+      const chatId = msg.chat_id || normalizePhone(msg.from_number);
+      const phone = normalizePhone(msg.from_number);
+      // For groups: display the group name or the group JID. For individual: saved name or pushName or number.
       const savedName = !isGroup ? savedContactMap.get(phone) : null;
       const displayName = isGroup
         ? (msg.from_name || msg.chat_id?.replace('@g.us', '') || 'Group')
-        : (savedName || msg.from_name || phone);
+        : (savedName || msg.from_name || msg.from_number);
       if (!map.has(chatId)) {
         map.set(chatId, { chatId, name: displayName, lastMessage: msg.content || `[${msg.message_type}]`, lastTime: msg.timestamp, unread: msg.is_read === 0 ? 1 : 0, instanceName: msg.instance_name, isGroup });
       } else {
@@ -125,13 +126,13 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
 
   const conversationMessages = messages
     .filter(m => {
-      const chatId = m.chat_id || m.from_number;
+      const chatId = m.chat_id || normalizePhone(m.from_number);
       return selectedPhone ? chatId === selectedPhone : true;
     })
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   const selectedContact = contacts.find(c => c.chatId === selectedPhone);
-  const selectedContactDetails = savedContacts.find(c => c.phone === selectedPhone);
+  const selectedContactDetails = savedContacts.find(c => normalizePhone(c.phone) === selectedPhone);
 
   const handleSendReply = async () => {
     const instanceIsConnected = connectedInstances.some(i => i.name === selectedInstance);
@@ -144,6 +145,7 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
         const sentMsg: ClientMessage = {
           id: res.data.messageId,
           from_number: selectedPhone,
+          chat_id: selectedPhone,
           from_name: selectedContact?.name || selectedPhone,
           message_type: 'text',
           content: replyText.trim(),
@@ -283,8 +285,8 @@ export default function MessagesView({ clientToken, instances, onTokenDeduct }: 
           <NewChatPanelInline
             savedContacts={savedContacts}
             clientToken={clientToken}
-            onSelectContact={(phone) => { setSelectedPhone(phone); setShowNewChatInline(false); }}
-            onContactCreated={(contact) => { setSavedContacts(prev => [contact, ...prev]); setSelectedPhone(contact.phone); setShowNewChatInline(false); }}
+            onSelectContact={(phone) => { setSelectedPhone(normalizePhone(phone)); setShowNewChatInline(false); }}
+            onContactCreated={(contact) => { setSavedContacts(prev => [contact, ...prev]); setSelectedPhone(normalizePhone(contact.phone)); setShowNewChatInline(false); }}
             onClose={() => setShowNewChatInline(false)}
           />
         ) : (
