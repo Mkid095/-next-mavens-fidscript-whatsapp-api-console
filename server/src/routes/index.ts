@@ -18,6 +18,7 @@ import versionsRoutes from './versions.js';
 import webhookRoutes from './webhook.js';
 import sandboxRoutes from './sandbox.js';
 import v1Routes from './v1/index.js';
+import platformRoutes from './platform/index.js';
 
 export function registerRoutes(app: Express): void {
   const apiLimiter = rateLimit({
@@ -48,4 +49,6 @@ export function registerRoutes(app: Express): void {
   app.use('/api/sandbox', apiLimiter, sandboxRoutes);
   // Public API namespace for external integrators (API-key auth, own rate limit)
   app.use('/api/v1', v1Routes);
+  // Platform API — customer-centric reads + operational writes (client JWT, workspace-scoped)
+  app.use('/api/platform', apiLimiter, platformRoutes);
 }

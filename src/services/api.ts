@@ -1,79 +1,28 @@
-// FIDScript API Service
-// Core fetch utility + re-exports for backward compatibility
+// FIDScript API Service — COMPAT SHIM
+// Core transport (fetchApi, API_BASE_URL, tokens, response types) now lives in
+// src/data/api/client.ts — the canonical data layer (§16). This file re-exports
+// it so existing imports (`services/api`) keep working during migration. New
+// code should import from `src/data` instead.
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3099';
-
-interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-interface PaginatedResponse<T = unknown> extends ApiResponse<T> {
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-function getAdminToken(): string | null {
-  return localStorage.getItem('fidscript_admin_token');
-}
-
-function getClientToken(): string | null {
-  return localStorage.getItem('fidscript_client_token');
-}
-
-function getAuthHeaders(): HeadersInit {
-  const token = getAdminToken() || getClientToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-        ...options.headers,
-      },
-    });
-
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      return {
-        success: false,
-        error: `Unexpected response: ${response.status} ${text.substring(0, 100)}`,
-      };
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Network error',
-    };
-  }
-}
+export {
+  API_BASE_URL,
+  fetchApi,
+  getAuthHeaders,
+  getAdminToken,
+  getClientToken,
+} from '../data/api/client.js';
+export type { ApiResponse, PaginatedResponse } from '../data/api/client.js';
 
 // ====================
-// SSE HELPERS
+// SSE HELPERS (transport-aware, retained here)
 // ====================
 
-/**
- * Create an EventSource for real-time instance connection state updates.
- * The SSE endpoint is unauthenticated relative to the EventSource API
- * (it uses the same client JWT from localStorage that the rest of the app uses).
- */
+import { API_BASE_URL as BASE } from '../data/api/client.js';
+
+/** Create an EventSource for real-time instance connection state updates. */
 export function createInstanceSSE(instanceName: string): EventSource {
   const token = localStorage.getItem('fidscript_client_token') || localStorage.getItem('fidscript_admin_token') || '';
-  const url = `${API_BASE_URL}/api/sse/instance/${encodeURIComponent(instanceName)}?token=${encodeURIComponent(token)}`;
+  const url = `${BASE}/api/sse/instance/${encodeURIComponent(instanceName)}?token=${encodeURIComponent(token)}`;
   return new EventSource(url);
 }
 
@@ -87,16 +36,11 @@ export async function refreshDashboard(): Promise<void> {
 }
 
 // ====================
-// RE-EXPORTS
+// RE-EXPORTS (domain services + types)
 // ====================
 
-export { API_BASE_URL, fetchApi, getAuthHeaders };
-export type { ApiResponse, PaginatedResponse };
-
-// Types
 export type { InstanceStatus, Instance, ApiLog, InstanceSettings, AnalyticsData, DailyTrend, TopClient, TopInstance, TokenPackage, DailyUsage } from './types';
 
-// Service APIs
 export { authApi } from './auth';
 export { adminApi } from './admin';
 export { clientsApi, plansApi } from './clients';

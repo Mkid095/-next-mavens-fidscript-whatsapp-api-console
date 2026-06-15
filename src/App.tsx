@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { authApi, adminApi, clientsApi, instancesApi, plansApi, paymentsApi } from './services/api';
+import { AppProviders } from './data';
 import type { Instance, Client, Plan, ApiLog, AnalyticsData, TokenPackage, DailyUsage, TokenTransaction, ClientMessage } from './services/api';
 import { LoadingScreen } from './components/shared/LoadingScreen';
 import LandingPage from './components/LandingPage';
@@ -218,7 +219,9 @@ function AppContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AppProviders>
+        <AppContent />
+      </AppProviders>
     </BrowserRouter>
   );
 }
