@@ -1,16 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { clientJwtAuth } from '../middleware/auth.js';
 import db from '../database.js';
-import { callEvolutionAPI } from '../utils/evolution.js';
-import { logApiRequest } from '../utils/audit.js';
 
 const router = Router();
 
 /**
  * POST /api/sandbox/exec
- * Proxy any Evolution API request for testing purposes.
+ * Proxy a real /api/v1 request using the client's own API key.
  * Accepts: { method, endpoint, pathParams?, body?, instanceName? }
- * Returns: the raw Evolution API response
+ * Returns: the raw /api/v1 response
  */
 router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
   try {
@@ -26,17 +24,42 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'endpoint is required' });
     }
 
-    // Build the full Evolution API path
-    // If instanceName is provided and endpoint uses :instanceName, substitute it
-    let evolutionPath = endpoint;
-    if (instanceName && endpoint.includes(':instanceName')) {
-      evolutionPath = endpoint.replace(':instanceName', instanceName);
+    // Look up the client's active API key (first active key found)
+    const activeKey = db.prepare(
+      `SELECT key FROM client_api_keys WHERE client_id = ? AND status = 'Active' ORDER BY created_at DESC LIMIT 1`
+    ).get(req.client!.id) as { key: string } | undefined;
+
+    if (!activeKey) {
+      return res.status(400).json({ success: false, error: 'No active API key found. Generate one in API Keys first.' });
     }
 
-    // Call Evolution API
-    const result = await callEvolutionAPI(method.toUpperCase(), evolutionPath, body || {});
+    // Build the /api/v1 path — substitute instanceName if present
+    let v1Path = endpoint;
+    if (instanceName && endpoint.includes(':instanceName')) {
+      v1Path = endpoint.replace(':instanceName', encodeURIComponent(instanceName));
+    }
 
-    res.json({ success: true, data: result });
+    const apiBase = process.env.PUBLIC_API_BASE || 'https://whatsapp.fidscript.com/api';
+    const url = `${apiBase}${v1Path}`;
+
+    const fetchOptions: RequestInit = {
+      method: method.toUpperCase(),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': activeKey.key,
+      },
+    };
+
+    if (!['GET', 'HEAD'].includes(fetchOptions.method!) && body) {
+      fetchOptions.body = JSON.stringify(body);
+    }
+
+    const result = await fetch(url, fetchOptions);
+    let data: Record<string, unknown> = {};
+    try { Object.assign(data, await result.json()); } catch { /* ignore */ }
+    const errorMsg = result.ok ? undefined : ('error' in data ? String(data.error) : `HTTP ${result.status}`);
+
+    res.json({ success: result.ok, data, error: errorMsg });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }
