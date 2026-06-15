@@ -1,13 +1,6 @@
-import jsQR from 'jsqr';
-
 /**
- * Transform a blue-on-white QR code data URL into a black-on-white QR,
- * then overlay a transparent PNG logo in the center.
- *
- * Pipeline:
- *   1. Decode QR from image pixels using jsQR
- *   2. Redraw QR modules as black squares on a fresh canvas
- *   3. Overlay the transparent logo centered on top (no background circle)
+ * Convert the blue-on-white QR from Evolution API to black-on-white,
+ * then overlay a transparent logo square in the center (no circular clip, no padding).
  */
 export async function overlayLogoOnQR(
   qrDataUrl: string,
@@ -21,50 +14,44 @@ export async function overlayLogoOnQR(
       canvas.height = qrImg.height;
       const ctx = canvas.getContext('2d')!;
 
-      // Step 1: Draw the original QR (blue modules on white)
+      // Draw the original QR
       ctx.drawImage(qrImg, 0, 0);
+
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
 
-      // Step 2: Decode the QR
-      const qr = jsQR(imageData.data, canvas.width, canvas.height, {
-        inversionAttempts: 'dontInvert',
-      });
-
-      if (!qr) {
-        // Fallback: return original if decode fails
-        resolve(qrDataUrl);
-        return;
-      }
-
-      // Step 3: Clear canvas to white background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Step 4: Redraw QR modules as BLACK
-      const moduleSize = Math.floor(canvas.width / qr.width);
-      ctx.fillStyle = '#000000';
-      for (let y = 0; y < qr.height; y++) {
-        for (let x = 0; x < qr.width; x++) {
-          if (qr.data[y * qr.width + x]) {
-            ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
-          }
+      // Iterate every pixel: if it's blue-ish (the QR modules), make it black
+      // Evolution QR uses blue modules — detect via high blue channel relative to red/green
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        // Blue module: B is dominant, R is low (blue = 0-120, R = 150-255 white background)
+        if (b > r && b > g && b > 80 && r < 200) {
+          data[i] = 0;     // R → 0 (black)
+          data[i + 1] = 0; // G → 0
+          data[i + 2] = 0; // B → 0
         }
+        // White/light background: leave as-is
       }
 
-      // Step 5: Overlay transparent logo (no background circle)
+      ctx.putImageData(imageData, 0, 0);
+
+      // Overlay transparent logo as a square (no circular clip, no padding)
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       logoImg.onload = () => {
-        const logoSize = Math.round(canvas.width * 0.18);
+        const logoSize = Math.round(canvas.width * 0.16); // 16% of QR size
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, logoSize / 2, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(logoImg, cx - logoSize / 2, cy - logoSize / 2, logoSize, logoSize);
-        ctx.restore();
+        ctx.drawImage(
+          logoImg,
+          cx - logoSize / 2,
+          cy - logoSize / 2,
+          logoSize,
+          logoSize
+        );
 
         resolve(canvas.toDataURL('image/png'));
       };
