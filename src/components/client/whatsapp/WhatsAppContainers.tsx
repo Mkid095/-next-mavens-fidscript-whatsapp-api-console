@@ -77,12 +77,13 @@ function openSSE(inst: Instance, onInstancesChange: (cb: (prev: Instance[]) => I
     }
   });
 
-  es.onclose = () => {
-    closeSSE(inst.name);
-  };
-
   es.onerror = () => {
-    // Let onclose handle cleanup
+    // EventSource has no onclose — on transient errors it auto-reconnects, so we
+    // keep the controller. Only drop it once the stream is truly dead, otherwise
+    // the stale entry blocks re-opening (the has() guard above) on reconnect.
+    if (es.readyState === EventSource.CLOSED) {
+      closeSSE(inst.name);
+    }
   };
 }
 

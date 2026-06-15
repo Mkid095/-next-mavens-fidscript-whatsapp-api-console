@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Instance } from '../../../services/api';
 import { instancesApi } from '../../../services/api';
+import { useConnectionPolling } from './useConnectionPolling';
 
 interface UseInstanceConnectionProps {
   instances: Instance[];
@@ -14,87 +15,74 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
   const [regeneratingQR, setRegeneratingQR] = useState(false);
   const [connectionError, setConnectionError] = useState('');
   const esRef = useRef<EventSource | null>(null);
-  // Prevent reconnection loops
-  const reconnectAttempts = useRef(0);
-  // Set to true when the user explicitly closed the modal (don't reconnect)
+  // True once the user explicitly closed the modal — suppresses any cleanup side effects.
   const closingManually = useRef(false);
 
-  // Clean up SSE on unmount
+  // Polling fallback (every 3s) in case a proxy strips the SSE stream.
+  const { startPolling, stopPolling } = useConnectionPolling(instances, onInstancesChange);
+
   useEffect(() => {
     return () => {
-      if (esRef.current) {
-        esRef.current.close();
-        esRef.current = null;
-      }
+      if (esRef.current) { esRef.current.close(); esRef.current = null; }
+      stopPolling();
     };
-  }, []);
+  }, [stopPolling]);
 
-  // Opens SSE connection for real-time connection state updates
+  // Tear down both listeners + close the modal once a scan resolves (connected or disconnected).
+  const resolvePairing = useCallback(() => {
+    stopPolling();
+    if (esRef.current) { esRef.current.close(); esRef.current = null; }
+    setPairingInstance(null);
+    setPairingQR('');
+  }, [stopPolling]);
+
+  /**
+   * SSE listener for real-time connection state. The backend emits a NAMED
+   * `stateChange` event — `onmessage` never fires for named events, so we must
+   * use addEventListener('stateChange'). Polling is wired alongside as a fallback.
+   */
   const openSSEConnection = useCallback((inst: Instance) => {
-    if (esRef.current) {
-      esRef.current.close();
-      esRef.current = null;
-    }
+    if (esRef.current) { esRef.current.close(); esRef.current = null; }
     const token = localStorage.getItem('fidscript_client_token');
     if (!token) return;
 
-    reconnectAttempts.current = 0;
     closingManually.current = false;
-
     const es = new EventSource(`/api/sse/instance/${inst.name}?token=${encodeURIComponent(token)}`);
     esRef.current = es;
 
-    es.onmessage = (event) => {
+    const handleStateChange = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data) as { state: string; phoneNumber: string | null };
         if (data.state === 'connected') {
-          const updated = instances.map(i =>
-            i.id === pairingInstance?.id
+          // Use the passed inst, not pairingInstance — at call time setState hasn't flushed yet.
+          onInstancesChange(instances.map(i =>
+            i.id === inst.id
               ? { ...i, status: 'connected' as const, phone_number: data.phoneNumber || i.phone_number }
               : i
-          );
-          onInstancesChange(updated);
-          setPairingInstance(null);
-          setPairingQR('');
-          es.close();
-          esRef.current = null;
+          ));
+          resolvePairing();
         } else if (data.state === 'disconnected') {
-          // Phone logged out — update UI to show disconnected
-          const updated = instances.map(i =>
-            i.id === pairingInstance?.id
+          onInstancesChange(instances.map(i =>
+            i.id === inst.id
               ? { ...i, status: 'disconnected' as const, phone_number: null }
               : i
-          );
-          onInstancesChange(updated);
-          setPairingInstance(null);
-          setPairingQR('');
-          es.close();
-          esRef.current = null;
+          ));
+          resolvePairing();
         }
       } catch {
         // Ignore malformed messages
       }
     };
-
-    // onclose fires when the stream ends — attempt reconnect if not closing manually
-    es.onclose = () => {
-      if (closingManually.current) {
-        esRef.current = null;
-        return;
-      }
-      if (reconnectAttempts.current < 3) {
-        reconnectAttempts.current++;
-        setTimeout(() => openSSEConnection(inst), 2000);
-      } else {
-        esRef.current = null;
-      }
-    };
+    es.addEventListener('stateChange', handleStateChange);
 
     es.onerror = () => {
-      // Don't close here — let onclose handle cleanup and reconnection
-      // EventSource auto-reconnects on transient errors
+      // EventSource auto-reconnects on transient errors. Only drop our ref when
+      // the stream is truly dead; the polling fallback keeps detection working.
+      if (es.readyState === EventSource.CLOSED && !closingManually.current) {
+        esRef.current = null;
+      }
     };
-  }, [instances, pairingInstance, onInstancesChange]);
+  }, [instances, onInstancesChange, resolvePairing]);
 
   // Opens the modal and fetches a fresh QR for the given instance
   const handleConnect = useCallback(async (inst: Instance) => {
@@ -107,16 +95,16 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
       const res = await instancesApi.connect(inst.name);
       if (res.success && res.data) {
         setPairingQR(res.data.qrcode_image || res.data.qrcode || '');
-        // Open SSE connection to receive real-time connection state updates
         openSSEConnection(inst);
+        startPolling(inst, resolvePairing); // fallback if SSE is stripped
       } else {
         setConnectionError(res.error || 'Failed to generate QR code');
       }
     } catch {
-      setConnectionError('Failed to connect to Evolution API');
+      setConnectionError('Failed to generate QR code');
     }
     setGeneratingQR(false);
-  }, [openSSEConnection]);
+  }, [openSSEConnection, startPolling, resolvePairing]);
 
   // Regenerates a new QR — must logout first to clear the old session, then connect
   const handleRegenerateQR = useCallback(async () => {
@@ -124,7 +112,6 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     setRegeneratingQR(true);
     setConnectionError('');
     try {
-      // Clear the old session so Evolution API issues a fresh QR
       await instancesApi.disconnect(pairingInstance.name);
       const res = await instancesApi.connect(pairingInstance.name);
       if (res.success && res.data) {
@@ -133,38 +120,35 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
         setConnectionError(res.error || 'Failed to regenerate QR code');
       }
     } catch {
-      setConnectionError('Failed to connect to Evolution API');
+      setConnectionError('Failed to regenerate QR code');
     }
     setRegeneratingQR(false);
   }, [pairingInstance]);
 
-  // Manual check — kept for user-initiated fallback when SSE fails
+  // Manual check — user-initiated fallback when SSE/polling haven't fired
   const handleSimulateSuccessfulScan = useCallback(async () => {
     if (!pairingInstance) return;
     try {
       const res = await instancesApi.getConnectionState(pairingInstance.name);
       if (res.success && res.data && res.data.status === 'connected') {
-        const updated = instances.map(i =>
+        onInstancesChange(instances.map(i =>
           i.id === pairingInstance.id
             ? { ...i, status: 'connected' as const, phone_number: res.data.phone_number || i.phone_number }
             : i
-        );
-        onInstancesChange(updated);
-        setPairingInstance(null);
-        setPairingQR('');
+        ));
+        resolvePairing();
       }
     } catch {
-      // Silently fail — SSE will catch the real event
+      // Silently fail — SSE/polling will catch the real event
     }
-  }, [pairingInstance, instances, onInstancesChange]);
+  }, [pairingInstance, instances, onInstancesChange, resolvePairing]);
 
   const handleDisconnect = useCallback(async (inst: Instance) => {
     try {
       await instancesApi.disconnect(inst.name);
-      const updated = instances.map(i =>
+      onInstancesChange(instances.map(i =>
         i.id === inst.id ? { ...i, status: 'disconnected' as const, phone_number: null } : i
-      );
-      onInstancesChange(updated);
+      ));
     } catch (err) {
       console.error('Failed to disconnect', err);
     }
@@ -181,14 +165,9 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
 
   const handleClosePairingModal = useCallback(() => {
     closingManually.current = true;
-    if (esRef.current) {
-      esRef.current.close();
-      esRef.current = null;
-    }
-    setPairingInstance(null);
-    setPairingQR('');
+    resolvePairing();
     setConnectionError('');
-  }, []);
+  }, [resolvePairing]);
 
   return {
     pairingInstance,
