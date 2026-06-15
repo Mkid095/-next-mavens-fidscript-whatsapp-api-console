@@ -46,7 +46,7 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
       method: method.toUpperCase(),
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': activeKey.key,
+        'X-API-Key': activeKey.api_key,
       },
     };
 
