@@ -1,7 +1,7 @@
 /**
- * Convert the blue-on-white QR from Evolution API to forest-deep brown
- * (matching the modal's dark background), then overlay the transparent logo
- * in a recess of the same color so it blends in seamlessly.
+ * Convert the blue-on-white QR from Evolution API to forest-deep brown.
+ * Simple approach: any pixel that isn't close to white → QR module → recolor.
+ * Then cut a recess for the logo in the same color.
  */
 export async function overlayLogoOnQR(
   qrDataUrl: string,
@@ -15,18 +15,17 @@ export async function overlayLogoOnQR(
       canvas.height = qrImg.height;
       const ctx = canvas.getContext('2d')!;
 
-      // Draw the original QR
       ctx.drawImage(qrImg, 0, 0);
-
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
 
-      // Change blue QR modules to forest-deep brown (#14130a)
+      // Replace any pixel that is not near-white with forest-deep brown (#14130a)
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
-        if (b > r && b > g && b > 80 && r < 200) {
+        // If pixel is not close to white (not R>200 and G>200 and B>200)
+        if (!(r > 200 && g > 200 && b > 200)) {
           data[i] = 20;     // #14130a
           data[i + 1] = 19;
           data[i + 2] = 10;
@@ -35,38 +34,24 @@ export async function overlayLogoOnQR(
 
       ctx.putImageData(imageData, 0, 0);
 
-      // Overlay transparent logo — larger, in a recess of the same QR-module color
+      // Cut logo recess and overlay logo — same color as QR modules so it blends in
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       logoImg.onload = () => {
-        const logoSize = Math.round(canvas.width * 0.22); // 22% — bigger
+        const logoSize = Math.round(canvas.width * 0.22);
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        // Recess square in the same forest-deep color (same as QR modules)
-        // This makes the logo look like it sits flush in the QR — no border, no contrast
+        // Recess in forest-deep — same color as QR modules
         ctx.fillStyle = '#14130a';
-        ctx.fillRect(
-          cx - logoSize / 2,
-          cy - logoSize / 2,
-          logoSize,
-          logoSize
-        );
+        ctx.fillRect(cx - logoSize / 2, cy - logoSize / 2, logoSize, logoSize);
 
-        // Draw logo on top, filling the recess
-        ctx.drawImage(
-          logoImg,
-          cx - logoSize / 2,
-          cy - logoSize / 2,
-          logoSize,
-          logoSize
-        );
+        // Logo fills the recess
+        ctx.drawImage(logoImg, cx - logoSize / 2, cy - logoSize / 2, logoSize, logoSize);
 
         resolve(canvas.toDataURL('image/png'));
       };
-      logoImg.onerror = () => {
-        resolve(canvas.toDataURL('image/png'));
-      };
+      logoImg.onerror = () => resolve(canvas.toDataURL('image/png'));
       logoImg.src = logoUrl;
     };
     qrImg.onerror = () => reject(new Error('Failed to load QR image'));
