@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Terminal, Copy, Check, Zap, X, MessageSquare, Smartphone, Users, Settings, Building, Tag, Wrench, Compass, Inbox, Key } from 'lucide-react';
+import { Send, ChevronRight, ChevronDown, Search, Loader2, Play, RotateCcw, Terminal, Copy, Check, Zap, X, MessageSquare, Smartphone, Users, Settings, Building, Tag, Wrench, Compass, Inbox, Key, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { instancesApi, clientKeysApi } from '../../services/api';
 import type { Instance } from '../../services/api';
@@ -101,6 +101,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
   const [activeTab, setActiveTab] = useState<'explorer' | 'send'>('explorer');
   const [apiKeys, setApiKeys] = useState<Array<{ id: string; name: string; key_prefix?: string; status: string }>>([]);
   const [selectedKeyId, setSelectedKeyId] = useState('');
+  const [uploadingMedia, setUploadingMedia] = useState(false);
 
   const responseRef = useRef<HTMLDivElement>(null);
 
@@ -167,6 +168,47 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
     return lines.join(' \\\n');
   };
 
+  const handleCopyCurl = () => {
+    navigator.clipboard.writeText(buildCurl());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleMediaUpload = async (fieldKey: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,video/*,audio/*,application/pdf';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file || !clientToken) return;
+      setUploadingMedia(true);
+      try {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const res = await fetch('/api/uploads/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clientToken}` },
+          body: JSON.stringify({ image: base64 }),
+        });
+        const data = await res.json();
+        if (data.success && data.data?.url) {
+          setBodyValues(prev => ({ ...prev, [fieldKey]: data.data.url }));
+        } else {
+          alert(data.error || 'Upload failed');
+        }
+      } catch (err) {
+        alert(String(err));
+      } finally {
+        setUploadingMedia(false);
+      }
+    };
+    input.click();
+  };
+
   const handleExecute = async () => {
     if (!selectedEndpoint || !instanceName || !clientToken || !selectedKeyId) return;
     setLoading(true);
@@ -212,12 +254,6 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
       setResponse(JSON.stringify({ error: String(err) }, null, 2));
     }
     setLoading(false);
-  };
-
-  const handleCopyCurl = () => {
-    navigator.clipboard.writeText(buildCurl());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const filteredGroups = search
@@ -375,13 +411,27 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
                             <span className="text-xs text-stone-500">{field.placeholder || 'true / false'}</span>
                           </label>
                         ) : (
-                          <input
-                            type={field.type === 'number' ? 'number' : 'text'}
-                            value={bodyValues[field.key] || ''}
-                            onChange={e => setBodyValues(prev => ({ ...prev, [field.key]: e.target.value }))}
-                            placeholder={field.placeholder}
-                            className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
-                          />
+                          <div className="flex items-center gap-2">
+                            <input
+                              type={field.type === 'number' ? 'number' : 'text'}
+                              value={bodyValues[field.key] || ''}
+                              onChange={e => setBodyValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
+                            />
+                            {/* Show upload button for media URL fields */}
+                            {(field.key.includes('media') || field.key.includes('url') || field.key.includes('image') || field.key.includes('audio') || field.key.includes('video') || field.key.includes('sticker')) && (
+                              <button
+                                onClick={() => handleMediaUpload(field.key)}
+                                disabled={uploadingMedia}
+                                className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition-colors shrink-0 disabled:opacity-50"
+                                title="Upload file"
+                              >
+                                {uploadingMedia ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                                Upload
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}
