@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { clientJwtAuth } from '../middleware/auth.js';
+import { logAuditAction } from '../utils/audit.js';
 import db from '../database.js';
 
 const router = Router();
@@ -31,6 +32,9 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
     db.prepare(
       'INSERT INTO client_api_keys (id, client_id, name, api_key, key_hash) VALUES (?, ?, ?, ?, ?)'
     ).run(id, req.client!.id, name, apiKey, keyHash);
+    logAuditAction(req, 'API_KEY_CREATED', 'client_api_key', id, JSON.stringify({
+      after: { id, name, key_prefix: apiKey.substring(0, 20) }
+    }));
     res.json({ success: true, data: { id, name, key: apiKey, status: 'Active', created_at: new Date().toISOString() } });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
@@ -42,6 +46,10 @@ router.delete('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     db.prepare('UPDATE client_api_keys SET status = ? WHERE id = ? AND client_id = ?')
       .run('Revoked', req.params.id, req.client!.id);
+    logAuditAction(req, 'API_KEY_REVOKED', 'client_api_key', req.params.id, JSON.stringify({
+      before: { status: 'Active' },
+      after: { status: 'Revoked' }
+    }));
     res.json({ success: true });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
@@ -61,6 +69,9 @@ router.post('/:id/regenerate', clientJwtAuth, async (req: Request, res: Response
     const keyHash = bcrypt.hashSync(apiKey, 10);
     db.prepare('UPDATE client_api_keys SET api_key = ?, key_hash = ?, created_at = CURRENT_TIMESTAMP WHERE id = ? AND client_id = ?')
       .run(apiKey, keyHash, req.params.id, req.client!.id);
+    logAuditAction(req, 'API_KEY_REGENERATED', 'client_api_key', req.params.id, JSON.stringify({
+      after: { key_prefix: apiKey.substring(0, 20), created_at: new Date().toISOString() }
+    }));
     res.json({ success: true, data: { id: req.params.id, key: apiKey } });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });

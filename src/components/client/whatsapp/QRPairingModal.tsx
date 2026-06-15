@@ -74,7 +74,7 @@ export default function QRPairingModal({
         className="bg-white border border-[#eaebe4] text-forest-deep rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-4"
       >
         <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-          <h4 className="font-bold text-xs uppercase tracking-widest">Connect WhatsApp</h4>
+          <h4 className="font-bold text-xs uppercase tracking-widest">Pair container</h4>
           <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -86,7 +86,7 @@ export default function QRPairingModal({
 
         <div className="space-y-3">
           <p className="text-[11px] text-graphite text-left">
-            Scan this QR code with your WhatsApp app to link your account.
+            Scan this QR code with your messaging app to link your account.
           </p>
 
           {/* QR with countdown ring */}
@@ -169,7 +169,7 @@ export default function QRPairingModal({
               How to scan
             </p>
             <ol className="text-[10px] text-blue-600 space-y-0.5">
-              <li>1. Open WhatsApp on your phone</li>
+              <li>1. Open your messaging app on your phone</li>
               <li>2. Tap <strong>Menu → Linked Devices</strong></li>
               <li>3. Tap <strong>"Link a Device"</strong></li>
               <li>4. Point your phone at the QR code</li>

@@ -67,7 +67,7 @@ export default function ApiConsoleView() {
           handshake: {
             connected_at: new Date().toISOString(),
             uptime_seconds: 345000,
-            device: 'Android 13.0 (Evolution Native)',
+            device: 'Android 13.0 (Multi-device)',
           },
         };
       } else {
@@ -101,7 +101,7 @@ export default function ApiConsoleView() {
           FIDScript REST Sandbox
         </h1>
         <p className="text-xs text-graphite mt-1">
-          Dry-run secure POST / GET requests to check WhatsApp payload parameters and Daraja callback events.
+          Dry-run secure POST / GET requests to check container payload parameters and Daraja callback events.
         </p>
       </div>
 

@@ -86,13 +86,20 @@ export const sqliteFtsProvider: SearchProvider = {
     // Try FTS5 match first
     let rows: Record<string, unknown>[] = [];
     try {
-      // FTS5 match on the body column
+      // FTS5: query the virtual table and join back to search_index for
+      // the metadata columns. ORDER BY rank uses the FTS5 bm25 score.
+      const ftsExists = db.prepare(
+        `SELECT count(*) as n FROM sqlite_master WHERE type='table' AND name='search_index_fts'`
+      ).get() as { n: number } | undefined;
+      if (!ftsExists || ftsExists.n === 0) throw new Error('fts missing');
+
       rows = db.prepare(`
-        SELECT entity_type, entity_id, body, tags, workspace_id
-        FROM search_index
-        WHERE workspace_id = ?
+        SELECT si.entity_type, si.entity_id, si.body, si.tags, si.workspace_id
+        FROM search_index_fts fts
+        JOIN search_index si ON si.rowid = fts.rowid
+        WHERE si.workspace_id = ?
           AND search_index_fts MATCH ?
-          ${types?.length ? `AND entity_type IN (${types.map(() => '?').join(',')})` : ''}
+          ${types?.length ? `AND si.entity_type IN (${types.map(() => '?').join(',')})` : ''}
         ORDER BY rank
         LIMIT ?
       `).all(wsId, `"${q.replace(/"/g, '""')}"`, ...(types ?? []), limit) as Record<string, unknown>[];

@@ -257,6 +257,45 @@ export interface CreateStatusPostInput {
   cross_post?: string[];
 }
 
+// ---- Webhooks (§14.1) ----
+export interface Webhook {
+  id: string;
+  url: string;
+  events: string[];
+  status: 'active' | 'disabled';
+  created_at: string;
+  last_delivery_at: string | null;
+}
+export interface WebhookDelivery {
+  id: string;
+  event_type: string;
+  response_code: number;
+  attempt: number;
+  delivered_at: string | null;
+  error: string | null;
+  created_at: string;
+}
+export interface AuditLogEntry {
+  id: string;
+  actor_user_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  before_json: string | null;
+  after_json: string | null;
+  ip_address: string | null;
+  timestamp: string;
+}
+export interface DeveloperLogEntry {
+  id: string;
+  method: string;
+  endpoint: string;
+  response_status: number;
+  latency_ms: number | null;
+  ip_address: string | null;
+  timestamp: string;
+}
+
 // ---- API functions ----
 export const platformApi = {
   // Customers
@@ -266,11 +305,12 @@ export const platformApi = {
   getTimeline: (id: string) => apiGet<TimelineEvent[]>(`/api/platform/customers/${id}/timeline`),
 
   // Conversations
-  listConversations: (filters?: { status?: ConversationStatus; priority?: ConversationPriority; assignee?: string; q?: string }) => {
+  listConversations: (filters?: { status?: ConversationStatus; priority?: ConversationPriority; assignee?: string; sla_at_risk?: boolean; q?: string }) => {
     const params = new URLSearchParams();
     if (filters?.status) params.set('status', filters.status);
     if (filters?.priority) params.set('priority', filters.priority);
     if (filters?.assignee) params.set('assignee', filters.assignee);
+    if (filters?.sla_at_risk) params.set('sla_at_risk', '1');
     if (filters?.q) params.set('q', filters.q);
     const qs = params.toString();
     return apiGet<Conversation[]>(`/api/platform/conversations${qs ? `?${qs}` : ''}`);
@@ -396,4 +436,36 @@ export const platformApi = {
     apiPost<StatusPost>(`/api/campaigns/statuses/${id}/schedule`, { scheduled_at }),
   cancelStatusPost: (id: string) => apiPost<StatusPost>(`/api/campaigns/statuses/${id}/cancel`, {}),
   postStatusNow: (id: string) => apiPost<StatusPost>(`/api/campaigns/statuses/${id}/post`, {}),
+
+  // Webhooks (§14.1) — /api/platform/webhooks
+  listWebhooks: () => apiGet<Webhook[]>(`/api/platform/webhooks`),
+  createWebhook: (body: { url: string; events: string[] }) =>
+    apiPost<Webhook & { secret: string }>(`/api/platform/webhooks`, body),
+  updateWebhook: (id: string, body: { url?: string; events?: string[]; status?: 'active' | 'disabled' }) =>
+    apiPatch<null>(`/api/platform/webhooks/${id}`, body),
+  deleteWebhook: (id: string) => apiDelete<null>(`/api/platform/webhooks/${id}`),
+  listWebhookDeliveries: (id: string, limit = 50) =>
+    apiGet<WebhookDelivery[]>(`/api/platform/webhooks/${id}/deliveries?limit=${limit}`),
+
+  // Audit log (§6.4) — /api/platform/audit
+  listAudit: (filters?: { resource?: string; actor?: string; since?: string; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (filters?.resource) qs.set('resource', filters.resource);
+    if (filters?.actor) qs.set('actor', filters.actor);
+    if (filters?.since) qs.set('since', filters.since);
+    if (filters?.limit) qs.set('limit', String(filters.limit));
+    const tail = qs.toString() ? `?${qs.toString()}` : '';
+    return apiGet<AuditLogEntry[]>(`/api/platform/audit${tail}`);
+  },
+
+  // Developer API logs (§14.2) — /api/platform/developer-logs
+  listDeveloperLogs: (filters?: { method?: string; since?: string; minLatency?: number; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (filters?.method) qs.set('method', filters.method);
+    if (filters?.since) qs.set('since', filters.since);
+    if (filters?.minLatency) qs.set('minLatency', String(filters.minLatency));
+    if (filters?.limit) qs.set('limit', String(filters.limit));
+    const tail = qs.toString() ? `?${qs.toString()}` : '';
+    return apiGet<DeveloperLogEntry[]>(`/api/platform/developer-logs${tail}`);
+  },
 };

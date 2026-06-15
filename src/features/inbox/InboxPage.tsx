@@ -13,12 +13,14 @@ interface InboxPageProps {
   onTokenDeduct?: (n: number) => void;
 }
 
-function queueToFilter(queue: QueueKey) {
+function queueToFilter(queue: QueueKey): { assignee?: 'me' | 'unassigned' | 'team'; priority?: 'urgent'; status?: 'resolved'; sla_at_risk?: boolean } {
   switch (queue) {
-    case 'mine': return { assignee: 'me' as const };
-    case 'unassigned': return { assignee: 'unassigned' as const };
-    case 'urgent': return { priority: 'urgent' as const };
-    case 'resolved': return { status: 'resolved' as const };
+    case 'mine': return { assignee: 'me' };
+    case 'teams': return { assignee: 'team' };
+    case 'unassigned': return { assignee: 'unassigned' };
+    case 'urgent': return { priority: 'urgent' };
+    case 'sla_at_risk': return { sla_at_risk: true };
+    case 'resolved': return { status: 'resolved' };
     default: return {};
   }
 }

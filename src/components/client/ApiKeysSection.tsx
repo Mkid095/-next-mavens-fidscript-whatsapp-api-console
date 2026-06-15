@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Key, Copy, X, Eye, EyeOff, Trash2, Lock, Check, RefreshCw, CheckCircle, XCircle, Terminal, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clientKeysApi, instancesApi } from '../../services/api';
+import { apiV1 } from '../../services/whatsapp';
 import { PUBLIC_API_BASE } from '../../data/apiEndpoints/index';
 import type { ClientApiKey } from './types';
 import type { Instance } from '../../services/types';
@@ -81,13 +82,15 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
     setTestingKeyId(k.id);
     setTestResult(null);
     try {
-      const res = await fetch(`${PUBLIC_API_BASE}/whoami`, {
-        method: 'GET',
-        headers: { 'X-API-Key': k.key },
+      const res = await apiV1.whoami(k.key);
+      setTestResult({
+        id: k.id,
+        ok: res.success,
+        msg: res.success
+          ? 'Key is valid and active!'
+          : (res.error || 'Key is invalid or revoked'),
       });
-      const data = await res.json().catch(() => ({}));
-      setTestResult({ id: k.id, ok: res.ok, msg: res.ok ? 'Key is valid and active!' : (data?.error || `HTTP ${res.status}`) });
-    } catch (err: unknown) {
+    } catch (err) {
       setTestResult({ id: k.id, ok: false, msg: err instanceof Error ? err.message : 'Connection failed' });
     }
     setTestingKeyId(null);

@@ -34,7 +34,7 @@ export default function ClientsView({
         <div>
           <h1 className="text-xl font-bold tracking-tight text-[#272c30]">Clients</h1>
           <p className="text-xs text-[#60737a] mt-1">
-            Manage client accounts and their WhatsApp API access.
+            Manage client accounts and their messaging API access.
           </p>
         </div>
 

@@ -4,6 +4,8 @@
 // Adding a channel = a folder under channels/ implementing this interface.
 // =============================================================================
 
+export { whatsappChannel, parseWhatsAppMessage } from './whatsapp/index.js';
+
 export interface ChannelMessage {
   id: string;
   from: string;       // canonical identifier

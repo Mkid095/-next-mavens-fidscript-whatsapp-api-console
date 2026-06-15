@@ -194,8 +194,8 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
       } else {
         setError(res.error || 'Import failed');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Import failed');
     } finally {
       setImporting(false);
     }

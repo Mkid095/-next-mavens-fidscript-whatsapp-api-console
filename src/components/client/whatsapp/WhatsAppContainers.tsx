@@ -74,7 +74,7 @@ export default function WhatsAppContainers({
       <div className="bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
         <div className="flex items-center justify-between pb-4 border-b border-stone-100">
           <div>
-            <h3 className="text-sm font-bold text-forest-deep">My WhatsApp Containers</h3>
+            <h3 className="text-sm font-bold text-forest-deep">My containers</h3>
             <p className="text-xs text-graphite mt-0.5">Create containers and connect via QR code.</p>
           </div>
           <button

@@ -34,7 +34,7 @@ interface NavItem {
 
 export const mainNavItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" />, path: '/client' },
-  { id: 'whatsapp', label: 'WhatsApp Containers', icon: <MessageSquare className="w-4 h-4" />, path: '/client/whatsapp' },
+  { id: 'whatsapp', label: 'Containers', icon: <MessageSquare className="w-4 h-4" />, path: '/client/whatsapp' },
   { id: 'api-keys', label: 'API Keys', icon: <Key className="w-4 h-4" />, path: '/client/api-keys' },
   { id: 'docs', label: 'Documentation', icon: <FileText className="w-4 h-4" />, path: '/client/docs' },
   { id: 'sandbox', label: 'API Sandbox', icon: <Bot className="w-4 h-4" />, path: '/client/sandbox' },

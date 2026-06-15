@@ -1,2 +1,2 @@
 // WhatsApp channel — public barrel
-export { whatsappChannel } from './connector.js';
+export { whatsappChannel, parseWhatsAppMessage } from './connector.js';

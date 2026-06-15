@@ -30,7 +30,7 @@ export default function ContactPickerPanel({ contacts, instance, to, onSend, onC
       const res = await instancesApi.sendContact(instance.name, to, contact);
       if (res.success) { onSend(TOKEN_COST.CONTACT); onCancel(); }
       else { setError(res.error || 'Failed to send'); }
-    } catch (err: any) { setError(err.message); }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to send'); }
     finally { setSending(false); }
   };
 

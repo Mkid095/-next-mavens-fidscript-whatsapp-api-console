@@ -38,10 +38,10 @@ export default function InstancesView({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-[#272c30]">
-            WhatsApp Instances
+            Containers
           </h1>
           <p className="text-xs text-[#60737a] mt-1">
-            Manage WhatsApp instances across all clients.
+            Manage messaging containers across all clients.
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function InstancesView({
             >
               <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                 <div>
-                  <h3 className="text-[14px] font-bold text-[#272c30]">Connect WhatsApp</h3>
+                  <h3 className="text-[14px] font-bold text-[#272c30]">Pair container</h3>
                   <p className="text-[10px] text-[#60737a]">Scan the QR code with your phone</p>
                 </div>
                 <button onClick={() => setShowQrModal(null)} className="p-1 hover:bg-stone-50 rounded-lg text-[#60737a]">
@@ -111,7 +111,7 @@ export default function InstancesView({
                   <QrCode className="w-16 h-16 text-[#d1d5db]" />
                 </div>
                 <p className="text-[10px] text-[#7d8071]">
-                  Open WhatsApp → Settings → Linked Devices → Link a Device
+                  Open your messaging app → Settings → Linked Devices → Link a Device
                 </p>
               </div>
             </motion.div>

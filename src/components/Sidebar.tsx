@@ -35,7 +35,7 @@ export default function Sidebar({
                 <img src="/logo.png" alt="FidScript" className="w-8 h-8 object-contain" />
                 <div>
                   <h1 className="text-sm font-bold text-white">FidScript</h1>
-                  <p className="text-[9px] text-[#8f834a]">WhatsApp Gateway</p>
+                  <p className="text-[9px] text-[#8f834a]">Messaging gateway</p>
                 </div>
               </div>
               <p className="text-[10px] text-[#6e684a] mt-2 truncate">{clientName}</p>

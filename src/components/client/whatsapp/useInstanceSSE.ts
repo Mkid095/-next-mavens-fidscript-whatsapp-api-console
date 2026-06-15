@@ -73,11 +73,13 @@ export function useInstanceSSE(
         } catch { /* malformed payload */ }
       });
 
-      // Presence/typing → ephemeral window event (UI-only, not a domain event)
+      // Presence/typing → both window event (for inline typing indicator)
+      // and data bus (for any future consumer like a "typing" sidebar dot).
       es.addEventListener('presence', event => {
         try {
           const raw = JSON.parse((event as MessageEvent).data) as { chatId: string; presence: string; fromName: string | null };
           window.dispatchEvent(new CustomEvent('sse-presence', { detail: raw }));
+          emitDataEvent('presence', { chatId: raw.chatId, presence: raw.presence, fromName: raw.fromName });
         } catch { /* malformed payload */ }
       });
     });

@@ -32,7 +32,7 @@ export default function PollInlineEditor({ instance, to, onSend, onCancel }: Pol
       const res = await instancesApi.sendPoll(instance.name, to, { name: question.trim(), selectableCount, values: filledOptions });
       if (res.success) { onSend(TOKEN_COST.POLL); onCancel(); }
       else { setError(res.error || 'Failed to send'); }
-    } catch (err: any) { setError(err.message); }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to send'); }
     finally { setSending(false); }
   };
 

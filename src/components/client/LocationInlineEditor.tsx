@@ -35,7 +35,7 @@ export default function LocationInlineEditor({ instance, to, onSend, onCancel }:
       const res = await instancesApi.sendLocation(instance.name, to, la, ln, name.trim());
       if (res.success) { onSend(TOKEN_COST.LOCATION); onCancel(); }
       else { setError(res.error || 'Failed to send'); }
-    } catch (err: any) { setError(err.message); }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to send'); }
     finally { setSending(false); }
   };
 

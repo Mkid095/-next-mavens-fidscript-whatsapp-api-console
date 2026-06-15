@@ -58,7 +58,7 @@ function RequestParams({
           <input type="text" value={destinationPhone} onChange={(e) => onDestinationPhoneChange(e.target.value)} className="w-full px-2.5 py-2 border border-[#dee9e4] text-[#0f241d] bg-white rounded-lg font-mono text-xs focus:outline-none" />
         </div>
         <div>
-          <label className="block text-[9px] font-bold text-[#657a6e]">WhatsApp Message Text</label>
+          <label className="block text-[9px] font-bold text-[#657a6e]">Message text</label>
           <textarea value={messageBody} onChange={(e) => onMessageBodyChange(e.target.value)} rows={2} className="w-full px-2.5 py-2 border border-[#dee9e4] text-[#0f241d] bg-white rounded-lg text-xs focus:outline-none resize-none" />
         </div>
       </div>

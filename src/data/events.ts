@@ -11,6 +11,8 @@ export type PlatformEventType =
   | 'message.sent'
   | 'message.delivered'
   | 'message.read'
+  | 'presence'
+  | 'connection.state_change'
   | 'conversation.created'
   | 'conversation.assigned'
   | 'conversation.priority_changed'

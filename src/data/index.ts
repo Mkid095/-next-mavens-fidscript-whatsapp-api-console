@@ -34,6 +34,26 @@ export type {
   FlowEdgeInput,
   FlowExecution,
 } from './api/index.js';
+// Re-exports for the top-level shell — App.tsx is migrating off services/api.
+export {
+  authApi,
+  adminApi,
+  clientsApi,
+  instancesApi,
+  plansApi,
+  paymentsApi,
+} from '../services/api.js';
+export type {
+  Instance,
+  Client,
+  Plan,
+  ApiLog,
+  AnalyticsData,
+  TokenPackage,
+  DailyUsage,
+  TokenTransaction,
+  ClientMessage,
+} from '../services/api.js';
 
 // Realtime event bus
 export { dataEvents, emitDataEvent } from './events.js';

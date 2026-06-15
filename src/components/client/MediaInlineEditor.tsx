@@ -67,8 +67,8 @@ export default function MediaInlineEditor({ instance, to, onSend, onCancel }: Me
       } else {
         setError(res.error || 'Send failed');
       }
-    } catch (err: any) {
-      setError(err.message || 'Upload failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
       setSending(false);

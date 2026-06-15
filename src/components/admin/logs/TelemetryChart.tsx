@@ -4,14 +4,14 @@ import { Layers } from 'lucide-react';
 
 const metricConfig = {
   latency: {
-    title: 'WhatsApp message dispatch latency',
+    title: 'Message dispatch latency',
     desc: 'Average delivery execution time from tenant HTTPS rest endpoint trigger to Safaricom carrier packet acknowledgment.',
     unit: 'ms',
     points: [34, 48, 32, 29, 21, 15, 6, 4, 3, 2.5, 1.8],
     labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Current'],
   },
   memory: {
-    title: 'Isolated WhatsApp multi-device container RAM pool',
+    title: 'Isolated multi-device container RAM pool',
     desc: 'Aggregated RAM memory lease allocated to active virtual devices on Nairobi local clusters.',
     unit: '%',
     points: [14, 18, 25, 34, 42, 51, 44, 42, 40, 39, 38],
@@ -19,7 +19,7 @@ const metricConfig = {
   },
   requests: {
     title: 'Outgoing carrier transmission rate',
-    desc: 'Successful WhatsApp text, media, and template messages dispatched per second across Kenyan corporate clients.',
+    desc: 'Successful text, media, and template messages dispatched per second across corporate clients.',
     unit: 'msg/s',
     points: [88, 112, 105, 142, 195, 230, 212, 222, 240, 254, 268],
     labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', 'Current'],
@@ -122,7 +122,7 @@ export default function TelemetryChart() {
           Direct Outbox Stream Optimization Analyzer
         </h4>
         <p className="text-[11px] text-[#4d665a] leading-relaxed mt-1">
-          Active WhatsApp dispatch nodes are dynamically rate-limited to 3-6 messages per second to fully comply with carrier anti-spam regulations in Nairobi. Peak transaction pipelines are handled by redundant socket groups to bypass queue bottlenecks.
+          Active dispatch nodes are dynamically rate-limited to 3-6 messages per second to fully comply with carrier anti-spam regulations. Peak transaction pipelines are handled by redundant socket groups to bypass queue bottlenecks.
         </p>
       </div>
     </div>

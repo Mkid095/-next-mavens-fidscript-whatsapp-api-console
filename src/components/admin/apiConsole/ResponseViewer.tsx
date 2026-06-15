@@ -25,7 +25,7 @@ export default function ResponseViewer({
         <div className="flex items-center gap-2">
           <Terminal className="w-4 h-4 text-emerald-400" />
           <span className="font-mono text-[11px] font-bold">
-            Evolution Server Core Terminal
+            Gateway Core Terminal
           </span>
         </div>
 

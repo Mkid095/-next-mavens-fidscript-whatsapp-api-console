@@ -51,7 +51,7 @@ export default function DashboardHome({
         </div>
         <h1 className="text-xl font-bold tracking-tight">Welcome, {client.name}</h1>
         <p className="text-xs text-stone-300 mt-1 max-w-xl">
-          Manage your WhatsApp containers, send bulk messages, and monitor your token usage.
+          Manage your messaging containers, send bulk messages, and monitor your token usage.
         </p>
       </div>
 
@@ -131,7 +131,7 @@ export default function DashboardHome({
           <div className="text-center py-8 text-stone-400">
             <MessageSquare className="w-8 h-8 mx-auto mb-2 text-stone-300" />
             <p className="text-xs font-semibold">No messages yet</p>
-            <p className="text-[10px]">Start by creating a WhatsApp container and sending your first message.</p>
+            <p className="text-[10px]">Start by creating a container and sending your first message.</p>
           </div>
         )}
       </div>

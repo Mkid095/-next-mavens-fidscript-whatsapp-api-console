@@ -25,7 +25,7 @@ const SETTINGS: {
   {
     key: 'groups_ignore',
     label: 'Ignore Group Messages',
-    description: 'Mute all incoming messages from WhatsApp groups linked to this number.',
+    description: 'Mute all incoming messages from groups linked to this number.',
     icon: <Bell className="w-4 h-4 text-stone-500" />,
     default: false,
   },
@@ -46,7 +46,7 @@ const SETTINGS: {
   {
     key: 'sync_full_history',
     label: 'Sync Full History',
-    description: 'When connected, pull the full message history from this WhatsApp account.',
+    description: 'When connected, pull the full message history from this account.',
     icon: <RefreshCw className="w-4 h-4 text-stone-500" />,
     default: false,
   },
@@ -82,8 +82,8 @@ export default function InstanceSettingsModal({ inst, onClose }: InstanceSetting
       } else {
         setError(res.error || 'Failed to save settings');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save settings');
     } finally {
       setSaving(false);
     }

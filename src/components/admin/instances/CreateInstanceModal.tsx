@@ -55,7 +55,7 @@ export default function CreateInstanceModal({
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div>
                 <h3 className="text-[14px] font-bold text-[#272c30]">Create Instance</h3>
-                <p className="text-[10px] text-[#60737a]">Set up a new WhatsApp instance</p>
+                <p className="text-[10px] text-[#60737a]">Set up a new container for a client</p>
               </div>
               <button onClick={handleClose} className="p-1 hover:bg-stone-50 rounded-lg text-[#60737a]">
                 <X className="w-5 h-5" />

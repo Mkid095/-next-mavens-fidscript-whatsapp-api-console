@@ -40,7 +40,7 @@ export default function RouteParams({
           />
         </div>
         <div>
-          <label className="block text-[9px] font-bold text-[#657a6e]">WhatsApp Message Text</label>
+          <label className="block text-[9px] font-bold text-[#657a6e]">Message text</label>
           <textarea
             value={messageBody}
             onChange={(e) => onMessageChange(e.target.value)}

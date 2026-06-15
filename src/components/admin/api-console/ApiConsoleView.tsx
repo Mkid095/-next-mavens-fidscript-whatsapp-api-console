@@ -6,7 +6,7 @@ import { RouteId, RouteConfig, routes } from './endpointsData';
 
 export type { RouteId, RouteConfig } from './endpointsData';
 
-// Evolution API base — admin console talks directly to the gateway
+// Admin console — direct gateway access (network operations only)
 const EVO_BASE = 'http://localhost:8080';
 const EVO_API_KEY = '94977bc1fcb107c79d0687caea800bdb74edd67b5022771fc85c22ee389ca7e8';
 
@@ -84,7 +84,7 @@ export default function ApiConsoleView() {
       catch { setResponseBody(text); }
     } catch (err) {
       setResponseCode(0);
-      setResponseBody(`Connection error: ${err instanceof Error ? err.message : String(err)}\n\nIs the Evolution API gateway running on localhost:8080?`);
+      setResponseBody(`Connection error: ${err instanceof Error ? err.message : String(err)}\n\nIs the gateway running on localhost:8080?`);
     }
 
     setIsRunning(false);
@@ -95,7 +95,7 @@ export default function ApiConsoleView() {
       <div>
         <h1 className="text-xl font-bold tracking-tight text-forest-deep">FIDScript REST Sandbox</h1>
         <p className="text-xs text-graphite mt-1">
-          Dry-run secure POST / GET requests against the Evolution API gateway to test WhatsApp payload parameters and Daraja callback events.
+          Dry-run secure POST / GET requests against the gateway to test container payload parameters and Daraja callback events.
         </p>
       </div>
 

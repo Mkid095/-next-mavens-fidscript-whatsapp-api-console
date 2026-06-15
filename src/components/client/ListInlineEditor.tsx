@@ -45,7 +45,7 @@ export default function ListInlineEditor({ instance, to, onSend, onCancel }: Lis
       });
       if (res.success) { onSend(TOKEN_COST.LIST); onCancel(); }
       else { setError(res.error || 'Failed to send'); }
-    } catch (err: any) { setError(err.message); }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to send'); }
     finally { setSending(false); }
   };
 

@@ -76,8 +76,8 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
       } else {
         setError(res.error || 'Failed to save contact');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save contact');
     } finally {
       setSaving(false);
     }

@@ -39,7 +39,7 @@ export default function CreateKeyModal({ newKeyName, onKeyNameChange, onSubmit }
           className="w-full inline-flex items-center justify-center gap-2 bg-forest-deep hover:bg-[#0c2e21] text-white font-bold py-2.5 rounded-xl text-xs transition-all"
         >
           <Plus className="w-4 h-4 text-emerald-400" />
-          <span>Register Evolution Key</span>
+          <span>Register API key</span>
         </button>
       </form>
 

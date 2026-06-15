@@ -21,16 +21,17 @@ function buildCtx(req: Request) {
   return { workspaceId, actorUserId: workspaceId, roleId: 'role_0', perms: ['*'] };
 }
 
-// GET / — list conversations (?status=&assignee=&priority=&q=)
+// GET / — list conversations (?status=&assignee=&priority=&q=&sla_at_risk=&teams=)
 router.get('/', (req: Request, res: Response) => {
   try {
-    const { status, assignee, priority } = req.query;
+    const { status, assignee, priority, sla_at_risk, teams } = req.query;
     const q = (req.query.q as string | undefined)?.trim();
 
     let sql = `
       SELECT conv.id, conv.customer_id, conv.channel, conv.instance_id, conv.chat_id,
-             conv.status, conv.priority, conv.assignee_type, conv.assignee_id,
+             conv.status, conv.priority, conv.assignee_type, conv.assignee_id, conv.team_id,
              conv.unread_count, conv.last_message_at, conv.ai_state,
+             conv.response_due_at, conv.resolution_due_at, conv.breached_at,
              conv.created_at,
              c.display_name as customer_name,
              (SELECT content FROM inbox_messages WHERE conversation_id = conv.id
@@ -48,6 +49,18 @@ router.get('/', (req: Request, res: Response) => {
       sql += ' AND conv.assignee_type = ?'; params.push('user');
     } else if (assignee === 'unassigned') {
       sql += ' AND conv.assignee_type = ?'; params.push('unassigned');
+    } else if (assignee === 'team') {
+      sql += " AND conv.assignee_type = ? AND conv.assignee_id IS NOT NULL"; params.push('team');
+    }
+    // SLA at risk: response_due_at set, not yet resolved, due within next hour or already breached
+    if (sla_at_risk === '1' || sla_at_risk === 'true') {
+      sql += ` AND conv.status NOT IN ('resolved', 'closed')
+               AND conv.response_due_at IS NOT NULL
+               AND (
+                 conv.breached_at IS NOT NULL
+                 OR (conv.first_response_at IS NULL
+                     AND conv.response_due_at <= datetime('now', '+1 hour'))
+               )`;
     }
     if (q) { sql += ' AND (c.display_name LIKE ? OR conv.chat_id LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
     sql += ' ORDER BY conv.last_message_at DESC NULLS LAST LIMIT 200';

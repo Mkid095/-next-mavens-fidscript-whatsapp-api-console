@@ -31,7 +31,7 @@ export default function SecurityKeysView({ keys, onAddKey, onRevokeKey }: Securi
           Security Credentials & API Tokens
         </h1>
         <p className="text-xs text-graphite mt-1">
-          Generate high-entropy bearer tokens to authorize external web app integrations with your Evolution WhatsApp instances.
+          Generate high-entropy bearer tokens to authorize external web app integrations with your messaging containers.
         </p>
       </div>
 

@@ -72,7 +72,7 @@ export default function EndpointSidebar({
             </button>
           </div>
         </div>
-        <p className="text-[10px] text-graphite hidden sm:block">All FIDScript WhatsApp API endpoints.</p>
+        <p className="text-[10px] text-graphite hidden sm:block">All FIDScript API endpoints.</p>
       </div>
       <div className="flex-1 overflow-y-auto">
         {groups.map(group => (

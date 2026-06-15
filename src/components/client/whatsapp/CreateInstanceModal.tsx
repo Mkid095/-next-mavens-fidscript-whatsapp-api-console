@@ -34,7 +34,7 @@ export default function CreateInstanceModal({ onClose, onSubmit }: CreateInstanc
         className="bg-white border border-[#eaebe4] text-forest-deep rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4"
       >
         <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-          <h4 className="font-bold text-sm">New WhatsApp Container</h4>
+          <h4 className="font-bold text-sm">New container</h4>
           <button onClick={onClose} className="text-gray-400 hover:text-black"><X className="w-4 h-4" /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 text-xs font-semibold text-forest-deep">

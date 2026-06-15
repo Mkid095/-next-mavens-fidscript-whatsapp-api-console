@@ -116,7 +116,7 @@ export default function RequestLogsTable({ logs, onAddLog }: RequestLogsTablePro
         {/* Terminal Console Log Stream */}
         <div className="bg-white border border-[#e1e9e5]/80 rounded-3xl shadow-sm overflow-hidden font-mono text-[11px]">
           <div className="bg-[#f8faf9] border-b border-[#e1e9e5]/80 px-4 py-2.5 flex items-center justify-between text-[#55695f] font-bold">
-            <span className="uppercase tracking-wider text-[9px]">Evolution Process Output Stream</span>
+            <span className="uppercase tracking-wider text-[9px]">Gateway Process Output Stream</span>
             <span>East Africa Standard Time active</span>
           </div>
 
@@ -134,7 +134,7 @@ export default function RequestLogsTable({ logs, onAddLog }: RequestLogsTablePro
       <div className="bg-white border border-[#e1e9e5]/80 rounded-3xl shadow-sm p-5 space-y-4">
         <div>
           <h3 className="text-sm font-bold text-forest-deep">Telemetry Log Emulator</h3>
-          <p className="text-xs text-graphite mt-1">Trigger simulated warnings or successful WhatsApp instance hook callbacks.</p>
+          <p className="text-xs text-graphite mt-1">Trigger simulated warnings or successful container hook callbacks.</p>
         </div>
         <LogSimulator onAdd={onAddLog} />
       </div>

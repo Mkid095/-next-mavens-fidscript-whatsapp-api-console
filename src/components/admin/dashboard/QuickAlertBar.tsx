@@ -22,7 +22,7 @@ export default function QuickAlertBar({ activeClusters, userEmail = 'kennedygith
       <div className="flex items-center gap-3">
         <span className="flex items-center gap-1 font-semibold text-emerald-400">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          {activeClusters} WhatsApp Instances Online
+          {activeClusters} Containers Online
         </span>
         <span className="text-[#89a296]">|</span>
         <button onClick={() => onNavigate('Audit Logs')} className="underline hover:text-white transition-colors">

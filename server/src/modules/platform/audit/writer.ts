@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import db from '../../../database.js';
 import type { WorkspaceContext } from '../workspace/index.js';
 
@@ -65,7 +65,9 @@ export function logStateTransition(
 }
 
 // ---------------------------------------------------------------------------
-// API request log (existing — retained for compatibility)
+// API request log (§14.2 enriched).
+// Writes api_logs row with latency_ms + workspace_id. Use afterStart() /
+// finishWith() from the response-time middleware to capture timing.
 // ---------------------------------------------------------------------------
 
 export function logApiRequest(
@@ -73,17 +75,19 @@ export function logApiRequest(
   instanceId: string | null,
   clientId: string | null,
   status: number,
-  responseBody?: string
+  responseBody?: string,
+  options?: { latencyMs?: number; workspaceId?: string | null }
 ): void {
   db.prepare(`
     INSERT INTO api_logs
-      (id, instance_id, client_id, method, endpoint, request_body,
-       response_status, response_body, ip_address, user_agent, timestamp)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, instance_id, client_id, workspace_id, method, endpoint, request_body,
+       response_status, response_body, ip_address, user_agent, latency_ms, timestamp)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     uuidv4(),
     instanceId,
     clientId,
+    options?.workspaceId ?? null,
     req.method,
     req.path,
     JSON.stringify(req.body) || null,
@@ -91,6 +95,25 @@ export function logApiRequest(
     responseBody ? JSON.stringify(responseBody).substring(0, 1000) : null,
     req.ip,
     req.headers['user-agent'],
+    options?.latencyMs ?? null,
     new Date().toISOString()
   );
+}
+
+// ---------------------------------------------------------------------------
+// Response-time middleware. Stamps res.locals._start = Date.now() so the
+// api_logs writer can compute latency. Caller attaches clientId/workspaceId
+// via res.locals; if not set, latency still works.
+// ---------------------------------------------------------------------------
+
+export function responseTimeMiddleware() {
+  return (req: Request, res: Response, next: () => void): void => {
+    (res as Response & { locals: Record<string, unknown> }).locals._t0 = Date.now();
+    next();
+  };
+}
+
+export function latencyMs(res: Response): number | null {
+  const t0 = (res as Response & { locals: Record<string, unknown> }).locals._t0 as number | undefined;
+  return typeof t0 === 'number' ? Date.now() - t0 : null;
 }

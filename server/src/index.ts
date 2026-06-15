@@ -12,6 +12,9 @@ import { registerSearchIndexer } from './modules/platform/search/index.js';
 import { registerAnalyticsProjectors } from './modules/platform/analytics/index.js';
 import { registerInboundPipeline } from './modules/ai/index.js';
 import { registerAutomations } from './modules/automation/index.js';
+import { registerWebhookFanout } from './modules/platform/webhooks/index.js';
+import { registerAuditTrail } from './modules/platform/audit/trail.js';
+import { responseTimeMiddleware } from './modules/platform/audit/writer.js';
 import { registerTriggers } from './modules/campaigns/triggers.js';
 import { startDripScheduler } from './modules/campaigns/drip.js';
 import { startStatusScheduler } from './modules/campaigns/statusScheduler.js';
@@ -36,9 +39,11 @@ async function startServer() {
     registerInboundPipeline();
     registerAutomations();
     registerTriggers();
+    registerWebhookFanout();
+    registerAuditTrail();
     startDripScheduler();
     startStatusScheduler();
-    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations, triggers) + drip + status schedulers started');
+    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations, triggers, webhooks, audit) + drip + status schedulers started');
 
     // Prune expired idempotency keys on every startup (7-day TTL)
     try {
@@ -60,6 +65,11 @@ async function startServer() {
     // Request parsing
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+
+    // Response-time tracking — stamps res.locals._t0 so the api_logs writer
+    // (called by middleware routes) can compute latency_ms and stamp
+    // workspace_id when the request is workspace-scoped (§14.2).
+    app.use(responseTimeMiddleware());
 
     // Logging
     app.use(morgan('dev'));

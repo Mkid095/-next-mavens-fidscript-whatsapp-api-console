@@ -90,7 +90,7 @@ export default function Step1Credentials({ pastedKey, setPastedKey, instances, s
         )}
 
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">WhatsApp Container <span className="normal-case font-normal text-stone-400">(optional)</span></label>
+          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Container <span className="normal-case font-normal text-stone-400">(optional)</span></label>
           <select
             value={selectedInstance}
             onChange={e => setSelectedInstance(e.target.value)}
