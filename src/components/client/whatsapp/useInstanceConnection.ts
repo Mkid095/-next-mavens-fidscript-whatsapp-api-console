@@ -102,6 +102,8 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     setConnectionError('');
     setGeneratingQR(true);
     try {
+      // Logout first to clear any existing session and get a fresh QR
+      await instancesApi.disconnect(inst.name);
       const res = await instancesApi.connect(inst.name);
       if (res.success && res.data) {
         setPairingQR(res.data.qrcode_image || res.data.qrcode || '');
@@ -116,12 +118,14 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     setGeneratingQR(false);
   }, [openSSEConnection]);
 
-  // Regenerates a new QR for the already-open modal — does NOT create a new instance
+  // Regenerates a new QR — must logout first to clear the old session, then connect
   const handleRegenerateQR = useCallback(async () => {
     if (!pairingInstance) return;
     setRegeneratingQR(true);
     setConnectionError('');
     try {
+      // Clear the old session so Evolution API issues a fresh QR
+      await instancesApi.disconnect(pairingInstance.name);
       const res = await instancesApi.connect(pairingInstance.name);
       if (res.success && res.data) {
         setPairingQR(res.data.qrcode_image || res.data.qrcode || '');

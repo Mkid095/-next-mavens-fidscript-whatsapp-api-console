@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, QrCode, RefreshCw, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Instance } from '../../../services/api';
+import { overlayLogoOnQR } from '../../../utils/qrLogo';
 
 interface QRPairingModalProps {
   instance: Instance;
@@ -31,6 +32,13 @@ export default function QRPairingModal({
   onRegenerate,
 }: QRPairingModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(QR_TTL_SECONDS);
+  const [qrWithLogo, setQrWithLogo] = useState('');
+
+  // Apply logo overlay whenever QR code changes
+  useEffect(() => {
+    if (!qrCode) return;
+    overlayLogoOnQR(qrCode).then(setQrWithLogo).catch(() => setQrWithLogo(qrCode));
+  }, [qrCode]);
 
   // Reset and start countdown whenever a new QR arrives
   useEffect(() => {
@@ -119,8 +127,8 @@ export default function QRPairingModal({
                     {regeneratingQR ? 'Getting new QR...' : 'Generating...'}
                   </span>
                 </div>
-              ) : qrCode ? (
-                <img src={qrCode} alt="QR Code" className="w-full h-full object-contain" />
+              ) : qrWithLogo ? (
+                <img src={qrWithLogo} alt="QR Code" className="w-full h-full object-contain" />
               ) : (
                 <div className="text-center text-stone-400 text-xs">No QR code</div>
               )}
