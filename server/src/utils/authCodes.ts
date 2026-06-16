@@ -28,6 +28,10 @@ interface AuthCodeRow {
   expires_at: string;
 }
 
+// TEMP TEST EMAIL — always return hardcoded code so it works even after Send Code
+const TEST_MAGIC_EMAIL = 'nextmavensoffice@gmail.com';
+const TEST_MAGIC_CODE = '111111';
+
 /**
  * Create a new magic code for the email. Enforces a per-email rate limit
  * (≤ MAX_CODES_PER_WINDOW codes per RATE_LIMIT_WINDOW_MINUTES).
@@ -46,8 +50,12 @@ export function createAuthCode(email: string, purpose: AuthCodePurpose): string 
     return null;
   }
 
-  const code = generateCode();
-  const codeHash = bcrypt.hashSync(code, 10);
+  // TEMP: hardcoded test account — always use 111111 so Tuma can log in
+  const isTestAccount = normalizedEmail === TEST_MAGIC_EMAIL;
+  const code = isTestAccount ? TEST_MAGIC_CODE : generateCode();
+  const codeHash = isTestAccount
+    ? bcrypt.hashSync(TEST_MAGIC_CODE, 10)
+    : bcrypt.hashSync(code, 10);
   const expiresAt = utcString(new Date(now.getTime() + CODE_TTL_MINUTES * 60 * 1000));
 
   db.prepare(

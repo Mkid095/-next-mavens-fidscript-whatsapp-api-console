@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 import listRouter from './list.js';
 import createRouter from './create.js';
 import getRouter from './get.js';
@@ -11,7 +10,7 @@ import db from '../../database.js';
 
 const router = Router();
 
-// TEMP: hardcoded magic code for Tuma live testing — no email, remove after go-live
+// TEMP: ensure Tuma test account exists — actual magic code is handled by createAuthCode
 // POST /api/clients/tuma-test/ready
 router.post('/tuma-test/ready', (req: Request, res: Response) => {
   try {
@@ -19,7 +18,6 @@ router.post('/tuma-test/ready', (req: Request, res: Response) => {
     const name = 'Next Mavens';
     const phone = '254700000000';
 
-    // Create client if doesn't exist
     const existing = db.prepare('SELECT id FROM clients WHERE email = ?').get(email) as { id: string } | undefined;
     let clientId: string;
     if (existing) {
@@ -32,23 +30,13 @@ router.post('/tuma-test/ready', (req: Request, res: Response) => {
       ).run(clientId, name, email, phone, apiKey);
     }
 
-    // Insert hardcoded magic code directly — bypass email
-    // First invalidate any existing login codes so this one is guaranteed to be the latest
-    const code = '111111';
-    const codeHash = bcrypt.hashSync(code, 10);
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
-    db.prepare(`DELETE FROM auth_codes WHERE email = ? AND purpose = 'login'`).run(email);
-    db.prepare(
-      `INSERT INTO auth_codes (id, email, code_hash, purpose, attempts, expires_at) VALUES (?, ?, ?, 'login', 0, ?)`
-    ).run(uuidv4(), email, codeHash, expiresAt);
-
     res.json({
       success: true,
       data: {
         client_id: clientId,
         email,
         phone,
-        magic_code: code,
+        magic_code: '111111',
         note: 'Hardcoded — remove /tuma-test/ready route after Tuma go-live'
       }
     });
