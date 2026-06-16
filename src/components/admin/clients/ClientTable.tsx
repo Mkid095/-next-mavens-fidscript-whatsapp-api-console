@@ -1,12 +1,13 @@
 import React from 'react';
 import { Client } from '../../../services/api';
-import { Mail, Phone, Calendar, Building, ToggleLeft, ToggleRight, Key, Trash2 } from 'lucide-react';
+import { Mail, Phone, Calendar, Building, ToggleLeft, ToggleRight, Key, Trash2, Coins } from 'lucide-react';
 
 interface ClientTableProps {
   clients: Client[];
   onToggleClient?: (id: string) => void;
   onResetKey?: (id: string) => void;
   onDeleteClient?: (id: string) => void;
+  onAwardTokens?: (client: Client) => void;
 }
 
 export default function ClientTable({
@@ -14,6 +15,7 @@ export default function ClientTable({
   onToggleClient,
   onResetKey,
   onDeleteClient,
+  onAwardTokens,
 }: ClientTableProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -83,6 +85,13 @@ export default function ClientTable({
                 title="Reset API key"
               >
                 <Key className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onAwardTokens?.(cli)}
+                className="p-1.5 rounded-lg text-yellow-600 hover:bg-yellow-50 transition-colors"
+                title="Award tokens"
+              >
+                <Coins className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onDeleteClient?.(cli.id)}

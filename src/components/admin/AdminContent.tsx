@@ -24,6 +24,7 @@ interface AdminContentProps {
   handleToggleClient: (id: string) => Promise<void>;
   handleResetClientKey: (id: string) => Promise<void>;
   handleDeleteClient: (id: string) => Promise<void>;
+  handleAwardTokens: (id: string, newBalance: number) => Promise<void>;
   handleAddKey: (name: string) => void;
   handleRevokeKey: (id: string) => void;
   handleMarkMessageRead: (id: string) => void;
@@ -43,6 +44,7 @@ export function AdminContent({
   handleToggleClient,
   handleResetClientKey,
   handleDeleteClient,
+  handleAwardTokens,
   handleAddKey,
   handleRevokeKey,
   handleMarkMessageRead,
@@ -88,6 +90,7 @@ export function AdminContent({
           onToggleClient={handleToggleClient}
           onResetKey={handleResetClientKey}
           onDeleteClient={handleDeleteClient}
+          onAwardTokens={handleAwardTokens}
         />
       );
     }

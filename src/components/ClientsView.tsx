@@ -3,6 +3,7 @@ import { Client } from '../services/api';
 import { Search, UserPlus, Building } from 'lucide-react';
 import ClientTable from './admin/clients/ClientTable';
 import CreateClientModal from './admin/clients/CreateClientModal';
+import AwardTokensModal from './admin/clients/AwardTokensModal';
 
 interface ClientsViewProps {
   clients: Client[];
@@ -10,6 +11,7 @@ interface ClientsViewProps {
   onToggleClient?: (id: string) => void;
   onResetKey?: (id: string) => void;
   onDeleteClient?: (id: string) => void;
+  onAwardTokens?: (id: string, newBalance: number) => void;
 }
 
 export default function ClientsView({
@@ -18,9 +20,11 @@ export default function ClientsView({
   onToggleClient,
   onResetKey,
   onDeleteClient,
+  onAwardTokens,
 }: ClientsViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [awardTarget, setAwardTarget] = useState<{ id: string; name: string; email: string } | null>(null);
 
   const filtered = clients.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,6 +71,7 @@ export default function ClientsView({
         onToggleClient={onToggleClient}
         onResetKey={onResetKey}
         onDeleteClient={onDeleteClient}
+        onAwardTokens={(cli) => setAwardTarget({ id: cli.id, name: cli.name, email: cli.email })}
       />
 
       {/* Empty state */}
@@ -88,6 +93,17 @@ export default function ClientsView({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={onAddClient}
+      />
+
+      {/* Award Tokens Modal */}
+      <AwardTokensModal
+        isOpen={!!awardTarget}
+        client={awardTarget}
+        onClose={() => setAwardTarget(null)}
+        onAwarded={(id, newBalance) => {
+          onAwardTokens?.(id, newBalance);
+          setAwardTarget(null);
+        }}
       />
     </div>
   );

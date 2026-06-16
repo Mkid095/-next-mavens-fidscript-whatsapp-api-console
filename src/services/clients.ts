@@ -69,6 +69,12 @@ export const clientsApi = {
 
   delete: (id: string) =>
     fetchApi<void>(`/api/clients/${id}`, { method: 'DELETE' }),
+
+  awardTokens: (id: string, amount: number, note?: string) =>
+    fetchApi<{ id: string; token_balance: number }>(
+      `/api/clients/${id}/award-tokens`,
+      { method: 'POST', body: JSON.stringify({ amount, note }) }
+    ),
 };
 
 export const plansApi = {

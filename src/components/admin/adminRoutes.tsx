@@ -23,6 +23,7 @@ interface AdminRouteProps {
   handleToggleClient: (id: string) => Promise<void>;
   handleResetClientKey: (id: string) => Promise<void>;
   handleDeleteClient: (id: string) => Promise<void>;
+  handleAwardTokens: (id: string, newBalance: number) => Promise<void>;
   handleAddKey: (name: string) => void;
   handleRevokeKey: (id: string) => void;
   handleMarkMessageRead: (id: string) => void;
@@ -33,7 +34,7 @@ export function AdminRoutes({
   messages, toasts, setToasts,
   instances, clients, logs, analytics, keys,
   handleAddInstance, handleUpdateInstanceStatus, handleDeleteInstance,
-  handleAddClient, handleToggleClient, handleResetClientKey, handleDeleteClient,
+  handleAddClient, handleToggleClient, handleResetClientKey, handleDeleteClient, handleAwardTokens,
   handleAddKey, handleRevokeKey, handleMarkMessageRead,
 }: AdminRouteProps) {
   // Guard: must be an authenticated admin
@@ -71,6 +72,7 @@ export function AdminRoutes({
         handleToggleClient={handleToggleClient}
         handleResetClientKey={handleResetClientKey}
         handleDeleteClient={handleDeleteClient}
+        handleAwardTokens={handleAwardTokens}
         handleAddKey={handleAddKey}
         handleRevokeKey={handleRevokeKey}
         handleMarkMessageRead={handleMarkMessageRead}
