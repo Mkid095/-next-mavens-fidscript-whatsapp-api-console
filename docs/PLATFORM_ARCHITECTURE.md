@@ -837,7 +837,7 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 | § | Section | Status | Notes |
 |---|---|---|---|
 | 1–3 | Vision, principles, layered view | ✅ Shipped | Authoritative doc. |
-| 4 | Workspace, teams & access control | ⚠️ Partial | Teams + team members tables exist; `assignee=team` filter works in inbox. Full RBAC + `can()` + WorkspaceContext is not yet enforced across all routes (P11 not yet airtight). |
+| 4 | Workspace, teams & access control | ⚠️ Partial → ✅ Strong | `workspaceAuth` mounted at `/api/platform/*` router. `whereWorkspace(req, alias)` SQL helper enforces SQL-layer scope. `workspace_id` added to `customer_tags`/`customer_notes`/`customer_assignments`/`customer_identifiers` (phase7 migration, backfilled from `customers.workspace_id`). Route-layer `ownedCustomer()` retained as the upstream gate; SQL helper is the defense-in-depth. Still partial: per-route `req.can()` enforcement isn't yet applied at the route level (middleware populates it; routes don't all check it). |
 | 5 | Event-driven core (the spine) | ✅ Shipped | `EventBus` (`modules/platform/events/bus.ts`) with wildcard `'*'` envelope (`__type`/`__id`/`__workspaceId`/`__actorUserId`); per-type and wildcard subscribers. Catalog of `PlatformEventType`. |
 | 6 | Customer-centric data model | ⚠️ Partial | `customers` + `conversations` + `customer_identifiers` tables exist; inbound messages resolve to canonical customer. AI summary / order linkage not yet wired. |
 | 7 | Customer Timeline | ⚠️ Partial | `timeline_events` table populated; Customer Intelligence drawer reads it. Filters + AI summaries are partial. |
@@ -859,7 +859,7 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 **Next concrete slices to pull off the backlog:**
 
-1. **P11 airtight** — make every route go through `WorkspaceContext`; add `req.can()` enforcement at high-value mutations; close the unscoped-query hole.
+1. **P11 airtight (partial done, in `eb993c1`)** — `whereWorkspace` helper + `workspaceAuth` mounted at platform router + `workspace_id` on child tables. Remaining: `req.can()` enforcement at the route level, audit of remaining v1/admin route handlers that bypass `WorkspaceContext`.
 2. **§6.3 customer model** — finish AI summaries + order linkage; promote `customer_identifiers` resolution to handle channel merges.
 3. **§13 charts** — replace the 4 admin chart mocks with real rollup queries.
 4. **§15 visual DAG** — render the workflow editor (the schema is in place; the visual is the gap).
