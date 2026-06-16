@@ -146,7 +146,16 @@ export const sendStatus = wrapSend(async (ctx, args: { type: 'text' | 'image' | 
   // broadcast still reaches every contact — it just satisfies the validator.
   let statusJidList = args.statusJidList && args.statusJidList.length ? args.statusJidList : [];
   if (statusJidList.length === 0) {
-    const self = (ctx.instance as { phone_number?: string | null }).phone_number;
+    let self = (ctx.instance as { phone_number?: string | null }).phone_number;
+    // Fallback: if phone_number is null (instance never received a message),
+    // fetch it from Evolution so we have a valid JID for the status broadcast.
+    if (!self) {
+      try {
+        const st = await callEvolutionAPIChecked('GET', `/instance/connectionState/${evolutionName(ctx)}`);
+        const inst = st.data?.instance as { phone?: string; phone_number?: string } | undefined;
+        self = (inst?.phone as string | undefined) || (inst?.phone_number as string | undefined) || null;
+      } catch { /* leave self null */ }
+    }
     if (self) statusJidList = [self.includes('@') ? self : `${self.replace(/\D/g, '')}@s.whatsapp.net`];
   }
   const res = await callEvolutionAPIChecked('POST', `/message/sendStatus/${evolutionName(ctx)}`, {
