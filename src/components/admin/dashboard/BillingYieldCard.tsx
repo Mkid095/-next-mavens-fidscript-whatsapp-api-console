@@ -1,17 +1,26 @@
 import React from 'react';
 import { Database, CheckCircle, TrendingUp } from 'lucide-react';
+import type { AnalyticsData } from '../../../services/types';
 
-export default function BillingYieldCard() {
+interface BillingYieldCardProps {
+  analytics?: AnalyticsData | null;
+}
+
+export default function BillingYieldCard({ analytics }: BillingYieldCardProps) {
+  const revenue = analytics?.revenue_kes ?? 0;
+
   return (
     <div className="bg-[#dcefe5] border border-[#bcdbc8] p-5 rounded-3xl shadow-sm flex flex-col justify-between">
       <div className="space-y-4">
-        <p className="text-[11px] font-bold text-[#1e583c] uppercase tracking-wider">FIDScript Billing Yield (KES)</p>
+        <p className="text-[11px] font-bold text-[#1e583c] uppercase tracking-wider">Estimated Revenue (Tokens)</p>
 
         <div className="space-y-1">
-          <h2 className="text-3xl font-extrabold text-[#0e3c25] tracking-tight leading-none">KES 942,650</h2>
+          <h2 className="text-3xl font-extrabold text-[#0e3c25] tracking-tight leading-none">
+            {revenue > 0 ? `${(revenue / 1000).toFixed(0)}K` : '—'}
+          </h2>
           <div className="flex items-center gap-1 text-xs font-semibold text-[#185335]">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-700" />
-            <span>+24.5% direct M-Pesa automated subscription</span>
+            <span>Token purchases + awards (30d)</span>
           </div>
         </div>
 
@@ -24,13 +33,12 @@ export default function BillingYieldCard() {
                 <Database className="w-3.5 h-3.5" />
               </span>
               <div>
-                <p className="font-bold text-[#143625]">Daraja API Hook C2B</p>
-                <p className="text-[10px] text-[#4d7d65]">Safaricom Instant Callback</p>
+                <p className="font-bold text-[#143625]">Active Clients</p>
+                <p className="text-[10px] text-[#4d7d65]">{analytics?.active_clients ?? 0} paying accounts</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="font-bold text-forest-deep">KES 540K</p>
-              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1 py-0.2 rounded">Processed</span>
+              <p className="font-bold text-forest-deep">{analytics?.total_clients ?? 0}</p>
             </div>
           </div>
 
@@ -40,13 +48,12 @@ export default function BillingYieldCard() {
                 <CheckCircle className="w-3.5 h-3.5" />
               </span>
               <div>
-                <p className="font-bold text-[#143625]">Corporate Bank Wire</p>
-                <p className="text-[10px] text-[#4d7d65]">Manual Invoices Settled</p>
+                <p className="font-bold text-[#143625]">Connected Containers</p>
+                <p className="text-[10px] text-[#4d7d65]">{analytics?.connected_instances ?? 0} active sessions</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="font-bold text-forest-deep">KES 402K</p>
-              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1 py-0.2 rounded">Reconciled</span>
+              <p className="font-bold text-forest-deep">{analytics?.total_instances ?? 0}</p>
             </div>
           </div>
         </div>

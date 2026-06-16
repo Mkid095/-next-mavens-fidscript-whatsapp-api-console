@@ -47,26 +47,42 @@ router.get('/analytics', (_req: Request, res: Response) => {
       LIMIT 5
     `).all();
 
+    // Real daily trends from inbox_messages — last 7 days
     const dailyTrends = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      const messagesSent = Math.floor(Math.random() * 5000) + 1000;
+      const row = db.prepare(`
+        SELECT
+          COUNT(*) as total,
+          SUM(CASE WHEN direction = 'incoming' THEN 1 ELSE 0 END) as received,
+          SUM(CASE WHEN direction = 'outgoing' THEN 1 ELSE 0 END) as sent
+        FROM inbox_messages
+        WHERE date(timestamp) = ?
+      `).get(dateStr) as { total: number; received: number; sent: number } | undefined;
       dailyTrends.push({
         date: dateStr,
-        messages_sent: messagesSent,
-        messages_delivered: Math.floor(messagesSent * 0.98),
-        failed_messages: Math.floor(messagesSent * 0.02),
+        messages_sent: row?.sent ?? 0,
+        messages_delivered: row?.received ?? 0,
+        failed_messages: 0,
       });
     }
+
+    // Real revenue from token_transactions (purchases + admin awards)
+    const revenueRow = db.prepare(`
+      SELECT COALESCE(SUM(CASE WHEN type IN ('purchase','admin_award') AND amount > 0 THEN amount ELSE 0 END), 0) as total_tokens
+      FROM token_transactions
+      WHERE created_at >= datetime('now', '-30 days')
+    `).get() as { total_tokens: number } | undefined;
 
     const analytics: AnalyticsData = {
       ...stats,
       delivery_rate: Math.round(deliveryRate * 100) / 100,
-      daily_trends: dailyTrends,
+      daily_trends: dailyTrends as unknown as AnalyticsData['daily_trends'],
       top_clients: topClients as unknown as AnalyticsData['top_clients'],
       top_instances: topInstances as unknown as AnalyticsData['top_instances'],
+      revenue_kes: (revenueRow?.total_tokens ?? 0) / 10, // approximate KES conversion
     };
 
     res.json({ success: true, data: analytics });

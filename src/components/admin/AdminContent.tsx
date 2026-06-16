@@ -60,6 +60,7 @@ export function AdminContent({
         <DashboardOverview
           instances={instances}
           clients={clients}
+          analytics={analytics}
           logs={logs.map((l) => ({
             id: l.id,
             timestamp: l.timestamp,
@@ -100,6 +101,7 @@ export function AdminContent({
     if (path === '/admin/logs' || path === '/admin/audit-logs') {
       return (
         <LogsAndAnalyticsView
+          analytics={analytics}
           logs={logs.map((l) => ({
             id: l.id,
             timestamp: l.timestamp,
@@ -124,6 +126,7 @@ export function AdminContent({
       <DashboardOverview
         instances={instances}
         clients={clients}
+        analytics={analytics}
         logs={logs.map((l) => ({
           id: l.id,
           timestamp: l.timestamp,

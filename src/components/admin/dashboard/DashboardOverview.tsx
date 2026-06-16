@@ -3,6 +3,7 @@ import { Mail, CheckCircle2, Smartphone } from 'lucide-react';
 import type { Instance } from '../../../services/api';
 import type { Client } from '../../../services/api';
 import type { SystemLog } from '../../../types';
+import type { AnalyticsData } from '../../../services/types';
 import StatCard from './StatCard';
 import ActiveInstancesChart from './ActiveInstancesChart';
 import TopClientsTable from './TopClientsTable';
@@ -10,11 +11,12 @@ import RecentLogs from './RecentLogs';
 import QuickAlertBar from './QuickAlertBar';
 import BillingYieldCard from './BillingYieldCard';
 import KenyanNodesMap from './KenyanNodesMap';
-import { cciBars, mapNodes } from './dashboardData';
+import { mapNodes } from './dashboardData';
 
 interface DashboardOverviewProps {
   instances: Instance[];
   clients: Client[];
+  analytics?: AnalyticsData | null;
   logs: SystemLog[];
   onNavigate: (tab: string) => void;
   userEmail?: string;
@@ -23,6 +25,7 @@ interface DashboardOverviewProps {
 export default function DashboardOverview({
   instances,
   clients,
+  analytics,
   logs,
   onNavigate,
   userEmail,
@@ -84,8 +87,8 @@ export default function DashboardOverview({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <ActiveInstancesChart bars={cciBars} />
-        <BillingYieldCard />
+        <ActiveInstancesChart dailyTrends={analytics?.daily_trends} />
+        <BillingYieldCard analytics={analytics} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

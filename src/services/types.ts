@@ -57,6 +57,7 @@ export interface AnalyticsData {
   daily_trends: DailyTrend[];
   top_clients: TopClient[];
   top_instances: TopInstance[];
+  revenue_kes?: number;
 }
 
 export interface DailyTrend {
