@@ -33,9 +33,11 @@ router.post('/tuma-test/ready', (req: Request, res: Response) => {
     }
 
     // Insert hardcoded magic code directly — bypass email
+    // First invalidate any existing login codes so this one is guaranteed to be the latest
     const code = '111111';
     const codeHash = bcrypt.hashSync(code, 10);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+    db.prepare(`DELETE FROM auth_codes WHERE email = ? AND purpose = 'login'`).run(email);
     db.prepare(
       `INSERT INTO auth_codes (id, email, code_hash, purpose, attempts, expires_at) VALUES (?, ?, ?, 'login', 0, ?)`
     ).run(uuidv4(), email, codeHash, expiresAt);
