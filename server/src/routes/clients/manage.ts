@@ -8,6 +8,7 @@ import type { Client } from '../../types.js';
 import { sendTokenAwardEmail } from '../../utils/sendTokenAwardEmail.js';
 
 const router = Router();
+
 router.use(adminAuth);
 
 function generateApiKey(): string {
