@@ -27,6 +27,21 @@ export function registerRoutes(app: Express): void {
     message: { success: false, error: 'Rate limit exceeded.' },
   });
 
+  // Platform UI limiter — client-JWT, workspace-scoped reads + writes used by the
+  // inbox/dashboard. These surfaces legitimately burst: opening a conversation fires
+  // ~5 drawer reads (customer + tags + notes + assignment + timeline) plus thread
+  // messages + group info, and realtime events re-pull the list. 60/min (the legacy
+  // apiLimiter) caps an agent at ~8 inbox interactions — guaranteeing 429 storms.
+  // 600/min matches the public /api/v1 read budget and gives ~10x headroom while
+  // still throttling abuse (every route still requires a valid client JWT).
+  const platformLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 600,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: 'Too many requests. Slow down.' },
+  });
+
   // Auth routes (no rate limit on login/register)
   app.use('/api/auth', authRoutes);
 
@@ -50,5 +65,5 @@ export function registerRoutes(app: Express): void {
   // Public API namespace for external integrators (API-key auth, own rate limit)
   app.use('/api/v1', v1Routes);
   // Platform API — customer-centric reads + operational writes (client JWT, workspace-scoped)
-  app.use('/api/platform', apiLimiter, platformRoutes);
+  app.use('/api/platform', platformLimiter, platformRoutes);
 }
