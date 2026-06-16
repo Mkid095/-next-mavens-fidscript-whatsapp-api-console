@@ -22,7 +22,7 @@ export default function InboxView({ messages, onMarkRead }: InboxViewProps) {
     if (res.success && res.data) {
       setMsgs(res.data.map(m => ({
         ...m,
-        read: !!m.is_read,
+        read: !!(m as { is_read?: boolean }).is_read,
       })));
     }
     setLoading(false);

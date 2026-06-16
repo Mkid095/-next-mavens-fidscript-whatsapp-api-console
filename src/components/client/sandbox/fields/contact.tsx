@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
-import type { SandboxField, SandboxContact, SandboxContactItem } from './types.js';
+import type { SandboxField, SandboxContact, SandboxContactItem } from '../types.js';
 
 export function ContactArrayField({
   subFields, contactItems, onContactItemsChange, contacts,

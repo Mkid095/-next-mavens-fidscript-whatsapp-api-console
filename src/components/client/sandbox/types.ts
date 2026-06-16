@@ -1,6 +1,6 @@
-import type { EndpointDef, SandboxField } from './sandboxHelpers.js';
+import type { EndpointDef, SandboxField, CategoryGroup } from '../sandboxHelpers.js';
 
-export type { EndpointDef, SandboxField };
+export type { EndpointDef, SandboxField, CategoryGroup };
 
 export interface SandboxContactItem {
   fullName: string;

@@ -1,7 +1,7 @@
 import type { ApiEndpoint } from './index';
 
-const INSTANCE = { name: 'instance', desc: 'Your WhatsApp instance name', required: true };
-const GROUP = { key: 'groupJid', label: 'Group JID', type: 'string', required: true, placeholder: '120363xxx@g.us', desc: 'The group JID (@g.us).' };
+const INSTANCE = { name: 'instance', desc: 'Your WhatsApp instance name', required: true } as const;
+const GROUP = { key: 'groupJid', label: 'Group JID', type: 'string', required: true, placeholder: '120363xxx@g.us', desc: 'The group JID (@g.us).' } as const;
 
 /** Group management — all FREE (no tokens), rate-limited as mutations. */
 export const groupEndpoints: ApiEndpoint[] = [

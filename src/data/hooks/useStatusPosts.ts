@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useDataEvent } from './useDataEvent.js';
+import { useDataEvents } from './useDataEvent.js';
 import { platformApi, type StatusPost, type CreateStatusPostInput } from '../api/platform.js';
 
 interface UseStatusPostsReturn {
@@ -43,8 +43,8 @@ export function useStatusPosts(): UseStatusPostsReturn {
     const t = setInterval(refresh, 30_000);
     return () => clearInterval(t);
   }, [refresh]);
-  // Re-pull on any bus event tagged status.* (future-proofing)
-  useDataEvent('status.*', () => { refresh().catch(() => { /* swallow */ }); });
+  // Re-pull on conversation/message events that may correlate with status posts.
+  useDataEvents(['message.delivered', 'connection.state_change'], () => { refresh().catch(() => { /* swallow */ }); });
 
   const create = useCallback(async (body: CreateStatusPostInput): Promise<StatusPost> => {
     const res = await platformApi.createStatusPost(body);

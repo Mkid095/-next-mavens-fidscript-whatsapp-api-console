@@ -70,8 +70,6 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
         content: type === 'broadcast' ? content || undefined : undefined,
         media_url: type === 'broadcast' ? mediaUrl || undefined : undefined,
         phone_numbers: type === 'broadcast' ? resolvedPhones : [],
-        type: type === 'broadcast' ? 'broadcast' : type,
-        segment_id: type === 'broadcast' ? (selectedSegmentId || undefined) : undefined,
       });
       if (!res.success || !res.data) {
         setError(res.error || 'Failed to create campaign');

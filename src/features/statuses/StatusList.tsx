@@ -1,5 +1,6 @@
 import { Send, X, Calendar, Trash2, Image as ImageIcon, Type, Music } from 'lucide-react';
-import type { StatusPost, Instance } from '../../data/api/platform.js';
+import type { StatusPost } from '../../data/api/platform.js';
+import type { Instance } from '../../services/api.js';
 import { useMediaAssets } from '../../data/hooks/index.js';
 
 interface StatusListProps {

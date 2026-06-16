@@ -79,8 +79,8 @@ export default function ClientDashboard({
   // dashboard, etc.), not just the containers grid. Updates flow back through
   // onInstancesChange so every consumer re-renders with fresh status.
   useInstanceSSE(instances, (name: string, change: InstanceStateChange) => {
-    onInstancesChange(prev =>
-      prev.map(i =>
+    onInstancesChange(
+      instances.map(i =>
         i.name === name
           ? {
               ...i,

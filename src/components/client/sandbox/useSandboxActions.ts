@@ -94,7 +94,7 @@ export function useSandboxActions({ clientToken, onTokenDeduct, onContactsAdded 
 
   const addContact = useCallback(async (name: string, phone: string) => {
     if (!name.trim() || !phone.trim() || !clientToken) return;
-    const res = await contactsApi.batchImport([{ name: name.trim(), phone: phone.trim() }]);
+    const res = await contactsApi.importBatch([{ name: name.trim(), phone: phone.trim() }]);
     if (res.success && res.data) {
       onContactsAdded([{ id: String(Date.now()), name: name.trim(), phone: phone.trim() }]);
     }

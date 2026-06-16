@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Client, Instance, TokenPackage, DailyUsage } from '../../services/api';
+import type { Client, Instance, TokenPackage, DailyUsage, ClientMessage } from '../../services/api';
 import TokenBalanceBar from '../TokenBalanceBar';
 import DashboardHome from './DashboardHome';
 import WhatsAppContainers from './whatsapp/WhatsAppContainers';
@@ -72,7 +72,8 @@ export default function ClientContent({
           tokenBalance={tokenBalance}
           instances={instances}
           dailyUsage={dailyUsage}
-          recentMessages={[]}
+          recentMessages={recentMessages}
+          messagesToday={messagesToday}
         />
       )}
       {activeSection === 'whatsapp' && (

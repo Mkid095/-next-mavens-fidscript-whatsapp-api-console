@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { ChevronRight, Zap, Copy, Trash2 } from 'lucide-react';
-import type { Campaign, CampaignRecipient } from '../../services/api';
+import type { Campaign, CampaignRecipient } from '../../../services/api';
 
 export interface HistoryPanelProps {
   campaigns: Campaign[];

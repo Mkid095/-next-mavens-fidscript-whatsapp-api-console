@@ -10,7 +10,7 @@ interface BulkMessagingPanelProps {
   savedContacts: Contact[];
   clientToken?: string;
   onTokenDeduct?: (n: number) => void;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 type Step = 'create' | 'history';

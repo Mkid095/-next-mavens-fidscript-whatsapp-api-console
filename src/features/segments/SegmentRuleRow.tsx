@@ -104,7 +104,7 @@ export default function SegmentRuleRow({ rule, onChange, onRemove }: SegmentRule
         className="px-2 py-1 text-xs border border-[#eaebe4] bg-white rounded-lg font-bold">
         {FIELD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
-      <select value={rule.op} onChange={e => onChange({ ...rule, op: e.target.value as SegmentRule['op'] })}
+      <select value={rule.op} onChange={e => onChange({ ...rule, op: e.target.value as SegmentRule['op'] } as SegmentRule)}
         className="px-2 py-1 text-xs border border-[#eaebe4] bg-white rounded-lg">
         {opsFor(rule.field).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>

@@ -31,8 +31,8 @@ export function mediaTypeFor(mime: string): string | null {
   return null;
 }
 
-/** Reads a File as a base64 data-URL. */
-export function readAsDataURL(file: File): Promise<string> {
+/** Reads a Blob (e.g. File or recorded media) as a base64 data-URL. */
+export function readAsDataURL(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);

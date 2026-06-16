@@ -1,5 +1,5 @@
 import { Search, X, Plus, Zap, AlertCircle, SendHorizontal, Calendar, Users } from 'lucide-react';
-import type { Instance, Contact, ContactGroup } from '../../services/api';
+import type { Instance, Contact, ContactGroup } from '../../../services/api';
 
 export interface CreatePanelProps {
   campaignName: string;

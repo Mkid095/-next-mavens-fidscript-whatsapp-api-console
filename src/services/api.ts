@@ -17,7 +17,7 @@ export type { ApiResponse, PaginatedResponse } from '../data/api/client.js';
 // SSE HELPERS (transport-aware, retained here)
 // ====================
 
-import { API_BASE_URL as BASE } from '../data/api/client.js';
+import { API_BASE_URL as BASE, fetchApi as _fetchApi } from '../data/api/client.js';
 
 /** Create an EventSource for real-time instance connection state updates. */
 export function createInstanceSSE(instanceName: string): EventSource {
@@ -29,7 +29,7 @@ export function createInstanceSSE(instanceName: string): EventSource {
 /** Trigger the dashboard SSE to refresh stats (e.g. after sending a message) */
 export async function refreshDashboard(): Promise<void> {
   const token = localStorage.getItem('fidscript_client_token') || '';
-  await fetchApi('/api/sse/dashboard/refresh', {
+  await _fetchApi('/api/sse/dashboard/refresh', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -50,3 +50,5 @@ export { paymentsApi } from './payments';
 export { uploadsApi } from './uploads';
 export { contactsApi, clientMessagesApi, clientKeysApi, campaignsApi, groupsApi } from './contacts';
 export type { Contact, ClientMessage, ClientApiKey, Campaign, CampaignRecipient, ContactGroup, ContactGroupMember } from './contacts';
+// Re-exported for legacy `import { Conversation } from '../../services/api'` consumers.
+export type { Conversation, ConversationStatus, ConversationPriority, ConversationMessage } from '../data/api/platform.js';

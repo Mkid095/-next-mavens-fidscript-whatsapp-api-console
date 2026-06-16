@@ -1,4 +1,4 @@
-import type { ApiEndpoint, BodyField } from '../../data/apiEndpoints/index';
+import type { ApiEndpoint, BodyField } from '../../../data/apiEndpoints/index';
 
 /** Flatten a nested field hierarchy for the params table. */
 export function flattenFields(fields: BodyField[], prefix = ''): Array<{ name: string; type: string; required: boolean; desc: string }> {
