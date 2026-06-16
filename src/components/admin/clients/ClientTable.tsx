@@ -8,6 +8,7 @@ interface ClientTableProps {
   onResetKey?: (id: string) => void;
   onDeleteClient?: (id: string) => void;
   onAwardTokens?: (client: Client) => void;
+  onViewClient?: (client: Client) => void;
 }
 
 export default function ClientTable({
@@ -16,6 +17,7 @@ export default function ClientTable({
   onResetKey,
   onDeleteClient,
   onAwardTokens,
+  onViewClient,
 }: ClientTableProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -24,8 +26,11 @@ export default function ClientTable({
           key={cli.id}
           className="bg-white border border-[#eaebe4]/80 rounded-3xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
         >
-          {/* Card header */}
-          <div className="p-5 border-b border-[#eaebe4]/60 flex items-start justify-between gap-3 bg-[#f9f9f2]">
+          {/* Card header — clickable for detail view */}
+          <button
+            className="p-5 border-b border-[#eaebe4]/60 flex items-start justify-between gap-3 bg-[#f9f9f2] text-left w-full"
+            onClick={() => onViewClient?.(cli)}
+          >
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Building className="w-4 h-4 text-yellow-600 shrink-0" />
@@ -37,7 +42,6 @@ export default function ClientTable({
                 ID: {cli.id}
               </p>
             </div>
-
             <div className="flex flex-col items-end gap-1">
               <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full ${
                 cli.is_active === 1
@@ -47,7 +51,7 @@ export default function ClientTable({
                 {cli.is_active === 1 ? 'Active' : 'Inactive'}
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Card details */}
           <div className="p-5 space-y-3 text-xs text-[#525345] flex-1">

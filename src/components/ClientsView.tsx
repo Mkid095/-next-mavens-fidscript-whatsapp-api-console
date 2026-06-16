@@ -4,6 +4,7 @@ import { Search, UserPlus, Building } from 'lucide-react';
 import ClientTable from './admin/clients/ClientTable';
 import CreateClientModal from './admin/clients/CreateClientModal';
 import AwardTokensModal from './admin/clients/AwardTokensModal';
+import ClientDetailModal from './admin/clients/ClientDetailModal';
 
 interface ClientsViewProps {
   clients: Client[];
@@ -25,11 +26,40 @@ export default function ClientsView({
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [awardTarget, setAwardTarget] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [detailClient, setDetailClient] = useState<Client | null>(null);
+  const [detailClientsList, setDetailClientsList] = useState<Client[]>([]);
 
   const filtered = clients.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleViewClient = async (client: Client) => {
+    // Fetch full client details including instances
+    const res = await (await import('../services/clients')).clientsApi.getOne(client.id);
+    if (res.success && res.data) {
+      setDetailClientsList(clients.map(c => c.id === client.id ? { ...c, ...res.data } as Client : c));
+      setDetailClient({ ...client, ...res.data } as Client);
+    } else {
+      setDetailClient(client);
+    }
+  };
+
+  const handleDetailToggle = async (id: string) => {
+    await onToggleClient?.(id);
+    const updated = clients.map(c => c.id === id ? { ...c, is_active: c.is_active === 1 ? 0 : 1 } : c);
+    setDetailClientsList(updated);
+    setDetailClient(prev => prev && prev.id === id ? { ...prev, is_active: prev.is_active === 1 ? 0 : 1 } : prev);
+  };
+
+  const handleDetailResetKey = async (id: string) => {
+    await onResetKey?.(id);
+  };
+
+  const handleAwardFromDetail = (client: Client) => {
+    setDetailClient(null);
+    setAwardTarget({ id: client.id, name: client.name, email: client.email });
+  };
 
   return (
     <div className="space-y-6">
@@ -72,6 +102,7 @@ export default function ClientsView({
         onResetKey={onResetKey}
         onDeleteClient={onDeleteClient}
         onAwardTokens={(cli) => setAwardTarget({ id: cli.id, name: cli.name, email: cli.email })}
+        onViewClient={handleViewClient}
       />
 
       {/* Empty state */}
@@ -104,6 +135,16 @@ export default function ClientsView({
           onAwardTokens?.(id, newBalance);
           setAwardTarget(null);
         }}
+      />
+
+      {/* Client Detail Modal */}
+      <ClientDetailModal
+        isOpen={!!detailClient}
+        client={detailClient}
+        onClose={() => setDetailClient(null)}
+        onToggle={handleDetailToggle}
+        onResetKey={handleDetailResetKey}
+        onAwardTokens={handleAwardFromDetail}
       />
     </div>
   );

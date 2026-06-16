@@ -75,7 +75,7 @@ export function AdminContent({
       return (
         <InstancesView
           instances={instances}
-          clientsList={clients.map((c) => c.name)}
+          clients={clients}
           onAddInstance={handleAddInstance}
           onUpdateStatus={handleUpdateInstanceStatus}
           onDeleteInstance={handleDeleteInstance}

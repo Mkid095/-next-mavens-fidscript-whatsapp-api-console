@@ -27,4 +27,24 @@ router.get('/:id', (req: Request, res: Response) => {
   }
 });
 
+// GET /api/clients/:id/transactions - Token transaction history
+router.get('/:id/transactions', (req: Request, res: Response) => {
+  try {
+    const client = db.prepare('SELECT id FROM clients WHERE id = ?').get(req.params.id);
+    if (!client) { res.status(404).json({ success: false, error: 'Client not found' }); return; }
+
+    const transactions = db.prepare(`
+      SELECT id, type, amount, reference, status, created_at
+      FROM token_transactions
+      WHERE client_id = ?
+      ORDER BY created_at DESC
+      LIMIT 200
+    `).all(req.params.id);
+
+    res.json({ success: true, data: transactions });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
+  }
+});
+
 export default router;

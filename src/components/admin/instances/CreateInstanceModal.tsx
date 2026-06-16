@@ -2,19 +2,27 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
+interface ClientOption {
+  name: string;
+  client_id: string;
+}
+
 interface CreateInstanceModalProps {
   isOpen: boolean;
+  clients: ClientOption[];
   onClose: () => void;
-  onSubmit: (data: { name: string; display_name?: string }) => void;
+  onSubmit: (data: { name: string; display_name?: string; client_id?: string }) => void;
 }
 
 export default function CreateInstanceModal({
   isOpen,
+  clients,
   onClose,
   onSubmit,
 }: CreateInstanceModalProps) {
   const [newName, setNewName] = useState('');
   const [newDisplayName, setNewDisplayName] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState('');
   const [formError, setFormError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,9 +34,11 @@ export default function CreateInstanceModal({
     onSubmit({
       name: newName.toLowerCase().trim().replace(/[^a-z0-9_-]/g, ''),
       display_name: newDisplayName || undefined,
+      client_id: selectedClientId || undefined,
     });
     setNewName('');
     setNewDisplayName('');
+    setSelectedClientId('');
     setFormError('');
     onClose();
   };
@@ -36,6 +46,7 @@ export default function CreateInstanceModal({
   const handleClose = () => {
     setNewName('');
     setNewDisplayName('');
+    setSelectedClientId('');
     setFormError('');
     onClose();
   };
@@ -89,6 +100,25 @@ export default function CreateInstanceModal({
                   onChange={(e) => setNewDisplayName(e.target.value)}
                   className="w-full px-3 py-2.5 border border-[#eaebe4] text-[#181711] bg-white rounded-xl focus:outline-none focus:ring-1 focus:ring-yellow-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-[#6a6c5d] uppercase tracking-wider mb-1">
+                  Assign to Client
+                </label>
+                <select
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-[#eaebe4] text-[#181711] bg-white rounded-xl focus:outline-none focus:ring-1 focus:ring-yellow-500"
+                >
+                  <option value="">— Unassigned —</option>
+                  {clients.map((c) => (
+                    <option key={c.client_id} value={c.client_id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[9px] text-[#7d8071] mt-1">Leave blank to create an unassigned instance</p>
               </div>
 
               {formError && (

@@ -52,6 +52,15 @@ export interface Client {
   price_monthly?: number;
 }
 
+export interface TokenTransaction {
+  id: string;
+  type: string;
+  amount: number;
+  reference: string | null;
+  status: string;
+  created_at: string;
+}
+
 export const clientsApi = {
   getAll: () => fetchApi<Client[]>('/api/clients'),
 
@@ -75,6 +84,9 @@ export const clientsApi = {
       `/api/clients/${id}/award-tokens`,
       { method: 'POST', body: JSON.stringify({ amount, note }) }
     ),
+
+  getTransactions: (id: string) =>
+    fetchApi<TokenTransaction[]>(`/api/clients/${id}/transactions`),
 };
 
 export const plansApi = {

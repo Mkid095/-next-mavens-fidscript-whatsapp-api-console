@@ -10,7 +10,7 @@ import RecentLogs from './RecentLogs';
 import QuickAlertBar from './QuickAlertBar';
 import BillingYieldCard from './BillingYieldCard';
 import KenyanNodesMap from './KenyanNodesMap';
-import { cciBars, regionRecyclingData, mapNodes } from './dashboardData';
+import { cciBars, mapNodes } from './dashboardData';
 
 interface DashboardOverviewProps {
   instances: Instance[];
@@ -22,12 +22,19 @@ interface DashboardOverviewProps {
 
 export default function DashboardOverview({
   instances,
+  clients,
   logs,
   onNavigate,
-  userEmail = 'kennedygithinjioffice@gmail.com',
+  userEmail,
 }: DashboardOverviewProps) {
   const activeClusters = instances.filter((i) => i.status === 'connected').length;
   const connectingCount = instances.filter((i) => i.status === 'connecting').length;
+
+  // Real aggregates
+  const totalMessages = clients.reduce((sum, c) => sum + c.total_messages, 0);
+  const messagesToday = clients.reduce((sum, c) => sum + c.msg_count_today, 0);
+  const connectedInstances = instances.filter((i) => i.status === 'connected').length;
+  const totalClients = clients.length;
 
   return (
     <div className="space-y-6">
@@ -35,10 +42,10 @@ export default function DashboardOverview({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <StatCard
-          label="Daily Dispatched Messages"
-          value="204,502 msgs"
-          trend="volume trigger today"
-          trendValue="+18.3%"
+          label="Messages Sent Today"
+          value={`${messagesToday.toLocaleString()}`}
+          trend="across all clients"
+          trendValue=""
           icon={<Mail size={18} />}
           iconBgClass="bg-[#102e24]"
           iconColor="text-emerald-400"
@@ -49,9 +56,9 @@ export default function DashboardOverview({
           chartBarClass="bg-[#0c3124]"
         />
         <StatCard
-          label="Gateway Delivery Success"
-          value="99.98 / 100"
-          trend="Stable uptime"
+          label="Total Messages Sent"
+          value={totalMessages.toLocaleString()}
+          trend="all time across platform"
           trendValue=""
           icon={<CheckCircle2 size={18} />}
           iconBgClass="bg-emerald-100"
@@ -62,10 +69,10 @@ export default function DashboardOverview({
           chartBarClass="bg-stone-100"
         />
         <StatCard
-          label="Premium Active Instances"
-          value={`${instances.length} / 50`}
-          trend="private subnets provisioned"
-          trendValue="+4 new"
+          label="Active Containers"
+          value={`${connectedInstances} / ${instances.length}`}
+          trend="containers connected"
+          trendValue={connectingCount > 0 ? `${connectingCount} connecting` : ''}
           icon={<Smartphone size={18} />}
           iconBgClass="bg-[#10231d]/5"
           iconColor="text-[#10231d]"
@@ -82,7 +89,7 @@ export default function DashboardOverview({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <TopClientsTable clients={regionRecyclingData} />
+        <TopClientsTable clients={clients} />
         <KenyanNodesMap nodes={mapNodes} />
       </div>
 

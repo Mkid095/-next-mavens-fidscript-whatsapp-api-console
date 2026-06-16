@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Instance } from '../services/api';
-import { Search, Plus, QrCode, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useCallback } from 'react';
+import { Instance, Client } from '../services/api';
+import { Search, Plus } from 'lucide-react';
 import InstanceTable from './admin/instances/InstanceTable';
 import CreateInstanceModal from './admin/instances/CreateInstanceModal';
+import QRPairingModal from './client/whatsapp/QRPairingModal';
+import { useInstanceConnection } from './client/whatsapp/useInstanceConnection';
 
 interface InstancesViewProps {
   instances: Instance[];
-  clientsList: string[];
+  clients: Client[];
   onAddInstance: (data: { name: string; display_name?: string; client_id?: string }) => void;
   onUpdateStatus: (name: string, status: string) => void;
   onDeleteInstance: (name: string) => void;
@@ -15,22 +16,49 @@ interface InstancesViewProps {
 
 export default function InstancesView({
   instances,
-  clientsList,
+  clients,
   onAddInstance,
   onUpdateStatus,
   onDeleteInstance,
 }: InstancesViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showQrModal, setShowQrModal] = useState<string | null>(null);
+  const [clientFilter, setClientFilter] = useState<string>('');
+
+  const {
+    pairingInstance,
+    pairingQR,
+    generatingQR,
+    regeneratingQR,
+    connectionError,
+    handleConnect,
+    handleRegenerateQR,
+    handleSimulateSuccessfulScan,
+    handleDisconnect,
+    handleClosePairingModal,
+  } = useInstanceConnection({ instances, onInstancesChange: (updated) => {
+    // Sync updated instances back to parent — admin instances list refreshes
+    updated; // handled via onUpdateStatus callbacks for now
+  }});
+
+  const handleQrConnect = useCallback((name: string) => {
+    const inst = instances.find(i => i.name === name);
+    if (inst) handleConnect(inst);
+  }, [instances, handleConnect]);
+
+  const handleDisconnectAndRefresh = useCallback(async (name: string) => {
+    await handleDisconnect(instances.find(i => i.name === name) || { name } as Instance);
+    onUpdateStatus(name, 'disconnected');
+  }, [handleDisconnect, instances, onUpdateStatus]);
 
   const filteredInstances = instances.filter((inst) => {
     const term = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       inst.name.toLowerCase().includes(term) ||
       (inst.client_name || '').toLowerCase().includes(term) ||
-      (inst.phone_number || '').toLowerCase().includes(term)
-    );
+      (inst.phone_number || '').includes(term);
+    const matchesClient = !clientFilter || inst.client_id === clientFilter || inst.client_name === clientFilter;
+    return matchesSearch && matchesClient;
   });
 
   return (
@@ -54,15 +82,28 @@ export default function InstancesView({
         </button>
       </div>
 
-      <div className="p-4 bg-white border border-[#eaebe4]/80 rounded-2xl shadow-sm">
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Client filter dropdown */}
+        <select
+          value={clientFilter}
+          onChange={(e) => setClientFilter(e.target.value)}
+          className="px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs text-[#181711] focus:outline-none focus:border-yellow-600 min-w-[180px]"
+        >
+          <option value="">All clients</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.name}>{c.name}</option>
+          ))}
+        </select>
+
+        {/* Search bar */}
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8a8c80] pointer-events-none" />
           <input
             type="text"
             placeholder="Search instances by name, client, or phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-[#f9f9f2] border border-[#eaebe4] text-[#181711] placeholder-[#8a8c80] text-xs rounded-xl focus:outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-[#eaebe4] text-[#181711] placeholder-[#8a8c80] text-xs rounded-xl focus:outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition-colors"
           />
         </div>
       </div>
@@ -70,14 +111,20 @@ export default function InstancesView({
       <div className="bg-white border border-[#eaebe4]/80 rounded-2xl shadow-sm overflow-hidden">
         <InstanceTable
           instances={filteredInstances}
-          onQrConnect={(name) => setShowQrModal(name)}
-          onDisconnect={(name) => onUpdateStatus(name, 'disconnected')}
+          onQrConnect={handleQrConnect}
+          onDisconnect={handleDisconnectAndRefresh}
           onDelete={onDeleteInstance}
         />
       </div>
 
       <CreateInstanceModal
         isOpen={isModalOpen}
+        clients={instances
+          .map(i => i.client_name)
+          .filter(Boolean)
+          .filter((v, idx, arr) => arr.indexOf(v) === idx)
+          .map(name => ({ name, client_id: instances.find(i => i.client_name === name)?.client_id || '' }))
+        }
         onClose={() => setIsModalOpen(false)}
         onSubmit={(data) => {
           onAddInstance(data);
@@ -85,39 +132,18 @@ export default function InstancesView({
         }}
       />
 
-      <AnimatePresence>
-        {showQrModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-neutral-900/35" onClick={() => setShowQrModal(null)} />
-
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-[#eaebe4] w-full max-w-sm rounded-3xl shadow-xl p-6 relative z-10"
-            >
-              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-                <div>
-                  <h3 className="text-[14px] font-bold text-[#272c30]">Pair container</h3>
-                  <p className="text-[10px] text-[#60737a]">Scan the QR code with your phone</p>
-                </div>
-                <button onClick={() => setShowQrModal(null)} className="p-1 hover:bg-stone-50 rounded-lg text-[#60737a]">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="py-6 text-center">
-                <div className="w-48 h-48 bg-[#f9f9f2] border-2 border-dashed border-[#eaebe4] rounded-2xl mx-auto flex items-center justify-center mb-4">
-                  <QrCode className="w-16 h-16 text-[#d1d5db]" />
-                </div>
-                <p className="text-[10px] text-[#7d8071]">
-                  Open your messaging app → Settings → Linked Devices → Link a Device
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {pairingInstance && (
+        <QRPairingModal
+          instance={pairingInstance}
+          qrCode={pairingQR}
+          generatingQR={generatingQR}
+          regeneratingQR={regeneratingQR}
+          connectionError={connectionError}
+          onClose={handleClosePairingModal}
+          onCheckConnection={handleSimulateSuccessfulScan}
+          onRegenerate={handleRegenerateQR}
+        />
+      )}
     </div>
   );
 }
