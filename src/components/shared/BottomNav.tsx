@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { LayoutDashboard, Settings, Menu, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Settings, Menu, ChevronDown, Search } from 'lucide-react';
 import { mainNavItems, menuItems, ClientSection } from './SidebarNav';
+import { useCommandK } from '../../features/search/index.js';
 
 interface BottomNavProps {
   activeMenuItem: ClientSection;
@@ -24,6 +25,7 @@ export default function BottomNav({
 }: BottomNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const { openPalette } = useCommandK();
 
   const handleMenuSelect = (item: { id: ClientSection }) => {
     onMenuItemChange(item.id);
@@ -81,21 +83,33 @@ export default function BottomNav({
         )}
       </AnimatePresence>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#13120d] border-t border-[#2d2813] z-40 safe-area-inset-bottom">
-        <div className="flex items-center justify-around h-16 px-2">
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#13120d] border-t border-[#2d2813] z-40"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="flex items-center justify-around h-16 px-1 max-w-md mx-auto">
           <Link
             to="/client"
-            className={`flex flex-col items-center justify-center gap-0.5 px-4 py-2 rounded-xl transition-all ${
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-all ${
               isActive({ id: 'dashboard', path: '/client' }, location.pathname) ? 'text-yellow-400' : 'text-[#6e684a]'
             }`}
           >
             <LayoutDashboard className="w-5 h-5" />
-            <span className="text-[9px] font-bold">Dashboard</span>
+            <span className="text-[9px] font-bold">Home</span>
           </Link>
 
           <button
+            onClick={openPalette}
+            aria-label="Search"
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 rounded-xl text-[#6e684a] transition-all hover:text-white"
+          >
+            <Search className="w-5 h-5" />
+            <span className="text-[9px] font-bold">Search</span>
+          </button>
+
+          <button
             onClick={() => setMenuOpen(true)}
-            className={`flex flex-col items-center justify-center gap-0.5 px-4 py-2 rounded-xl transition-all ${
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-all ${
               menuItems.some(i => isActive(i, location.pathname)) ? 'text-yellow-400' : 'text-[#6e684a]'
             }`}
           >
@@ -111,7 +125,7 @@ export default function BottomNav({
 
           <Link
             to="/client/settings"
-            className={`flex flex-col items-center justify-center gap-0.5 px-4 py-2 rounded-xl transition-all ${
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-all ${
               isActive({ id: 'settings', path: '/client/settings' }, location.pathname) ? 'text-yellow-400' : 'text-[#6e684a]'
             }`}
           >

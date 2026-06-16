@@ -1,6 +1,7 @@
 import React from 'react';
+import { Search } from 'lucide-react';
 import SidebarNav from './shared/SidebarNav';
-import BottomNav from './shared/BottomNav';
+import { useCommandK } from '../features/search/index.js';
 import type { ClientSection } from './shared/SidebarNav';
 export type { ClientSection };
 
@@ -21,6 +22,7 @@ export default function Sidebar({
   tokenBalance,
   onLogout,
 }: SidebarProps) {
+  const { openPalette } = useCommandK();
   return (
     <>
       <aside
@@ -47,6 +49,28 @@ export default function Sidebar({
           )}
         </div>
 
+        {/* Global ⌘K search trigger — lives in the chrome, not floating over content. */}
+        <div className="px-3 pb-1">
+          {collapsed ? (
+            <button
+              onClick={openPalette}
+              aria-label="Search (⌘K)"
+              className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-[#2d2813] bg-[#1f1d0b] text-[#8f834a] transition hover:border-yellow-500/30 hover:text-white"
+            >
+              <Search size={14} />
+            </button>
+          ) : (
+            <button
+              onClick={openPalette}
+              className="flex w-full items-center gap-2 rounded-xl border border-[#2d2813] bg-[#1f1d0b] px-3 py-2 text-xs text-[#8f834a] transition hover:border-yellow-500/30 hover:text-white"
+            >
+              <Search size={13} />
+              <span>Search…</span>
+              <kbd className="ml-auto rounded border border-[#2d2813] bg-[#13120d] px-1.5 py-0.5 text-[9px] text-[#6e684a]">⌘K</kbd>
+            </button>
+          )}
+        </div>
+
         <SidebarNav activeSection={activeSection} collapsed={collapsed} />
 
         <div className="p-3 border-t border-[#2d2813]">
@@ -70,12 +94,6 @@ export default function Sidebar({
           )}
         </div>
       </aside>
-
-      <BottomNav
-        activeMenuItem={activeSection}
-        onMenuItemChange={() => {}}
-        onLogout={onLogout}
-      />
     </>
   );
 }

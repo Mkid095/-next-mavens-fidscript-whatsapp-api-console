@@ -15,7 +15,10 @@ interface ConversationThreadPaneProps {
 }
 
 export default function ConversationThreadPane({ conversation, instances, onTokenDeduct }: ConversationThreadPaneProps) {
-  const { messages, loading, error, refresh } = useInbox(conversation?.id ?? null);
+  // Drafts (id starts with "draft:") have no server-side thread yet — skip the
+  // messages fetch so opening a new chat doesn't 404. The composer still sends.
+  const isDraft = !!conversation?.id.startsWith('draft:');
+  const { messages, loading, error, refresh } = useInbox(isDraft ? null : (conversation?.id ?? null));
   const typing = useTypingIndicator(conversation?.chat_id ?? null);
   const isGroup = !!conversation?.chat_id.includes('@g.us');
   const group = useGroupInfo(isGroup ? conversation?.chat_id ?? null : null);

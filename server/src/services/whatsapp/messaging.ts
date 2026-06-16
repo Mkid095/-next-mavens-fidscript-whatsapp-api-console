@@ -15,9 +15,31 @@ const now = () => new Date().toISOString();
 const INSUFFICIENT: SendResult = { ok: false, status: 402, error: 'Insufficient token balance' };
 const blockOr = (ctx: SendContext): SendResult | null => requireConnected(ctx);
 
+/** Coerce a nested Evolution error value into a readable string. */
+function asString(v: unknown): string | null {
+  if (typeof v === 'string') return v;
+  if (Array.isArray(v)) return v.map(asString).filter(Boolean).join('; ') || null;
+  return null;
+}
+
+/**
+ * Pull the human-readable message out of an Evolution error body. Evolution
+ * returns validation failures as { error: "Bad Request", response: { message:
+ * [["field does not meet minimum length of 1"]] } } — the useful detail is
+ * nested under response.message as an array of arrays, NOT in the top-level
+ * `error` (which is just the HTTP status text). Without this we surfaced only
+ * "Bad Request" and hid the real cause.
+ */
+function extractEvolutionError(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const d = data as Record<string, unknown>;
+  const resp = d.response as Record<string, unknown> | undefined;
+  return asString(resp?.message) || asString(d.message) || asString(d.error);
+}
+
 /** Map a failed gateway response into a standard SendResult error. */
-function gatewayError(status: number, data: { message?: string; error?: string }, fallback: string): SendResult {
-  return { ok: false, status, error: data.message || data.error || fallback };
+function gatewayError(status: number, data: unknown, fallback: string): SendResult {
+  return { ok: false, status, error: extractEvolutionError(data) || fallback };
 }
 
 export const sendText = wrapSend(async (ctx, args: { to: string; message: string }): Promise<SendResult> => {
@@ -117,10 +139,20 @@ export const sendStatus = wrapSend(async (ctx, args: { type: 'text' | 'image' | 
   const blocked = blockOr(ctx); if (blocked) return blocked;
   if (!chargeAndEmit(ctx, TOKEN_COST_STATUS, `send_status_${ctx.instance.name}`)) return INSUFFICIENT;
   const msgId = newMsgId();
+  // Evolution validates statusJidList length >= 1 EVEN when allContacts=true
+  // (the docs example ships allContacts:true with a non-empty list). When the
+  // caller did not specify recipients, seed the list with the sender's own JID;
+  // with allContacts=true the list contents are ignored for delivery, so the
+  // broadcast still reaches every contact — it just satisfies the validator.
+  let statusJidList = args.statusJidList && args.statusJidList.length ? args.statusJidList : [];
+  if (statusJidList.length === 0) {
+    const self = (ctx.instance as { phone_number?: string | null }).phone_number;
+    if (self) statusJidList = [self.includes('@') ? self : `${self.replace(/\D/g, '')}@s.whatsapp.net`];
+  }
   const res = await callEvolutionAPIChecked('POST', `/message/sendStatus/${evolutionName(ctx)}`, {
     type: args.type, content: args.content, caption: args.caption || '',
     backgroundColor: args.backgroundColor || '#008000', font: args.font ?? 1,
-    allContacts: args.allContacts ?? true, statusJidList: args.statusJidList || [],
+    allContacts: args.allContacts ?? true, statusJidList,
   });
   if (!res.ok) { refundTokens(ctx, TOKEN_COST_STATUS, `refund_send_status_${ctx.instance.name}`); return gatewayError(res.status, res.data, 'Failed to send status'); }
   await finalize(ctx, msgId, 'status', args.content, 'status', args.type === 'image' ? args.content : undefined, JSON.stringify({ msgId, type: args.type }));
