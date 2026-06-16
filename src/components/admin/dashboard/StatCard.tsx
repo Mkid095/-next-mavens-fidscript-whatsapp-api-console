@@ -24,27 +24,27 @@ export default function StatCard({
   trend,
   trendValue,
   icon,
-  iconBgClass = 'bg-emerald-100',
-  iconColor = 'text-emerald-800',
+  iconBgClass = 'bg-[#f9f9f2]',
+  iconColor = 'text-[#eab308]',
   cardBgClass = 'bg-white',
-  cardBorderClass = 'border-[#e1e9e5]/80',
-  cardContentClass = 'text-graphite',
-  valueColor = 'text-forest-deep',
-  trendColor = 'text-emerald-600',
+  cardBorderClass = 'border-[#eaebe4]',
+  cardContentClass = 'text-stone-500',
+  valueColor = 'text-[#181711]',
+  trendColor = 'text-yellow-600',
   chartData = [],
   chartBarClass = 'bg-stone-100',
 }: StatCardProps) {
   return (
-    <div className={`${cardBgClass} border ${cardBorderClass} p-5 rounded-3xl shadow-sm flex flex-col justify-between relative group`}>
+    <div className={`${cardBgClass} border ${cardBorderClass} p-5 rounded-2xl shadow-sm flex flex-col justify-between relative group`}>
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-graphite font-semibold tracking-wide">
-          <span>{label}</span>
-          <span className={`p-1 ${iconBgClass} ${iconColor} rounded-lg`}>
+        <div className="flex items-center justify-between text-xs font-semibold tracking-wide">
+          <span className="text-stone-500">{label}</span>
+          <span className={`p-1.5 rounded-lg ${iconBgClass} ${iconColor}`}>
             {icon}
           </span>
         </div>
         <div className="space-y-1">
-          <h3 className={`text-3xl font-bold ${valueColor} tracking-tight`}>{value}</h3>
+          <h3 className={`text-2xl font-bold ${valueColor} tracking-tight`}>{value}</h3>
           {trend && (
             <p className={`text-xs ${cardContentClass} flex items-center gap-1`}>
               <TrendingUp className={`w-3 h-3 ${trendColor}`} />
@@ -55,12 +55,12 @@ export default function StatCard({
       </div>
 
       {chartData.length > 0 && (
-        <div className="pt-5 flex items-end gap-[3px] h-11">
+        <div className="pt-4 flex items-end gap-[3px] h-10">
           {chartData.map((val, idx) => (
             <div
               key={idx}
-              className={`flex-1 rounded-t ${chartBarClass} group-hover:bg-emerald-200 transition-colors`}
-              style={{ height: `${val}%` }}
+              className={`flex-1 rounded-t ${chartBarClass} group-hover:bg-yellow-100 transition-colors`}
+              style={{ height: `${Math.max(val, 4)}%` }}
             />
           ))}
         </div>

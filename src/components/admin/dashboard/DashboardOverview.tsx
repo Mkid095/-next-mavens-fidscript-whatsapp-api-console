@@ -33,41 +33,40 @@ export default function DashboardOverview({
   const activeClusters = instances.filter((i) => i.status === 'connected').length;
   const connectingCount = instances.filter((i) => i.status === 'connecting').length;
 
-  // Real aggregates
   const totalMessages = clients.reduce((sum, c) => sum + c.total_messages, 0);
   const messagesToday = clients.reduce((sum, c) => sum + c.msg_count_today, 0);
   const connectedInstances = instances.filter((i) => i.status === 'connected').length;
-  const totalClients = clients.length;
 
   return (
     <div className="space-y-6">
       <QuickAlertBar activeClusters={activeClusters} userEmail={userEmail} onNavigate={onNavigate} />
 
+      {/* Stat cards — charcoal + yellow brand palette */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <StatCard
           label="Messages Sent Today"
-          value={`${messagesToday.toLocaleString()}`}
+          value={messagesToday.toLocaleString()}
           trend="across all clients"
           trendValue=""
           icon={<Mail size={18} />}
-          iconBgClass="bg-[#102e24]"
-          iconColor="text-emerald-400"
-          cardBgClass="bg-[#0b1b16]"
-          cardBorderClass="border-[#18392f]"
+          iconBgClass="bg-[#181711]"
+          iconColor="text-yellow-500"
+          cardBgClass="bg-[#181711]"
+          cardBorderClass="border-[#3d3a1e]"
           valueColor="text-white"
           chartData={[35, 45, 60, 50, 75, 40, 65, 80, 50, 68, 85, 95]}
-          chartBarClass="bg-[#0c3124]"
+          chartBarClass="bg-[#3d3a1e]"
         />
         <StatCard
           label="Total Messages Sent"
-          value={totalMessages.toLocaleString()}
           trend="all time across platform"
           trendValue=""
           icon={<CheckCircle2 size={18} />}
-          iconBgClass="bg-emerald-100"
-          iconColor="text-emerald-800"
+          iconBgClass="bg-[#f9f9f2]"
+          iconColor="text-yellow-600"
           cardBgClass="bg-white"
-          valueColor="text-forest-deep"
+          cardBorderClass="border-[#eaebe4]"
+          valueColor="text-[#181711]"
           chartData={[95, 94, 98, 99, 99.9, 99.98, 99.95, 99.8, 99.9, 99.98, 99.95, 99.99]}
           chartBarClass="bg-stone-100"
         />
@@ -77,12 +76,13 @@ export default function DashboardOverview({
           trend="containers connected"
           trendValue={connectingCount > 0 ? `${connectingCount} connecting` : ''}
           icon={<Smartphone size={18} />}
-          iconBgClass="bg-[#10231d]/5"
-          iconColor="text-[#10231d]"
+          iconBgClass="bg-[#f9f9f2]"
+          iconColor="text-yellow-600"
           cardBgClass="bg-white"
-          valueColor="text-forest-deep"
+          cardBorderClass="border-[#eaebe4]"
+          valueColor="text-[#181711]"
           chartData={[20, 35, 45, 30, 60, 55, 68, 72, 85, 90, 80, 95]}
-          chartBarClass="bg-emerald-50"
+          chartBarClass="bg-stone-100"
         />
       </div>
 
