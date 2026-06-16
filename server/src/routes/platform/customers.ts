@@ -55,11 +55,11 @@ router.get('/:id', (req: Request, res: Response) => {
       return;
     }
     const identifiers = db.prepare(
-      'SELECT id, channel, value, label FROM customer_identifiers WHERE customer_id = ?'
-    ).all(req.params.id);
+      'SELECT id, channel, value, label FROM customer_identifiers WHERE customer_id = ? AND workspace_id = ?'
+    ).all(req.params.id, wsId(req));
     const tags = db.prepare(
-      'SELECT tag, created_at FROM customer_tags WHERE customer_id = ?'
-    ).all(req.params.id);
+      'SELECT tag, created_at FROM customer_tags WHERE customer_id = ? AND workspace_id = ?'
+    ).all(req.params.id, wsId(req));
     res.json({ success: true, data: { ...customer as object, identifiers, tags } });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });

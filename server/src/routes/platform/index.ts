@@ -15,10 +15,17 @@ import segmentsRoutes from './segments.js';
 import webhooksRoutes from './webhooks.js';
 import auditRoutes from './audit.js';
 import developerLogsRoutes from './developerLogs.js';
+import { workspaceAuth } from '../../modules/platform/workspace/index.js';
+import { clientJwtAuth } from '../../middleware/auth.js';
 
 // Platform API — customer-centric reads + operational writes.
-// All routes use clientJwtAuth (workspace-scoped via req.client.id).
+// Workspace-scoped (P11): every request binds req.workspace.workspaceId.
+//   - clientJwtAuth: canonical auth path — populates req.client (workspace = client)
+//   - workspaceAuth: sets req.workspace + req.can() for downstream queries
+// The two-layer pattern means helpers like whereWorkspace(req) work regardless
+// of which middleware a sub-router applied.
 const router = Router();
+router.use(clientJwtAuth, workspaceAuth);
 
 router.use('/customers', customersRoutes);
 router.use('/customers', customerDetailsRoutes);
