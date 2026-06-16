@@ -28,7 +28,7 @@ export default function PayForm({
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-sm font-bold text-forest-deep">{pkg.name}</h4>
-          <p className="text-xs text-graphite">{(pkg.tokens + (pkg.bonus_tokens || 0)).toLocaleString()} tokens{(pkg.bonus_tokens || 0) > 0 ? ` (${pkg.tokens.toLocaleString()} + ${pkg.bonus_tokens.toLocaleString()} bonus)` : ''}</p>
+          <p className="text-xs text-graphite">{(pkg.tokens + (pkg.bonus_tokens || 0)).toLocaleString()} tokens{(pkg.bonus_tokens || 0) > 0 ? ` (${pkg.tokens.toLocaleString()} + ${(pkg.bonus_tokens || 0).toLocaleString()} bonus)` : ''}</p>
         </div>
         <div className="text-right">
           <p className="text-lg font-bold text-yellow-800">KES {pkg.price_kes.toLocaleString()}</p>

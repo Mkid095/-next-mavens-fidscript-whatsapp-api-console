@@ -49,7 +49,7 @@ export function useConversations(filters?: ConversationFilters): UseConversation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createdEvent, assignedEvent, statusEvent, msgEvent]);
 
-  const update = useCallback(async (id, body) => {
+  const update = useCallback(async (id: string, body: Partial<{ status: ConversationStatus; priority: ConversationPriority; assignee_type: 'user' | 'team' | 'unassigned'; assignee_id: string | null }>) => {
     const res = await platformApi.updateConversation(id, body);
     if (res.success) { refresh(); return true; }
     return false;

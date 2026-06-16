@@ -4,7 +4,7 @@ import { PUBLIC_API_BASE } from '../../../data/apiEndpoints/index';
 import VibeCopyButton from './VibeCopyButton.js';
 
 interface VibeWizardProps {
-  instances: Array<{ id: string; name: string; display_name?: string; phone_number?: string; status: string }>;
+  instances: Array<{ id: string; name: string; display_name?: string | null; phone_number?: string | null; status: string }>;
   activeKeys: Array<{ id: string; name: string; key_prefix?: string; last_used: string | null }>;
 }
 

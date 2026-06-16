@@ -41,7 +41,7 @@ export default function EndpointSidebar({
               onClick={() => {
                 // Lazy import the registry to avoid a circular dep with the endpoint helper file
                 import('../../data/apiEndpoints/index.js').then(({ API_ENDPOINTS }) => {
-                  const doc = buildMarkdownReference(API_ENDPOINTS, apiKey);
+                  const doc = buildMarkdownReference(API_ENDPOINTS, apiKey ?? '');
                   const blob = new Blob([doc], { type: 'text/markdown' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');

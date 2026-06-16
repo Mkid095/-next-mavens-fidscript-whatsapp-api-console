@@ -130,10 +130,12 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     if (!pairingInstance) return;
     try {
       const res = await instancesApi.getConnectionState(pairingInstance.name);
-      if (res.success && res.data && res.data.status === 'connected') {
+      const data = res.data;
+      if (res.success && data && data.status === 'connected') {
+        const connectedPhone = data.phone_number;
         onInstancesChange(instances.map(i =>
           i.id === pairingInstance.id
-            ? { ...i, status: 'connected' as const, phone_number: res.data.phone_number || i.phone_number }
+            ? { ...i, status: 'connected' as const, phone_number: connectedPhone || i.phone_number }
             : i
         ));
         resolvePairing();

@@ -42,7 +42,7 @@ export function AdminSidebar({ sidebarOpen, currentUser, handleLogout, currentTa
         {sidebarOpen ? (
           <div className="p-2.5 bg-[#1a1910] rounded-xl flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center text-white font-bold text-xs">{initial}</div>
-            <div className="flex-1 min-w-0"><p className="text-xs font-bold text-white truncate">{currentUser.name}</p><p className="text-[10px] text-yellow-500">Admin</p></div>
+            <div className="flex-1 min-w-0"><p className="text-xs font-bold text-white truncate">{currentUser?.name}</p><p className="text-[10px] text-yellow-500">Admin</p></div>
             <button onClick={handleLogout} className="text-[#b0ae9f] hover:text-white p-1"><LogOut className="w-3.5 h-3.5" /></button>
           </div>
         ) : (
