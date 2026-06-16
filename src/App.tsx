@@ -191,8 +191,8 @@ function AppContent() {
         }
         if (packagesRes.success && packagesRes.data) setTokenPackages(packagesRes.data);
         addToast('Welcome to your dashboard!');
-        // Navigate after state updates are flushed to ensure ClientRoutes has clientData
-        setTimeout(() => navigate('/client', { replace: true }), 0);
+        // Use hard redirect to ensure clean client session initialization
+        window.location.replace('/client');
       } else {
         addToast('Session expired, please login again', 'warn');
         localStorage.removeItem('fidscript_client_token');
