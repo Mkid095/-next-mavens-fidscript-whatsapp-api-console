@@ -86,7 +86,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
         tokenBalance={tokenBalance}
       />
 
-      <div className="grid gap-4" style={{ gridTemplateColumns: '340px 1fr', minHeight: '600px', height: 'calc(100vh - 240px)' }}>
+      <div className="grid gap-4 min-w-0" style={{ gridTemplateColumns: '340px minmax(0, 1fr)', minHeight: '600px', height: 'calc(100vh - 240px)' }}>
         <SandboxEndpointList
           search={search}
           onSearch={setSearch}
@@ -97,7 +97,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
           instanceName={instanceName}
         />
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-w-0 overflow-y-auto">
           <SandboxBody
             selectedEndpoint={selectedEndpoint}
             instanceName={instanceName}

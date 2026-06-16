@@ -38,10 +38,10 @@ export default function SandboxEndpointList({
   const groups = filterGroups(search);
 
   return (
-    <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm flex flex-col" style={{ maxHeight: '100%' }}>
-      <div className="p-3 border-b border-[#eaebe4] bg-[#f9f9f2]">
+    <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm flex flex-col min-w-0" style={{ maxHeight: '100%' }}>
+      <div className="p-3 border-b border-[#eaebe4] bg-[#f9f9f2] shrink-0">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
           <input
             value={search}
             onChange={e => onSearch(e.target.value)}

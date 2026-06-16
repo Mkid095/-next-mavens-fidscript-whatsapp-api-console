@@ -1,5 +1,9 @@
 import React from 'react';
-import { Megaphone, Users, MessageCircle, User, Settings, Bot, Cog, Image as ImageIcon, Webhook, BarChart3, Radio } from 'lucide-react';
+import {
+  Send, MessageSquare, UserCircle, Smartphone, Inbox, Compass,
+  Megaphone, Users, MessageCircle, User, Settings, Bot, Cog,
+  Image as ImageIcon, Webhook, BarChart3, Radio,
+} from 'lucide-react';
 import { type ApiEndpoint } from '../../data/apiEndpoints/index';
 import { API_ENDPOINTS, API_CATEGORIES } from '../../data/apiEndpoints/index';
 
@@ -29,8 +33,29 @@ export interface EndpointDef {
 
 export interface CategoryGroup { name: string; icon: string; endpoints: EndpointDef[]; }
 
+// Map icon name -> rendered JSX element (NOT a raw forwardRef component reference).
+// Storing the raw reference (e.g. `Megaphone`) and rendering it as `{ICON_MAP[k]}`
+// causes React error #31 because lucide-react icons are forwardRef components whose
+// `{$$typeof, render, displayName}` shape is not a valid ReactNode child.
+const ic = (C: React.ComponentType<{ className?: string }>) => <C className="w-3.5 h-3.5" />;
 export const ICON_MAP: Record<string, React.ReactNode> = {
-  Megaphone, Users, MessageCircle, User, Settings, Bot, Cog, ImageIcon, Webhook, BarChart3, Radio,
+  Send: ic(Send),
+  MessageSquare: ic(MessageSquare),
+  UserCircle: ic(UserCircle),
+  Smartphone: ic(Smartphone),
+  Inbox: ic(Inbox),
+  Compass: ic(Compass),
+  Megaphone: ic(Megaphone),
+  Users: ic(Users),
+  MessageCircle: ic(MessageCircle),
+  User: ic(User),
+  Settings: ic(Settings),
+  Bot: ic(Bot),
+  Cog: ic(Cog),
+  ImageIcon: ic(ImageIcon),
+  Webhook: ic(Webhook),
+  BarChart3: ic(BarChart3),
+  Radio: ic(Radio),
 };
 
 export const METHOD_COLORS: Record<string, string> = {
