@@ -145,20 +145,19 @@ export async function finalize(
   logBody: string,
   chatId?: string,
   isGroup = 0,
-  conversationId?: string,
-  customerId?: string,
+  _conversationId?: string,
+  _customerId?: string,
 ): Promise<void> {
   const workspaceId = ctx.instance.client_id; // client_id = workspace_id bridge
 
-  // Resolve the recipient to customer/conversation ids unless the caller
-  // already supplied them (every outbound message must carry these — P2).
-  let convId = conversationId;
-  let custId = customerId;
-  if (!convId || !custId) {
-    const resolved = await resolveOutbound(ctx, to);
-    convId = convId ?? resolved.conversationId;
-    custId = custId ?? resolved.customerId;
-  }
+  // Always resolve the conversation for outbound sends. The webhook echo will
+  // arrive with the same conversation_id, so deduplication by conversation_id
+  // + msgId catches both and renders one bubble. Without this, the sent message
+  // is stored with conversation_id=null, the echo lands with the real id, and
+  // both appear as separate entries in the thread.
+  const resolved = await resolveOutbound(ctx, to);
+  const convId = resolved.conversationId;
+  const custId = resolved.customerId;
 
   updateCounters(ctx.instance.name, ctx.instance.client_id);
   saveSentMessage(
