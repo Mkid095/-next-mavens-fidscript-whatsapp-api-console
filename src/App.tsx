@@ -9,6 +9,11 @@ import {
 import { LoadingScreen } from './components/shared/LoadingScreen';
 import LandingPage from './components/LandingPage';
 import LoginView from './components/LoginView';
+import TermsPage from './components/landing/TermsPage';
+import PrivacyPage from './components/landing/PrivacyPage';
+import FeaturesPage from './components/landing/FeaturesPage';
+import DocsPage from './components/landing/DocsPage';
+import ContactPage from './components/landing/ContactPage';
 import { AdminRoutes } from './components/admin/adminRoutes';
 import { ClientRoutes } from './components/client/clientRoutes';
 import { UpdateToast } from './components/shared/UpdateToast';
@@ -211,6 +216,11 @@ function AppContent() {
     <>
       <Routes>
         <Route path="/" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LandingPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} />} />
         <Route path="/register" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} initialMode="register" />} />
         <Route path="/client/*" element={<ClientRoutes currentUser={currentUser} clientData={clientData} clientInstances={clientInstances} onInstancesChange={setClientInstances} onLogout={handleLogout} tokenBalance={tokenBalance} tokenPackages={tokenPackages} dailyUsage={dailyUsage} recentMessages={recentMessages} messagesToday={messagesToday} onTokenBalanceChange={setTokenBalance} />} />

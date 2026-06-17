@@ -10,6 +10,7 @@ import paymentsRoutes from './payments.js';
 import uploadsRoutes from './uploads.js';
 import contactsRoutes from './contacts.js';
 import contactGroupsRoutes from './contactGroups.js';
+import contactRoutes from './contact.js';
 import clientMessagesRoutes from './clientMessages.js';
 import clientKeysRoutes from './clientKeys.js';
 import campaignsRoutes from './campaigns.js';
@@ -57,6 +58,7 @@ export function registerRoutes(app: Express): void {
   app.use('/api/client/messages', apiLimiter, clientMessagesRoutes);
   app.use('/api/client/keys', apiLimiter, clientKeysRoutes);
   app.use('/api/campaigns', apiLimiter, campaignsRoutes);
+  app.use('/api/contact', contactRoutes);
   app.use('/api/sse', sseRoutes);
   app.use('/api/versions', versionsRoutes);
   // Webhook endpoint for Evolution API events (no rate limit — authenticated via API key)

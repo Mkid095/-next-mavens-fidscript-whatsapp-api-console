@@ -38,10 +38,10 @@ export default function Header({ scrolled, onScroll }: HeaderProps) {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm text-[#a8a594] hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="text-sm text-[#a8a594] hover:text-white transition-colors">Pricing</a>
-            <a href="#docs" className="text-sm text-[#a8a594] hover:text-white transition-colors">Documentation</a>
-            <a href="#contact" className="text-sm text-[#a8a594] hover:text-white transition-colors">Contact</a>
+            <Link to="/features" className="text-sm text-[#a8a594] hover:text-white transition-colors">Features</Link>
+            <Link to="/pricing" className="text-sm text-[#a8a594] hover:text-white transition-colors">Pricing</Link>
+            <Link to="/docs" className="text-sm text-[#a8a594] hover:text-white transition-colors">Documentation</Link>
+            <Link to="/contact" className="text-sm text-[#a8a594] hover:text-white transition-colors">Contact</Link>
           </div>
 
           {/* CTA Buttons */}
@@ -75,10 +75,10 @@ export default function Header({ scrolled, onScroll }: HeaderProps) {
             className="md:hidden bg-[#12110c] border-t border-[#262413]"
           >
             <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block text-sm text-[#a8a594] hover:text-white py-2">Features</a>
-              <a href="#pricing" className="block text-sm text-[#a8a594] hover:text-white py-2">Pricing</a>
-              <a href="#docs" className="block text-sm text-[#a8a594] hover:text-white py-2">Documentation</a>
-              <a href="#contact" className="block text-sm text-[#a8a594] hover:text-white py-2">Contact</a>
+              <Link to="/features" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Features</Link>
+              <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Pricing</Link>
+              <Link to="/docs" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Documentation</Link>
+              <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Contact</Link>
               <div className="pt-3 border-t border-[#262413] space-y-2">
                 <button onClick={() => navigate('/login')} className="w-full px-4 py-2 text-sm text-[#a8a594] hover:text-white text-left">Login</button>
                 <button onClick={() => navigate('/register')} className="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-stone-950 font-semibold text-sm rounded-lg text-center">
