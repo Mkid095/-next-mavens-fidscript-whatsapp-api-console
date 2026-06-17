@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Sparkles, ArrowRight } from 'lucide-react';
 
