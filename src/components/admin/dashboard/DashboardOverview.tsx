@@ -10,8 +10,7 @@ import TopClientsTable from './TopClientsTable';
 import RecentLogs from './RecentLogs';
 import QuickAlertBar from './QuickAlertBar';
 import BillingYieldCard from './BillingYieldCard';
-import KenyanNodesMap from './KenyanNodesMap';
-import { mapNodes } from './dashboardData';
+import InstanceStatusCard from './InstanceStatusCard';
 
 interface DashboardOverviewProps {
   instances: Instance[];
@@ -33,9 +32,16 @@ export default function DashboardOverview({
   const activeClusters = instances.filter((i) => i.status === 'connected').length;
   const connectingCount = instances.filter((i) => i.status === 'connecting').length;
 
-  const totalMessages = clients.reduce((sum, c) => sum + c.total_messages, 0);
-  const messagesToday = clients.reduce((sum, c) => sum + c.msg_count_today, 0);
+  const totalMessages = analytics?.messages_this_month ?? clients.reduce((sum, c) => sum + c.total_messages, 0);
+  const messagesToday = analytics?.messages_today ?? clients.reduce((sum, c) => sum + c.msg_count_today, 0);
   const connectedInstances = instances.filter((i) => i.status === 'connected').length;
+
+  // Derive sparkline data from real daily trends
+  const messagesTrend = analytics?.daily_trends?.slice(-12).map(d => d.messages_sent) ?? [];
+  const deliveryTrend = analytics?.daily_trends?.slice(-12).map(d =>
+    d.messages_sent > 0 ? (d.messages_delivered / d.messages_sent) * 100 : 0
+  ) ?? [];
+  const volumeTrend = analytics?.daily_trends?.slice(-12).map(d => d.messages_sent + d.failed_messages) ?? [];
 
   return (
     <div className="space-y-6">
@@ -54,11 +60,12 @@ export default function DashboardOverview({
           cardBgClass="bg-[#181711]"
           cardBorderClass="border-[#3d3a1e]"
           valueColor="text-white"
-          chartData={[35, 45, 60, 50, 75, 40, 65, 80, 50, 68, 85, 95]}
+          chartData={messagesTrend.length ? messagesTrend : [0]}
           chartBarClass="bg-[#3d3a1e]"
         />
         <StatCard
           label="Total Messages Sent"
+          value={totalMessages.toLocaleString()}
           trend="all time across platform"
           trendValue=""
           icon={<CheckCircle2 size={18} />}
@@ -67,7 +74,7 @@ export default function DashboardOverview({
           cardBgClass="bg-white"
           cardBorderClass="border-[#eaebe4]"
           valueColor="text-[#181711]"
-          chartData={[95, 94, 98, 99, 99.9, 99.98, 99.95, 99.8, 99.9, 99.98, 99.95, 99.99]}
+          chartData={deliveryTrend.length ? deliveryTrend : [0]}
           chartBarClass="bg-stone-100"
         />
         <StatCard
@@ -81,7 +88,7 @@ export default function DashboardOverview({
           cardBgClass="bg-white"
           cardBorderClass="border-[#eaebe4]"
           valueColor="text-[#181711]"
-          chartData={[20, 35, 45, 30, 60, 55, 68, 72, 85, 90, 80, 95]}
+          chartData={volumeTrend.length ? volumeTrend : [0]}
           chartBarClass="bg-stone-100"
         />
       </div>
@@ -93,7 +100,7 @@ export default function DashboardOverview({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <TopClientsTable clients={clients} />
-        <KenyanNodesMap nodes={mapNodes} />
+        <InstanceStatusCard instances={instances} />
       </div>
 
       <RecentLogs logs={logs} onNavigate={onNavigate} connectingCount={connectingCount} />
