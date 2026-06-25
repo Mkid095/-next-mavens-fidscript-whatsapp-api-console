@@ -62,4 +62,22 @@ export async function seedData(db: Database): Promise<void> {
 		INSERT OR IGNORE INTO client_api_keys (id, client_id, name, api_key, status)
 		VALUES ('key_1781606033013_o2di7o', 'cli_kennedy_001', 'soostori', 'fidscript_live_8f5fa69b65ff12adfe31fc012e01c493', 'Active')
 	`);
+
+	// Seed additional clients (idempotent)
+	db.run(`
+		INSERT OR IGNORE INTO clients (id, name, email, phone, api_key, plan_id, token_balance, is_active)
+		VALUES ('cli_joseph_001', 'Joseph N', 'joseph@nextmavens.com', '+254700000001', 'cli_joseph_api_key', 'plan_starter', 500, 1)
+	`);
+	db.run(`
+		INSERT OR IGNORE INTO clients (id, name, email, phone, api_key, plan_id, token_balance, is_active)
+		VALUES ('cli_nextmavens_001', 'Next Mavens', 'nextmavensoffice@gmail.com', '+254746269657', 'cli_nextmavens_api_key', 'plan_enterprise', 50000, 1)
+	`);
+	db.run(`
+		INSERT OR IGNORE INTO clients (id, name, email, phone, api_key, plan_id, token_balance, is_active)
+		VALUES ('cli_kithk_001', 'Kith K', 'kithk@example.com', '+254700000003', 'cli_kithk_api_key', 'plan_starter', 500, 1)
+	`);
+	db.run(`
+		INSERT OR IGNORE INTO clients (id, name, email, phone, api_key, plan_id, token_balance, is_active)
+		VALUES ('cli_ian_001', 'Ian Iraya', 'ian@example.com', '+254700000004', 'cli_ian_api_key', 'plan_professional', 5000, 1)
+	`);
 }

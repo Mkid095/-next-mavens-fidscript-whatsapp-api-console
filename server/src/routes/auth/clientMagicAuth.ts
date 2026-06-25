@@ -61,11 +61,26 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
     return res.status(401).json({ success: false, error: 'Invalid or expired code' });
   }
 
-  const existing = db.prepare('SELECT id FROM clients WHERE email = ?').get(normalized);
+  const existing = db.prepare('SELECT * FROM clients WHERE email = ?').get(normalized) as (ClientRow & { is_active: number }) | undefined;
+
   if (existing) {
-    return res.status(400).json({ success: false, error: 'An account with this email already exists. Sign in instead.' });
+    // Existing client — issue a login JWT
+    if (!existing.is_active) {
+      return res.status(403).json({ success: false, error: 'Account is disabled. Contact support.' });
+    }
+    const token = generateToken({ id: existing.id, email: existing.email, name: existing.name, role: 'client' } as User, 'client');
+    return res.json({
+      success: true,
+      data: {
+        token,
+        role: 'client',
+        client: { id: existing.id, name: existing.name, email: existing.email, phone: existing.phone, token_balance: existing.token_balance, plan_id: existing.plan_id, api_key: existing.api_key },
+        message: 'Welcome back!',
+      },
+    });
   }
 
+  // New client — create account
   const freePlan = db.prepare("SELECT id FROM plans WHERE name = 'Free' AND is_active = 1").get() as { id: string } | undefined;
   const defaultPlanId = freePlan?.id || null;
 
@@ -82,7 +97,7 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
     VALUES (?, ?, 'bonus', 500, 'Welcome bonus', 'completed')
   `).run(uuidv4(), clientId);
 
-  const token = generateToken({ id: clientId, email: normalized, name, role: 'client' } as User, 'client');
+  const token = generateToken({ id: clientId, email: normalized, name: name, role: 'client' } as User, 'client');
 
   const client: ClientRow = {
     id: clientId,
@@ -99,7 +114,7 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
     data: {
       token,
       client,
-      message: 'Account created successfully. You received 500 free tokens!',
+      message: 'Account created successfully! You received 500 free tokens to get started.',
     },
   });
 });
