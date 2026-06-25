@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft, Zap, Shield, BarChart3, Code2, Users, Smartphone, Globe, Key, Bell, MessageSquare, Database, CreditCard, CheckCircle2 } from 'lucide-react';
@@ -58,11 +58,26 @@ const features = [
 const techSpecs = [
   { label: 'Uptime', value: '99.9%' },
   { label: 'API Latency', value: '<200ms' },
-  { label: 'Delivery Rate', value: '98.5%' },
-  { label: 'Rate Limit', value: '1,000/min' },
+  { label: 'Delivery Rate', value: 'Real-time' },
+  { label: 'Kenyan Businesses', value: '5+' },
 ];
 
 export default function FeaturesPage() {
+  const [clientCount, setClientCount] = useState(0);
+  const [deliveryRate, setDeliveryRate] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('https://whatsapp.fidscript.com/api/stats')
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.data) {
+          setClientCount(d.data.total_clients || 0);
+          setDeliveryRate(d.data.delivery_rate || null);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
       {/* Header */}
@@ -112,7 +127,12 @@ export default function FeaturesPage() {
                 A complete WhatsApp API platform built for Kenyan businesses. From multi-instance management to M-Pesa billing — FIDScript handles the complexity so you can focus on your product.
               </p>
               <div className="flex flex-wrap justify-center gap-6">
-                {techSpecs.map(({ label, value }) => (
+                {[
+                  { label: 'Uptime', value: '99.9%' },
+                  { label: 'API Latency', value: '<200ms' },
+                  { label: 'Delivery Rate', value: deliveryRate !== null ? `${deliveryRate}%` : 'Real-time' },
+                  { label: 'Kenyan Businesses', value: `${clientCount}+` },
+                ].map(({ label, value }) => (
                   <div key={label} className="text-center">
                     <div className="text-2xl font-bold text-white">{value}</div>
                     <div className="text-xs text-[#8a886a]">{label}</div>

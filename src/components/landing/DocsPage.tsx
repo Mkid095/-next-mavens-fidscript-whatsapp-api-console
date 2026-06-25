@@ -383,12 +383,24 @@ function GuideContent({ id }: { id: string }) {
   if (id === 'sdks') return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <h1 className="text-3xl font-bold text-white mb-2">SDKs</h1>
-      <p className="text-sm text-[#8a886a] mb-8">Official SDKs are coming soon. In the meantime, use the REST API directly — it's simple and works with any HTTP client.</p>
+      <p className="text-sm text-[#8a886a] mb-8">FIDScript has official SDK packages for Node.js and Python. Install them to get started faster with type hints and helpers.</p>
       <Callout type="info"><p>All FIDScript endpoints accept standard JSON. Any programming language can integrate in minutes.</p></Callout>
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Install via npm</h2>
-      <DocsCodeBlock code="npm install fidscript-sdk" lang="bash" />
-      <h2 className="text-lg font-bold text-white mt-6 mb-4">Install via pip</h2>
-      <DocsCodeBlock code="pip install fidscript" lang="bash" />
+      <div className="grid md:grid-cols-2 gap-4 mt-6">
+        <div className="bg-[#11110a] border border-[#262413] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Code2 className="w-5 h-5 text-yellow-500" />
+            <span className="text-sm font-bold text-white">Node.js</span>
+          </div>
+          <DocsCodeBlock code="npm install @nextmavens/fidscript" lang="bash" />
+        </div>
+        <div className="bg-[#11110a] border border-[#262413] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Code2 className="w-5 h-5 text-yellow-500" />
+            <span className="text-sm font-bold text-white">Python</span>
+          </div>
+          <DocsCodeBlock code="pip install fidscript-api" lang="bash" />
+        </div>
+      </div>
     </motion.div>
   );
 

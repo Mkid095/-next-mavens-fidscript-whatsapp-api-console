@@ -24,13 +24,13 @@ export default function CTASection() {
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full mb-6">
                 <Sparkles className="w-4 h-4 text-yellow-500" />
-                <span className="text-xs font-semibold text-yellow-500">14-day free trial</span>
+                <span className="text-xs font-semibold text-yellow-500">500 free welcome tokens</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                 Ready to transform your <span className="gradient-headline-text">customer communication</span>?
               </h2>
               <p className="text-[#a8a594] mb-8 max-w-xl mx-auto">
-                Join hundreds of Kenyan businesses already using FIDScript to connect with their customers on WhatsApp.
+                Join Kenyan businesses already using FIDScript to connect with their customers on WhatsApp.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
