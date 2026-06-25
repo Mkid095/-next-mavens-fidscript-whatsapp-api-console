@@ -105,6 +105,18 @@ async function startServer() {
           SELECT COALESCE(SUM(msg_count_today), 0) as messages_today FROM clients
         `).get() as any;
 
+        // Compute real delivery rate from api_logs
+        const deliveryStats = db.prepare(`
+          SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN response_status >= 200 AND response_status < 300 THEN 1 ELSE 0 END) as successful
+          FROM api_logs
+          WHERE endpoint LIKE '/api/v1/send%'
+        `).get() as { total: number; successful: number } | undefined;
+        const deliveryRate = deliveryStats && deliveryStats.total > 0
+          ? Math.round((deliveryStats.successful / deliveryStats.total) * 1000) / 10
+          : null;
+
         res.json({
           success: true,
           data: {
@@ -112,7 +124,7 @@ async function startServer() {
             total_messages: clientStats?.total_messages || 0,
             active_instances: instanceStats?.connected_instances || 0,
             messages_today: messagesToday?.messages_today || 0,
-            delivery_rate: 98.5,
+            delivery_rate: deliveryRate ?? 100,
             uptime: '99.9%',
           },
         });
