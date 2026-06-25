@@ -105,7 +105,9 @@ export function createTables(db: Database): void {
       client_id TEXT REFERENCES clients(id), from_number TEXT NOT NULL, from_name TEXT,
       message_type TEXT DEFAULT 'text', content TEXT, media_url TEXT,
       is_read INTEGER DEFAULT 0, timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-      chat_id TEXT, is_group INTEGER DEFAULT 0
+      chat_id TEXT, is_group INTEGER DEFAULT 0,
+      conversation_id TEXT, customer_id TEXT, workspace_id TEXT,
+      direction TEXT DEFAULT 'incoming', extra TEXT, raw_payload TEXT
     )
   `);
 
