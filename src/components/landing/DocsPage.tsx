@@ -6,6 +6,7 @@ import {
   Search, Menu, X, ExternalLink, ChevronRight,
   Zap, MessageSquare, Users, Bell, Settings, Shield, Globe
 } from 'lucide-react';
+import SeoHead from '../shared/SeoHead';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE } from '../../data/apiEndpoints/index.js';
 import type { ApiEndpoint, BodyField } from '../../data/apiEndpoints/index.js';
 
@@ -480,6 +481,13 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
+      <SeoHead
+        title="Documentation — WhatsApp API"
+        description="FIDScript WhatsApp API documentation: quick start guide, authentication, webhooks, rate limits, SDKs, and complete REST API reference with code examples in cURL, Node.js, Python, PHP, and Go."
+        canonical="/docs"
+        schema="docs"
+        breadcrumbs={[{ name: 'Documentation', url: '/docs' }]}
+      />
 
       {/* ── TOPBAR ── */}
       <header className="fixed top-0 left-0 right-0 z-50 h-[52px] bg-[#0c0b06] border-b border-[#262413] flex items-center px-4 gap-0">
@@ -514,6 +522,7 @@ export default function DocsPage() {
           </div>
           <Link to="/register" className="text-xs text-[#8a886a] hover:text-white transition-colors">Get API Key</Link>
           <Link to="/contact" className="text-xs text-[#8a886a] hover:text-white transition-colors">Support</Link>
+          <Link to="/changelog" className="text-xs text-[#8a886a] hover:text-white transition-colors">Changelog</Link>
         </div>
 
         {/* Mobile hamburger */}

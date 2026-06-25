@@ -4,10 +4,11 @@ import { motion } from 'motion/react';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import LoginForm from './auth/LoginForm';
 import RegisterForm from './auth/RegisterForm';
+import SeoHead from './shared/SeoHead';
 
 interface LoginViewProps {
-  onLoginSuccess: (email: string, role: 'admin' | 'client', token: string) => void;
-  onShowClientDashboard: (token: string) => void;
+  onLoginSuccess: (email: string, role: 'admin' | 'client') => void;
+  onShowClientDashboard: () => void;
   defaultEmail?: string;
   initialMode?: 'login' | 'register';
 }
@@ -24,15 +25,21 @@ export default function LoginView({
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLoginSuccess = (email: string, token: string, role: 'admin' | 'client') => {
-    onLoginSuccess(email, role, token);
+    onLoginSuccess(email, role);
   };
 
-  const handleRegisterSuccess = (token: string) => {
-    onShowClientDashboard(token);
+  const handleRegisterSuccess = (_token: string) => {
+    onShowClientDashboard();
   };
 
   return (
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] flex flex-col p-4 md:p-8 relative overflow-hidden font-suisse-intl antialiased">
+      <SeoHead
+        title={activeMode === 'register' ? 'Create Account' : 'Login'}
+        description="Login to or register your FIDScript account to manage WhatsApp instances, send messages, and track your token balance."
+        canonical="/login"
+        schema="login"
+      />
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-[#eab308]/5 rounded-full blur-[100px] pointer-events-none" />
 

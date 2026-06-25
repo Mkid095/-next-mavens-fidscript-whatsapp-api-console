@@ -50,12 +50,13 @@ export default function InboxView({ messages, onMarkRead }: InboxViewProps) {
   };
 
   return (
-    <div className="space-y-6 flex flex-col">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col min-h-0 h-full">
+      {/* Header row — does not scroll */}
+      <div className="flex items-center justify-between pb-4 shrink-0">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-forest-deep">Webhook Inspector</h1>
-          <p className="text-xs text-graphite mt-1">
-            Inspect inbound webhook payloads and replay them to your configured endpoint.
+          <p className="text-xs text-graphite mt-0.5">
+            Message content is private to clients. Admins see delivery metadata only.
           </p>
         </div>
         <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1">
@@ -73,10 +74,12 @@ export default function InboxView({ messages, onMarkRead }: InboxViewProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3">
+      {/* Scrollable message panels — each panel scrolls independently */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Left: message list */}
+        <div className="lg:col-span-3 min-h-0 overflow-hidden flex flex-col">
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-stone-400 text-xs">Loading...</div>
+            <div className="flex-1 flex items-center justify-center text-stone-400 text-xs">Loading...</div>
           ) : (
             <MessageList
               messages={msgs}
@@ -85,7 +88,9 @@ export default function InboxView({ messages, onMarkRead }: InboxViewProps) {
             />
           )}
         </div>
-        <div className="lg:col-span-2">
+
+        {/* Right: detail panel */}
+        <div className="lg:col-span-2 min-h-0 overflow-hidden flex flex-col">
           <MessageDetail
             message={selectedMsg}
             onReplay={handleReplay}

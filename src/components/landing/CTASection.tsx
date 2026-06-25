@@ -40,12 +40,12 @@ export default function CTASection() {
                   Start Your Free Trial
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <a
-                  href="#contact"
+                <Link
+                  to="/contact"
                   className="w-full sm:w-auto px-8 py-4 text-[#a8a594] hover:text-white font-medium text-base transition-colors flex items-center justify-center gap-2"
                 >
                   Talk to Sales
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -88,15 +88,16 @@ export default function CTASection() {
               <ul className="space-y-2 text-sm text-[#85826f]">
                 <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link to="/changelog" className="hover:text-white transition-colors">Changelog</Link></li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-[#262413] flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-[#6a6c5d]">© 2026 FIDScript. All rights reserved.</p>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-sm text-[#6a6c5d] hover:text-white transition-colors">Twitter</a>
-              <a href="#" className="text-sm text-[#6a6c5d] hover:text-white transition-colors">LinkedIn</a>
-              <a href="#" className="text-sm text-[#6a6c5d] hover:text-white transition-colors">GitHub</a>
+              <a href="https://twitter.com/fidstream" target="_blank" rel="noopener noreferrer" className="text-sm text-[#6a6c5d] hover:text-white transition-colors">Twitter</a>
+              <a href="https://linkedin.com/company/next-mavens" target="_blank" rel="noopener noreferrer" className="text-sm text-[#6a6c5d] hover:text-white transition-colors">LinkedIn</a>
+              <a href="https://github.com/nextmavens" target="_blank" rel="noopener noreferrer" className="text-sm text-[#6a6c5d] hover:text-white transition-colors">GitHub</a>
             </div>
           </div>
         </div>

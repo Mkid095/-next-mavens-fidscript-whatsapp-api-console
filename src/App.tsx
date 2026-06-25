@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AppProviders } from './data';
 import {
   authApi, adminApi, clientsApi, instancesApi, plansApi, paymentsApi,
@@ -12,7 +13,9 @@ import LoginView from './components/LoginView';
 import TermsPage from './components/landing/TermsPage';
 import PrivacyPage from './components/landing/PrivacyPage';
 import FeaturesPage from './components/landing/FeaturesPage';
+import PricingPage from './components/landing/PricingPage';
 import DocsPage from './components/landing/DocsPage';
+import ChangelogPage from './components/landing/ChangelogPage';
 import ContactPage from './components/landing/ContactPage';
 import { AdminRoutes } from './components/admin/adminRoutes';
 import { ClientRoutes } from './components/client/clientRoutes';
@@ -219,7 +222,9 @@ function AppContent() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="/docs" element={<DocsPage />} />
+        <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} />} />
         <Route path="/register" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} initialMode="register" />} />
@@ -234,10 +239,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppProviders>
-        <AppContent />
-      </AppProviders>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AppProviders>
+          <AppContent />
+        </AppProviders>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }

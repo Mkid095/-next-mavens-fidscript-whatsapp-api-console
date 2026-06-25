@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { InboxMessage } from '../../../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Calendar, CheckCircle, RotateCcw, ExternalLink, ChevronDown, ChevronRight, ArrowDown, ArrowUp } from 'lucide-react';
+import { Mail, Calendar, CheckCircle, RotateCcw, ArrowDown, ArrowUp, Shield } from 'lucide-react';
 
 interface MessageDetailProps {
   message: InboxMessage | null;
@@ -10,15 +10,6 @@ interface MessageDetailProps {
 }
 
 export default function MessageDetail({ message, onReplay, isReplaying }: MessageDetailProps) {
-  const [showRaw, setShowRaw] = useState(false);
-
-  const formatPayload = (raw?: string) => {
-    if (!raw) return null;
-    try { return JSON.stringify(JSON.parse(raw), null, 2); } catch { return raw; }
-  };
-
-  const payload = message?.raw_payload ? formatPayload(message.raw_payload) : null;
-
   return (
     <AnimatePresence mode="wait">
       {message ? (
@@ -27,28 +18,28 @@ export default function MessageDetail({ message, onReplay, isReplaying }: Messag
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -5 }}
-          className="bg-white border border-[#e1e9e5]/80 rounded-3xl shadow-sm p-5 space-y-4"
+          className="bg-white border border-[#e1e9e5]/80 rounded-3xl shadow-sm p-5 space-y-4 overflow-y-auto max-h-full"
         >
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between shrink-0">
             <span className="font-mono text-[9px] uppercase font-bold tracking-widest text-[#15803d] border-b border-stone-100 pb-2">
-              Webhook Inspector
+              Message Details
             </span>
             {message.direction && (
-              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
                 message.direction === 'incoming'
                   ? 'bg-blue-50 text-blue-700 border-blue-200'
                   : 'bg-amber-50 text-amber-700 border-amber-200'
               }`}>
                 {message.direction === 'incoming'
-                  ? <React.Fragment><ArrowDown size={11} /> INCOMING</React.Fragment>
-                  : <React.Fragment><ArrowUp size={11} /> OUTGOING</React.Fragment>}
+                  ? <><ArrowDown size={10} /> INCOMING</>
+                  : <><ArrowUp size={10} /> OUTGOING</>}
               </span>
             )}
           </div>
 
           {/* Sender info */}
-          <div className="space-y-1">
+          <div className="space-y-2 shrink-0">
             <h3 className="font-bold text-sm text-forest-deep">{message.from_name || message.from_number}</h3>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-block px-2.5 py-0.5 text-[9px] font-bold text-[#15803d] bg-emerald-50 rounded-full border border-emerald-100 uppercase">
@@ -67,56 +58,29 @@ export default function MessageDetail({ message, onReplay, isReplaying }: Messag
             </div>
           </div>
 
-          {/* Content */}
-          <div className="space-y-1.5">
-            <span className="block text-[9px] font-bold text-graphite uppercase tracking-wide">Content</span>
-            <p className="bg-[#f8faf9] border border-[#e1e9e5]/80 p-3 rounded-xl text-xs text-[#1e3228] leading-relaxed">
-              {message.content || <span className="italic text-stone-400">empty</span>}
-            </p>
-          </div>
-
-          {/* Raw payload toggle */}
-          {payload && (
-            <div className="space-y-2">
-              <button
-                onClick={() => setShowRaw(v => !v)}
-                className="flex items-center gap-1.5 text-[9px] font-bold text-graphite hover:text-forest-deep transition-colors"
-              >
-                <span className="font-mono uppercase tracking-widest">Raw Payload</span>
-                {showRaw ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-              </button>
-              <AnimatePresence>
-                {showRaw && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <pre className="bg-[#0d1117] text-[#e6edf3] p-3 rounded-xl text-[10px] font-mono overflow-x-auto max-h-64 leading-relaxed">
-                      {payload}
-                    </pre>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-
-          {/* Timestamp */}
-          <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-[#556c60] text-[10px]">
-            <div className="flex items-center gap-1.5">
+          {/* Timestamp & Status */}
+          <div className="pt-3 border-t border-stone-100 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-1.5 text-[#556c60] text-[10px]">
               <Calendar className="w-3.5 h-3.5" />
               <span>{new Date(message.timestamp).toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-1">
               <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-emerald-700 font-bold">Stored</span>
+              <span className="text-emerald-700 font-bold text-[10px]">Stored</span>
             </div>
+          </div>
+
+          {/* Privacy notice */}
+          <div className="flex items-start gap-2 p-3 bg-stone-50 border border-stone-200 rounded-xl shrink-0">
+            <Shield className="w-3.5 h-3.5 text-stone-400 mt-0.5 shrink-0" />
+            <p className="text-[9px] text-stone-500 leading-relaxed">
+              Message content is private to the client. Only delivery metadata and sender info are visible to admins.
+            </p>
           </div>
 
           {/* Replay button */}
           {message.direction === 'incoming' && onReplay && (
-            <div className="pt-2 border-t border-stone-100">
+            <div className="pt-2 border-t border-stone-100 shrink-0">
               <button
                 onClick={() => onReplay(message.id)}
                 disabled={isReplaying}
@@ -137,11 +101,11 @@ export default function MessageDetail({ message, onReplay, isReplaying }: Messag
           )}
         </motion.div>
       ) : (
-        <div className="bg-white border border-[#e1e9e5]/80 rounded-[32px] p-8 text-center text-graphite min-h-[300px] flex flex-col items-center justify-center space-y-3">
+        <div className="bg-white border border-[#e1e9e5]/80 rounded-[32px] p-8 text-center text-graphite h-full flex flex-col items-center justify-center space-y-3">
           <Mail className="w-8 h-8 text-emerald-600/30" />
           <p className="font-bold text-forest-deep text-xs">Select a message</p>
           <p className="text-[10px] max-w-xs leading-relaxed">
-            Click on any webhook event to inspect the full raw payload and replay it to your configured endpoint.
+            Click any webhook event to inspect delivery metadata. Message content is private to the client.
           </p>
         </div>
       )}

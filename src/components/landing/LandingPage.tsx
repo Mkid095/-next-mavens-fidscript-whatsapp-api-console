@@ -8,6 +8,7 @@ import FeaturesSection from './FeaturesSection';
 import PricingSection from './PricingSection';
 import TestimonialsSection from './TestimonialsSection';
 import CTASection from './CTASection';
+import SeoHead from '../shared/SeoHead';
 
 interface Stats {
   totalClients: number;
@@ -44,6 +45,12 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#11110a] text-[#cbd3cf] font-suisse-intl antialiased selection:bg-yellow-250 selection:text-stone-950">
+      <SeoHead
+        title="FIDScript WhatsApp API — Kenyan Businesses"
+        description="Send and receive WhatsApp messages programmatically. WhatsApp API for Kenyan businesses with M-Pesa billing, REST API, webhooks, and real-time analytics."
+        canonical="/"
+        schema="website"
+      />
       <Header scrolled={scrolled} onScroll={handleScroll} />
 
       {/* Hero Section */}

@@ -274,27 +274,36 @@ initSqlJs().then(SQL => {
 }
 
 get_changes_summary() {
-    # Returns a single-line summary safe for JSON/SQL
-    git diff --stat HEAD~1 2>/dev/null | head -5 | tr '\n' ' ' | sed 's/  */ /g' | sed 's/"/\"/g' | cut -c1-200 || echo "No changes"
+    # Returns pipe-separated commit messages since last deploy (max 10)
+    local last_commit
+    last_commit=$(get_last_deploy_commit)
+    if [ -z "${last_commit}" ]; then
+        git log --oneline HEAD~1..HEAD 2>/dev/null | head -1 || echo "No changes"
+        return
+    fi
+    git log --oneline "${last_commit}..HEAD" 2>/dev/null | head -10 | tr '\n' '|' | sed 's/|/;;/g' | head -c 600
 }
 
 record_deployment() {
     local service="$1"
     local version="$2"
-    local commit_hash="$3"
-    local changes_summary="$4"
-    local api_url="${5:-http://localhost:3099/api/versions}"
+    local previous_version="$3"
+    local commit_hash="$4"
+    local changes_summary="$5"
+    local changelog="$6"
+    local api_url="${7:-http://localhost:3099/api/versions}"
 
-    log_info "Recording deployment: ${service} v${version}"
+    log_info "Recording deployment: ${service} v${version} (was v${previous_version})"
 
-    # Escape changes_summary for JSON
-    local escaped_summary
-    escaped_summary=$(printf '%s' "${changes_summary}" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "${changes_summary}" | sed 's/"/\\"/g' | tr -d "'")
+    # Escape all strings for JSON
+    local escaped_summary escaped_changelog
+    escaped_summary=$(printf '%s' "${changes_summary}" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "${changes_summary}" | sed 's/"/\\"/g' | tr -d "'\''")
+    escaped_changelog=$(printf '%s' "${changelog}" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '%s' "${changelog}" | sed 's/"/\\"/g' | tr -d "'\''")
 
     local response
     response=$(curl -s -X POST "${api_url}" \
         -H "Content-Type: application/json" \
-        -d "{\"version\":\"${version}\",\"commit_hash\":\"${commit_hash}\",\"changes_summary\":${escaped_summary},\"service\":\"${service}\"}" \
+        -d "{\"version\":\"${version}\",\"previous_version\":\"${previous_version}\",\"commit_hash\":\"${commit_hash}\",\"changes_summary\":${escaped_summary},\"changelog\":${escaped_changelog},\"service\":\"${service}\"}" \
         2>&1) || true
 
     if echo "${response}" | grep -q '"success":true'; then
@@ -316,8 +325,8 @@ initSqlJs().then(SQL => {
     const buffer = fs.readFileSync(dbPath);
     const db = new SQL.Database(buffer);
 
-    db.run('INSERT INTO deploy_versions (version, commit_hash, changes_summary, service) VALUES (?, ?, ?, ?)',
-        ['${version}', '${commit_hash}', \`${changes_summary}\`, '${service}']);
+    db.run('INSERT INTO deploy_versions (version, previous_version, commit_hash, changes_summary, changelog, service) VALUES (?, ?, ?, ?, ?, ?)',
+        ['${version}', '${previous_version}', '${commit_hash}', \`${changes_summary}\`, \`${changelog}\`, '${service}']);
 
     const data = db.export();
     const fileBuffer = Buffer.from(data);
@@ -404,24 +413,30 @@ deploy() {
             build_backend
             restart_backend
 
-            local frontend_version backend_version changes
+            local frontend_version backend_version changes changelog previous_version
+            previous_version=$(get_last_deployed_version "frontend")
+            [ -z "${previous_version}" ] && previous_version="0.0.0"
             frontend_version=$(get_current_version)
             backend_version=$(get_current_version)
-            changes=$(get_changes_summary)
+            changelog=$(get_changes_summary)
+            changes=$(echo "${changelog}" | cut -d';' -f1 | sed 's/;;$//')
 
-            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "${changes}"
-            record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
+            record_deployment "frontend" "${frontend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
+            record_deployment "backend" "${backend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
             ;;
         frontend)
             log_info "Changes detected in frontend only."
 
             build_frontend
 
-            local frontend_version changes
+            local frontend_version changes changelog previous_version
+            previous_version=$(get_last_deployed_version "frontend")
+            [ -z "${previous_version}" ] && previous_version="0.0.0"
             frontend_version=$(get_current_version)
-            changes=$(get_changes_summary)
+            changelog=$(get_changes_summary)
+            changes=$(echo "${changelog}" | cut -d';' -f1 | sed 's/;;$//')
 
-            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "${changes}"
+            record_deployment "frontend" "${frontend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
             ;;
         backend)
             log_info "Changes detected in backend only."
@@ -429,11 +444,14 @@ deploy() {
             build_backend
             restart_backend
 
-            local backend_version changes
+            local backend_version changes changelog previous_version
+            previous_version=$(get_last_deployed_version "backend")
+            [ -z "${previous_version}" ] && previous_version="0.0.0"
             backend_version=$(get_current_version)
-            changes=$(get_changes_summary)
+            changelog=$(get_changes_summary)
+            changes=$(echo "${changelog}" | cut -d';' -f1 | sed 's/;;$//')
 
-            record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
+            record_deployment "backend" "${backend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
             ;;
         none)
             log_info "No relevant changes detected — forcing clean rebuild to eliminate stale dist artifacts."
@@ -442,13 +460,16 @@ deploy() {
             build_backend
             restart_backend
 
-            local frontend_version backend_version changes
+            local frontend_version backend_version changes changelog previous_version
+            previous_version=$(get_last_deployed_version "frontend")
+            [ -z "${previous_version}" ] && previous_version="0.0.0"
             frontend_version=$(get_current_version)
             backend_version=$(get_current_version)
-            changes=$(get_changes_summary)
+            changelog=$(get_changes_summary)
+            changes=$(echo "${changelog}" | cut -d';' -f1 | sed 's/;;$//')
 
-            record_deployment "frontend" "${frontend_version}" "${commit_hash}" "${changes}"
-            record_deployment "backend" "${backend_version}" "${commit_hash}" "${changes}"
+            record_deployment "frontend" "${frontend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
+            record_deployment "backend" "${backend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
             ;;
     esac
 

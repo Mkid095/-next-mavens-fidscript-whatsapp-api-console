@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import SeoHead from '../shared/SeoHead';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -42,6 +43,13 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
+      <SeoHead
+        title="Contact Us"
+        description="Get in touch with the FIDScript team. Questions about WhatsApp API integration, pricing, billing, or technical support — we respond within 1–2 business days."
+        canonical="/contact"
+        schema="contact"
+        breadcrumbs={[{ name: 'Contact', url: '/contact' }]}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0c0b06]/95 backdrop-blur-lg border-b border-[#262413]">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">

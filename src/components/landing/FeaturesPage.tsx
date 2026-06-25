@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft, Zap, Shield, BarChart3, Code2, Users, Smartphone, Globe, Key, Bell, MessageSquare, Database, CreditCard, CheckCircle2 } from 'lucide-react';
+import SeoHead from '../shared/SeoHead';
 
 const features = [
   {
@@ -81,6 +82,13 @@ export default function FeaturesPage() {
         </div>
       </header>
 
+      <SeoHead
+        title="Features — WhatsApp API Platform"
+        description="Everything you need to build on WhatsApp: multi-instance gateway, REST API, M-Pesa billing, webhooks, contact management, analytics, and sandbox testing."
+        canonical="/features"
+        schema="features"
+        breadcrumbs={[{ name: 'Features', url: '/features' }]}
+      />
       <main>
         {/* Hero */}
         <section className="relative py-20 md:py-28 overflow-hidden">

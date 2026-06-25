@@ -66,6 +66,25 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/sandbox/key/:keyId
+ * Return the full API key for a given key ID — for the Vibe Wizard prompt generator.
+ * The key is looked up server-side so the secret never has to be stored client-side.
+ */
+router.get('/key/:keyId', clientJwtAuth, async (req: Request, res: Response) => {
+  try {
+    const key = db.prepare(
+      'SELECT api_key FROM client_api_keys WHERE id = ? AND client_id = ? AND status = \'Active\''
+    ).get(req.params.keyId, req.client!.id) as { api_key: string } | undefined;
+    if (!key) {
+      return res.status(404).json({ success: false, error: 'Key not found or inactive' });
+    }
+    res.json({ success: true, api_key: key.api_key });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+/**
  * GET /api/sandbox/instances
  * List all instances for the client with their status — for the sandbox UI instance selector
  */

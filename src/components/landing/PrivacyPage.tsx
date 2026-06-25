@@ -2,10 +2,18 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
+import SeoHead from '../shared/SeoHead';
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
+      <SeoHead
+        title="Privacy Policy"
+        description="FIDScript Privacy Policy — data collection, M-Pesa payment handling, third-party sharing disclosures, Kenyan DPA compliance, and your data rights."
+        canonical="/privacy"
+        schema="privacy"
+        breadcrumbs={[{ name: 'Privacy', url: '/privacy' }]}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0c0b06]/95 backdrop-blur-lg border-b border-[#262413]">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
@@ -69,7 +77,7 @@ export default function PrivacyPage() {
                 title: '4. How We Share Your Information',
                 content: `We do not sell your personal data. We may share information with:
 
-(a) Evolution API: Your message content and phone numbers are processed by the Evolution WhatsApp gateway to deliver messages.
+(a) WhatsApp Gateway: Your message content and phone numbers are processed by our WhatsApp gateway to deliver messages.
 
 (b) Tuma API (M-Pesa): Payment-related data is shared with Tuma to process STK Push payments.
 
@@ -112,7 +120,7 @@ To exercise any of these rights, contact us at info@nextmavens.com.`
               },
               {
                 title: '11. International Transfers',
-                content: `Our servers are located in Kenya. Some third-party processors (including Resend and Evolution API) may process data outside Kenya. We ensure appropriate safeguards are in place for such transfers.`
+                content: `Our servers are located in Kenya. Some third-party processors (including Resend) may process data outside Kenya. We ensure appropriate safeguards are in place for such transfers.`
               },
               {
                 title: '12. Changes to This Policy',

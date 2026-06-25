@@ -7,7 +7,8 @@ import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
 
-const API_BASE_URL = process.env.API_URL || 'https://apiwhatsapp.fidscript.com';
+// Evolution is inside Docker and can't reach public URLs — use internal hostname for webhooks
+const API_BASE_URL = process.env.API_INTERNAL_URL || 'http://fidscript-whatsapp-api:3099';
 
 // GET /api/instance/connect/:name - Generate QR code from Evolution API
 router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) => {

@@ -14,3 +14,7 @@ The chat rebuild is no longer a standalone "WhatsApp clone" spec. It is **§10 (
 - Icon/visual system (no emoji chrome) → §8
 - The Inbox (Phase 2) build + endpoint map + slices → §10
 - Phased roadmap → §15
+
+
+
+

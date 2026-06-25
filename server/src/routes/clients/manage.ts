@@ -70,6 +70,19 @@ router.post('/:id/reset-key', (req: Request, res: Response) => {
 // POST /api/clients/:id/award-tokens - Admin awards tokens to a client
 router.post('/:id/award-tokens', (req: Request, res: Response) => {
   try {
+    // Idempotency: check for duplicate request using header key
+    const idempotencyKey = req.headers['idempotency-key'] as string | undefined;
+    if (idempotencyKey) {
+      const existing = db.prepare(
+        'SELECT response_json FROM idempotency_keys WHERE id = ? AND created_at > datetime("now", "-1 hour")'
+      ).get(idempotencyKey) as { response_json: string } | undefined;
+      if (existing) {
+        res.set('X-Idempotency-Replay', 'true');
+        const cached = JSON.parse(existing.response_json);
+        return res.status(200).json(cached);
+      }
+    }
+
     const { amount: rawAmount, note } = req.body as { amount?: number; note?: string };
 
     if (!Number.isInteger(rawAmount) || (rawAmount as number) <= 0) {
@@ -93,7 +106,16 @@ router.post('/:id/award-tokens', (req: Request, res: Response) => {
     );
 
     const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(req.params.id) as { token_balance: number };
-    res.json({ success: true, data: { id: req.params.id, token_balance: updated?.token_balance } });
+    const response = { success: true, data: { id: req.params.id, token_balance: updated?.token_balance } };
+
+    // Store idempotency result
+    if (idempotencyKey) {
+      db.prepare(
+        'INSERT OR REPLACE INTO idempotency_keys (id, response_json, status_code, created_at) VALUES (?, ?, 200, datetime("now"))'
+      ).run(idempotencyKey, JSON.stringify(response));
+    }
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to award tokens' });
   }

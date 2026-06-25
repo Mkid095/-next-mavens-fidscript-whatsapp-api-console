@@ -8,6 +8,7 @@ import LogsAndAnalyticsView from '../LogsAndAnalyticsView';
 import InboxView from '../InboxView';
 import SecurityKeysView from '../SecurityKeysView';
 import AnalyticsView from './AnalyticsView';
+import AuditLogView from './audit/AuditLogView';
 import type { Instance, Client, ApiLog, AnalyticsData } from '../../services/api';
 
 interface AdminContentProps {
@@ -98,7 +99,7 @@ export function AdminContent({
     if (path === '/admin/api-console') {
       return <ApiConsoleView />;
     }
-    if (path === '/admin/logs' || path === '/admin/audit-logs') {
+    if (path === '/admin/logs') {
       return (
         <LogsAndAnalyticsView
           analytics={analytics}
@@ -112,6 +113,9 @@ export function AdminContent({
           onAddLog={() => {}}
         />
       );
+    }
+    if (path === '/admin/audit-logs') {
+      return <AuditLogView />;
     }
     if (path === '/admin/analytics') {
       return <AnalyticsView analytics={analytics} />;

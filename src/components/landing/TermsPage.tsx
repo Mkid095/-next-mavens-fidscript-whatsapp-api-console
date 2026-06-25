@@ -2,10 +2,18 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
+import SeoHead from '../shared/SeoHead';
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
+      <SeoHead
+        title="Terms & Conditions"
+        description="FIDScript Terms & Conditions — API usage, token billing, acceptable use policy, liability, account termination, and governing law for Kenyan businesses."
+        canonical="/terms"
+        schema="terms"
+        breadcrumbs={[{ name: 'Terms', url: '/terms' }]}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0c0b06]/95 backdrop-blur-lg border-b border-[#262413]">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
@@ -70,7 +78,7 @@ We reserve the right to suspend or terminate accounts that violate these restric
               },
               {
                 title: '7. Third-Party Services',
-                content: `The Service integrates with M-Pesa (via Tuma API) for payments, and the Evolution API for WhatsApp gateway functionality. We are not responsible for the availability, accuracy, or reliability of third-party services.`
+                content: `The Service integrates with M-Pesa (via Tuma API) for payments, and WhatsApp for message delivery. We are not responsible for the availability, accuracy, or reliability of third-party services.`
               },
               {
                 title: '8. Data & Privacy',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Coins, AlertCircle } from 'lucide-react';
 import { clientsApi } from '../../../services/clients';
 
@@ -14,6 +14,8 @@ export default function AwardTokensModal({ isOpen, client, onClose, onAwarded }:
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Guard against double-submission from React StrictMode or state cascade
+  const submittingRef = useRef(false);
 
   if (!isOpen || !client) return null;
 
@@ -21,7 +23,8 @@ export default function AwardTokensModal({ isOpen, client, onClose, onAwarded }:
   const isValid = !isNaN(numAmount) && numAmount > 0;
 
   const submit = async () => {
-    if (!isValid) return;
+    if (!isValid || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setError(null);
     try {
@@ -33,11 +36,13 @@ export default function AwardTokensModal({ isOpen, client, onClose, onAwarded }:
         onClose();
       } else {
         setError(res.error || 'Failed to award tokens');
+        submittingRef.current = false;
       }
     } catch {
       setError('Failed to award tokens');
+      submittingRef.current = false;
     } finally {
-      setSubmitting(false);
+      if (submittingRef.current) setSubmitting(false); // only clear if not already cleared
     }
   };
 

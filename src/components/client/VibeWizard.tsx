@@ -8,6 +8,7 @@ import Step3Prompt from './vibe/Step3Prompt.js';
 
 interface VibeWizardProps {
   clientName?: string;
+  clientToken: string;
   instances: Array<{ id: string; name: string; display_name?: string | null; phone_number?: string | null; status: string }>;
   activeKeys: Array<{ id: string; name: string; key_prefix?: string; last_used: string | null }>;
 }
@@ -23,9 +24,10 @@ const STEP_LABELS = ['Verify Credentials', 'Select Endpoints', 'AI Integration P
  * Step 3 generates a complete integration-prompt markdown for the user's
  * preferred language. The heavy lifting lives in the vibe/ sub-folder.
  */
-export default function VibeWizard({ clientName, instances, activeKeys }: VibeWizardProps) {
+export default function VibeWizard({ clientName, clientToken, instances, activeKeys }: VibeWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
   const [pastedKey, setPastedKey] = useState<string>('');
+  const [selectedKeyId, setSelectedKeyId] = useState<string>('');
   const [selectedInstance, setSelectedInstance] = useState<string>('');
   const [step2State, setStep2State] = useState<Step2State>({
     global: 'all',
@@ -58,6 +60,8 @@ export default function VibeWizard({ clientName, instances, activeKeys }: VibeWi
             <Step1Credentials
               pastedKey={pastedKey}
               setPastedKey={setPastedKey}
+              selectedKeyId={selectedKeyId}
+              setSelectedKeyId={setSelectedKeyId}
               instances={instances}
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}
@@ -75,6 +79,8 @@ export default function VibeWizard({ clientName, instances, activeKeys }: VibeWi
           <motion.div key="step3" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
             <Step3Prompt
               apiKey={pastedKey}
+              keyId={selectedKeyId}
+              clientToken={clientToken}
               clientName={clientName}
               selectedEps={selectedEps}
               instanceName={selectedInstance}

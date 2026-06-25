@@ -82,7 +82,11 @@ export const clientsApi = {
   awardTokens: (id: string, amount: number, note?: string) =>
     fetchApi<{ id: string; token_balance: number }>(
       `/api/clients/${id}/award-tokens`,
-      { method: 'POST', body: JSON.stringify({ amount, note }) }
+      {
+        method: 'POST',
+        body: JSON.stringify({ amount, note }),
+        headers: { 'Idempotency-Key': `award-${id}-${amount}-${Date.now()}` },
+      }
     ),
 
   getTransactions: (id: string) =>

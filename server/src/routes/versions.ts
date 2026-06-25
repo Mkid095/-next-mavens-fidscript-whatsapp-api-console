@@ -7,9 +7,11 @@ const router = Router();
 interface DeployVersion {
   id: number;
   version: string;
+  previous_version: string | null;
   commit_hash: string;
   deployed_at: string;
   changes_summary: string;
+  changelog: string | null;
   service: string;
 }
 
@@ -17,7 +19,7 @@ interface DeployVersion {
 router.get('/latest', (_req, res) => {
   try {
     const latest = db.prepare(`
-      SELECT version, commit_hash, deployed_at, changes_summary, service
+      SELECT version, previous_version, commit_hash, deployed_at, changes_summary, changelog, service
       FROM deploy_versions
       ORDER BY id DESC
       LIMIT 1
@@ -28,9 +30,11 @@ router.get('/latest', (_req, res) => {
         success: true,
         data: {
           version: '1.0.0',
+          previous_version: null,
           commit_hash: 'unknown',
           deployed_at: new Date().toISOString(),
           changes_summary: 'Initial deployment',
+          changelog: null,
           service: 'both',
         },
       });
@@ -48,7 +52,7 @@ router.get('/latest', (_req, res) => {
 router.get('/history', adminAuth, (_req, res) => {
   try {
     const history = db.prepare(`
-      SELECT id, version, commit_hash, deployed_at, changes_summary, service
+      SELECT id, version, previous_version, commit_hash, deployed_at, changes_summary, changelog, service
       FROM deploy_versions
       ORDER BY id DESC
       LIMIT 50
@@ -61,10 +65,27 @@ router.get('/history', adminAuth, (_req, res) => {
   }
 });
 
+// GET /api/versions - public, all deploy versions for changelog page
+router.get('/', (_req, res) => {
+  try {
+    const versions = db.prepare(`
+      SELECT id, version, previous_version, commit_hash, deployed_at, changes_summary, changelog, service
+      FROM deploy_versions
+      ORDER BY id DESC
+      LIMIT 100
+    `).all() as unknown as DeployVersion[];
+
+    res.json({ success: true, data: versions });
+  } catch (error) {
+    console.error('Error fetching versions:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch versions' });
+  }
+});
+
 // POST /api/versions - internal, called by deploy script
 router.post('/', (req, res) => {
   try {
-    const { version, commit_hash, changes_summary, service } = req.body;
+    const { version, previous_version, commit_hash, changes_summary, changelog, service } = req.body;
 
     if (!version) {
       res.status(400).json({ success: false, error: 'Version is required' });
@@ -72,9 +93,16 @@ router.post('/', (req, res) => {
     }
 
     db.prepare(`
-      INSERT INTO deploy_versions (version, commit_hash, changes_summary, service)
-      VALUES (?, ?, ?, ?)
-    `).run(version, commit_hash || null, changes_summary || null, service || 'both');
+      INSERT INTO deploy_versions (version, previous_version, commit_hash, changes_summary, changelog, service)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(
+      version,
+      previous_version || null,
+      commit_hash || null,
+      changes_summary || null,
+      changelog || null,
+      service || 'both'
+    );
 
     res.json({ success: true, data: { message: 'Deploy version recorded' } });
   } catch (error) {

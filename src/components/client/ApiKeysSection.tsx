@@ -268,9 +268,10 @@ export default function ApiKeysSection({ clientToken }: ApiKeysSectionProps) {
           </div>
         )}
 
-        {activeTab === 'vibe' && (
+        {activeTab === 'vibe' && clientToken && (
           <VibeWizard
             clientName={undefined}
+            clientToken={clientToken}
             instances={clientInstances}
             activeKeys={apiKeys
               .filter(k => k.status !== 'Revoked')

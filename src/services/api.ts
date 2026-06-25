@@ -48,6 +48,8 @@ export type { Client, Plan, User, TokenTransaction } from './clients';
 export { instancesApi } from './instances';
 export { paymentsApi } from './payments';
 export { uploadsApi } from './uploads';
+export { versionsApi } from './versions';
+export type { DeployVersion } from './versions';
 export { contactsApi, clientMessagesApi, clientKeysApi, campaignsApi, groupsApi } from './contacts';
 export type { Contact, ClientMessage, ClientApiKey, Campaign, CampaignRecipient, ContactGroup, ContactGroupMember } from './contacts';
 // Re-exported for legacy `import { Conversation } from '../../services/api'` consumers.

@@ -41,6 +41,7 @@ export default function Header({ scrolled, onScroll }: HeaderProps) {
             <Link to="/features" className="text-sm text-[#a8a594] hover:text-white transition-colors">Features</Link>
             <Link to="/pricing" className="text-sm text-[#a8a594] hover:text-white transition-colors">Pricing</Link>
             <Link to="/docs" className="text-sm text-[#a8a594] hover:text-white transition-colors">Documentation</Link>
+            <Link to="/changelog" className="text-sm text-[#a8a594] hover:text-white transition-colors">Changelog</Link>
             <Link to="/contact" className="text-sm text-[#a8a594] hover:text-white transition-colors">Contact</Link>
           </div>
 
@@ -78,6 +79,7 @@ export default function Header({ scrolled, onScroll }: HeaderProps) {
               <Link to="/features" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Features</Link>
               <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Pricing</Link>
               <Link to="/docs" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Documentation</Link>
+              <Link to="/changelog" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Changelog</Link>
               <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#a8a594] hover:text-white py-2">Contact</Link>
               <div className="pt-3 border-t border-[#262413] space-y-2">
                 <button onClick={() => navigate('/login')} className="w-full px-4 py-2 text-sm text-[#a8a594] hover:text-white text-left">Login</button>

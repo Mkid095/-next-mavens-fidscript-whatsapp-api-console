@@ -1,11 +1,9 @@
 import { Router, Request, Response } from 'express';
 import db from '../../database.js';
-import { adminAuth } from '../../middleware/auth.js';
 
 const router = Router();
-router.use(adminAuth);
 
-// GET /api/plans - List all plans
+// GET /api/plans - List all plans (public — no auth required)
 router.get('/', (_req: Request, res: Response) => {
   try {
     const plans = db.prepare('SELECT * FROM plans WHERE is_active = 1 ORDER BY price_monthly ASC').all();

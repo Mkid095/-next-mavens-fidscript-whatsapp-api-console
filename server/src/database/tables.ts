@@ -139,12 +139,18 @@ export function createTables(db: Database): void {
     CREATE TABLE IF NOT EXISTS deploy_versions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       version TEXT NOT NULL,
+      previous_version TEXT,
       commit_hash TEXT,
       deployed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       changes_summary TEXT,
+      changelog TEXT,
       service TEXT DEFAULT 'both'
     )
   `);
+
+  // Migration: add previous_version and changelog columns if upgrading from older schema
+  try { db.run("ALTER TABLE deploy_versions ADD COLUMN previous_version TEXT"); } catch (e: any) { /* already exists */ }
+  try { db.run("ALTER TABLE deploy_versions ADD COLUMN changelog TEXT"); } catch (e: any) { /* already exists */ }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS auth_codes (
