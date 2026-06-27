@@ -26,7 +26,7 @@ router.post('/tuma-test/ready', (req: Request, res: Response) => {
       clientId = 'cli_tuma' + uuidv4().substring(0, 8);
       const apiKey = 'fidscript_live_' + crypto.randomBytes(24).toString('hex');
       db.prepare(
-        `INSERT INTO clients (id, name, email, phone, password_hash, api_key, plan_id, token_balance, created_at) VALUES (?, ?, ?, ?, NULL, ?, NULL, 500, CURRENT_TIMESTAMP)`
+        `INSERT INTO clients (id, name, email, phone, key_hash, api_key, plan_id, token_balance, created_at) VALUES (?, ?, ?, ?, NULL, ?, NULL, 500, CURRENT_TIMESTAMP)`
       ).run(clientId, name, email, phone, apiKey);
     }
 

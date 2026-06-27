@@ -48,10 +48,6 @@ router.post('/client/request-code', async (req: Request, res: Response) => {
       return res.status(500).json({ success: false, error: sent.error || 'Failed to send code' });
     }
 
-    // TEMP DEBUG: ?debug=1 returns the plaintext code (for reproducing 500s). Remove before prod.
-    if (req.query.debug === '1') {
-      return res.json({ success: true, data: { message: 'Verification code sent to your email.', _debug_code: code } });
-    }
     return res.json({ success: true, data: { message: 'Verification code sent to your email.' } });
   } catch (err) {
     console.error('[client/request-code] INTERNAL ERROR:', err);
@@ -103,7 +99,7 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
   const apiKey = generateApiKey();
 
   db.prepare(`
-    INSERT INTO clients (id, name, email, phone, password_hash, api_key, plan_id, token_balance)
+    INSERT INTO clients (id, name, email, phone, key_hash, api_key, plan_id, token_balance)
     VALUES (?, ?, ?, ?, NULL, ?, ?, 500)
   `).run(clientId, name, normalized, phone, apiKey, defaultPlanId);
 
