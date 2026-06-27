@@ -14,6 +14,7 @@ interface ChatListPaneProps {
   onNewChat: () => void;
   instanceName: string;
   hiddenOnMobile?: boolean;
+  onRetry?: () => void;
 }
 
 // Left pane — search + new-chat + independently scrollable list. The scroll
@@ -21,7 +22,7 @@ interface ChatListPaneProps {
 // never scrolls itself (the parent owns the viewport height).
 export default function ChatListPane({
   chats, loading, error, search, onSearchChange,
-  selectedJid, onSelect, onNewChat, instanceName, hiddenOnMobile,
+  selectedJid, onSelect, onNewChat, instanceName, hiddenOnMobile, onRetry,
 }: ChatListPaneProps) {
   const [local, setLocal] = useState(search);
   const filtered = useMemo(() => {
@@ -53,7 +54,17 @@ export default function ChatListPane({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading && chats.length === 0 && <p className="p-4 text-xs text-stone-400">Loading chats…</p>}
-        {error && <p className="p-4 text-xs text-red-600">{error}</p>}
+        {error && (
+          <div className="m-2 rounded-lg border border-red-200 bg-red-50 p-3">
+            <p className="text-xs font-medium text-red-700">Couldn't load chats</p>
+            <p className="mt-1 break-words text-[11px] text-red-600">{error}</p>
+            {onRetry && (
+              <button onClick={onRetry} className="mt-2 rounded-md bg-red-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-red-700">
+                Retry
+              </button>
+            )}
+          </div>
+        )}
         {!loading && !error && filtered.length === 0 && (
           <div className="flex flex-col items-center gap-2 p-8 text-center text-stone-400">
             <MessageSquare size={24} />

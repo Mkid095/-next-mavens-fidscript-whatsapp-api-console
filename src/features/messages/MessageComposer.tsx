@@ -18,6 +18,10 @@ export default function MessageComposer({ chatJid, instance, onSent }: MessageCo
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Belt + suspenders: the disabled button already prevents double-submit,
+  // but an in-flight ref blocks rapid Enter presses that race the React state
+  // update (e.g. holding Enter → second handler runs before disabled reflects).
+  const inFlight = useRef(false);
 
   const adjustHeight = useCallback(() => {
     const ta = textareaRef.current;
@@ -34,6 +38,8 @@ export default function MessageComposer({ chatJid, instance, onSent }: MessageCo
 
   const handleSend = async () => {
     if (!instance || !text.trim()) return;
+    if (inFlight.current) return; // already sending — drop the duplicate
+    inFlight.current = true;
     setSending(true);
     setError(null);
     const optimistic: MirrorMessage = {
@@ -53,6 +59,7 @@ export default function MessageComposer({ chatJid, instance, onSent }: MessageCo
 
     const res = await instancesApi.sendText(instance.name, chatJid, body);
     setSending(false);
+    inFlight.current = false;
     if (!res.success) setError(res.error || 'Failed to send');
   };
 

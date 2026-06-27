@@ -4,6 +4,8 @@ import { clientJwtAuth } from '../middleware/auth.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 import { dispatchCampaignMessage, emitCampaignStarted, emitCampaignCompleted, type CampaignMessageKind } from '../modules/campaigns/index.js';
 import { getInstanceForClient } from '../services/whatsapp/shared.js';
+import { SendPacer, getSendThroughputMps } from '../services/whatsapp/sendThroughput.js';
+import { getOutboundUsage, newInitiationsInBatch } from '../services/whatsapp/outboundUsage.js';
 import {
   TOKEN_COST_TEXT, TOKEN_COST_MEDIA, TOKEN_COST_LOCATION, TOKEN_COST_CONTACT,
 } from '../utils/tokenCosts.js';
@@ -80,9 +82,43 @@ router.post('/send', clientJwtAuth, async (req: Request, res: Response) => {
     const sendAll = async () => {
       let sentCount = 0;
       let failedCount = 0;
+      let skippedTierLimit = 0;
       const now = new Date().toISOString();
 
+      // Compute throughput from queue size + volume headroom against the
+      // tier limit so we drain large queues fast (30 MPS) without exceeding
+      // WhatsApp's unique-customer-per-day cap.
+      const usage = getOutboundUsage(instance.id, req.client!.id);
+      const candidatePhones = recipients.map((r) => r.phone);
+      const wouldBeNew = newInitiationsInBatch(instance.id, req.client!.id, candidatePhones);
+      const remainingTierHeadroom = usage.tier === 4
+        ? Number.POSITIVE_INFINITY
+        : Math.max(0, usage.tierLimit - usage.uniqueInitiationsToday);
+      const safeNew = Math.min(wouldBeNew, remainingTierHeadroom);
+
+      const mps = getSendThroughputMps(recipients.length);
+      const pacer = new SendPacer(mps);
+      console.log(`[campaigns] ${campaign.id}: queue=${recipients.length} new=${wouldBeNew} safeNew=${safeNew} tier=${usage.tier} mps=${mps}`);
+
+      let newSentSoFar = 0;
       for (const recipient of recipients) {
+        // Volume gate: if this recipient would be a NEW initiation and we've
+        // hit the daily tier headroom, skip it. Already-initiated contacts
+        // still get through (they don't count toward the daily unique cap).
+        const isNewInitiation = !db.prepare(`
+          SELECT 1 FROM inbox_messages
+          WHERE instance_id = ? AND chat_id = ? AND direction = 'outgoing'
+            AND timestamp >= datetime('now', '-24 hours')
+          LIMIT 1
+        `).get(String(instance.id), recipient.phone);
+
+        if (isNewInitiation && newSentSoFar >= safeNew) {
+          db.prepare("UPDATE campaign_recipients SET status = 'skipped_tier_limit', error_message = ? WHERE id = ?")
+            .run(`Daily tier-${usage.tier} unique-customer limit (${usage.tierLimit}) reached`, recipient.id);
+          skippedTierLimit++;
+          continue;
+        }
+
         const result = await dispatchCampaignMessage(ctx, {
           recipientId: recipient.id,
           to: recipient.phone,
@@ -95,13 +131,14 @@ router.post('/send', clientJwtAuth, async (req: Request, res: Response) => {
           db.prepare("UPDATE campaign_recipients SET status = 'sent', sent_at = ?, error_message = NULL WHERE id = ?")
             .run(now, recipient.id);
           sentCount++;
+          if (isNewInitiation) newSentSoFar++;
         } else {
           db.prepare("UPDATE campaign_recipients SET status = 'failed', failed_at = ?, error_message = ? WHERE id = ?")
             .run(now, result.error || 'unknown', recipient.id);
           failedCount++;
         }
-        // Pace sends to respect the per-client msg/min rate limit.
-        await new Promise(r => setTimeout(r, 500));
+        // Dynamic throughput: 10 MPS normally, 30 MPS for queues ≥ 5000.
+        await pacer.waitForSlot();
       }
 
       db.prepare(`
@@ -127,6 +164,9 @@ router.post('/send', clientJwtAuth, async (req: Request, res: Response) => {
         recipients: recipients.length,
         estimated_tokens: totalCost,
         mode: 'per_send_charged',
+        throughput_mps: getSendThroughputMps(recipients.length),
+        tier: getOutboundUsage(instance.id, req.client!.id).tier,
+        would_be_new_initiations: newInitiationsInBatch(instance.id, req.client!.id, recipients.map((r) => r.phone)),
       },
     });
   } catch (err: unknown) {

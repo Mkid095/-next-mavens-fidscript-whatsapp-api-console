@@ -9,6 +9,7 @@ import { resolveConversation } from '../modules/customers/index.js';
 import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
 import { syncGroupsForInstance, getGroupParticipantName } from '../services/whatsapp/groupSync.js';
 import type { Instance } from '../types.js';
+import { cleanupPhonebookForInstance } from '../services/whatsapp/phonebook.js';
 
 const router = Router();
 
@@ -102,6 +103,15 @@ router.post('/evolution', async (req: Request, res: Response) => {
       syncGroupsForInstance(instance, instance.client_id).catch(err =>
         console.error('[webhook] group sync failed:', err)
       );
+    } else if (status === 'disconnected') {
+      // Disconnect: drop WhatsApp-synced contacts for this instance. Manual
+      // contacts (instance_id NULL) are preserved untouched. Best-effort.
+      try {
+        const removed = cleanupPhonebookForInstance(String(instance.id), instance.client_id);
+        if (removed > 0) console.log(`[webhook] phonebook cleanup: removed ${removed} synced contacts for ${instance.name}`);
+      } catch (err) {
+        console.error('[webhook] phonebook cleanup failed:', err);
+      }
     }
 
     res.status(200).json({ success: true, handled: true });

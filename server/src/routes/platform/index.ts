@@ -15,6 +15,8 @@ import segmentsRoutes from './segments.js';
 import webhooksRoutes from './webhooks.js';
 import auditRoutes from './audit.js';
 import developerLogsRoutes from './developerLogs.js';
+import chatMirrorRoutes from './chatMirror.js';
+import phonebookRoutes from './phonebook.js';
 import { workspaceAuth } from '../../modules/platform/workspace/index.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 
@@ -43,5 +45,8 @@ router.use('/segments', segmentsRoutes);
 router.use('/webhooks', webhooksRoutes);
 router.use('/audit', auditRoutes);
 router.use('/developer-logs', developerLogsRoutes);
+router.use('/chats', chatMirrorRoutes);
+router.use('/profile-pic', chatMirrorRoutes);
+router.use('/phonebook', phonebookRoutes);
 
 export default router;

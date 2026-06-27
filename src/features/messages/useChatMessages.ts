@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { dataEvents } from '../../data';
 import { messagesApi, type MirrorMessage } from './messagesApi';
+import { scheduleRefresh } from './useSharedRefreshGate';
 
-// Live thread for one (instance, jid). Refreshes on SSE events. Exposes
-// optimisticAppend so the composer can show the outgoing bubble instantly;
-// the refresh reconciles with Evolution (dedup by id) so the echo replaces it.
+// Live thread for one (instance, jid). SSE-driven refreshes are coalesced
+// through the shared gate so message storms don't burst the chat mirror
+// (10/sec backend cap; the gate also protects Evolution from thundering-herd
+// find-messages calls).
 export function useChatMessages(instanceName: string | null, jid: string | null) {
   const [messages, setMessages] = useState<MirrorMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,7 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
 
   useEffect(() => {
     if (!instanceName || !jid) return;
-    const off = dataEvents.on('*', () => { void refresh(); });
+    const off = dataEvents.on('*', () => scheduleRefresh(() => { void refresh(); }));
     return off;
   }, [instanceName, jid, refresh]);
 

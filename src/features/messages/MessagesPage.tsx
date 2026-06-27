@@ -1,23 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Inbox } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Inbox, Users, RefreshCw } from 'lucide-react';
 import type { Instance } from '../../services/api';
 import { useChatList } from './useChatList';
 import { useChatMessages } from './useChatMessages';
 import ChatListPane from './ChatListPane';
 import ChatThread from './ChatThread';
 import NewChatModal from './NewChatModal';
+import OutboundUsageIndicator from './OutboundUsageIndicator';
+import { messagesApi } from './messagesApi';
 import type { ChatListItem } from './messagesApi';
 
-// MessagesPage — the WhatsApp-Web-style 2-pane shell. Owns the selected
-// instance (defaults to the first connected) and the selected chat. The hooks
-// fetch live from Evolution; sending goes through the existing client-JWT path.
+// MessagesPage — WhatsApp-Web 2-pane shell. Owns the selected instance and
+// the selected chat. Container switching fully resets the thread so chats
+// never bleed across instances. Reads are debounced + capped (10/sec
+// backend) and outbound volume is tracked + displayed (Tier 0 = 250/day).
+
 interface MessagesPageProps {
   instances: Instance[];
 }
 
 function pickDefaultInstance(instances: Instance[]): Instance | null {
-  const connected = instances.find((i) => i.status === 'connected');
-  return connected ?? instances[0] ?? null;
+  return instances.find((i) => i.status === 'connected') ?? instances[0] ?? null;
 }
 
 export default function MessagesPage({ instances }: MessagesPageProps) {
@@ -25,13 +28,21 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
   const [search, setSearch] = useState('');
   const [selectedJid, setSelectedJid] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
+  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
+  const [syncMessage, setSyncMessage] = useState<string>('');
 
-  // Keep the selected instance valid if the instances list updates.
   useEffect(() => {
     if (!instance) { setInstance(pickDefaultInstance(instances)); return; }
     const stillThere = instances.find((i) => i.id === instance.id);
-    if (!stillThere) setInstance(pickDefaultInstance(instances));
+    if (!stillThere) { setSelectedJid(null); setInstance(pickDefaultInstance(instances)); }
   }, [instances, instance]);
+
+  const switchInstance = useCallback((next: Instance | null) => {
+    setSelectedJid(null);
+    setSyncState('idle');
+    setSyncMessage('');
+    setInstance(next);
+  }, []);
 
   const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null);
   const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(instance?.name ?? null, selectedJid);
@@ -43,6 +54,23 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
       lastMessage: '', lastMessageAt: null, unread: 0, profilePic: null,
     };
   }, [chats, selectedJid]);
+
+  const handleSyncPhonebook = useCallback(async () => {
+    if (!instance || syncState === 'syncing') return;
+    setSyncState('syncing');
+    setSyncMessage('');
+    const res = await messagesApi.syncPhonebook(instance.name);
+    if (res.success && res.data) {
+      setSyncState('done');
+      setSyncMessage(`Synced ${res.data.synced} contacts (${res.data.removed} removed)`);
+      void refreshChats();
+      setTimeout(() => setSyncState('idle'), 4000);
+    } else {
+      setSyncState('error');
+      setSyncMessage(res.error || 'Sync failed');
+      setTimeout(() => setSyncState('idle'), 6000);
+    }
+  }, [instance, syncState, refreshChats]);
 
   if (instances.length === 0) {
     return (
@@ -56,7 +84,6 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
     );
   }
 
-  const threadOpen = !!selectedJid;
   const onSend = (optimistic: import('./messagesApi').MirrorMessage) => {
     optimisticAppend(optimistic);
     void refreshChats();
@@ -64,7 +91,7 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm">
-      <header className="flex items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-2.5">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 bg-white px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Inbox size={16} className="text-[#181711]" />
           <h1 className="text-sm font-semibold text-stone-800">Messages</h1>
@@ -73,19 +100,46 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
               {instance.status}
             </span>
           )}
+          <OutboundUsageIndicator instanceName={instance?.name ?? null} />
         </div>
-        {instances.length > 1 && (
-          <select
-            value={instance?.id ?? ''}
-            onChange={(e) => { setSelectedJid(null); setInstance(instances.find((i) => i.id === e.target.value) ?? null); }}
-            className="appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 pr-7 text-xs text-stone-700 outline-none focus:border-[#eab308]"
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => void handleSyncPhonebook()}
+            disabled={!instance || instance.status !== 'connected' || syncState === 'syncing'}
+            title="Sync WhatsApp phonebook (one-way: pulls contacts into your saved list)"
+            className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
           >
-            {instances.map((i) => (
-              <option key={i.id} value={i.id}>{i.name}{i.status === 'connected' ? ' · connected' : ''}</option>
-            ))}
-          </select>
-        )}
+            <Users size={12} className={syncState === 'syncing' ? 'animate-pulse' : ''} />
+            {syncState === 'syncing' ? 'Syncing…' : 'Sync contacts'}
+          </button>
+          {instances.length > 1 && (
+            <select
+              value={instance?.id ?? ''}
+              onChange={(e) => switchInstance(instances.find((i) => i.id === e.target.value) ?? null)}
+              className="appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 pr-7 text-xs text-stone-700 outline-none focus:border-[#eab308]"
+            >
+              {instances.map((i) => (
+                <option key={i.id} value={i.id}>{i.name}{i.status === 'connected' ? ' · connected' : ''}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </header>
+
+      {syncMessage && (
+        <div className={`border-b px-4 py-1.5 text-[11px] ${
+          syncState === 'error' ? 'border-red-200 bg-red-50 text-red-700'
+            : syncState === 'done' ? 'border-green-200 bg-green-50 text-green-700'
+            : 'border-stone-200 bg-stone-50 text-stone-600'
+        }`}>
+          {syncMessage}
+          {syncState === 'done' && (
+            <button onClick={() => setSyncState('idle')} className="ml-2 text-stone-400 hover:text-stone-700" aria-label="Dismiss">
+              <RefreshCw size={10} className="inline" />
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="flex min-h-0 flex-1">
         <ChatListPane
@@ -98,7 +152,8 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
           onSelect={(c) => setSelectedJid(c.jid)}
           onNewChat={() => setShowNewChat(true)}
           instanceName={instance?.name ?? ''}
-          hiddenOnMobile={threadOpen}
+          hiddenOnMobile={!!selectedJid}
+          onRetry={() => void refreshChats()}
         />
         <ChatThread
           chat={selected}
@@ -106,7 +161,7 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
           messages={messages}
           loading={msgLoading}
           error={msgError}
-          isMobileListVisible={!threadOpen}
+          isMobileListVisible={!selectedJid}
           onBack={() => setSelectedJid(null)}
           onSend={onSend}
         />

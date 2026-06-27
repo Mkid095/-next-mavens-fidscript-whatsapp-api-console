@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { dataEvents } from '../../data';
 import { messagesApi, type ChatListItem } from './messagesApi';
+import { scheduleRefresh } from './useSharedRefreshGate';
 
-// Live chat list for one instance. Refreshes on SSE message events, window
-// focus, and a light 30s poll so the preview + unread counts stay fresh.
+// Live chat list for one instance. SSE-driven refreshes are coalesced + rate-
+// limited through the shared gate (10/sec backend cap, but the frontend
+// debounces SSE bursts to avoid hammering Evolution on message storms).
 export function useChatList(instanceName: string | null) {
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,10 +25,10 @@ export function useChatList(instanceName: string | null) {
 
   useEffect(() => {
     if (!instanceName) return;
-    const off = dataEvents.on('*', () => { void refresh(); });
-    const onFocus = () => { void refresh(); };
+    const off = dataEvents.on('*', () => scheduleRefresh(() => { void refresh(); }));
+    const onFocus = () => scheduleRefresh(() => { void refresh(); });
     window.addEventListener('focus', onFocus);
-    const poll = setInterval(() => { void refresh(); }, 30000);
+    const poll = setInterval(() => scheduleRefresh(() => { void refresh(); }), 30000);
     return () => { off(); window.removeEventListener('focus', onFocus); clearInterval(poll); };
   }, [instanceName, refresh]);
 
