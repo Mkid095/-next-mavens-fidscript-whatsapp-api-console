@@ -59,27 +59,37 @@ fidscript-whatsapp/
 ### Production Paths
 | Path | Purpose |
 |------|---------|
-| `/var/www/whatsapp.nextmavens.cloud` | Nginx root — where frontend is served from |
+| `/home/ken/fidscript-deploy/installer/docker/whatsapp-frontend.dist` | **Live frontend root** — bind-mounted into the `fidscript_whatsapp_frontend` nginx container (`/usr/share/nginx/html`). Run `deploy.sh` to sync here. Do NOT use `/var/www/whatsapp.nextmavens.cloud` (unused). |
+| `/home/ken/fidscript-deploy/installer/docker/whatsapp-frontend.conf` | Live nginx config (SPA routing + cache headers). Single-file bind-mount — after editing, restart the container to pick up changes (new inode). |
+| `/home/ken/fidscript-deploy/installer/docker/docker-compose.yml` | Docker stack for Traefik + frontend nginx + backend containers |
 | `/home/ken/fidscript-whatsapp/server` | PM2 working dir |
 | `/home/ken/fidscript-whatsapp/server/dist` | Compiled backend (server/) |
 | `/home/ken/fidscript-whatsapp/server/fidscript.db` | Runtime SQLite DB (gitignored) |
 | `/home/ken/fidscript-whatsapp/server/ecosystem.config.cjs` | PM2 config (gitignored, modified at deploy time) |
 
+### Production Architecture
+- **Traefik** (`fidscript_traefik`) owns ports 80/443, terminates TLS (Let's Encrypt), and routes via file provider (`/etc/traefik/dynamic.yml`):
+  - `whatsapp.fidscript.com/` → `fidscript_whatsapp_frontend` (nginx, static SPA + `/api/` proxy)
+  - `whatsapp.fidscript.com/api/` + `api.whatsapp.fidscript.com` → `fidscript-whatsapp-api:3099` (Express)
+- **Frontend nginx** (`fidscript_whatsapp_frontend`) serves the built SPA from the bind-mounted `.dist` dir; it also proxies `/api/` to the backend. Conf is a single-file bind mount (restart container after editing).
+- After a frontend deploy, browsers must fetch the new `index.html` — it's served `no-cache` so stale bundle hashes can't strand users on a blank page.
+
 ### Production Frontend Build
 ```bash
-npm run build   # Outputs to dist/, then synced to /var/www/whatsapp.nextmavens.cloud
+npm run build   # Outputs to dist/, then synced to whatsapp-frontend.dist by deploy.sh
 ```
 
 ### Backend Start
 ```bash
-cd server && npm run dev  # Uses tsx loader
+cd server && npm run dev  # Uses tsx loader (local dev only)
 ```
 
 ### Production
-- Frontend served by **nginx** from `/var/www/whatsapp.nextmavens.cloud`
-- Backend runs on **PM2** (process name: `fidscript-api`) in `/home/ken/fidscript-whatsapp/server`
-- Evolution API (WhatsApp gateway) runs separately on port 8080
-- **ecosystem.config.cjs and fidscript.db are gitignored** — do not commit them
+- Frontend served by the **`fidscript_whatsapp_frontend` nginx container** from the bind-mounted `whatsapp-frontend.dist` dir
+- Backend runs in **Docker** (`fidscript-whatsapp-api`, port 3099 internal) — reached via Traefik/nginx, not bound on the host. PM2 is **no longer used**.
+- **Traefik** (`fidscript_traefik`) owns host ports 80/443, terminates TLS, and routes by Host header
+- Evolution API (`nextmavens_evolution`, WhatsApp gateway) runs on 127.0.0.1:8080
+- **fidscript.db and ecosystem.config.cjs are gitignored** — do not commit them
 
 ### Smart Deployment Script
 ```bash
@@ -93,8 +103,8 @@ bash deploy.sh   # Full workflow: pull → detect → build → sync → restart
 2. Pulls from GitHub (`git pull origin main`)
 3. Detects changes using `git diff --name-only HEAD~1`
 4. Rebuilds changed components (frontend, backend, or both) — **always cleans dist/ before rebuild**
-5. Syncs frontend `dist/` to nginx root (`/var/www/whatsapp.nextmavens.cloud`)
-6. Restarts PM2 process `fidscript-api`
+5. Syncs frontend `dist/` to the docker nginx root (`whatsapp-frontend.dist`) and reloads nginx
+6. Rebuilds backend and restarts the `fidscript-whatsapp-api` Docker container
 7. Records deployment to `deploy_versions` DB table
 8. Logs everything to `deploy.log`
 

@@ -349,11 +349,24 @@ build_frontend() {
     log_info "Building frontend..."
     rm -rf "${SCRIPT_DIR}/dist" && npm run build 2>&1 | tee -a "${LOG_FILE}"
 
-    # Sync built files to nginx root — this is where the frontend is served from
-    local nginx_root="/var/www/whatsapp.nextmavens.cloud"
+    # Sync built files to the docker-mounted nginx root.
+    # The live frontend is served by the fidscript_whatsapp_frontend nginx container,
+    # which bind-mounts this directory read-only into /usr/share/nginx/html.
+    # (Do NOT use /var/www/whatsapp.nextmavens.cloud — that path is unused since the
+    # host-nginx setup was replaced by the docker nginx container.)
+    local nginx_root="/home/ken/fidscript-deploy/installer/docker/whatsapp-frontend.dist"
     log_info "Syncing dist/ to ${nginx_root}..."
-    rm -rf "${nginx_root}"/* && cp -r "${SCRIPT_DIR}/dist"/* "${nginx_root}/"
+    mkdir -p "${nginx_root}"
+    rsync -a --delete "${SCRIPT_DIR}/dist/" "${nginx_root}/"
     log_success "Frontend synced to nginx root."
+
+    # Reload nginx so any conf changes take effect (no-op if conf unchanged)
+    if docker ps --format '{{.Names}}' | grep -q '^fidscript_whatsapp_frontend$'; then
+        docker exec fidscript_whatsapp_frontend nginx -t 2>/dev/null \
+            && docker exec fidscript_whatsapp_frontend nginx -s reload 2>/dev/null \
+            && log_success "nginx reloaded." \
+            || log_warn "nginx reload skipped (test failed or container unavailable)."
+    fi
 }
 
 build_backend() {
@@ -364,33 +377,28 @@ build_backend() {
 }
 
 restart_backend() {
-    log_info "Restarting backend service via PM2..."
+    # Backend runs in Docker (container fidscript-whatsapp-api). /app/dist is baked
+    # into the image, so we copy the freshly built dist into the running container,
+    # then restart it to load the new code. The DB is bind-mounted separately.
+    local container="fidscript-whatsapp-api"
 
-    if command -v pm2 >/dev/null 2>&1; then
-        local deploy_version
-        deploy_version=$(git describe --tags 2>/dev/null || echo "1.0.0")
-        local commit_hash
-        commit_hash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-        local deployed_at
-        deployed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+        log_error "Backend container '${container}' is not running. Aborting backend restart."
+        return 1
+    fi
 
-        # Update ecosystem config with current deploy info
-        cd "${SCRIPT_DIR}/server"
-        node -e "
-const fs = require('fs');
-const config = fs.readFileSync('ecosystem.config.cjs', 'utf8');
-const updated = config.replace(/DEPLOY_VERSION: '[^']*'/g, \"DEPLOY_VERSION: '${deploy_version}'\")
-                       .replace(/DEPLOY_COMMIT_HASH: '[^']*'/g, \"DEPLOY_COMMIT_HASH: '${commit_hash}'\")
-                       .replace(/DEPLOY_DEPLOYED_AT: '[^']*'/g, \"DEPLOY_DEPLOYED_AT: '${deployed_at}'\");
-fs.writeFileSync('ecosystem.config.cjs', updated);
-console.log('Ecosystem config updated with v${deploy_version} (${commit_hash})');
-"
-        cd "${SCRIPT_DIR}"
+    log_info "Copying new dist into ${container}..."
+    docker cp "${SCRIPT_DIR}/server/dist/." "${container}:/app/dist/" 2>&1 | tee -a "${LOG_FILE}"
 
-        pm2 restart fidscript-api 2>&1 | tee -a "${LOG_FILE}"
-        log_success "Backend service restarted."
+    log_info "Restarting ${container}..."
+    docker restart "${container}" 2>&1 | tee -a "${LOG_FILE}"
+    sleep 2
+
+    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+        log_success "Backend container restarted."
     else
-        log_warn "PM2 not found. Backend restart skipped."
+        log_error "Backend container failed to start after restart."
+        return 1
     fi
 }
 
