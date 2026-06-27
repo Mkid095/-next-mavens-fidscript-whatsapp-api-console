@@ -13,6 +13,7 @@ import { normalizePhone } from '../../utils/phone.js';
 import { parseIncomingMessage } from '../../utils/messageParser.js';
 import { findChats, findMessages, profilePicUrl } from './chats.js';
 import { getCachedGroupInfo, getGroupParticipantName } from './groupSync.js';
+import { paceEvolutionCall } from './evolutionCallLimiter.js';
 import type { SendContext, SendResult } from './shared.js';
 
 type Rec = Record<string, unknown>;
@@ -100,6 +101,7 @@ function previewText(lastMsg: Rec | null): string {
 
 /** POST /chat/findChats → clean chat list, newest first. */
 export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
+  await paceEvolutionCall(ctx.instance.id); // pace Evolution→WhatsApp
   const result = await findChats(ctx);
   if (!result.ok) return result;
 
@@ -136,6 +138,7 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
 
 /** POST /chat/findMessages → clean thread (oldest→newest), capped at 200. */
 export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendResult> {
+  await paceEvolutionCall(ctx.instance.id); // pace Evolution→WhatsApp
   const result = await findMessages(ctx, { where: { remoteJid: jid } });
   if (!result.ok) return result;
 
@@ -183,6 +186,7 @@ export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendR
 
 /** POST /chat/fetchProfilePictureUrl → the URL string (or null). */
 export async function mirrorProfilePic(ctx: SendContext, number: string): Promise<SendResult> {
+  await paceEvolutionCall(ctx.instance.id); // pace Evolution→WhatsApp
   const result = await profilePicUrl(ctx, number);
   if (!result.ok) return result;
   const d = rec(result.data);

@@ -10,6 +10,9 @@ import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered 
 import { syncGroupsForInstance, getGroupParticipantName } from '../services/whatsapp/groupSync.js';
 import type { Instance } from '../types.js';
 import { cleanupPhonebookForInstance } from '../services/whatsapp/phonebook.js';
+import { mirrorChatList } from '../services/whatsapp/chatMirror.js';
+import { clearEvolutionPacer } from '../services/whatsapp/evolutionCallLimiter.js';
+import type { SendContext } from '../services/whatsapp/shared.js';
 
 const router = Router();
 
@@ -103,12 +106,28 @@ router.post('/evolution', async (req: Request, res: Response) => {
       syncGroupsForInstance(instance, instance.client_id).catch(err =>
         console.error('[webhook] group sync failed:', err)
       );
+      // Background warm-up: one paced find-chats through the Evolution call
+      // limiter. This validates the connection, surfaces any Evolution issue
+      // immediately (vs. only at first UI load), and ensures the initial
+      // Evolution→WhatsApp call is paced — protecting the account from
+      // being blocked by a fresh container "sinking" all chats at once.
+      const warmCtx: SendContext = {
+        instance,
+        client: { id: instance.client_id } as SendContext['client'],
+        req: { headers: {} } as SendContext['req'],
+      };
+      mirrorChatList(warmCtx).then((r) => {
+        const data = r.ok ? (r.data as { chats?: unknown[] } | undefined) : undefined;
+        const count = data?.chats?.length ?? 0;
+        console.log(`[webhook] warm-up find-chats ok for ${instance.name}: ${count} chats (paced via Evolution limiter)`);
+      }).catch(err => console.error('[webhook] warm-up find-chats failed:', err));
     } else if (status === 'disconnected') {
       // Disconnect: drop WhatsApp-synced contacts for this instance. Manual
       // contacts (instance_id NULL) are preserved untouched. Best-effort.
       try {
         const removed = cleanupPhonebookForInstance(String(instance.id), instance.client_id);
         if (removed > 0) console.log(`[webhook] phonebook cleanup: removed ${removed} synced contacts for ${instance.name}`);
+        clearEvolutionPacer(String(instance.id));
       } catch (err) {
         console.error('[webhook] phonebook cleanup failed:', err);
       }

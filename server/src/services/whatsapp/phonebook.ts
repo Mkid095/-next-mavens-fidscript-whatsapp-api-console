@@ -15,6 +15,7 @@ import db from '../../database.js';
 import { normalizePhone } from '../../utils/phone.js';
 import { findContacts } from './chats.js';
 import { type SendContext, evolutionNameOf } from './shared.js';
+import { paceEvolutionCall } from './evolutionCallLimiter.js';
 import type { Instance } from '../../types.js';
 
 type Rec = Record<string, unknown>;
@@ -54,6 +55,7 @@ export async function syncPhonebookForInstance(
     req: { headers: {} } as SendContext['req'],
   };
 
+  await paceEvolutionCall(instance.id); // pace Evolution→WhatsApp
   const result = await findContacts(ctx);
   if (!result.ok) return { synced: 0, removed: 0, error: result.error };
 
