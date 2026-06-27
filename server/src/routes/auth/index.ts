@@ -4,6 +4,7 @@ import clientMeRouter from './clientMe.js';
 import clientTokensRouter from './clientTokens.js';
 import magicAuthRouter from './magicAuth.js';
 import clientMagicAuthRouter from './clientMagicAuth.js';
+import meRouter from './me.js';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ const magicLimiter = rateLimit({
 
 router.use('/', clientMeRouter);
 router.use('/', clientTokensRouter);
+router.use('/', meRouter);
 router.use('/', magicLimiter, magicAuthRouter);
 router.use('/', magicLimiter, clientMagicAuthRouter);
 
