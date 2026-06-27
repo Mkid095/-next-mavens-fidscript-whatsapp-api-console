@@ -12,6 +12,8 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  /** HTTP status from the underlying fetch. Undefined on network failure. */
+  status?: number;
 }
 
 export interface PaginatedResponse<T = unknown> extends ApiResponse<T> {
@@ -53,9 +55,10 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
-      return { success: false, error: `Unexpected response: ${response.status} ${text.substring(0, 100)}` };
+      return { success: false, status: response.status, error: `Unexpected response: ${response.status} ${text.substring(0, 100)}` };
     }
-    return (await response.json()) as ApiResponse<T>;
+    const body = (await response.json()) as ApiResponse<T>;
+    return { ...body, status: response.status };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Network error' };
   }

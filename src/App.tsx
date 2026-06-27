@@ -57,7 +57,10 @@ function AppContent() {
       authApi.me().then((res) => {
         if (res.success && res.data) {
           setCurrentUser({ email: res.data.email, role: 'admin', name: res.data.name });
-        } else {
+        } else if (res.status === 401) {
+          // Only a real auth failure invalidates the session — network blips
+          // and 5xx must NOT clear the token, or one transient backend hiccup
+          // would force the admin back to /login.
           localStorage.removeItem('fidscript_admin_token');
         }
         setIsLoading(false);
@@ -70,7 +73,7 @@ function AppContent() {
           if (instRes.success && instRes.data) {
             setClientInstances(instRes.data);
           }
-        } else {
+        } else if (meRes.status === 401) {
           localStorage.removeItem('fidscript_client_token');
         }
         setIsLoading(false);
