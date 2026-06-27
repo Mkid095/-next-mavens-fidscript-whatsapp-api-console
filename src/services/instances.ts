@@ -158,4 +158,10 @@ export const instancesApi = {
       method: 'POST',
       body: JSON.stringify(settings),
     }),
+
+  syncGroups: (name: string) =>
+    fetchApi<{ success: boolean; synced: number; errors: number }>(
+      `/api/instance/syncGroups/${name}`,
+      { method: 'POST' }
+    ),
 };

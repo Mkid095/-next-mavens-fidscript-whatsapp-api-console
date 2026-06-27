@@ -44,6 +44,12 @@ export const contactsApi = {
     }),
 
   delete: (id: string) => fetchApi<void>(`/api/contacts/${id}`, { method: 'DELETE' }),
+
+  update: (id: string, data: { name?: string; phone?: string; tags?: string }) =>
+    fetchApi<void>(`/api/contacts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
 };
 
 export const clientMessagesApi = {

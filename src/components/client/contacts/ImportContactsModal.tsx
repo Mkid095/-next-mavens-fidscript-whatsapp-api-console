@@ -82,6 +82,7 @@ function detectCountry(text: string): string {
 export default function ImportContactsModal({ onClose, onContactsImported, existingPhones }: ImportContactsModalProps) {
   const [importText, setImportText] = useState('');
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
   const [selectedCountry, setSelectedCountry] = useState('+254');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState('');
@@ -176,24 +177,37 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
   const handleImport = async () => {
     if (preview.length === 0) return;
     const toImport = preview.filter(p => !p.isDuplicate);
-    const skipped = preview.length - toImport.length;
+    const BATCH_SIZE = 50;
     setImporting(true);
     setError('');
+    setImportProgress(0);
     try {
-      const contacts = toImport.map(p => ({ phone: p.normalized, name: p.name }));
-      const res = await contactsApi.importBatch(contacts);
-      if (res.success) {
-        const newContacts = contacts.map((c, i) => ({
-          id: `contact-${Date.now()}-${i}`,
-          phone: c.phone,
-          name: c.name,
-          created_at: new Date().toISOString(),
-        }));
-        onContactsImported(newContacts);
-        onClose();
-      } else {
-        setError(res.error || 'Import failed');
+      const allContacts = toImport.map(p => ({ phone: p.normalized, name: p.name }));
+      const batches: typeof allContacts[] = [];
+      for (let i = 0; i < allContacts.length; i += BATCH_SIZE) {
+        batches.push(allContacts.slice(i, i + BATCH_SIZE));
       }
+
+      let totalImported = 0;
+      for (let i = 0; i < batches.length; i++) {
+        const res = await contactsApi.importBatch(batches[i]);
+        if (!res.success) {
+          setError(res.error || `Import failed on batch ${i + 1}`);
+          setImporting(false);
+          return;
+        }
+        totalImported += batches[i].length;
+        setImportProgress(Math.round((totalImported / allContacts.length) * 100));
+      }
+
+      const newContacts = allContacts.map((c, i) => ({
+        id: `contact-${Date.now()}-${i}`,
+        phone: c.phone,
+        name: c.name,
+        created_at: new Date().toISOString(),
+      }));
+      onContactsImported(newContacts);
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed');
     } finally {
@@ -339,12 +353,28 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
           </div>
         )}
 
+        {/* Progress bar for large imports */}
+        {importing && importProgress > 0 && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-stone-500">
+              <span>Importing contacts…</span>
+              <span className="font-bold text-forest-deep">{importProgress}%</span>
+            </div>
+            <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-forest-deep rounded-full transition-all duration-300"
+                style={{ width: `${importProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         <button
           onClick={handleImport}
           disabled={preview.length === 0 || importing}
           className="w-full bg-forest-deep hover:bg-[#33301a] text-white py-2.5 rounded-xl text-xs font-bold disabled:opacity-40 transition-all"
         >
-          {importing ? 'Importing...' : `Import ${preview.filter(p => !p.isDuplicate).length} Contacts${preview.some(p => p.isDuplicate) ? ` (${preview.filter(p => p.isDuplicate).length} skipped)` : ''}`}
+          {importing ? 'Importing…' : `Import ${preview.filter(p => !p.isDuplicate).length} Contacts${preview.some(p => p.isDuplicate) ? ` (${preview.filter(p => p.isDuplicate).length} skipped)` : ''}`}
         </button>
       </motion.div>
     </div>

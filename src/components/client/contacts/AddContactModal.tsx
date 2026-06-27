@@ -55,15 +55,18 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
       setError('Phone number is required');
       return;
     }
+    // Build international format (same as server-side normalizePhone does for Kenya)
     const fullPhone = selectedCountry + phoneDigits;
-    const normalized = phoneDigits;
-    if (existingPhones?.has(normalized) || existingPhones?.has(fullPhone)) {
+    // existingPhones contains digits-only numbers (stripped of '+') — strip our input the same way
+    const digitsOnly = (selectedCountry.replace('+', '') + phoneDigits).replace(/\D/g, '');
+    if (existingPhones?.has(digitsOnly)) {
       setError('This phone number is already in your contacts.');
       return;
     }
     setSaving(true);
     setError('');
     try {
+      // Send in international format — server will normalize it consistently
       const res = await contactsApi.importBatch([{ phone: fullPhone, name: name.trim(), tags: tags.trim() }]);
       if (res.success) {
         onSaved({

@@ -291,4 +291,62 @@ export function runWorkspaceMigrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_audit_logs_ws ON audit_logs(workspace_id)`);
   // search_index
   db.run(`CREATE INDEX IF NOT EXISTS idx_search_index_ws ON search_index(workspace_id)`);
+
+  // -------------------------------------------------------------------------
+  // Phase 8: Phone number normalization
+  // Ensure all phone numbers are stored in international format with '+' prefix.
+  // This fixes inconsistencies from mixed local (+254...) and international
+  // (254...) formats that caused duplicate conversations for the same contact.
+  // -------------------------------------------------------------------------
+  try {
+    // Normalize contacts.phone: add '+' if missing and it's all-digits
+    const contacts = db.exec("SELECT id, phone FROM contacts WHERE phone NOT LIKE '+%' AND phone GLOB '[0-9]*'");
+    if (contacts.length > 0 && contacts[0].values) {
+      for (const [id, phone] of contacts[0].values as [string, string][]) {
+        const digits = String(phone).replace(/\D/g, '');
+        if (digits.length >= 9) {
+          db.run("UPDATE contacts SET phone = ? WHERE id = ?", [`+${digits}`, id]);
+        }
+      }
+    }
+  } catch (_) { /* ignore */ }
+
+  try {
+    // Normalize conversations.chat_id: add '+' to phone-style identifiers
+    const convs = db.exec("SELECT id, chat_id FROM conversations WHERE chat_id NOT LIKE '+%' AND chat_id NOT LIKE '%@%' AND chat_id GLOB '[0-9]*'");
+    if (convs.length > 0 && convs[0].values) {
+      for (const [id, chat_id] of convs[0].values as [string, string][]) {
+        const digits = String(chat_id).replace(/\D/g, '');
+        if (digits.length >= 9) {
+          db.run("UPDATE conversations SET chat_id = ? WHERE id = ?", [`+${digits}`, id]);
+        }
+      }
+    }
+  } catch (_) { /* ignore */ }
+
+  try {
+    // Normalize inbox_messages.from_number: add '+' to phone-style identifiers
+    const msgs = db.exec("SELECT id, from_number FROM inbox_messages WHERE from_number NOT LIKE '+%' AND from_number NOT LIKE '%@%' AND from_number GLOB '[0-9]*'");
+    if (msgs.length > 0 && msgs[0].values) {
+      for (const [id, from_number] of msgs[0].values as [string, string][]) {
+        const digits = String(from_number).replace(/\D/g, '');
+        if (digits.length >= 9) {
+          db.run("UPDATE inbox_messages SET from_number = ? WHERE id = ?", [`+${digits}`, id]);
+        }
+      }
+    }
+  } catch (_) { /* ignore */ }
+
+  try {
+    // Normalize customer_identifiers.value: same fix for the identifier lookup table
+    const idents = db.exec("SELECT id, value FROM customer_identifiers WHERE value NOT LIKE '+%' AND value NOT LIKE '%@%' AND value GLOB '[0-9]*'");
+    if (idents.length > 0 && idents[0].values) {
+      for (const [id, value] of idents[0].values as [string, string][]) {
+        const digits = String(value).replace(/\D/g, '');
+        if (digits.length >= 9) {
+          db.run("UPDATE customer_identifiers SET value = ? WHERE id = ?", [`+${digits}`, id]);
+        }
+      }
+    }
+  } catch (_) { /* ignore */ }
 }

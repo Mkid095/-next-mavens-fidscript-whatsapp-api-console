@@ -9,6 +9,7 @@ import { runPhase3Migrations } from './phase3.js';
 import { runPhase5Migrations } from './phase5.js';
 import { runPhase6Migrations } from './phase6.js';
 import { runPhase7Migrations } from './phase7.js';
+import { runPhase8Migrations } from './phase8.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,7 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase5Migrations(db);     // campaign type/workspace_id + segments/steps/triggers/media_assets/status_posts skeletons
   runPhase6Migrations(db);     // webhooks + webhook_deliveries + api_logs latency/workspace
   runPhase7Migrations(db);     // P11 airtight: workspace_id on customer_tags/notes/assignments
+  runPhase8Migrations(db);     // Group sync: cached_group_info + cached_participants
   await seedData(db);
   saveDatabase();
 

@@ -7,6 +7,8 @@ import connectionState from './connectionState.js';
 import messaging from './messaging.js';
 import logout from './logout.js';
 import deleteInstance from './delete.js';
+import groupSync from './groupSync.js';
+import chatMirror from './chatMirror.js';
 
 const router = Router();
 
@@ -18,5 +20,7 @@ router.use('/', connectionState);
 router.use('/', messaging);
 router.use('/', logout);
 router.use('/', deleteInstance);
+router.use('/', groupSync);
+router.use('/', chatMirror);
 
 export default router;

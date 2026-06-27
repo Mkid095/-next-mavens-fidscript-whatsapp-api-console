@@ -6,7 +6,7 @@ import WhatsAppContainers from './whatsapp/WhatsAppContainers';
 import ApiKeysSection from './ApiKeysSection';
 import DocsSection from './DocsSection';
 import SandboxSection from './SandboxSection';
-import { InboxPage } from '../../features/inbox';
+import { MessagesPage } from '../../features/messages';
 import CampaignsView from './CampaignsView';
 import ContactsSection from './contacts/ContactsSection';
 import TokenStoreSection from './TokenStoreSection';
@@ -53,11 +53,11 @@ export default function ClientContent({
     );
   }
 
-  // Inbox is a full-height 3-pane surface — render outside the padded wrapper.
+  // Messages is a full-height 2-pane surface — render outside the padded wrapper.
   if (activeSection === 'messages') {
     return (
       <div className="h-[calc(100vh-1rem)] p-2 lg:p-3">
-        <InboxPage instances={instances} onTokenDeduct={onTokenDeduct} />
+        <MessagesPage instances={instances} />
       </div>
     );
   }

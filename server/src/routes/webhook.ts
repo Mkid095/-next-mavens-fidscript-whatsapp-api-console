@@ -7,6 +7,8 @@ import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 import { normalizePhone } from '../utils/phone.js';
 import { resolveConversation } from '../modules/customers/index.js';
 import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
+import { syncGroupsForInstance, getGroupParticipantName } from '../services/whatsapp/groupSync.js';
+import type { Instance } from '../types.js';
 
 const router = Router();
 
@@ -41,8 +43,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
   const decodedName = instanceName ? decodeURIComponent(instanceName) : '';
   const instance = decodedName
     ? (db.prepare(
-        'SELECT id, name, client_id, evolution_name FROM instances WHERE name = ? OR evolution_name = ?'
-      ).get(decodedName, decodedName) as { id: number; name: string; client_id: string; evolution_name?: string } | undefined)
+        'SELECT * FROM instances WHERE name = ? OR evolution_name = ?'
+      ).get(decodedName, decodedName) as (Instance & { client_id: string }) | undefined)
     : undefined;
 
   console.log('[WEBHOOK] event:', event, 'instance:', decodedName, 'instance found:', !!instance);
@@ -93,6 +95,15 @@ router.post('/evolution', async (req: Request, res: Response) => {
     logAuditAction(req, 'CONNECTION_STATE', 'instance', String(instance.id), `Webhook: ${instance.name} -> ${status}`);
     // Emit using instance.name (our DB name) to match SSE subscription
     emitInstanceStateChange(instance.name, status, phoneNumber);
+
+    // When the instance connects for the first time (or reconnects), sync all groups
+    // so they appear in the inbox immediately — like real WhatsApp
+    if (status === 'connected') {
+      syncGroupsForInstance(instance, instance.client_id).catch(err =>
+        console.error('[webhook] group sync failed:', err)
+      );
+    }
+
     res.status(200).json({ success: true, handled: true });
     return;
   }
@@ -109,6 +120,14 @@ router.post('/evolution', async (req: Request, res: Response) => {
       const chatId: string = isGroup ? (remoteJid || '') : (phone || remoteJid);
       const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
       const pushName = data?.pushName as string | undefined;
+
+      // For group messages, try to resolve the sender's name from our cached contacts.
+      // This means if a group member has saved your contact, their messages show your name.
+      let resolvedSenderName: string | undefined = pushName;
+      if (isGroup && phone) {
+        const cachedName = getGroupParticipantName(remoteJid, phone);
+        if (cachedName) resolvedSenderName = cachedName;
+      }
 
       const parsed = parseIncomingMessage(data ?? {});
       const timestamp = new Date().toISOString();
@@ -142,7 +161,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
              conversation_id, customer_id, workspace_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'incoming', ?, ?, ?, ?, ?, ?, ?)
         `).run(
-          msgId, instance.id, instance.client_id, phone || senderJid || '', pushName || '',
+          msgId, instance.id, instance.client_id, phone || senderJid || '', resolvedSenderName || '',
           parsed.messageType, parsed.content, parsed.mediaUrl,
           JSON.stringify(parsed.extra), JSON.stringify(rawBody),
           chatId, isGroup ? 1 : 0,
@@ -165,17 +184,19 @@ router.post('/evolution', async (req: Request, res: Response) => {
           content: parsed.content,
           mediaUrl: parsed.mediaUrl,
           fromNumber: phone || senderJid || '',
-          fromName: pushName || null,
+          fromName: resolvedSenderName || null,
         }).catch(err => console.error('[WEBHOOK] dispatchMessageReceived failed:', err));
       }
 
+      // For direct (non-group) messages, auto-create a contact if unknown
       if (phone && !isGroup) {
-        const existing = db.prepare('SELECT id, name FROM contacts WHERE client_id = ? AND phone = ?').get(instance.client_id, phone) as { id: string; name: string | null } | undefined;
+        const normalizedPhone = normalizePhone(phone) || phone;
+        const existing = db.prepare('SELECT id, name FROM contacts WHERE client_id = ? AND phone = ?').get(instance.client_id, normalizedPhone) as { id: string; name: string | null } | undefined;
         if (!existing) {
           db.prepare('INSERT INTO contacts (id, client_id, phone, name, tags) VALUES (?, ?, ?, ?, ?)')
-            .run(`auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, instance.client_id, phone, pushName || '', 'auto');
-        } else if (pushName && !existing.name) {
-          db.prepare('UPDATE contacts SET name = ? WHERE id = ?').run(pushName, existing.id);
+            .run(`auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, instance.client_id, normalizedPhone, resolvedSenderName || '', 'auto');
+        } else if (resolvedSenderName && !existing.name) {
+          db.prepare('UPDATE contacts SET name = ? WHERE id = ?').run(resolvedSenderName, existing.id);
         }
 
         const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
@@ -185,7 +206,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
         }
       }
 
-      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: pushName || '', message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl, timestamp, chat_id: chatId, is_group: isGroup ? 1 : 0 });
+      emitNewMessage(instance.name, { id: msgId, from_number: phone || senderJid || '', from_name: resolvedSenderName || '', message_type: parsed.messageType, content: parsed.content, media_url: parsed.mediaUrl, timestamp, chat_id: chatId, is_group: isGroup ? 1 : 0 });
       emitInstanceStateChange(instance.name, 'connected', phone || null);
       emitDashboardRefresh(instance.client_id);
     }

@@ -56,6 +56,15 @@ export default function WhatsAppContainers({
     handleClosePairingModal,
   } = useInstanceConnection({ instances, onInstancesChange });
 
+  const handleSyncGroups = async (inst: Instance) => {
+    const res = await instancesApi.syncGroups(inst.name);
+    if (res.success && res.data) {
+      console.info(`[WhatsAppContainers] synced ${res.data.synced} groups for ${inst.name}`);
+    } else {
+      console.error(`[WhatsAppContainers] group sync failed for ${inst.name}:`, res.error);
+    }
+  };
+
   const handleCreateInstance = async (name: string) => {
     const res = await instancesApi.clientCreate({
       name: name.toLowerCase().trim().replace(/[^a-z0-9_-]/g, ''),
@@ -96,6 +105,7 @@ export default function WhatsAppContainers({
                 onDisconnect={handleDisconnect}
                 onDelete={handleDeleteInstance}
                 onSettings={setSettingsInstance}
+                onSyncGroups={handleSyncGroups}
               />
             ))}
           </div>
