@@ -25,32 +25,47 @@ interface ClientRow {
 
 // POST /api/auth/client/request-code — start passwordless sign-up
 router.post('/client/request-code', async (req: Request, res: Response) => {
-  const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
-    return res.status(400).json({ success: false, error: 'Name, email, and phone are required' });
-  }
-  const normalized = email.trim().toLowerCase();
+  try {
+    const { name, email, phone } = req.body;
+    if (!name || !email || !phone) {
+      return res.status(400).json({ success: false, error: 'Name, email, and phone are required' });
+    }
+    const normalized = email.trim().toLowerCase();
 
-  const existing = db.prepare('SELECT id FROM clients WHERE email = ?').get(normalized);
-  if (existing) {
-    return res.status(400).json({ success: false, error: 'An account with this email already exists. Sign in instead.' });
-  }
+    const existing = db.prepare('SELECT id FROM clients WHERE email = ?').get(normalized);
+    if (existing) {
+      return res.status(400).json({ success: false, error: 'An account with this email already exists. Sign in instead.' });
+    }
 
-  const code = createAuthCode(normalized, 'register');
-  if (!code) {
-    return res.status(429).json({ success: false, error: 'Too many code requests. Please wait a few minutes and try again.' });
-  }
+    const code = createAuthCode(normalized, 'register');
+    if (!code) {
+      return res.status(429).json({ success: false, error: 'Too many code requests. Please wait a few minutes and try again.' });
+    }
 
-  const sent = await sendMagicCodeEmail(normalized, code, 'register');
-  if (!sent.success) {
-    return res.status(500).json({ success: false, error: sent.error || 'Failed to send code' });
-  }
+    const sent = await sendMagicCodeEmail(normalized, code, 'register');
+    if (!sent.success) {
+      console.error('[client/request-code] email send failed:', sent.error);
+      return res.status(500).json({ success: false, error: sent.error || 'Failed to send code' });
+    }
 
-  return res.json({ success: true, data: { message: 'Verification code sent to your email.' } });
+    // TEMP DEBUG: ?debug=1 returns the plaintext code (for reproducing 500s). Remove before prod.
+    if (req.query.debug === '1') {
+      return res.json({ success: true, data: { message: 'Verification code sent to your email.', _debug_code: code } });
+    }
+    return res.json({ success: true, data: { message: 'Verification code sent to your email.' } });
+  } catch (err) {
+    console.error('[client/request-code] INTERNAL ERROR:', err);
+    return res.status(500).json({
+      success: false,
+      error: 'Could not send code. Please try again.',
+      detail: err instanceof Error ? err.message : String(err),
+    });
+  }
 });
 
 // POST /api/auth/client/verify-code — verify the code and create the account
 router.post('/client/verify-code', (req: Request, res: Response) => {
+  try {
   const { name, email, phone, code } = req.body;
   if (!name || !email || !phone || !code) {
     return res.status(400).json({ success: false, error: 'Name, email, phone, and code are required' });
@@ -117,6 +132,14 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
       message: 'Account created successfully! You received 500 free tokens to get started.',
     },
   });
+  } catch (err) {
+    console.error('[client/verify-code] INTERNAL ERROR:', err);
+    return res.status(500).json({
+      success: false,
+      error: 'Account creation failed. Please try again or contact support.',
+      detail: err instanceof Error ? err.message : String(err),
+    });
+  }
 });
 
 export default router;
