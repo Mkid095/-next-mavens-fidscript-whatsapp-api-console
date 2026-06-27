@@ -16,8 +16,20 @@ export default function AwardTokensModal({ isOpen, client, onClose, onAwarded }:
   const [error, setError] = useState<string | null>(null);
   // Guard against double-submission from React StrictMode or state cascade
   const submittingRef = useRef(false);
+  // Stable per-modal-session idempotency key: regenerated only when the modal
+  // is opened for a new client, so a double-click of the Award button reuses
+  // the same key and the server returns the cached result with no re-charge.
+  const idempotencyKeyRef = useRef<string>('');
+  if (isOpen && client && idempotencyKeyRef.current === '') {
+    idempotencyKeyRef.current = `award-${client.id}-${(typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36)}`;
+  }
 
-  if (!isOpen || !client) return null;
+  if (!isOpen || !client) {
+    // Reset the idempotency key when the modal fully closes so the next open
+    // for the same (or a different) client gets a fresh key.
+    idempotencyKeyRef.current = '';
+    return null;
+  }
 
   const numAmount = parseInt(amount, 10);
   const isValid = !isNaN(numAmount) && numAmount > 0;
@@ -28,7 +40,7 @@ export default function AwardTokensModal({ isOpen, client, onClose, onAwarded }:
     setSubmitting(true);
     setError(null);
     try {
-      const res = await clientsApi.awardTokens(client.id, numAmount, note.trim() || undefined);
+      const res = await clientsApi.awardTokens(client.id, numAmount, idempotencyKeyRef.current, note.trim() || undefined);
       if (res.success && res.data) {
         onAwarded(client.id, res.data.token_balance);
         setAmount('');

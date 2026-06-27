@@ -79,13 +79,17 @@ export const clientsApi = {
   delete: (id: string) =>
     fetchApi<void>(`/api/clients/${id}`, { method: 'DELETE' }),
 
-  awardTokens: (id: string, amount: number, note?: string) =>
+  awardTokens: (id: string, amount: number, idempotencyKey: string, note?: string) =>
     fetchApi<{ id: string; token_balance: number }>(
       `/api/clients/${id}/award-tokens`,
       {
         method: 'POST',
         body: JSON.stringify({ amount, note }),
-        headers: { 'Idempotency-Key': `award-${id}-${amount}-${Date.now()}` },
+        // Caller MUST pass a stable per-intent key (e.g. a UUID generated when
+        // the award modal opens). A double-click reuses the same key → server
+        // returns the cached result with no re-charge. A new award intent
+        // (re-opening the modal) generates a new key → a fresh credit.
+        headers: { 'Idempotency-Key': idempotencyKey },
       }
     ),
 
