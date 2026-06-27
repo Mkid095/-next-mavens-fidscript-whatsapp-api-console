@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../database.js';
-import { callEvolutionAPI, emitInstanceStateChange, emitNewMessage, emitMessageReceipt, emitPresence } from '../utils/evolution.js';
+import { callGateway, emitInstanceStateChange, emitNewMessage, emitMessageReceipt, emitPresence } from '../utils/gateway.js';
 import { parseIncomingMessage } from '../utils/messageParser.js';
 import { logAuditAction } from '../utils/audit.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
@@ -11,12 +11,12 @@ import { syncGroupsForInstance, getGroupParticipantName } from '../services/what
 import type { Instance } from '../types.js';
 import { cleanupPhonebookForInstance } from '../services/whatsapp/phonebook.js';
 import { mirrorChatList } from '../services/whatsapp/chatMirror.js';
-import { clearEvolutionPacer } from '../services/whatsapp/evolutionCallLimiter.js';
+import { clearWhatsAppPacer } from '../services/whatsapp/whatsappCallLimiter.js';
 import type { SendContext } from '../services/whatsapp/shared.js';
 
 const router = Router();
 
-// Evolution API sends this header to authenticate webhook calls
+// the gateway API sends this header to authenticate webhook calls
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || '94977bc1fcb107c79d0687caea800bdb74edd67b5022771fc85c22ee389ca7e8';
 
 /**
@@ -36,8 +36,8 @@ function extractPhoneFromJid(sender: string): string | null {
 
 /**
  * POST /api/webhook/evolution
- * Receives webhook events from Evolution API (connection.update, messages.upsert, qrcode.updated).
- * No auth needed — this endpoint is only reachable from the Evolution API server
+ * Receives webhook events from the gateway API (connection.update, messages.upsert, qrcode.updated).
+ * No auth needed — this endpoint is only reachable from the the gateway API server
  * (not public internet), since the URL is private and not exposed.
  */
 router.post('/evolution', async (req: Request, res: Response) => {
@@ -83,11 +83,11 @@ router.post('/evolution', async (req: Request, res: Response) => {
       phoneNumber = extractPhoneFromJid(wuid);
     }
 
-    // Fallback: fetch from Evolution API if not in payload
+    // Fallback: fetch from the gateway API if not in payload
     if (!phoneNumber && status === 'connected') {
       try {
         const evoName = instance.evolution_name || decodedName;
-        const evoRes = await callEvolutionAPI('GET', `/instance/connectionState/${evoName}`);
+        const evoRes = await callGateway('GET', `/instance/connectionState/${evoName}`);
         const inst = (evoRes.instance as { state?: string; phone?: string; phone_number?: string } | undefined) || evoRes;
         phoneNumber = (inst?.phone as string | undefined) || (inst?.phone_number as string | undefined) || null;
       } catch {
@@ -106,10 +106,10 @@ router.post('/evolution', async (req: Request, res: Response) => {
       syncGroupsForInstance(instance, instance.client_id).catch(err =>
         console.error('[webhook] group sync failed:', err)
       );
-      // Background warm-up: one paced find-chats through the Evolution call
-      // limiter. This validates the connection, surfaces any Evolution issue
+      // Background warm-up: one paced find-chats through the the gateway call
+      // limiter. This validates the connection, surfaces any the gateway issue
       // immediately (vs. only at first UI load), and ensures the initial
-      // Evolution→WhatsApp call is paced — protecting the account from
+      // the gateway→WhatsApp call is paced — protecting the account from
       // being blocked by a fresh container "sinking" all chats at once.
       const warmCtx: SendContext = {
         instance,
@@ -119,7 +119,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
       mirrorChatList(warmCtx).then((r) => {
         const data = r.ok ? (r.data as { chats?: unknown[] } | undefined) : undefined;
         const count = data?.chats?.length ?? 0;
-        console.log(`[webhook] warm-up find-chats ok for ${instance.name}: ${count} chats (paced via Evolution limiter)`);
+        console.log(`[webhook] warm-up find-chats ok for ${instance.name}: ${count} chats (paced via the gateway limiter)`);
       }).catch(err => console.error('[webhook] warm-up find-chats failed:', err));
     } else if (status === 'disconnected') {
       // Disconnect: drop WhatsApp-synced contacts for this instance. Manual
@@ -127,7 +127,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
       try {
         const removed = cleanupPhonebookForInstance(String(instance.id), instance.client_id);
         if (removed > 0) console.log(`[webhook] phonebook cleanup: removed ${removed} synced contacts for ${instance.name}`);
-        clearEvolutionPacer(String(instance.id));
+        clearWhatsAppPacer(String(instance.id));
       } catch (err) {
         console.error('[webhook] phonebook cleanup failed:', err);
       }

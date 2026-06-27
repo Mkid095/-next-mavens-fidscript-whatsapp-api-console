@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { adminAuth } from '../../middleware/auth.js';
 import type { Client } from '../../types.js';
-import { callEvolutionAPI, generateInstanceToken } from '../../utils/evolution.js';
+import { callGateway, generateInstanceToken } from '../../utils/gateway.js';
 import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
@@ -36,11 +36,11 @@ router.post('/create', adminAuth, async (req: Request, res: Response) => {
       }
     }
 
-    // Create instance in Evolution API if client_id is provided
+    // Create instance in the gateway API if client_id is provided
     let evolutionInstanceName: string | null = null;
     if (client_id) {
       evolutionInstanceName = `${client_id}_${name}`;
-      const evolutionResponse = await callEvolutionAPI('POST', '/instance/create', {
+      const evolutionResponse = await callGateway('POST', '/instance/create', {
         instanceName: evolutionInstanceName,
         integration: 'WHATSAPP-BAILEYS',
         qrcode: true,
@@ -48,13 +48,13 @@ router.post('/create', adminAuth, async (req: Request, res: Response) => {
       if (!evolutionResponse || !evolutionResponse.instance) {
         const errorMsg = typeof evolutionResponse?.response === 'object' && evolutionResponse?.response !== null && 'message' in evolutionResponse.response
           ? (evolutionResponse.response as { message?: string }).message?.[0]
-          : evolutionResponse?.error || 'Failed to create instance in Evolution API';
+          : evolutionResponse?.error || 'Failed to create instance in the gateway API';
         return res.status(400).json({ success: false, error: errorMsg });
       }
 
-      // Set webhook on the Evolution API instance
+      // Set webhook on the the gateway API instance
       const webhookUrl = `${process.env.API_URL || 'https://apiwhatsapp.fidscript.com'}/api/webhook/evolution`;
-      callEvolutionAPI('POST', `/webhook/set/${evolutionInstanceName}`, {
+      callGateway('POST', `/webhook/set/${evolutionInstanceName}`, {
         webhook: {
           enabled: true,
           url: webhookUrl,

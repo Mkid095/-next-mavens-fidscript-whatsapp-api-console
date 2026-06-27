@@ -5,8 +5,8 @@ import { handleConnectionUpdate } from './connection.js';
 import { handleMessagesUpsert } from './messages.js';
 import { handleMessagesReceipt, handlePresenceUpdate } from './receipt.js';
 
-// POST /api/webhook/evolution — Evolution API event ingress.
-// No auth: reachable only from the Evolution server (private URL). Dispatches
+// POST /api/webhook/evolution — the gateway API event ingress.
+// No auth: reachable only from the the gateway server (private URL). Dispatches
 // to per-event handlers; each responds + persists + emits as needed.
 const router = Router();
 

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import db from '../../database.js';
-import { emitInstanceStateChange, emitNewMessage } from '../../utils/evolution.js';
+import { emitInstanceStateChange, emitNewMessage } from '../../utils/gateway.js';
 import { parseIncomingMessage } from '../../utils/messageParser.js';
 import { logAuditAction } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';

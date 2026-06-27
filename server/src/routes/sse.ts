@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../database.js';
 import { verifyToken } from '../middleware/auth/jwt.js';
-import { instanceEmitter } from '../utils/evolution.js';
+import { instanceEmitter } from '../utils/gateway.js';
 import { paymentEmitter } from '../utils/paymentEmitter.js';
 import { dashboardEmitter } from '../utils/dashboardEmitter.js';
 import type { Client } from '../types.js';

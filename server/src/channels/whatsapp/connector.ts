@@ -1,9 +1,9 @@
-import { callEvolutionAPIChecked } from '../../utils/evolution.js';
+import { callGatewayChecked } from '../../utils/gateway.js';
 import { normalizePhone } from '../../utils/phone.js';
 import type { Channel, ChannelMessage, ChannelIdentity } from '../index.js';
 
 // =============================================================================
-// WhatsApp channel — Evolution API v2.3.7 connector.
+// WhatsApp channel — the gateway API v2.3.7 connector.
 //
 // The single source of truth for token-charging send paths is
 // `services/whatsapp/messaging.ts` (called by /api/v1/messages/*). The Channel
@@ -11,11 +11,11 @@ import type { Channel, ChannelMessage, ChannelIdentity } from '../index.js';
 // must implement — this connector is the reference implementation.
 //
 //   - `parse()`: authoritative inbound parser; webhook receivers call it to
-//     turn raw Evolution `messages.upsert` payloads into canonical ChannelMessages.
+//     turn raw the gateway `messages.upsert` payloads into canonical ChannelMessages.
 //   - `identity()`: looks up container connection state + phone number.
-//   - `send()`: thin Evolution shim. For token-charging production sends, route
+//   - `send()`: thin the gateway shim. For token-charging production sends, route
 //     through the v1 endpoints instead (which add idempotency, token charges,
-//     and DB persistence on top of the same callEvolutionAPIChecked primitive).
+//     and DB persistence on top of the same callGatewayChecked primitive).
 // =============================================================================
 
 const EVOLUTION_PATHS: Record<ChannelMessage['type'], string | null> = {
@@ -54,7 +54,7 @@ export function parseWhatsAppMessage(raw: Record<string, unknown>): ChannelMessa
   const remoteJid = key.remoteJid || '';
   const inner = (raw.message ?? raw.msg) as Record<string, unknown> | undefined;
   const innerType = (inner?.type as string) || 'text';
-  // Map Evolution `conversation` → text, `extendedTextMessage` → text, etc.
+  // Map the gateway `conversation` → text, `extendedTextMessage` → text, etc.
   const type: ChannelMessage['type'] = innerType.startsWith('conversation') || innerType === 'extendedTextMessage'
     ? 'text'
     : (innerType as ChannelMessage['type']);
@@ -78,7 +78,7 @@ export const whatsappChannel: Channel = {
     const evoName = encodeURIComponent(instanceName);
     // Status is a broadcast, not a recipient send.
     if (message.type === 'status') {
-      const res = await callEvolutionAPIChecked('POST', `/message/sendStatus/${evoName}`, {
+      const res = await callGatewayChecked('POST', `/message/sendStatus/${evoName}`, {
         type: 'text', content: message.body,
       });
       const key = (res.data as { key?: { id?: string } } | undefined)?.key;
@@ -91,8 +91,8 @@ export const whatsappChannel: Channel = {
       payload.mediaUrl = message.mediaUrl;
       if (message.mediaMimetype) payload.mimeType = message.mediaMimetype;
     }
-    const res = await callEvolutionAPIChecked('POST', `${pathSuffix}${evoName}`, payload);
-    if (!res.ok) throw new Error(`Evolution send failed: ${res.status}`);
+    const res = await callGatewayChecked('POST', `${pathSuffix}${evoName}`, payload);
+    if (!res.ok) throw new Error(`the gateway send failed: ${res.status}`);
     const key = (res.data as { key?: { id?: string } } | undefined)?.key;
     return { id: key?.id ?? `msg_${Date.now()}` };
   },
@@ -102,7 +102,7 @@ export const whatsappChannel: Channel = {
   async identity(instanceName: string): Promise<ChannelIdentity | null> {
     try {
       const evoName = encodeURIComponent(instanceName);
-      const res = await callEvolutionAPIChecked('GET', `/instance/connectionState/${evoName}`);
+      const res = await callGatewayChecked('GET', `/instance/connectionState/${evoName}`);
       const inst = (res.data as { instance?: { state?: string; phone?: string } } | undefined)?.instance;
       return {
         phoneNumber: inst?.phone ?? null,

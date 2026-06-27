@@ -61,7 +61,7 @@ export function registerRoutes(app: Express): void {
   app.use('/api/contact', contactRoutes);
   app.use('/api/sse', sseRoutes);
   app.use('/api/versions', versionsRoutes);
-  // Webhook endpoint for Evolution API events (no rate limit — authenticated via API key)
+  // Webhook endpoint for the gateway API events (no rate limit — authenticated via API key)
   app.use('/api/webhook', webhookRoutes);
   app.use('/api/sandbox', apiLimiter, sandboxRoutes);
   // Public API namespace for external integrators (API-key auth, own rate limit)

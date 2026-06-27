@@ -1,26 +1,42 @@
-import { callEvolutionAPIChecked } from '../../utils/evolution.js';
+import { callGatewayChecked } from '../../utils/gateway.js';
 import { logApiRequest } from '../../utils/audit.js';
-import { type SendContext, type SendResult, evolutionNameOf } from './shared.js';
+import { paceWhatsApp, type WhatsAppCallKind } from './whatsappCallLimiter.js';
+import { type SendContext, type SendResult, gatewayNameOf } from './shared.js';
 
 /**
- * Group management — 16 ops, all FREE (no tokens). Every op proxies to Evolution's
+ * Group management — 16 ops, all FREE (no tokens). Every op proxies to the gateway's
  * /group/* surface, logs the request, and maps the gateway response to a SendResult.
- * groupJid/inviteCode travel as query params (Evolution's contract); mutations
+ * groupJid/inviteCode travel as query params (the gateway's contract); mutations
  * carry their value in the body.
+ *
+ * Reads and mutations are paced independently per instance (see
+ * whatsappCallLimiter) — group churn (add/remove participants, invite,
+ * toggleEphemeral) is the highest block-risk surface in this file, so
+ * mutations are capped at 2 MPS while reads stay at 3 MPS.
  */
 interface Opts {
   body?: Record<string, unknown>;
   query?: Record<string, string | number | boolean | undefined>;
 }
 
+const READ_SLUGS = new Set([
+  'fetchAllGroups', 'findGroupInfos', 'participants',
+  'inviteCode', 'inviteInfo', 'acceptInviteCode',
+]);
+
+function kindFor(slug: string): WhatsAppCallKind {
+  return READ_SLUGS.has(slug) ? 'read' : 'mutation';
+}
+
 async function run(ctx: SendContext, slug: string, method: string, opts: Opts = {}): Promise<SendResult> {
-  const name = encodeURIComponent(evolutionNameOf(ctx.instance));
+  await paceWhatsApp(ctx.instance.id, kindFor(slug));
+  const name = encodeURIComponent(gatewayNameOf(ctx.instance));
   const qs = opts.query
     ? '?' + Object.entries(opts.query)
       .filter(([, v]) => v !== undefined && v !== '')
       .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')
     : '';
-  const res = await callEvolutionAPIChecked(method, `/group/${slug}/${name}${qs}`, opts.body);
+  const res = await callGatewayChecked(method, `/group/${slug}/${name}${qs}`, opts.body);
   logApiRequest(ctx.req, ctx.instance.id, ctx.instance.client_id, res.status, `group.${slug}`);
   if (!res.ok) {
     const status = res.status >= 400 && res.status < 500 ? res.status : 502;

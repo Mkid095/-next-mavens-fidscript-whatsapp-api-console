@@ -2,15 +2,15 @@ import { Router, Request, Response } from 'express';
 import db from '../../database.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
-import { callEvolutionAPI, emitInstanceStateChange } from '../../utils/evolution.js';
+import { callGateway, emitInstanceStateChange } from '../../utils/gateway.js';
 import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
 
-// Evolution is inside Docker and can't reach public URLs — use internal hostname for webhooks
+// the gateway is inside Docker and can't reach public URLs — use internal hostname for webhooks
 const API_BASE_URL = process.env.API_INTERNAL_URL || 'http://fidscript-whatsapp-api:3099';
 
-// GET /api/instance/connect/:name - Generate QR code from Evolution API
+// GET /api/instance/connect/:name - Generate QR code from the gateway API
 router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const instance = db.prepare('SELECT * FROM instances WHERE name = ? AND client_id = ?').get(req.params.name, req.client?.id) as Instance | undefined;
@@ -27,7 +27,7 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
 
     // Set webhook for this instance so CONNECTION_UPDATE events are forwarded to us
     const webhookUrl = `${API_BASE_URL}/api/webhook/evolution`;
-    callEvolutionAPI('POST', `/webhook/set/${evolutionInstanceName}`, {
+    callGateway('POST', `/webhook/set/${evolutionInstanceName}`, {
       webhook: {
         enabled: true,
         url: webhookUrl,
@@ -38,9 +38,9 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
       },
     }).catch(err => console.warn('Failed to set webhook on instance:', err));
 
-    const evoRes = await callEvolutionAPI('GET', `/instance/connect/${evolutionInstanceName}`);
+    const evoRes = await callGateway('GET', `/instance/connect/${evolutionInstanceName}`);
 
-    // Evolution API v2: { qrcode: { code, base64, pairingCode, count } } or flat { code, base64, pairingCode }
+    // the gateway API v2: { qrcode: { code, base64, pairingCode, count } } or flat { code, base64, pairingCode }
     const qrData = (evoRes.qrcode as { code?: string; base64?: string; pairingCode?: string; link_code?: string } | undefined) || evoRes;
     const qrCode = qrData?.base64 || qrData?.code || '';
     const pairingCode = qrData?.pairingCode || qrData?.link_code || null;

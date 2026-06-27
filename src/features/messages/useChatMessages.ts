@@ -5,7 +5,7 @@ import { scheduleRefresh } from './useSharedRefreshGate';
 
 // Live thread for one (instance, jid). SSE-driven refreshes are coalesced
 // through the shared gate so message storms don't burst the chat mirror
-// (10/sec backend cap; the gate also protects Evolution from thundering-herd
+// (10/sec backend cap; the gate also protects the gateway from thundering-herd
 // find-messages calls).
 export function useChatMessages(instanceName: string | null, jid: string | null) {
   const [messages, setMessages] = useState<MirrorMessage[]>([]);

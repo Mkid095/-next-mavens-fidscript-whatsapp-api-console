@@ -1,7 +1,7 @@
 /**
  * POST /api/instance/syncGroups/:name
  * Manually trigger a group sync for a connected instance.
- * Fetches all groups from Evolution and creates conversation entries for each.
+ * Fetches all groups from the gateway and creates conversation entries for each.
  */
 import { Router, Request, Response } from 'express';
 import { clientJwtAuth } from '../../middleware/auth.js';

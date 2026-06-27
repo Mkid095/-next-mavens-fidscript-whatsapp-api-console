@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { messagesApi } from './messagesApi';
 
 // Module-level cache + concurrency cap so the initial profile-pic burst on
-// chat-list load doesn't fire N concurrent Evolution calls when N chats are
+// chat-list load doesn't fire N concurrent gateway calls when N chats are
 // visible. Max 3 in flight; the rest queue and start as slots free up.
 type CacheValue = string | null | undefined; // undefined = loading, null = known-null
 const cache = new Map<string, CacheValue>();

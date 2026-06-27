@@ -7,6 +7,7 @@ import Header from './Header';
 import FeaturesSection from './FeaturesSection';
 import PricingSection from './PricingSection';
 import TestimonialsSection from './TestimonialsSection';
+import FAQSection from './FAQSection';
 import CTASection from './CTASection';
 import SeoHead from '../shared/SeoHead';
 
@@ -130,6 +131,7 @@ export default function LandingPage() {
 
       <TestimonialsSection />
       <FeaturesSection />
+      <FAQSection />
       <PricingSection />
       <CTASection />
     </div>

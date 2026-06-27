@@ -10,19 +10,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { fetchAllGroups } from './groups.js';
-import { type SendContext, evolutionNameOf } from './shared.js';
+import { type SendContext, gatewayNameOf } from './shared.js';
 import { normalizePhone } from '../../utils/phone.js';
 import { logAuditAction } from '../../utils/audit.js';
 import type { Instance } from '../../types.js';
 
-interface EvolutionGroup {
+interface GatewayGroup {
   id?: { user?: string; server?: string } | string;
   subject?: string;
   size?: number;
   participants?: Array<{ id?: { user?: string; server?: string }; admin?: 'admin' | 'superadmin' | null }>;
 }
 
-function extractJid(group: EvolutionGroup): string {
+function extractJid(group: GatewayGroup): string {
   if (typeof group.id === 'string') return group.id;
   if (typeof group.id === 'object' && group.id?.user) {
     return `${group.id.user}@${group.id.server || 'g.us'}`;
@@ -86,7 +86,7 @@ export async function syncGroupsForInstance(
   };
 
   try {
-    // 1. Fetch all groups from Evolution
+    // 1. Fetch all groups from the gateway
     const result = await fetchAllGroups(ctx, false);
 
     if (!result.ok) {
@@ -94,9 +94,9 @@ export async function syncGroupsForInstance(
       return { synced: 0, errors: 1 };
     }
 
-    // Evolution returns groups array under various keys depending on version
-    const responseData = result.data as { groups?: EvolutionGroup[]; response?: EvolutionGroup[] };
-    const groups: EvolutionGroup[] = (responseData.groups || responseData.response || []) as EvolutionGroup[];
+    // the gateway returns groups array under various keys depending on version
+    const responseData = result.data as { groups?: GatewayGroup[]; response?: GatewayGroup[] };
+    const groups: GatewayGroup[] = (responseData.groups || responseData.response || []) as GatewayGroup[];
 
     if (!Array.isArray(groups)) {
       console.error('[groupSync] unexpected groups shape:', JSON.stringify(result.data));

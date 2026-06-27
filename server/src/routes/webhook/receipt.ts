@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import db from '../../database.js';
-import { emitMessageReceipt, emitPresence } from '../../utils/evolution.js';
+import { emitMessageReceipt, emitPresence } from '../../utils/gateway.js';
 import { resolveConversation } from '../../modules/customers/index.js';
 import { dispatchMessageRead, dispatchMessageDelivered } from '../../modules/platform/events/index.js';
 import { buildWsCtx, chatIdFromJid, extractPhoneFromJid, type WebhookInstance } from './shared.js';

@@ -6,7 +6,7 @@ import type { MirrorMessage } from './messagesApi';
 
 // Composer — sends via the existing client-JWT path (token billing intact),
 // optimistically appends the outgoing bubble, then the thread hook reconciles
-// with the Evolution echo on refresh (dedup by id).
+// with the gateway echo on refresh (dedup by id).
 interface MessageComposerProps {
   chatJid: string;
   instance: Instance | null;

@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { adminAuth } from '../../middleware/auth.js';
-import { callEvolutionAPI } from '../../utils/evolution.js';
+import { callGateway } from '../../utils/gateway.js';
 
 const router = Router();
 
 /**
  * POST /api/admin/exec
- * Admin raw gateway executor — proxies any request directly to the Evolution API
- * using the server's own API key. Lets admins test arbitrary Evolution endpoints
+ * Admin raw gateway executor — proxies any request directly to the the gateway API
+ * using the server's own API key. Lets admins test arbitrary the gateway endpoints
  * without needing a client API key.
  *
- * Body: { method: string, path: string (Evolution path, e.g. "/message/sendText/myinst"), body?: object }
+ * Body: { method: string, path: string (the gateway path, e.g. "/message/sendText/myinst"), body?: object }
  */
 router.post('/exec', adminAuth, async (req: Request, res: Response) => {
   try {
@@ -25,7 +25,7 @@ router.post('/exec', adminAuth, async (req: Request, res: Response) => {
       return;
     }
 
-    const result = await callEvolutionAPI(
+    const result = await callGateway(
       method as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
       path,
       body

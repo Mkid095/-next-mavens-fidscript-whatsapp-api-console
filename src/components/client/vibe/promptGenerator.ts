@@ -31,7 +31,7 @@ export function generatePrompt(
   nl('');
   nl(`## Project Context`);
   nl('');
-  nl(`You are integrating a WhatsApp Business API into a web or mobile application. The backend is a Node.js/Express server (or your chosen framework). The integration communicates with the **FIDScript WhatsApp API**, a white-label wrapper over the Evolution API v2 gateway.`);
+  nl(`You are integrating a WhatsApp Business API into a web or mobile application. The backend is a Node.js/Express server (or your chosen framework). The integration communicates with the **FIDScript WhatsApp API** — our platform that handles delivery to WhatsApp on your behalf, with built-in pacing, contact sync, and volume management so your account stays in good standing.`);
   nl('');
   nl(`## API Credentials`);
   nl('');
@@ -53,7 +53,7 @@ export function generatePrompt(
   nl(`| What | Detail |`);
   nl(`|---|---|`);
   nl(`| Token cost | Text = 1 token; Media/Status/Audio/Sticker = 2 tokens; Management ops = free |`);
-  nl(`| Rate limits | Sends = per-plan limit; Reads (V1_READ) = 600/min; Mutations (V1_MUTATE) = 120/min; Profile/restart (V1_STRICT) = 30/min |`);
+  nl(`| Rate limits | Chat reads 10/sec/client (portal) · WhatsApp reads 3/sec/instance, mutations 2/sec/instance · Bulk send 10 MPS (30 MPS when queue ≥ 5,000) · Volume: 250 unique customers/day on Tier 0 (Tier 1: 1k · Tier 2: 10k · Tier 3: 100k · Tier 4: unlimited) · Phonebook sync 5/min |`);
   nl(`| Idempotency | Send endpoints accept \`Idempotency-Key: <uuid>\` header — retries return cached result, no re-charge |`);
   nl(`| Instance name | Your WhatsApp container name (e.g. \`my-shop\`) — passed as \`:instance\` path parameter |`);
   nl('');

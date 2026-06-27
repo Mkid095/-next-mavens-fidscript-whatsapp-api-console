@@ -1,9 +1,9 @@
 /**
- * Live WhatsApp-Web mirror — turns Evolution's raw (untyped) Baileys JSON from
+ * Live WhatsApp-Web mirror — turns the gateway's raw (untyped) Baileys JSON from
  * find-chats / find-messages into clean, typed shapes for the chat UI, and
  * resolves human-readable display names from saved contacts + group metadata.
  *
- * The display source of truth is Evolution; our DB only supplies name hints.
+ * The display source of truth is the gateway; our DB only supplies name hints.
  * Message bodies are extracted by reusing parseIncomingMessage (same Baileys
  * blobs as the webhook path), so every message type is handled consistently.
  */
@@ -13,7 +13,7 @@ import { normalizePhone } from '../../utils/phone.js';
 import { parseIncomingMessage } from '../../utils/messageParser.js';
 import { findChats, findMessages, profilePicUrl } from './chats.js';
 import { getCachedGroupInfo, getGroupParticipantName } from './groupSync.js';
-import { paceEvolutionCall } from './evolutionCallLimiter.js';
+import { paceWhatsAppCall } from './whatsappCallLimiter.js';
 import type { SendContext, SendResult } from './shared.js';
 
 type Rec = Record<string, unknown>;
@@ -41,7 +41,7 @@ function toMs(v: unknown): number | null {
   return n < 1e12 ? n * 1000 : n;
 }
 
-/** Read a remoteJid from a chat/message object, however Evolution nested it. */
+/** Read a remoteJid from a chat/message object, however the gateway nested it. */
 function readJid(item: Rec): string {
   const direct = str(item.remoteJid) || str(item.id);
   if (direct.includes('@')) return direct;
@@ -101,7 +101,7 @@ function previewText(lastMsg: Rec | null): string {
 
 /** POST /chat/findChats → clean chat list, newest first. */
 export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
-  await paceEvolutionCall(ctx.instance.id); // pace Evolution→WhatsApp
+  await paceWhatsAppCall(ctx.instance.id); // pace the gateway→WhatsApp
   const result = await findChats(ctx);
   if (!result.ok) return result;
 
@@ -138,7 +138,7 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
 
 /** POST /chat/findMessages → clean thread (oldest→newest), capped at 200. */
 export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendResult> {
-  await paceEvolutionCall(ctx.instance.id); // pace Evolution→WhatsApp
+  await paceWhatsAppCall(ctx.instance.id); // pace the gateway→WhatsApp
   const result = await findMessages(ctx, { where: { remoteJid: jid } });
   if (!result.ok) return result;
 
@@ -186,7 +186,7 @@ export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendR
 
 /** POST /chat/fetchProfilePictureUrl → the URL string (or null). */
 export async function mirrorProfilePic(ctx: SendContext, number: string): Promise<SendResult> {
-  await paceEvolutionCall(ctx.instance.id); // pace Evolution→WhatsApp
+  await paceWhatsAppCall(ctx.instance.id); // pace the gateway→WhatsApp
   const result = await profilePicUrl(ctx, number);
   if (!result.ok) return result;
   const d = rec(result.data);

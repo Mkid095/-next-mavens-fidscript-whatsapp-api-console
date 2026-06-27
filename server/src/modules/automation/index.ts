@@ -147,7 +147,7 @@ function executeAction(
       break;
     }
     case 'send_message': {
-      // The actual Evolution send is intentionally a no-op here — the engine
+      // The actual the gateway send is intentionally a no-op here — the engine
       // logs the intent and emits a domain event so the timeline reflects it.
       // Wiring the real send is a Phase 4 follow-up that needs the channel
       // service to accept an outbound from a system actor.

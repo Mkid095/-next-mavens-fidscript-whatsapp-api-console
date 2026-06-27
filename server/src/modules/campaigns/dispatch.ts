@@ -9,7 +9,7 @@ import { normalizePhone } from '../../utils/phone.js';
 
 // =============================================================================
 // Campaign dispatch — shared with 1:1 chat (spec §15: never drift).
-// Campaign send paths MUST call these helpers, never callEvolutionAPI
+// Campaign send paths MUST call these helpers, never callGateway
 // directly. Token charging, finalize, message.sent events, idempotency all
 // come from the shared senders — adding a new send type (Phase 2 §2 senders)
 // extends campaigns automatically.

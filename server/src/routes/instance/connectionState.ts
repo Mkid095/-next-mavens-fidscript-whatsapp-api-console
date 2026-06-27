@@ -2,11 +2,11 @@ import { Router, Request, Response } from 'express';
 import db from '../../database.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
-import { callEvolutionAPI, emitInstanceStateChange } from '../../utils/evolution.js';
+import { callGateway, emitInstanceStateChange } from '../../utils/gateway.js';
 
 const router = Router();
 
-// GET /api/instance/connectionState/:name - Get connection state from Evolution API
+// GET /api/instance/connectionState/:name - Get connection state from the gateway API
 router.get('/connectionState/:name', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     const instance = db.prepare('SELECT * FROM instances WHERE name = ?').get(req.params.name) as Instance | undefined;
@@ -21,8 +21,8 @@ router.get('/connectionState/:name', clientJwtAuth, async (req: Request, res: Re
     let phoneNumber: string | null = null;
     try {
       const evolutionInstanceName = instance.evolution_name || (instance.client_id ? `${instance.client_id}_${req.params.name}` : req.params.name);
-      const evoRes = await callEvolutionAPI('GET', `/instance/connectionState/${evolutionInstanceName}`);
-      // Evolution API v2: { instance: { state, phone, ... } }
+      const evoRes = await callGateway('GET', `/instance/connectionState/${evolutionInstanceName}`);
+      // the gateway API v2: { instance: { state, phone, ... } }
       const inst = (evoRes.instance as { state?: string; phone?: string; phone_number?: string } | undefined) || evoRes;
       evoState = inst?.state || 'unknown';
       if (inst?.state === 'open') {
@@ -34,7 +34,7 @@ router.get('/connectionState/:name', clientJwtAuth, async (req: Request, res: Re
         evoState = 'connecting';
       }
     } catch (evoErr) {
-      console.error('Failed to get Evolution API connection state:', evoErr);
+      console.error('Failed to get the gateway API connection state:', evoErr);
     }
 
     // Update local status and phone if different

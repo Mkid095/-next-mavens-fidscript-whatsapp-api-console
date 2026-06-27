@@ -2,7 +2,7 @@
  * /api/platform/chats/* + /api/platform/profile-pic/:name — client-JWT proxies
  * to the live WhatsApp-Web mirror, mounted under the platform router so it
  * uses platformLimiter (600/min backstop). The per-route chatMirrorLimiter
- * caps the heavy Evolution calls (find-chats/find-messages) at 10/min per
+ * caps the heavy the gateway calls (find-chats/find-messages) at 10/min per
  * client to stay well under WhatsApp's ~80/min account limit and avoid
  * blocks. The portal authenticates with a client JWT (not an API key), so it
  * cannot reach /api/v1/chats/* directly; this layer is the only path.
@@ -17,7 +17,7 @@ import { getOutboundUsage, newInitiationsInBatch } from '../../services/whatsapp
 // 10/sec per client — responsive UI reads (find-chats/find-messages) without
 // approaching the ~80 MPS WhatsApp send throughput (reads aren't subject to
 // the 80 MPS limit; this cap just prevents runaway bursts and keeps us well
-// under any Evolution/WhatsApp read-rate ceiling). The frontend coalesces
+// under any the gateway/WhatsApp read-rate ceiling). The frontend coalesces
 // SSE bursts via the shared refresh gate so the cap is rarely approached.
 const chatMirrorLimiter = rateLimit({
   windowMs: 1000,

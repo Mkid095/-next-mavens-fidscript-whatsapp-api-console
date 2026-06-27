@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Request } from 'express';
 import db from '../../database.js';
 import type { Instance, Client } from '../../types.js';
-import { emitTokenUpdate } from '../../utils/evolution.js';
+import { emitTokenUpdate } from '../../utils/gateway.js';
 import { logApiRequest } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import { normalizePhone } from '../../utils/phone.js';
@@ -29,12 +29,12 @@ export interface MessageKey { remoteJid: string; fromMe: boolean; id: string; }
 export interface ListSectionRow { title: string; description?: string; rowId: string; }
 export interface ListSection { title: string; rows: ListSectionRow[]; }
 
-/** Resolve the Evolution instance name from an instance record. */
-export const evolutionNameOf = (instance: { evolution_name?: string; client_id: string; name: string }): string =>
+/** Resolve the the gateway instance name from an instance record. */
+export const gatewayNameOf = (instance: { evolution_name?: string; client_id: string; name: string }): string =>
   instance.evolution_name || `${instance.client_id}_${instance.name}`;
 
-/** Resolve the Evolution instance name for a request context. */
-export const evolutionName = (ctx: SendContext): string => evolutionNameOf(ctx.instance);
+/** Resolve the the gateway instance name for a request context. */
+export const gatewayName = (ctx: SendContext): string => gatewayNameOf(ctx.instance);
 
 /** Load an instance owned by a client (client_id promoted to a flat string). */
 export function getInstanceForClient(name: string, clientId: string): (Instance & { client_id: string }) | null {

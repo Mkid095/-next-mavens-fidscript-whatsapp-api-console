@@ -12,12 +12,12 @@ export const instanceEmitter = new EventEmitter();
 instanceEmitter.setMaxListeners(100); // Allow many concurrent SSE connections
 
 /**
- * Evolution API response - shape varies by endpoint.
+ * the gateway API response - shape varies by endpoint.
  * Using `any` here would defeat the purpose, so we use a loose object type
  * that allows property access while acknowledging the varied response shapes.
  * Individual route handlers narrow the type as needed.
  */
-export type EvolutionAPIResponse = {
+export type GatewayResponse = {
   /** Common envelope fields */
   success?: boolean;
   response?: string | object;
@@ -38,7 +38,7 @@ export type EvolutionAPIResponse = {
   [key: string]: unknown;
 };
 
-export async function callEvolutionAPI(method: string, endpoint: string, body?: object): Promise<EvolutionAPIResponse> {
+export async function callGateway(method: string, endpoint: string, body?: object): Promise<GatewayResponse> {
   const url = `${EVOLUTION_API_URL}${endpoint}`;
   const options: RequestInit = {
     method,
@@ -51,21 +51,21 @@ export async function callEvolutionAPI(method: string, endpoint: string, body?: 
     options.body = JSON.stringify(body);
   }
   const response = await fetch(url, options);
-  return response.json() as Promise<EvolutionAPIResponse>;
+  return response.json() as Promise<GatewayResponse>;
 }
 
 /**
  * Checked variant for management/read operations (groups, chats, profile,
- * instance). Unlike callEvolutionAPI, this exposes the HTTP status so callers
+ * instance). Unlike callGateway, this exposes the HTTP status so callers
  * can distinguish success from gateway errors. `ok` mirrors response.ok.
  */
 export interface CheckedResult {
   ok: boolean;
   status: number;
-  data: EvolutionAPIResponse;
+  data: GatewayResponse;
 }
 
-export async function callEvolutionAPIChecked(method: string, endpoint: string, body?: object): Promise<CheckedResult> {
+export async function callGatewayChecked(method: string, endpoint: string, body?: object): Promise<CheckedResult> {
   const url = `${EVOLUTION_API_URL}${endpoint}`;
   const options: RequestInit = {
     method,
@@ -73,8 +73,8 @@ export async function callEvolutionAPIChecked(method: string, endpoint: string, 
   };
   if (body) options.body = JSON.stringify(body);
   const response = await fetch(url, options);
-  let data: EvolutionAPIResponse = {};
-  try { data = await response.json() as EvolutionAPIResponse; } catch { /* non-JSON body */ }
+  let data: GatewayResponse = {};
+  try { data = await response.json() as GatewayResponse; } catch { /* non-JSON body */ }
   return { ok: response.ok, status: response.status, data };
 }
 

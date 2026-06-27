@@ -10,7 +10,7 @@ import { requireConnected } from '../../services/whatsapp/shared.js';
 import { buildSendCtx, respondSendResult } from '../../services/whatsapp/http.js';
 import { syncPhonebookForInstance } from '../../services/whatsapp/phonebook.js';
 
-// Manual sync is rare but heavy (Evolution find-contacts can be large).
+// Manual sync is rare but heavy (the gateway find-contacts can be large).
 // 5/min is a safe per-client cap.
 const syncLimiter = rateLimit({
   windowMs: 60 * 1000,

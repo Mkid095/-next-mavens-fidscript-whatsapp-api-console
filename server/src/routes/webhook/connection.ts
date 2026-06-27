@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import db from '../../database.js';
-import { callEvolutionAPI, emitInstanceStateChange } from '../../utils/evolution.js';
+import { callGateway, emitInstanceStateChange } from '../../utils/gateway.js';
 import { logAuditAction } from '../../utils/audit.js';
 import { extractPhoneFromJid, type WebhookInstance } from './shared.js';
 
@@ -20,11 +20,11 @@ export async function handleConnectionUpdate(
 
   let phoneNumber: string | null = wuid ? extractPhoneFromJid(wuid) : null;
 
-  // Fallback: fetch from Evolution if not in payload
+  // Fallback: fetch from the gateway if not in payload
   if (!phoneNumber && status === 'connected') {
     try {
       const evoName = instance.evolution_name || decodedName;
-      const evoRes = await callEvolutionAPI('GET', `/instance/connectionState/${evoName}`);
+      const evoRes = await callGateway('GET', `/instance/connectionState/${evoName}`);
       const inst = (evoRes.instance as { state?: string; phone?: string; phone_number?: string } | undefined) || evoRes;
       phoneNumber = (inst?.phone as string | undefined) || (inst?.phone_number as string | undefined) || null;
     } catch { /* leave null */ }

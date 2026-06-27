@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
-import { callEvolutionAPI, generateInstanceToken, emitInstanceStateChange } from '../../utils/evolution.js';
+import { callGateway, generateInstanceToken, emitInstanceStateChange } from '../../utils/gateway.js';
 
 const router = Router();
 
@@ -25,9 +25,9 @@ router.post('/client-create', clientJwtAuth, async (req: Request, res: Response)
       return res.status(400).json({ success: false, error: 'An instance with this name already exists' });
     }
 
-    // Create instance in Evolution API (prefix with clientId for global uniqueness)
+    // Create instance in the gateway API (prefix with clientId for global uniqueness)
     const evolutionInstanceName = `${clientId}_${name}`;
-    const evolutionResponse = await callEvolutionAPI('POST', '/instance/create', {
+    const evolutionResponse = await callGateway('POST', '/instance/create', {
       instanceName: evolutionInstanceName,
       integration: 'WHATSAPP-BAILEYS',
       qrcode: true,
@@ -36,7 +36,7 @@ router.post('/client-create', clientJwtAuth, async (req: Request, res: Response)
     if (!evolutionResponse || !evolutionResponse.instance) {
       const errorMsg = (typeof evolutionResponse?.response === 'object' && evolutionResponse?.response !== null && 'message' in evolutionResponse.response)
         ? (evolutionResponse.response as { message?: string }).message?.[0]
-        : evolutionResponse?.error || 'Failed to create instance in Evolution API';
+        : evolutionResponse?.error || 'Failed to create instance in the gateway API';
       return res.status(400).json({ success: false, error: errorMsg });
     }
 
@@ -44,8 +44,8 @@ router.post('/client-create', clientJwtAuth, async (req: Request, res: Response)
     const instanceToken = generateInstanceToken();
     const webhookUrl = `${process.env.API_URL || 'https://apiwhatsapp.fidscript.com'}/api/webhook/evolution`;
 
-    // Set webhook on the Evolution API instance so CONNECTION_UPDATE and MESSAGES_UPSERT fire to our backend
-    callEvolutionAPI('POST', `/webhook/set/${evolutionInstanceName}`, {
+    // Set webhook on the the gateway API instance so CONNECTION_UPDATE and MESSAGES_UPSERT fire to our backend
+    callGateway('POST', `/webhook/set/${evolutionInstanceName}`, {
       enabled: true,
       url: webhookUrl,
       webhookByEvents: false,

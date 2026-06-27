@@ -1,5 +1,5 @@
 /**
- * WhatsApp phonebook sync — pulls the account's contact list from Evolution
+ * WhatsApp phonebook sync — pulls the account's contact list from the gateway
  * and upserts it into the main `contacts` table with the instance_id flag.
  *
  * Rules:
@@ -14,8 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { normalizePhone } from '../../utils/phone.js';
 import { findContacts } from './chats.js';
-import { type SendContext, evolutionNameOf } from './shared.js';
-import { paceEvolutionCall } from './evolutionCallLimiter.js';
+import { type SendContext, gatewayNameOf } from './shared.js';
+import { paceWhatsAppCall } from './whatsappCallLimiter.js';
 import type { Instance } from '../../types.js';
 
 type Rec = Record<string, unknown>;
@@ -35,7 +35,7 @@ function readNameAndPhone(entry: Rec): { name: string | null; phone: string | nu
   const name = str(entry.pushName) || str(entry.name) || str(entry.verifiedName) || str(entry.businessName) || null;
   const phone = str(entry.phoneNumber) || str(entry.number);
   if (phone) return { name, phone };
-  // Many Evolution responses embed the JID in `id` or `remoteJid`.
+  // Many the gateway responses embed the JID in `id` or `remoteJid`.
   const jid = str(entry.id) || str(entry.remoteJid) || str(entry.jid);
   if (jid.includes('@')) return { name, phone: jid.split('@')[0] };
   return { name, phone: null };
@@ -55,7 +55,7 @@ export async function syncPhonebookForInstance(
     req: { headers: {} } as SendContext['req'],
   };
 
-  await paceEvolutionCall(instance.id); // pace Evolution→WhatsApp
+  await paceWhatsAppCall(instance.id); // pace the gateway→WhatsApp
   const result = await findContacts(ctx);
   if (!result.ok) return { synced: 0, removed: 0, error: result.error };
 

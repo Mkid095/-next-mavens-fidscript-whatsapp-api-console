@@ -1,7 +1,7 @@
 /**
- * Normalize an inbound Evolution `messages.upsert` payload into DB-ready fields.
+ * Normalize an inbound the gateway `messages.upsert` payload into DB-ready fields.
  *
- * Evolution (Baileys) nests every message type under a distinct key on
+ * the gateway (Baileys) nests every message type under a distinct key on
  * `data.message` (e.g. `imageMessage`, `audioMessage`, `locationMessage`).
  * This parser extracts display content + media + a typed `extra` blob for each,
  * and falls back to an `unknown` type so we never drop a message — the raw
