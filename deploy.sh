@@ -77,6 +77,25 @@ check_prerequisites() {
         exit 1
     fi
 
+    # Refuse if local is ahead of origin — pulling origin/main would silently
+    # rebuild older code (because deploy.sh uses `git pull origin main`).
+    # Without this, a developer can commit locally, run deploy.sh, and end up
+    # shipping the OLD code without any error indication.
+    if git rev-parse --abbrev-ref --symbolic @{u} >/dev/null 2>&1; then
+        local unpushed
+        unpushed=$(git log --oneline @{u}..HEAD 2>/dev/null)
+        if [ -n "${unpushed}" ]; then
+            log_error "Local branch is ahead of origin with unpushed commits:"
+            echo "" >&2
+            echo "${unpushed}" >&2
+            echo "" >&2
+            log_error "deploy.sh pulls from origin/main — running it now would deploy the OLD code."
+            log_error "Push first, then deploy:"
+            echo "    git push origin main && bash deploy.sh" >&2
+            exit 1
+        fi
+    fi
+
     log_info "Prerequisites check passed."
 }
 
