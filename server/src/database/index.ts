@@ -11,6 +11,7 @@ import { runPhase6Migrations } from './phase6.js';
 import { runPhase7Migrations } from './phase7.js';
 import { runPhase8Migrations } from './phase8.js';
 import { runPhonebookMigrations } from './phonebook.js';
+import { runEmailLogMigrations } from './emailLog.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +39,7 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase7Migrations(db);     // P11 airtight: workspace_id on customer_tags/notes/assignments
   runPhase8Migrations(db);     // Group sync: cached_group_info + cached_participants
   runPhonebookMigrations(db);  // contacts.instance_id for WhatsApp phonebook sync
+  runEmailLogMigrations(db);     // email_send_log: every send (success/failure) audited
   await seedData(db);
   saveDatabase();
 

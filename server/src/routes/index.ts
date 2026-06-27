@@ -20,6 +20,7 @@ import webhookRoutes from './webhook.js';
 import sandboxRoutes from './sandbox.js';
 import v1Routes from './v1/index.js';
 import platformRoutes from './platform/index.js';
+import internalEmailRoutes from './internal/email.js';
 
 export function registerRoutes(app: Express): void {
   const apiLimiter = rateLimit({
@@ -68,4 +69,9 @@ export function registerRoutes(app: Express): void {
   app.use('/api/v1', v1Routes);
   // Platform API — customer-centric reads + operational writes (client JWT, workspace-scoped)
   app.use('/api/platform', platformLimiter, platformRoutes);
+  // Internal email service — centralized, provider-agnostic endpoints. MUST stay
+  // localhost-only (the reverse proxy / ingress must not expose /api/internal).
+  // All other services call these (or the emailService module directly) instead
+  // of wiring Resend themselves.
+  app.use('/api/internal/email', internalEmailRoutes);
 }
