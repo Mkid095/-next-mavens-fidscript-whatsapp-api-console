@@ -30,15 +30,15 @@ function arrOf(data: unknown, keys: string[]): unknown[] {
   return [];
 }
 
-/** Pull a displayable name + a phone (digits) out of an Evolution API contact entry. */
-function readNameAndPhone(entry: Rec): { name: string | null; phone: string | null } {
-  // Evolution API: pushName is often null; fall back to id (short contact id).
-  // Phone is always encoded in remoteJid (e.g. 254713108758@s.whatsapp.net or 92101429727389@lid).
-  const name = str(entry.pushName) || null;
+/** Pull WhatsApp pushName and phone from an Evolution API contact entry. */
+function readNameAndPhone(entry: Rec): { whatsappName: string | null; phone: string | null } {
+  // pushName is the WhatsApp profile name; null if not set
+  const whatsappName = str(entry.pushName) || null;
+  // Phone is always encoded in remoteJid (e.g. 254713108758@s.whatsapp.net or 92101429727389@lid)
   const rawJid = str(entry.remoteJid) || str(entry.id) || '';
-  const [rawPhone, ...rest] = rawJid.split('@');
+  const [rawPhone] = rawJid.split('@');
   const phone = rawPhone || null;
-  return { name, phone };
+  return { whatsappName, phone };
 }
 
 /**
@@ -83,8 +83,9 @@ export async function syncPhonebookForInstance(
   for (const entry of raw) {
     const item = rec(entry);
     if (!item) continue;
-    const { name: whatsappName, phone } = readNameAndPhone(item);
-    if (!phone || !whatsappName) continue;
+    const { whatsappName, phone } = readNameAndPhone(item);
+    // Only skip if no phone — we save ALL contacts even without a pushName
+    if (!phone) continue;
     const normalized = normalizePhone(phone);
     if (!normalized) continue;
     syncedPhones.push(normalized);
@@ -96,8 +97,10 @@ export async function syncPhonebookForInstance(
           // Manual contact wins — drop any stale synced duplicate.
           deleteSyncedDup.run(clientId, normalized);
         } else {
-          // Update whatsapp_name only; keep existing CRM name
-          update.run(whatsappName, instance.id, existing.id);
+          // Update whatsapp_name only when not null; keep existing WhatsApp name
+          if (whatsappName !== null) {
+            update.run(whatsappName, instance.id, existing.id);
+          }
           synced++;
         }
       } else {

@@ -79,17 +79,19 @@ export async function handleMessagesUpsert(
 }
 
 // Auto-provision: any new number that texts in becomes a contact (deduped).
-// Stores pushName in whatsapp_name; preserves any manual CRM name.
+// Stores pushName in whatsapp_name (null if not set); preserves any manual CRM name.
 function autoProvisionContact(instance: WebhookInstance, phone: string | null, pushName: string | undefined, req: Request): void {
   if (!phone) return;
   const existing = db.prepare('SELECT id, name, whatsapp_name FROM contacts WHERE client_id = ? AND phone = ?')
     .get(instance.client_id, phone) as { id: string; name: string | null; whatsapp_name: string | null } | undefined;
   if (!existing) {
+    // Store null if pushName is undefined/empty — empty string would be treated as a name
+    const waName = pushName && pushName.trim() ? pushName.trim() : null;
     db.prepare('INSERT INTO contacts (id, client_id, phone, whatsapp_name, tags) VALUES (?, ?, ?, ?, ?)')
-      .run(`auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, instance.client_id, phone, pushName || '', 'auto');
-  } else if (pushName && !existing.whatsapp_name) {
+      .run(`auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, instance.client_id, phone, waName, 'auto');
+  } else if (pushName && pushName.trim() && !existing.whatsapp_name) {
     // Only set whatsapp_name if not already set — preserve what we have
-    db.prepare('UPDATE contacts SET whatsapp_name = ? WHERE id = ?').run(pushName, existing.id);
+    db.prepare('UPDATE contacts SET whatsapp_name = ? WHERE id = ?').run(pushName.trim(), existing.id);
   }
   const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
   if (!current?.phone_number) {
