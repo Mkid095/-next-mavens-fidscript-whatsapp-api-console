@@ -11,7 +11,7 @@
 import db from '../../database.js';
 import { normalizePhone } from '../../utils/phone.js';
 import { parseIncomingMessage } from '../../utils/messageParser.js';
-import { findChats, findMessages, profilePicUrl } from './chats.js';
+import { findChats, findMessagesAll, profilePicUrl } from './chats.js';
 import { getCachedGroupInfo, getGroupParticipantName } from './groupSync.js';
 import { paceWhatsAppCall } from './whatsappCallLimiter.js';
 import type { SendContext, SendResult } from './shared.js';
@@ -82,13 +82,15 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
   if (jid.includes('@g.us')) {
     return getCachedGroupInfo(jid)?.subject || (pushName ? str(pushName) : '') || jid;
   }
-  const phone = normalizePhone(jid.split('@')[0]);
+  const rawPhone = jid.split('@')[0];
+  // Strip leading + so the DB lookup matches (contacts are stored as +254...)
+  const phone = normalizePhone(rawPhone).replace(/^\+/, '');
   if (phone) {
     const contact = db.prepare('SELECT name FROM contacts WHERE client_id = ? AND phone = ?')
       .get(workspaceId, phone) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
   }
-  return (pushName ? str(pushName) : '') || phone || jid.split('@')[0];
+  return (pushName ? str(pushName) : '') || phone || rawPhone;
 }
 
 /** Best-effort preview text for a chat from its (optional) last message blob. */
@@ -140,18 +142,26 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
 /** POST /chat/findMessages → clean thread (oldest→newest), capped at 200. */
 export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendResult> {
   await paceWhatsAppCall(ctx.instance.id); // pace the gateway→WhatsApp
-  const result = await findMessages(ctx, { where: { remoteJid: jid } });
+  // Use findMessagesAll to fetch ALL pages — Evolution API's remoteJid filter is unreliable
+  const result = await findMessagesAll(ctx);
   if (!result.ok) return result;
 
   const isGroup = jid.includes('@g.us');
-  // Evolution API returns a direct array of messages
-  const raw = Array.isArray(result.data) ? result.data : arrOf(result.data, ['response', 'messages', 'data']);
+  // findMessagesAll flattens all pages into result.data.messages array
+  const d = rec(result.data);
+  const raw: unknown[] = Array.isArray(d?.messages) ? d.messages as unknown[] : [];
+
   const byId = new Map<string, MirrorMessage>();
 
+  // Client-side JID filter — Evolution API's where.remoteJid filter is unreliable.
+  const targetJid = jid;
   for (const entry of raw) {
     const m = rec(entry);
     if (!m) continue;
     const key = rec(m.key);
+    const msgJid = str(key?.remoteJid) || str(m.remoteJid) || '';
+    if (msgJid !== targetJid) continue;
+
     const ts = toMs(m.messageTimestamp) ?? toMs(m.timestamp);
     const id = str(key?.id) || str(m.id) || (ts !== null ? `t${ts}` : '');
     if (!id || byId.has(id)) continue;

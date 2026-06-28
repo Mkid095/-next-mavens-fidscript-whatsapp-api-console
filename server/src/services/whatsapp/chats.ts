@@ -55,3 +55,40 @@ export const isWhatsApp = (ctx: SendContext, numbers: string[]) => run(ctx, 'wha
 export const getBase64 = (ctx: SendContext, a: { message: Record<string, unknown>; convertToMp4?: boolean }) =>
   run(ctx, 'getBase64FromMediaMessage', 'POST', a);
 export const profilePicUrl = (ctx: SendContext, number: string) => run(ctx, 'fetchProfilePictureUrl', 'POST', { number });
+
+/**
+ * Fetch ALL pages of findMessages results. Evolution API paginates at 50 records/page
+ * and the `where.remoteJid` filter is unreliable, so we fetch all pages and return
+ * every record merged into a single array. We cap at 20 pages (1000 records) to avoid
+ * hammering the gateway on very active accounts.
+ */
+export async function findMessagesAll(ctx: SendContext): Promise<SendResult> {
+  // Fetch page 1 to get total page count
+  const first = await run(ctx, 'findMessages', 'POST', { page: 1 });
+  if (!first.ok) return first;
+
+  const msgsObj = first.data && typeof first.data === 'object'
+    ? (first.data as Record<string, unknown>).messages as Record<string, unknown> | undefined
+    : undefined;
+  if (!msgsObj) return { ok: true, data: first.data };
+
+  const pages = (msgsObj.pages as number) ?? 1;
+
+  const records: unknown[] = Array.isArray(msgsObj.records) ? [...(msgsObj.records as unknown[])] : [];
+
+  // Fetch remaining pages sequentially to avoid race conditions with Evolution API
+  const MAX_PAGES = 20;
+  const totalToFetch = Math.min(pages, MAX_PAGES) - 1;
+
+  for (let p = 2; p <= totalToFetch + 1; p++) {
+    const r = await run(ctx, 'findMessages', 'POST', { page: p });
+    if (r.ok && r.data && typeof r.data === 'object') {
+      const mo = (r.data as Record<string, unknown>).messages as Record<string, unknown> | undefined;
+      if (Array.isArray(mo?.records)) {
+        records.push(...(mo.records as unknown[]));
+      }
+    }
+  }
+
+  return { ok: true, data: { messages: records } as Record<string, unknown> };
+}

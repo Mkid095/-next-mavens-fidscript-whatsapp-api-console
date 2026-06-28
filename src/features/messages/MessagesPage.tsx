@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Inbox, Users, RefreshCw } from 'lucide-react';
+import { Inbox, Users, RefreshCw, Link2Off } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import type { Instance } from '../../services/api';
 import { useChatList } from './useChatList';
 import { useChatMessages } from './useChatMessages';
@@ -79,6 +80,32 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
           <Inbox size={32} className="mx-auto mb-2" />
           <p className="text-sm">No WhatsApp instances yet</p>
           <p className="text-xs">Create and connect one to start chatting.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show a clear "not linked" state when the selected container has no WhatsApp linked.
+  const isNotLinked = instance != null && instance.status !== 'connected';
+  const navigate = useNavigate();
+
+  if (isNotLinked) {
+    return (
+      <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center bg-stone-50">
+        <div className="text-center max-w-xs">
+          <Link2Off size={40} className="mx-auto mb-3 text-stone-300" />
+          <h2 className="text-base font-semibold text-stone-700 mb-1">
+            {instance.name} is not linked
+          </h2>
+          <p className="text-xs text-stone-500 mb-5">
+            This container has no WhatsApp account connected. Scan a QR code to link it.
+          </p>
+          <button
+            onClick={() => navigate('/client/whatsapp')}
+            className="rounded-lg bg-[#eab308] px-4 py-2 text-sm font-medium text-black hover:bg-[#ca8a04] transition"
+          >
+            Go to Containers
+          </button>
         </div>
       </div>
     );
