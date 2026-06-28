@@ -79,6 +79,7 @@ export async function handleMessagesUpsert(
 }
 
 // Auto-provision: any new number that texts in becomes a contact (deduped).
+// Updates the contact name whenever we get a pushName so chat list names stay fresh.
 function autoProvisionContact(instance: WebhookInstance, phone: string | null, pushName: string | undefined, req: Request): void {
   if (!phone) return;
   const existing = db.prepare('SELECT id, name FROM contacts WHERE client_id = ? AND phone = ?')
@@ -86,7 +87,8 @@ function autoProvisionContact(instance: WebhookInstance, phone: string | null, p
   if (!existing) {
     db.prepare('INSERT INTO contacts (id, client_id, phone, name, tags) VALUES (?, ?, ?, ?, ?)')
       .run(`auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, instance.client_id, phone, pushName || '', 'auto');
-  } else if (pushName && !existing.name) {
+  } else if (pushName) {
+    // Always update name when we have a pushName — keeps contact names in sync
     db.prepare('UPDATE contacts SET name = ? WHERE id = ?').run(pushName, existing.id);
   }
   const current = db.prepare('SELECT phone_number FROM instances WHERE name = ?').get(instance.name) as { phone_number: string | null } | undefined;
