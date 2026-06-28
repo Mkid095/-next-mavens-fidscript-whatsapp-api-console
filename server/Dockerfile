@@ -1,10 +1,9 @@
 FROM node:20-alpine
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 COPY dist/ ./dist/
 COPY openapi.json ./openapi.json
-COPY package.json ./
-COPY node_modules/ ./node_modules/
-RUN npm install --omit=dev 2>/dev/null || true
 EXPOSE 3099
 ENV PORT=3099 NODE_ENV=production
 ENV JWT_SECRET=fidscript-jwt-secret-change-in-production

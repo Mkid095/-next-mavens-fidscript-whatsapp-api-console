@@ -106,7 +106,8 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
   if (!result.ok) return result;
 
   const workspaceId = ctx.instance.client_id;
-  const raw = arrOf(result.data, ['response', 'chats', 'data']);
+  // Evolution API returns a direct array of chats
+  const raw = Array.isArray(result.data) ? result.data : arrOf(result.data, ['response', 'chats', 'data']);
   const items: ChatListItem[] = [];
   for (const entry of raw) {
     const c = rec(entry);
@@ -143,7 +144,8 @@ export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendR
   if (!result.ok) return result;
 
   const isGroup = jid.includes('@g.us');
-  const raw = arrOf(result.data, ['response', 'messages', 'data']);
+  // Evolution API returns a direct array of messages
+  const raw = Array.isArray(result.data) ? result.data : arrOf(result.data, ['response', 'messages', 'data']);
   const byId = new Map<string, MirrorMessage>();
 
   for (const entry of raw) {
