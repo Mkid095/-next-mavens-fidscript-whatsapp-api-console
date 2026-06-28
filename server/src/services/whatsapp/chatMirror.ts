@@ -76,11 +76,21 @@ export interface MirrorMessage {
 /**
  * Resolve a display name for a JID. Priority:
  *  1:1   → CRM name (user-defined) → phone number (no +)
- *  group → cached group subject → JID
+ *  group → cached group subject → pushName (group subject from Evolution API) → JID
+ *
+ * For 1:1: pushName (WhatsApp profile name) is intentionally excluded — the user
+ * only wants saved CRM contact names or raw phone numbers.
+ *
+ * For groups: pushName is safe to use because it carries the group subject from
+ * Evolution API's findChats, not the contact's WhatsApp display name.
  */
-function resolveDisplayName(workspaceId: string, jid: string, _pushName?: string): string {
+function resolveDisplayName(workspaceId: string, jid: string, pushName?: string): string {
   if (jid.includes('@g.us')) {
-    return getCachedGroupInfo(jid)?.subject || jid;
+    // Groups: cached subject → group subject from Evolution API (pushName) → JID
+    const cached = getCachedGroupInfo(jid);
+    if (cached?.subject) return cached.subject;
+    if (pushName) return pushName;
+    return jid;
   }
   const rawPhone = jid.split('@')[0];
   // Contacts stored with + prefix
@@ -91,7 +101,7 @@ function resolveDisplayName(workspaceId: string, jid: string, _pushName?: string
     ).get(workspaceId, phone) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
   }
-  // Fall back to phone number without + prefix — never use pushName
+  // Fall back to phone number without + prefix — never use pushName for 1:1
   return phone.replace(/^\+/, '') || rawPhone;
 }
 
