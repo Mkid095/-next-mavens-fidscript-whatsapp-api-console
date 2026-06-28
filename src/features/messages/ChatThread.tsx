@@ -107,13 +107,32 @@ export default function ChatThread({ chat, instance, messages, loading, error, o
                   <p className="text-xs">No messages in this chat yet</p>
                 </div>
               )}
-              <div className="space-y-1.5">
+              <div>
                 {groups.map((g) => (
                   <div key={g.key}>
-                    <div className="my-2 flex items-center justify-center">
+                    <div className="my-3 flex items-center justify-center">
                       <span className="rounded-full bg-stone-200/70 px-3 py-0.5 text-[10px] font-medium text-stone-500">{g.label}</span>
                     </div>
-                    {g.messages.map((m) => <MessageBubble key={m.id} message={m} />)}
+                    {g.messages.map((m, i) => {
+                      const prev = g.messages[i - 1];
+                      const next = g.messages[i + 1];
+                      const isContinuation = prev
+                        && prev.direction === m.direction
+                        && (chat?.isGroup ? prev.senderName === m.senderName : true)
+                        && m.timestamp - prev.timestamp < 5 * 60 * 1000;
+                      const nextSender = next
+                        && next.direction === m.direction
+                        && (chat?.isGroup ? next.senderName === m.senderName : true);
+                      const isGroupEnd = !next || !nextSender || (next && next.timestamp - m.timestamp > 5 * 60 * 1000);
+                      return (
+                        <MessageBubble
+                          key={m.id}
+                          message={m}
+                          isContinuation={isContinuation}
+                          isGroupEnd={isGroupEnd}
+                        />
+                      );
+                    })}
                   </div>
                 ))}
               </div>

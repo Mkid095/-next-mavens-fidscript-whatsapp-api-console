@@ -83,14 +83,14 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
     return getCachedGroupInfo(jid)?.subject || (pushName ? str(pushName) : '') || jid;
   }
   const rawPhone = jid.split('@')[0];
-  // Strip leading + so the DB lookup matches (contacts are stored as +254...)
-  const phone = normalizePhone(rawPhone).replace(/^\+/, '');
+  // Contacts are stored with + prefix (via autoProvisionContact / extractPhoneFromJid)
+  const phone = normalizePhone(rawPhone);
   if (phone) {
     const contact = db.prepare('SELECT name FROM contacts WHERE client_id = ? AND phone = ?')
       .get(workspaceId, phone) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
   }
-  return (pushName ? str(pushName) : '') || phone || rawPhone;
+  return (pushName ? str(pushName) : '') || phone.replace(/^\+/, '') || rawPhone;
 }
 
 /** Best-effort preview text for a chat from its (optional) last message blob. */
