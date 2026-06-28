@@ -16,13 +16,11 @@ router.get('/', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`
       SELECT cc.*,
-             ccg.group_name,
              ci.instance_name,
              (SELECT COUNT(*) FROM chatbot_triggers WHERE chatbot_id = cc.id AND enabled = 1) as trigger_count,
              (SELECT COUNT(*) FROM chatbot_contact_assignments WHERE chatbot_id = cc.id) as contact_count
       FROM chatbot_configs cc
       LEFT JOIN instances ci ON ci.id = cc.instance_id
-      LEFT JOIN contact_groups ccg ON ccg.id = (SELECT MIN(group_id) FROM chatbot_contact_assignments WHERE chatbot_id = cc.id LIMIT 1)
       WHERE cc.workspace_id = ?
       ORDER BY cc.priority DESC, cc.created_at DESC
     `).all(wsId(req));
