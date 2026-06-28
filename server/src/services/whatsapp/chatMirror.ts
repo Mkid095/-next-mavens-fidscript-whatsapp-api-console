@@ -75,7 +75,7 @@ export interface MirrorMessage {
 
 /**
  * Resolve a display name for a JID. Priority:
- *  1:1   → saved contact (by normalised phone) → pushName → phone → JID user
+ *  1:1   → CRM name (user-defined) → WhatsApp name (synced) → pushName → phone
  *  group → cached group subject → pushName → JID
  */
 function resolveDisplayName(workspaceId: string, jid: string, pushName?: string): string {
@@ -83,12 +83,15 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
     return getCachedGroupInfo(jid)?.subject || (pushName ? str(pushName) : '') || jid;
   }
   const rawPhone = jid.split('@')[0];
-  // Contacts are stored with + prefix (via autoProvisionContact / extractPhoneFromJid)
+  // Contacts stored with + prefix; whatsapp_name holds WhatsApp-sourced names separately
   const phone = normalizePhone(rawPhone);
   if (phone) {
-    const contact = db.prepare('SELECT name FROM contacts WHERE client_id = ? AND phone = ?')
-      .get(workspaceId, phone) as { name: string | null } | undefined;
+    const contact = db.prepare(
+      'SELECT name, whatsapp_name FROM contacts WHERE client_id = ? AND phone = ?'
+    ).get(workspaceId, phone) as { name: string | null; whatsapp_name: string | null } | undefined;
+    // Priority: CRM name > WhatsApp synced name > pushName > phone
     if (contact?.name) return contact.name;
+    if (contact?.whatsapp_name) return contact.whatsapp_name;
   }
   return (pushName ? str(pushName) : '') || phone.replace(/^\+/, '') || rawPhone;
 }

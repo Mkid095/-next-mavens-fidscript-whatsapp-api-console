@@ -114,9 +114,12 @@ export function createTables(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS contacts (
       id TEXT PRIMARY KEY, client_id TEXT REFERENCES clients(id), phone TEXT NOT NULL,
-      name TEXT, tags TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      name TEXT, whatsapp_name TEXT, tags TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Add whatsapp_name column if it doesn't exist (for existing installs)
+  try { db.run("ALTER TABLE contacts ADD COLUMN whatsapp_name TEXT"); } catch { /* already exists */ }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS client_api_keys (

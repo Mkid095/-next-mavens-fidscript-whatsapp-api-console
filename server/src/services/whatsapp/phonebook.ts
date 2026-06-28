@@ -64,12 +64,13 @@ export async function syncPhonebookForInstance(
   const syncedPhones: string[] = [];
   let synced = 0;
 
-  const selectRow = db.prepare('SELECT id, instance_id FROM contacts WHERE client_id = ? AND phone = ?');
+  const selectRow = db.prepare('SELECT id, name, instance_id FROM contacts WHERE client_id = ? AND phone = ?');
   const insert = db.prepare(
-    `INSERT INTO contacts (id, client_id, phone, name, instance_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)`
+    `INSERT INTO contacts (id, client_id, phone, name, whatsapp_name, instance_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
   );
-  const update = db.prepare('UPDATE contacts SET name = ?, instance_id = ? WHERE id = ?');
+  // Only update whatsapp_name; preserve existing CRM name
+  const update = db.prepare('UPDATE contacts SET whatsapp_name = ?, instance_id = ? WHERE id = ?');
   const deleteSyncedDup = db.prepare(
     'DELETE FROM contacts WHERE client_id = ? AND phone = ? AND instance_id IS NOT NULL'
   );
@@ -82,25 +83,26 @@ export async function syncPhonebookForInstance(
   for (const entry of raw) {
     const item = rec(entry);
     if (!item) continue;
-    const { name, phone } = readNameAndPhone(item);
-    if (!phone || !name) continue;
+    const { name: whatsappName, phone } = readNameAndPhone(item);
+    if (!phone || !whatsappName) continue;
     const normalized = normalizePhone(phone);
     if (!normalized) continue;
     syncedPhones.push(normalized);
 
-    const existing = selectRow.get(clientId, normalized) as { id: string; instance_id: string | null } | undefined;
+    const existing = selectRow.get(clientId, normalized) as { id: string; name: string | null; instance_id: string | null } | undefined;
     try {
       if (existing) {
         if (existing.instance_id === null) {
           // Manual contact wins — drop any stale synced duplicate.
           deleteSyncedDup.run(clientId, normalized);
         } else {
-          update.run(name, instance.id, existing.id);
+          // Update whatsapp_name only; keep existing CRM name
+          update.run(whatsappName, instance.id, existing.id);
           synced++;
         }
       } else {
         insert.run(
-          `pb_${uuidv4().slice(0, 12)}`, clientId, normalized, name, instance.id, new Date().toISOString()
+          `pb_${uuidv4().slice(0, 12)}`, clientId, normalized, null, whatsappName, instance.id, new Date().toISOString()
         );
         synced++;
       }
