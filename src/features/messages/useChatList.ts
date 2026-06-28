@@ -25,11 +25,14 @@ export function useChatList(instanceName: string | null) {
 
   useEffect(() => {
     if (!instanceName) return;
-    const off = dataEvents.on('*', () => scheduleRefresh(() => { void refresh(); }));
+    // SSE-driven refreshes bypass the throttle — we want real-time updates for incoming messages
+    const offSSE = dataEvents.on('message.received', () => { void refresh(); });
+    // Wildcard catches other events; these go through the throttle
+    const offWild = dataEvents.on('*', () => scheduleRefresh(() => { void refresh(); }));
     const onFocus = () => scheduleRefresh(() => { void refresh(); });
     window.addEventListener('focus', onFocus);
     const poll = setInterval(() => scheduleRefresh(() => { void refresh(); }), 30000);
-    return () => { off(); window.removeEventListener('focus', onFocus); clearInterval(poll); };
+    return () => { offSSE(); offWild(); window.removeEventListener('focus', onFocus); clearInterval(poll); };
   }, [instanceName, refresh]);
 
   return { chats, loading, error, refresh };

@@ -54,7 +54,18 @@ export function useInstanceSSE(
       es.addEventListener('newMessage', event => {
         try {
           const raw = JSON.parse((event as MessageEvent).data);
+          // Dispatch to window for useChatMessages, emit to dataEvents for useChatList (no throttle)
           window.dispatchEvent(new CustomEvent('sse-new-message', { detail: raw }));
+          emitDataEvent('message.received', {
+            chatId: raw.chat_id,
+            fromNumber: raw.from_number,
+            fromName: raw.from_name,
+            messageType: raw.message_type,
+            content: raw.content,
+            mediaUrl: raw.media_url,
+            timestamp: raw.timestamp,
+            isGroup: raw.is_group,
+          });
         } catch { /* malformed payload */ }
       });
 
