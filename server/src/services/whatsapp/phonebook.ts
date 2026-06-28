@@ -30,15 +30,15 @@ function arrOf(data: unknown, keys: string[]): unknown[] {
   return [];
 }
 
-/** Pull a displayable name + a phone (digits) out of a Baileys contact entry. */
+/** Pull a displayable name + a phone (digits) out of an Evolution API contact entry. */
 function readNameAndPhone(entry: Rec): { name: string | null; phone: string | null } {
-  const name = str(entry.pushName) || str(entry.name) || str(entry.verifiedName) || str(entry.businessName) || null;
-  const phone = str(entry.phoneNumber) || str(entry.number);
-  if (phone) return { name, phone };
-  // Many the gateway responses embed the JID in `id` or `remoteJid`.
-  const jid = str(entry.id) || str(entry.remoteJid) || str(entry.jid);
-  if (jid.includes('@')) return { name, phone: jid.split('@')[0] };
-  return { name, phone: null };
+  // Evolution API: pushName is often null; fall back to id (short contact id).
+  // Phone is always encoded in remoteJid (e.g. 254713108758@s.whatsapp.net or 92101429727389@lid).
+  const name = str(entry.pushName) || null;
+  const rawJid = str(entry.remoteJid) || str(entry.id) || '';
+  const [rawPhone, ...rest] = rawJid.split('@');
+  const phone = rawPhone || null;
+  return { name, phone };
 }
 
 /**
@@ -59,7 +59,8 @@ export async function syncPhonebookForInstance(
   const result = await findContacts(ctx);
   if (!result.ok) return { synced: 0, removed: 0, error: result.error };
 
-  const raw = arrOf(result.data, ['response', 'contacts', 'data']);
+  // Evolution API returns a direct array of contacts
+  const raw = Array.isArray(result.data) ? result.data : arrOf(result.data, ['response', 'contacts', 'data']);
   const syncedPhones: string[] = [];
   let synced = 0;
 
