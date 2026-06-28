@@ -47,8 +47,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#11110a] text-[#cbd3cf] font-suisse-intl antialiased selection:bg-yellow-250 selection:text-stone-950">
       <SeoHead
-        title="FIDScript WhatsApp API — Kenyan Businesses"
-        description="Send and receive WhatsApp messages programmatically. WhatsApp API for Kenyan businesses with M-Pesa billing, REST API, webhooks, and real-time analytics."
+        title="FIDScript — WhatsApp API & AI Chatbots for Kenyan Businesses"
+        description="Send WhatsApp messages and automate responses with AI chatbots. FIDScript provides WhatsApp API, AI chatbot builders, M-Pesa billing, REST API, webhooks, and real-time analytics for Kenyan businesses."
         canonical="/"
         schema="website"
       />
@@ -68,7 +68,8 @@ export default function LandingPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-6"
             >
-              WhatsApp API for{' '}
+              WhatsApp API &{' '}
+              <span className="gradient-headline-text">AI Chatbots</span> for{' '}
               <span className="gradient-headline-text">Kenyan Businesses</span>
             </motion.h1>
 
@@ -78,7 +79,7 @@ export default function LandingPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-[#a8a594] max-w-2xl mx-auto mb-10"
             >
-              Send and receive WhatsApp messages programmatically. Connect your business to millions of Kenyan customers through a simple, powerful API.
+              Send WhatsApp messages programmatically and automate responses with AI chatbots. Connect your business to millions of Kenyan customers through a simple, powerful API.
             </motion.p>
 
             <motion.div

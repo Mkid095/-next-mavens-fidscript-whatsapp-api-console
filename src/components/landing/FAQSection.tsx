@@ -82,6 +82,18 @@ const QA_LIST: QA[] = [
       </p>
     ),
   },
+  {
+    q: 'Can I build AI chatbots that respond automatically on WhatsApp?',
+    a: (
+      <p>
+        Yes. The built-in <span className="text-yellow-500 font-semibold">AI Chatbot Builder</span> lets
+        you create WhatsApp chatbots powered by OpenAI, Anthropic, Gemini, or any OpenAI-compatible
+        provider. Configure keyword triggers, conditional response rules, and AI system prompts — then
+        test your bot instantly in the dashboard before going live. You bring your own API keys
+        (BYOKLM): FIDScript never stores your LLM credentials.
+      </p>
+    ),
+  },
 ];
 
 export default function FAQSection() {

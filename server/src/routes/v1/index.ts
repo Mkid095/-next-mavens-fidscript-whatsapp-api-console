@@ -11,6 +11,7 @@ import chatsRouter from './chats.js';
 import profileRouter from './profile.js';
 import settingsRouter from './settings.js';
 import instanceRouter from './instance.js';
+import providersRouter from './providers.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -61,5 +62,6 @@ router.use('/settings', v1Limiter, settingsRouter);
 
 // Instance lifecycle — connection-state, connect/QR, restart (confirm-guarded), logout, set-presence.
 router.use('/instance', v1Limiter, instanceRouter);
+router.use('/providers', v1Limiter, clientApiKeyAuth, V1_READ, providersRouter);
 
 export default router;

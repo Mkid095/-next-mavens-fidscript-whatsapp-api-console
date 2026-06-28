@@ -23,6 +23,7 @@ export type ClientSection =
   | 'campaigns'
   | 'contacts'
   | 'token-store'
+  | 'chatbots'
   | 'settings';
 
 interface NavItem {
@@ -42,11 +43,12 @@ export const mainNavItems: NavItem[] = [
   { id: 'campaigns', label: 'Campaigns', icon: <Megaphone className="w-4 h-4" />, path: '/client/campaigns' },
   { id: 'contacts', label: 'Contacts', icon: <Users className="w-4 h-4" />, path: '/client/contacts' },
   { id: 'token-store', label: 'Token Store', icon: <CreditCard className="w-4 h-4" />, path: '/client/token-store' },
+  { id: 'chatbots', label: 'Chatbots', icon: <Bot className="w-4 h-4" />, path: '/client/chatbots' },
   { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" />, path: '/client/settings' },
 ];
 
 export const menuItems: NavItem[] = mainNavItems.filter(item =>
-  ['whatsapp', 'api-keys', 'docs', 'sandbox', 'messages', 'campaigns', 'contacts', 'token-store'].includes(item.id),
+  ['whatsapp', 'api-keys', 'docs', 'sandbox', 'messages', 'campaigns', 'contacts', 'token-store', 'chatbots'].includes(item.id),
 );
 
 interface SidebarNavProps {

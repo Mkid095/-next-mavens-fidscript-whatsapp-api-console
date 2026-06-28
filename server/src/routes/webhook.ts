@@ -8,6 +8,7 @@ import { normalizePhone } from '../utils/phone.js';
 import { resolveConversation } from '../modules/customers/index.js';
 import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
 import { syncGroupsForInstance, getGroupParticipantName } from '../services/whatsapp/groupSync.js';
+import { publishChatbotInbound } from '../utils/natsPublisher.js';
 import type { Instance } from '../types.js';
 import { cleanupPhonebookForInstance } from '../services/whatsapp/phonebook.js';
 import { mirrorChatList } from '../services/whatsapp/chatMirror.js';
@@ -215,6 +216,24 @@ router.post('/evolution', async (req: Request, res: Response) => {
           fromNumber: phone || senderJid || '',
           fromName: resolvedSenderName || null,
         }).catch(err => console.error('[WEBHOOK] dispatchMessageReceived failed:', err));
+      }
+
+      // Publish to NATS for async chatbot processing
+      if (parsed.messageType === 'text' && parsed.content && customerId && conversationId) {
+        publishChatbotInbound({
+          conversationId,
+          customerId,
+          workspaceId: instance.client_id,
+          instanceId: String(instance.id),
+          instanceName: instance.name,
+          message: parsed.content,
+          messageType: parsed.messageType,
+          chatId,
+          isGroup,
+          senderName: resolvedSenderName,
+          senderPhone: phone ?? undefined,
+          groupJid: isGroup ? remoteJid : undefined,
+        }).catch(err => console.error('[WEBHOOK] publishChatbotInbound failed:', err));
       }
 
       // For direct (non-group) messages, auto-create a contact if unknown

@@ -7,6 +7,7 @@ import ApiConsoleView from '../ApiConsoleView';
 import LogsAndAnalyticsView from '../LogsAndAnalyticsView';
 import InboxView from '../InboxView';
 import SecurityKeysView from '../SecurityKeysView';
+import LLMProvidersView from './providers/LLMProvidersView';
 import AnalyticsView from './AnalyticsView';
 import AuditLogView from './audit/AuditLogView';
 import type { Instance, Client, ApiLog, AnalyticsData } from '../../services/api';
@@ -125,6 +126,9 @@ export function AdminContent({
     }
     if (path === '/admin/keys') {
       return <SecurityKeysView keys={keys} onAddKey={handleAddKey} onRevokeKey={handleRevokeKey} />;
+    }
+    if (path === '/admin/providers') {
+      return <LLMProvidersView />;
     }
     return (
       <DashboardOverview

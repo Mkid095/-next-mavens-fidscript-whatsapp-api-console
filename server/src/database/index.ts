@@ -10,6 +10,11 @@ import { runPhase5Migrations } from './phase5.js';
 import { runPhase6Migrations } from './phase6.js';
 import { runPhase7Migrations } from './phase7.js';
 import { runPhase8Migrations } from './phase8.js';
+import { runPhase9Migrations } from './phase9.js';
+import { runPhase10Migrations } from './phase10.js';
+import { runPhase11Migrations } from './phase11.js';
+import { runPhase12Migrations } from './phase12.js';
+import { runPhase13Migrations } from './phase13.js';
 import { runPhonebookMigrations } from './phonebook.js';
 import { runEmailLogMigrations } from './emailLog.js';
 
@@ -38,6 +43,11 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase6Migrations(db);     // webhooks + webhook_deliveries + api_logs latency/workspace
   runPhase7Migrations(db);     // P11 airtight: workspace_id on customer_tags/notes/assignments
   runPhase8Migrations(db);     // Group sync: cached_group_info + cached_participants
+  runPhase9Migrations(db);     // Chatbot platform: 25 tables
+  runPhase10Migrations(db);    // Multi-provider LLM: provider_registry + llm_connections extensions
+  runPhase11Migrations(db);    // Runtime contracts: fallback chains + model registry
+  runPhase12Migrations(db);    // Chatbot → llm_connection linkage
+  runPhase13Migrations(db);    // LLM model configs + API formats + group settings + contact assignments
   runPhonebookMigrations(db);  // contacts.instance_id for WhatsApp phonebook sync
   runEmailLogMigrations(db);     // email_send_log: every send (success/failure) audited
   await seedData(db);

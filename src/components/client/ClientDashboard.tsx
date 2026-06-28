@@ -34,6 +34,7 @@ const pathToSection = (path: string): ClientSection => {
     '/client/campaigns': 'campaigns',
     '/client/contacts': 'contacts',
     '/client/token-store': 'token-store',
+    '/client/chatbots': 'chatbots',
     '/client/settings': 'settings',
   };
   return map[path] || 'dashboard';
@@ -50,6 +51,7 @@ const sectionToPath = (section: ClientSection): string => {
     'campaigns': '/client/campaigns',
     'contacts': '/client/contacts',
     'token-store': '/client/token-store',
+    'chatbots': '/client/chatbots',
     'settings': '/client/settings',
   };
   return map[section];

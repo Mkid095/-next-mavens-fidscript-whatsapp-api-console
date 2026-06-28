@@ -1,4 +1,4 @@
-import { Zap, QrCode, Webhook, BarChart3, Users } from 'lucide-react';
+import { Zap, QrCode, Webhook, BarChart3, Users, Bot } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 export interface Feature {
@@ -16,6 +16,26 @@ export interface HowItWorksStep {
 }
 
 export const features: Feature[] = [
+  {
+    icon: Bot,
+    title: 'AI Chatbot Builder',
+    description: 'Build WhatsApp chatbots with natural language AI. Connect to OpenAI, Anthropic, Gemini, and 6+ other LLM providers. Automate FAQ responses, lead capture, and customer support 24/7.',
+    code: `// Create a chatbot that responds with AI
+POST /api/platform/chatbots
+{
+  "name": "sales-bot",
+  "instanceName": "my-instance",
+  "config": { "model": "gpt-4o", "temperature": 0.7 }
+}
+
+// Add AI-powered triggers
+POST /api/platform/chatbots/:id/triggers
+{ "keyword": "prices", "response": "Our prices are..." }
+
+// Test your chatbot instantly
+POST /api/platform/chatbots/:id/test-trigger
+{ "message": "what are your prices?" }`,
+  },
   {
     icon: Zap,
     title: 'Instant API Integration',
@@ -71,8 +91,8 @@ export const howItWorksSteps: HowItWorksStep[] = [
   },
   {
     step: '03',
-    title: 'Start Sending',
-    description: 'Use our REST API to send messages instantly. Full documentation and SDK support.',
-    icon: Zap,
+    title: 'Build AI Chatbots or Send Messages',
+    description: 'Create AI-powered chatbots or send messages via our REST API. Full documentation and SDK support.',
+    icon: Bot,
   },
 ];
