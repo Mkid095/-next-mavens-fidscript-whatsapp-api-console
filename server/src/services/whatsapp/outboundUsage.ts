@@ -48,10 +48,17 @@ function resolveTier(): Tier {
   return 0;
 }
 
-/** Count distinct chat_ids the given instance sent an outgoing message to in the last 24h. */
+/** Count distinct contacts the given instance sent an outgoing message to in the last 24h.
+ *  chat_id can be a full JID (254746269657@s.whatsapp.net) or a normalized phone (+254746269657).
+ *  Normalize before COUNT(DISTINCT) so the same contact counted via different formats → 1. */
 export function uniqueInitiationsInLast24h(instanceId: string | number, clientId: string): number {
   const row = db.prepare(`
-    SELECT COUNT(DISTINCT chat_id) as c
+    SELECT COUNT(DISTINCT
+      CASE
+        WHEN chat_id LIKE '%@%' THEN REPLACE(chat_id, '@s.whatsapp.net', '')
+        ELSE REPLACE(chat_id, '+', '')
+      END
+    ) as c
     FROM inbox_messages
     WHERE instance_id = ?
       AND client_id = ?
@@ -113,9 +120,18 @@ export function newInitiationsInBatch(
       WHERE instance_id = ? AND client_id = ?
         AND direction = 'outgoing'
         AND timestamp >= datetime('now', '-24 hours')
-    `).all(String(instanceId), clientId) as { chat_id: string }[]).map((r) => r.chat_id)
+    `).all(String(instanceId), clientId) as { chat_id: string }[]).map((r) => {
+      const id = r.chat_id;
+      // Normalize: strip @s.whatsapp.net suffix and + prefix so JID and phone forms merge
+      return id.includes('@')
+        ? id.replace('@s.whatsapp.net', '')
+        : id.replace(/^\+/, '');
+    })
   );
   let newCount = 0;
-  for (const id of candidateChatIds) if (id && !initiated.has(id)) newCount++;
+  for (const id of candidateChatIds) {
+    const normalized = id.includes('@') ? id.replace('@s.whatsapp.net', '') : id.replace(/^\+/, '');
+    if (id && !initiated.has(normalized)) newCount++;
+  }
   return newCount;
 }

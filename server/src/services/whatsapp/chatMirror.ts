@@ -75,25 +75,24 @@ export interface MirrorMessage {
 
 /**
  * Resolve a display name for a JID. Priority:
- *  1:1   → CRM name (user-defined) → WhatsApp name (synced) → pushName → phone
- *  group → cached group subject → pushName → JID
+ *  1:1   → CRM name (user-defined) → phone number (no +)
+ *  group → cached group subject → JID
  */
-function resolveDisplayName(workspaceId: string, jid: string, pushName?: string): string {
+function resolveDisplayName(workspaceId: string, jid: string, _pushName?: string): string {
   if (jid.includes('@g.us')) {
-    return getCachedGroupInfo(jid)?.subject || (pushName ? str(pushName) : '') || jid;
+    return getCachedGroupInfo(jid)?.subject || jid;
   }
   const rawPhone = jid.split('@')[0];
-  // Contacts stored with + prefix; whatsapp_name holds WhatsApp-sourced names separately
+  // Contacts stored with + prefix
   const phone = normalizePhone(rawPhone);
   if (phone) {
     const contact = db.prepare(
-      'SELECT name, whatsapp_name FROM contacts WHERE client_id = ? AND phone = ?'
-    ).get(workspaceId, phone) as { name: string | null; whatsapp_name: string | null } | undefined;
-    // Priority: CRM name > WhatsApp synced name > pushName > phone
+      'SELECT name FROM contacts WHERE client_id = ? AND phone = ?'
+    ).get(workspaceId, phone) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
-    if (contact?.whatsapp_name) return contact.whatsapp_name;
   }
-  return (pushName ? str(pushName) : '') || phone.replace(/^\+/, '') || rawPhone;
+  // Fall back to phone number without + prefix — never use pushName
+  return phone.replace(/^\+/, '') || rawPhone;
 }
 
 /** Best-effort preview text for a chat from its (optional) last message blob. */
