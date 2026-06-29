@@ -46,6 +46,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
   const { event, instance: instanceName } = rawBody;
 
   const decodedName = instanceName ? decodeURIComponent(instanceName) : '';
+  // Exact match on name or evolution_name (set during instance provisioning)
   const instance = decodedName
     ? (db.prepare(
         'SELECT * FROM instances WHERE name = ? OR evolution_name = ?'
@@ -60,7 +61,8 @@ router.post('/evolution', async (req: Request, res: Response) => {
   console.log('[WEBHOOK] Instance:', instance ? 'FOUND id=' + instance.id : 'NOT FOUND');
 
   if (!instance) {
-    res.status(200).json({ success: true, handled: false, reason: 'instance_not_found' });
+    // Return 404 so Evolution API retries the webhook delivery
+    res.status(404).json({ success: false, error: 'instance_not_found' });
     return;
   }
 
