@@ -39,7 +39,7 @@ export default function ChatRow({ chat, instanceName, selected, onSelect }: Chat
     <button
       onClick={() => onSelect(chat)}
       className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-left transition ${
-        selected ? 'border-[#eab308] bg-[#181711]/[0.04]' : 'border-transparent hover:bg-stone-100'
+        selected ? 'border-[#25D366] bg-[#181711]/[0.04]' : 'border-transparent hover:bg-stone-100'
       }`}
     >
       <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-stone-600">
@@ -53,15 +53,15 @@ export default function ChatRow({ chat, instanceName, selected, onSelect }: Chat
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-sm font-semibold text-stone-800">{chat.name}</span>
+          <span className={`truncate text-sm font-semibold ${chat.unread > 0 ? 'text-stone-900 font-bold' : 'text-stone-800'}`}>{chat.name}</span>
           <span className="shrink-0 text-[10px] text-stone-400">{timeAgo(chat.lastMessageAt)}</span>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
-          <span className="truncate text-xs text-stone-500">
+          <span className={`truncate text-xs ${chat.unread > 0 ? 'text-stone-700 font-medium' : 'text-stone-500'}`}>
             {chat.lastMessage || (chat.isGroup ? 'Group' : 'No messages yet')}
           </span>
           {chat.unread > 0 && (
-            <span className="flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-[#eab308] px-1 text-[10px] font-semibold text-[#181711]">
+            <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#25D366] px-1 text-[10px] font-bold text-white shadow-sm">
               {chat.unread > 99 ? '99+' : chat.unread}
             </span>
           )}
