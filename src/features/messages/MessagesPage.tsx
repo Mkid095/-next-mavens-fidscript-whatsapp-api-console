@@ -48,6 +48,12 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
   const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null);
   const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(instance?.name ?? null, selectedJid);
 
+  // Mark chat as read when it is opened — clears the unread badge in real time
+  useEffect(() => {
+    if (!instance?.name || !selectedJid) return;
+    messagesApi.markRead(instance.name, selectedJid).catch(() => { /* non-critical */ });
+  }, [instance?.name, selectedJid]);
+
   const selected = useMemo<ChatListItem | null>(() => {
     if (!selectedJid) return null;
     return chats.find((c) => c.jid === selectedJid) ?? {

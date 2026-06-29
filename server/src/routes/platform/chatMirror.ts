@@ -9,10 +9,12 @@
  */
 import { Router, type Request } from 'express';
 import rateLimit from 'express-rate-limit';
+import db from '../../database.js';
 import { requireConnected } from '../../services/whatsapp/shared.js';
 import { buildSendCtx, respondSendResult } from '../../services/whatsapp/http.js';
 import { mirrorChatList, mirrorThread, mirrorProfilePic } from '../../services/whatsapp/chatMirror.js';
 import { getOutboundUsage, newInitiationsInBatch } from '../../services/whatsapp/outboundUsage.js';
+import { instanceEmitter } from '../../utils/gateway.js';
 
 // 10/sec per client — responsive UI reads (find-chats/find-messages) without
 // approaching the ~80 MPS WhatsApp send throughput (reads aren't subject to
@@ -113,6 +115,30 @@ router.post('/usage/check-batch/:name', async (req, res) => {
     console.error('[chatMirror] check-batch failed:', err);
     res.status(500).json({ success: false, error: 'Failed to check batch', code: 'BATCH_CHECK_FAILED' });
   }
+});
+
+// POST /api/platform/chats/:name/mark-read { jid }
+// Marks all incoming unread messages in the given chat as read.
+// Updates our own inbox_messages, then emits a message.read SSE event so the
+// chat list badge clears in real time. Does NOT call Evolution API (which
+// would only mark-read on the server, not our local DB).
+router.post('/chats/:name/mark-read', async (req, res) => {
+  const ctx = buildSendCtx(req, res, req.params.name);
+  if (!ctx) return;
+  const guard = requireConnected(ctx);
+  if (guard) { respondSendResult(res, guard); return; }
+
+  const jid: string = typeof req.body?.jid === 'string' ? req.body.jid : '';
+  if (!jid) { res.status(400).json({ success: false, error: 'jid required' }); return; }
+
+  const info = db.prepare(
+    'UPDATE inbox_messages SET is_read = 1 WHERE instance_id = ? AND chat_id = ? AND is_read = 0 AND direction = ?'
+  ).run(ctx.instance.id, jid, 'incoming');
+
+  // Emit so SSE listeners (useChatList) can decrement the badge in real time
+  instanceEmitter.emit('message.read', ctx.instance.name, { conversationId: null, messageId: '', chatId: jid });
+
+  res.json({ success: true, updated: info.changes });
 });
 
 export default router;

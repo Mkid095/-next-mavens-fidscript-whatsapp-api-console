@@ -142,9 +142,24 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
       isGroup,
       lastMessage: previewText(lastBlob),
       lastMessageAt: ts,
-      unread: num(c.unreadMessages) ?? num(c.unreadCount) ?? 0,
+      unread: 0, // computed from inbox_messages below
       profilePic: str(c.profilePicUrl) || null,
     });
+  }
+
+  // Compute unread from our own inbox_messages table — ground truth, not Evolution API
+  if (items.length > 0) {
+    const placeholders = items.map(() => '?').join(',');
+    const unreadRows = db.prepare(`
+      SELECT chat_id, COUNT(*) as cnt
+      FROM inbox_messages
+      WHERE instance_id = ? AND is_read = 0 AND direction = 'incoming'
+        AND chat_id IN (${placeholders})
+      GROUP BY chat_id
+    `).all(ctx.instance.id, ...items.map(i => i.jid)) as { chat_id: string; cnt: number }[];
+    const unreadMap: Record<string, number> = {};
+    for (const r of unreadRows) unreadMap[r.chat_id] = r.cnt;
+    for (const item of items) item.unread = unreadMap[item.jid] ?? 0;
   }
 
   items.sort((a, b) => (b.lastMessageAt ?? 0) - (a.lastMessageAt ?? 0));

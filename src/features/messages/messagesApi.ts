@@ -67,6 +67,9 @@ export const messagesApi = {
     apiPost<{ synced: number; removed: number; error?: string }>(
       `/api/platform/phonebook/sync/${encodeURIComponent(instanceName)}`
     ),
+  /** Mark all incoming unread messages in a chat as read. Clears the badge. */
+  markRead: (instanceName: string, jid: string) =>
+    apiPost<{ updated: number }>(`/api/platform/chats/${encodeURIComponent(instanceName)}/mark-read`, { jid }),
 };
 
 /** Turn a contact phone (e.g. "+254712345678") into a 1:1 WhatsApp JID. */
