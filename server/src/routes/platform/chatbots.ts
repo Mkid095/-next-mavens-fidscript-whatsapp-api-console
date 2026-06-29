@@ -4,6 +4,24 @@ import { logAuditAction } from '../../utils/audit.js';
 import db from '../../database.js';
 import { evaluateTriggers } from '../../modules/ai/chatbotEngine.js';
 
+// Ensure chatbot_response_rules table exists (may not have been created by phase9 migration
+// if DB was already past that version — safe to run on every startup via CREATE TABLE IF NOT EXISTS)
+try {
+  db.run(`CREATE TABLE IF NOT EXISTS chatbot_response_rules (
+    id TEXT PRIMARY KEY,
+    chatbot_id TEXT NOT NULL,
+    name TEXT DEFAULT '',
+    conditions_json TEXT DEFAULT '[]',
+    action TEXT NOT NULL CHECK(action IN ('ai','manual','skip','workflow')),
+    action_config_json TEXT DEFAULT '{}',
+    priority INTEGER DEFAULT 0,
+    enabled INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (chatbot_id) REFERENCES chatbot_configs(id) ON DELETE CASCADE
+  )`);
+} catch (_) { /* ok */ }
+try { db.run(`CREATE INDEX IF NOT EXISTS idx_response_rules_chatbot ON chatbot_response_rules(chatbot_id)`); } catch (_) { /* ok */ }
+
 const router = Router();
 router.use(clientJwtAuth);
 
