@@ -16,7 +16,7 @@ router.get('/', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`
       SELECT cc.*,
-             ci.instance_name,
+             ci.name as instance_name,
              (SELECT COUNT(*) FROM chatbot_triggers WHERE chatbot_id = cc.id AND enabled = 1) as trigger_count,
              (SELECT COUNT(*) FROM chatbot_contact_assignments WHERE chatbot_id = cc.id) as contact_count
       FROM chatbot_configs cc
