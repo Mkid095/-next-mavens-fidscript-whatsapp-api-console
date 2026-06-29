@@ -3,13 +3,19 @@ import { dataEvents } from '../../data';
 import { messagesApi, type MirrorMessage } from './messagesApi';
 import { scheduleRefresh } from './useSharedRefreshGate';
 
-// Live thread for one (instance, jid). Incoming SSE messages for the open
-// conversation are appended directly (no API round-trip). All other events
-// go through the shared throttle gate (10/sec backend cap).
+/** Client-side cache keyed by "instanceName|jid" so chat switches are instant. */
+const messageCache = new Map<string, MirrorMessage[]>();
+
+// Live thread for one (instance, jid). Chat switching is served from a
+// client-side cache (instant) while a background refresh keeps it fresh.
+// All other events go through the shared throttle gate (10/sec backend cap).
 export function useChatMessages(instanceName: string | null, jid: string | null) {
   const [messages, setMessages] = useState<MirrorMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isFirstRender = useRef(true);
+
+  const cacheKey = instanceName && jid ? `${instanceName}|${jid}` : null;
 
   const refresh = useCallback(async () => {
     if (!instanceName || !jid) { setMessages([]); return; }
@@ -17,12 +23,45 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
     setError(null);
     const res = await messagesApi.getThread(instanceName, jid);
     setLoading(false);
-    if (res.success && res.data) { setMessages(res.data.messages); return; }
+    if (res.success && res.data) {
+      const msgs = res.data.messages;
+      // Always update cache on successful fetch
+      if (cacheKey) messageCache.set(cacheKey, msgs);
+      setMessages(msgs);
+      return;
+    }
     setError(res.error || 'Failed to load messages');
-  }, [instanceName, jid]);
+  }, [instanceName, jid, cacheKey]);
 
-  // Reset when conversation changes
-  useEffect(() => { void refresh(); }, [refresh]);
+  // Switch chats: serve from cache immediately, then refresh in background
+  useEffect(() => {
+    if (!instanceName || !jid) { setMessages([]); return; }
+
+    const cached = cacheKey ? messageCache.get(cacheKey) : undefined;
+
+    if (isFirstRender.current) {
+      // First mount: use cache if available, otherwise load from network
+      isFirstRender.current = false;
+      if (cached) {
+        setMessages(cached);
+        // Fetch fresh data in background
+        void refresh();
+        return;
+      } else {
+        void refresh();
+        return;
+      }
+    }
+
+    if (cached) {
+      // Subsequent chat switches: show cached immediately, refresh in background
+      setMessages(cached);
+      void refresh();
+    } else {
+      void refresh();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instanceName, jid]);
 
   // Wildcard events go through the throttle (state changes, etc.)
   useEffect(() => {
@@ -48,14 +87,24 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
         senderName: payload.fromName || null,
         timestamp: payload.timestamp ? new Date(payload.timestamp).getTime() : Date.now(),
       };
-      setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        const next = [...prev, msg];
+        if (cacheKey) messageCache.set(cacheKey, next);
+        return next;
+      });
     });
     return off;
-  }, [jid]);
+  }, [jid, cacheKey]);
 
   const optimisticAppend = useCallback((msg: MirrorMessage) => {
-    setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
-  }, []);
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      const next = [...prev, msg];
+      if (cacheKey) messageCache.set(cacheKey, next);
+      return next;
+    });
+  }, [cacheKey]);
 
   return { messages, loading, error, refresh, optimisticAppend };
 }

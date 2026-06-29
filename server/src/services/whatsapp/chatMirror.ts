@@ -75,14 +75,13 @@ export interface MirrorMessage {
 
 /**
  * Resolve a display name for a JID. Priority:
- *  1:1   → CRM name (user-defined) → phone number (no +)
+ *  1:1   → CRM name (user-defined) → raw phone number from JID (no formatting)
  *  group → cached group subject → pushName (group subject from Evolution API) → JID
  *
- * For 1:1: pushName (WhatsApp profile name) is intentionally excluded — the user
- * only wants saved CRM contact names or raw phone numbers.
+ * For 1:1: pushName (WhatsApp profile name) is never used — only saved CRM name
+ * or the raw phone number exactly as it appears in the JID.
  *
- * For groups: pushName is safe to use because it carries the group subject from
- * Evolution API's findChats, not the contact's WhatsApp display name.
+ * For groups: pushName carries the group subject from Evolution API's findChats.
  */
 function resolveDisplayName(workspaceId: string, jid: string, pushName?: string): string {
   if (jid.includes('@g.us')) {
@@ -92,17 +91,17 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
     if (pushName) return pushName;
     return jid;
   }
+  // 1:1: show raw phone digits from JID, no normalization, no + stripping
   const rawPhone = jid.split('@')[0];
-  // Contacts stored with + prefix
-  const phone = normalizePhone(rawPhone);
-  if (phone) {
+  // Only look up CRM name if the raw phone is purely numeric
+  if (/^\d+$/.test(rawPhone)) {
     const contact = db.prepare(
       'SELECT name FROM contacts WHERE client_id = ? AND phone = ?'
-    ).get(workspaceId, phone) as { name: string | null } | undefined;
+    ).get(workspaceId, rawPhone) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
   }
-  // Fall back to phone number without + prefix — never use pushName for 1:1
-  return phone.replace(/^\+/, '') || rawPhone;
+  // Fall back to raw phone digits — exactly as the JID stores them
+  return rawPhone;
 }
 
 /** Best-effort preview text for a chat from its (optional) last message blob. */
@@ -147,19 +146,35 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
     });
   }
 
-  // Compute unread from our own inbox_messages table — ground truth, not Evolution API
+  // Compute unread from our own inbox_messages table — ground truth, not Evolution API.
+  // inbox_messages stores chat_id as a normalized phone (+254...) while findChats
+  // returns full JIDs (254...@s.whatsapp.net), so we normalize both sides before matching.
   if (items.length > 0) {
-    const placeholders = items.map(() => '?').join(',');
+    // Build a map from normalized phone → index
+    const phoneToIndex: Record<string, number> = {};
+    for (let i = 0; i < items.length; i++) {
+      const jid = items[i].jid;
+      const phone = jid.includes('@')
+        ? jid.replace('@s.whatsapp.net', '').replace(/^\+/, '')
+        : jid.replace(/^\+/, '');
+      phoneToIndex[phone] = i;
+    }
+    const normalizedJids = Object.keys(phoneToIndex);
+    const placeholders = normalizedJids.map(() => '?').join(',');
     const unreadRows = db.prepare(`
       SELECT chat_id, COUNT(*) as cnt
       FROM inbox_messages
       WHERE instance_id = ? AND is_read = 0 AND direction = 'incoming'
-        AND chat_id IN (${placeholders})
+        AND REPLACE(REPLACE(chat_id, '+', ''), '@s.whatsapp.net', '') IN (${placeholders})
       GROUP BY chat_id
-    `).all(ctx.instance.id, ...items.map(i => i.jid)) as { chat_id: string; cnt: number }[];
-    const unreadMap: Record<string, number> = {};
-    for (const r of unreadRows) unreadMap[r.chat_id] = r.cnt;
-    for (const item of items) item.unread = unreadMap[item.jid] ?? 0;
+    `).all(ctx.instance.id, ...normalizedJids) as { chat_id: string; cnt: number }[];
+    // Initialize all items to 0
+    for (const item of items) item.unread = 0;
+    for (const r of unreadRows) {
+      const phone = r.chat_id.replace('@s.whatsapp.net', '').replace(/^\+/, '');
+      const idx = phoneToIndex[phone];
+      if (idx !== undefined) items[idx].unread = r.cnt;
+    }
   }
 
   items.sort((a, b) => (b.lastMessageAt ?? 0) - (a.lastMessageAt ?? 0));
