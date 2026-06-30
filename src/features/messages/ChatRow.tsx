@@ -53,7 +53,15 @@ export default function ChatRow({ chat, instanceName, selected, onSelect }: Chat
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <span className={`truncate text-sm font-semibold ${chat.unread > 0 ? 'text-stone-900 font-bold' : 'text-stone-800'}`}>{chat.name}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            {chat.aiMode === 'manual' && (
+              <span title="AI paused — agent manually handling" className="inline-block h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+            )}
+            {chat.aiMode === 'ai' && (
+              <span title="AI active" className="inline-block h-2 w-2 shrink-0 rounded-full bg-blue-400" />
+            )}
+            <span className={`truncate text-sm font-semibold ${chat.unread > 0 ? 'text-stone-900 font-bold' : 'text-stone-800'}`}>{chat.name}</span>
+          </span>
           <span className="shrink-0 text-[10px] text-stone-400">{timeAgo(chat.lastMessageAt)}</span>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">

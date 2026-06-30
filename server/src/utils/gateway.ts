@@ -114,6 +114,20 @@ export function emitPresence(instanceName: string, chatId: string, presence: str
   instanceEmitter.emit('presence', instanceName, { chatId, presence, fromName: fromName ?? null });
 }
 
+/**
+ * Emit an AI override change for a specific chat on an instance.
+ * Used by SSE so all open inbox tabs update the manual/AI indicator in real time.
+ */
+export function emitAiOverrideChanged(instanceName: string, payload: {
+  chatId: string;
+  mode: 'ai' | 'manual';
+  overriddenBy?: string;
+  expiresAt?: string;
+  resumePolicy?: string;
+}) {
+  instanceEmitter.emit('aiOverrideChanged', instanceName, payload);
+}
+
 export function generateInstanceToken(): string {
   return `inst_${crypto.randomBytes(16).toString('hex')}`;
 }

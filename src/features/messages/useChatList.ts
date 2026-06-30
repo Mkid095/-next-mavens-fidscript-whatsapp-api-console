@@ -29,10 +29,15 @@ export function useChatList(instanceName: string | null) {
     const offSSE = dataEvents.on('message.received', () => { void refresh(); });
     // Wildcard catches other events; these go through the throttle
     const offWild = dataEvents.on('*', () => scheduleRefresh(() => { void refresh(); }));
+    // Real-time AI override changes from SSE — update the matching chat without a full refresh
+    const offOverride = dataEvents.on('ai.override_changed', (e) => {
+      const { chatId, mode } = e.payload as { chatId: string; mode: 'ai' | 'manual' };
+      setChats((prev) => prev.map((c) => c.jid === chatId ? { ...c, aiMode: mode } : c));
+    });
     const onFocus = () => scheduleRefresh(() => { void refresh(); });
     window.addEventListener('focus', onFocus);
     const poll = setInterval(() => scheduleRefresh(() => { void refresh(); }), 30000);
-    return () => { offSSE(); offWild(); window.removeEventListener('focus', onFocus); clearInterval(poll); };
+    return () => { offSSE(); offWild(); offOverride(); window.removeEventListener('focus', onFocus); clearInterval(poll); };
   }, [instanceName, refresh]);
 
   return { chats, loading, error, refresh };

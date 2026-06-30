@@ -93,6 +93,14 @@ export function useInstanceSSE(
           emitDataEvent('presence', { chatId: raw.chatId, presence: raw.presence, fromName: raw.fromName });
         } catch { /* malformed payload */ }
       });
+
+      // AI override changed → update chat list indicators in real time
+      es.addEventListener('aiOverrideChanged', event => {
+        try {
+          const raw = JSON.parse((event as MessageEvent).data) as { chatId: string; mode: 'ai' | 'manual' };
+          emitDataEvent('ai.override_changed', { chatId: raw.chatId, mode: raw.mode });
+        } catch { /* malformed payload */ }
+      });
     });
 
     return () => {

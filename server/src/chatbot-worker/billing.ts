@@ -29,10 +29,27 @@ export function logTokenUsage(
 ): void {
   try {
     const id = `tok_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    // Look up workspace_id from the chatbot config
+    const bot = db.prepare(
+      'SELECT workspace_id FROM chatbot_configs WHERE id = ?'
+    ).get(chatbotId) as { workspace_id: string } | undefined;
+
     db.prepare(`INSERT INTO chatbot_token_usage
-      (id, chatbot_id, conversation_id, model, prompt_tokens, completion_tokens, total_tokens, cost_usd, cost_units, period_start, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
-    ).run(id, chatbotId, conversationId, model, promptTokens, completionTokens, totalTokens, costUsd, costUnits);
+      (id, chatbot_id, conversation_id, workspace_id, model, prompt_tokens, completion_tokens, total_tokens, cost_usd, cost_units, period_start, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+    ).run(
+      id,
+      chatbotId,
+      conversationId,
+      bot?.workspace_id ?? '',
+      model,
+      promptTokens,
+      completionTokens,
+      totalTokens,
+      costUsd,
+      costUnits
+    );
     saveDatabase();
   } catch (_) { /* non-fatal */ }
 }

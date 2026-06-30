@@ -21,7 +21,8 @@ export type PlatformEventType =
   | 'customer.tagged'
   | 'ai.reply.generated'
   | 'ai.handoff_requested'
-  | 'ai.state_changed';
+  | 'ai.state_changed'
+  | 'ai.override_changed';
 
 export interface PlatformEvent {
   type: PlatformEventType;

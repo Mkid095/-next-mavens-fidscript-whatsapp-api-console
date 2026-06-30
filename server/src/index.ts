@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { initializeDatabase, saveDatabase } from './database.js';
 import db from './database.js';
 import { registerRoutes } from './routes/index.js';
+import { recoverStaleJobs } from './modules/chatbot/jobRecovery.js';
 import { apiInfo } from './utils/apiInfo.js';
 import { registerSearchIndexer } from './modules/platform/search/index.js';
 import { registerAnalyticsProjectors } from './modules/platform/analytics/index.js';
@@ -30,6 +31,9 @@ app.set('trust proxy', 1);
 async function startServer() {
   try {
     await initializeDatabase();
+
+    // Recover any stale publish jobs left behind by a previous server crash
+    await recoverStaleJobs(db);
 
     // Register event-bus subscribers — the event-driven spine (§5).
     // Without these, bus().emit() fires into the void: search index,

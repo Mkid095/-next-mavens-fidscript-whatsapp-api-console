@@ -3,6 +3,7 @@
  * Tools are defined in chatbot_tools and executed on behalf of the LLM.
  */
 import db, { saveDatabase } from '../database.js';
+import { withCircuitBreak, CircuitOpenError } from './circuitBreaker.js';
 
 interface ToolCall {
   toolId: string;
@@ -23,29 +24,42 @@ interface ToolResult {
 
 /**
  * Execute a single tool call and log the result.
+ * Wrapped in a circuit breaker — if the tool's circuit is open, reject immediately.
  */
 export async function executeToolCall(call: ToolCall): Promise<ToolResult> {
   const start = Date.now();
+
+  // Reject immediately if circuit is open
+  if (isCircuitOpen(call.toolId)) {
+    const result: ToolResult = {
+      success: false,
+      output: null,
+      error: `Circuit open: tool ${call.toolName} is temporarily disabled due to repeated failures`,
+      durationMs: 0,
+    };
+    logChatbotToolCall(call, result, 0);
+    return result;
+  }
+
   let result: ToolResult;
 
   try {
-    switch (call.toolType) {
-      case 'http_request': {
-        result = await executeHttpTool(call);
-        break;
+    result = await withCircuitBreak(call.toolId, call.chatbotId, async () => {
+      switch (call.toolType) {
+        case 'http_request': {
+          return await executeHttpTool(call);
+        }
+        case 'database_query': {
+          return executeDatasetTool(call);
+        }
+        case 'webhook': {
+          return await executeWebhookTool(call);
+        }
+        default: {
+          return { success: false, output: null, error: `Unknown tool type: ${call.toolType}`, durationMs: 0 };
+        }
       }
-      case 'database_query': {
-        result = executeDatasetTool(call);
-        break;
-      }
-      case 'webhook': {
-        result = await executeWebhookTool(call);
-        break;
-      }
-      default: {
-        result = { success: false, output: null, error: `Unknown tool type: ${call.toolType}`, durationMs: 0 };
-      }
-    }
+    });
   } catch (err) {
     result = { success: false, output: null, error: String(err), durationMs: Date.now() - start };
   }
@@ -54,6 +68,9 @@ export async function executeToolCall(call: ToolCall): Promise<ToolResult> {
   logChatbotToolCall(call, result, Date.now() - start);
   return result;
 }
+
+// Re-export so callers can check without executing
+export { isCircuitOpen } from './circuitBreaker.js';
 
 async function executeHttpTool(call: ToolCall): Promise<ToolResult> {
   const { config, input } = call;

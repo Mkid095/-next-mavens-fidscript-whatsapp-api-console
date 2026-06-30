@@ -60,6 +60,7 @@ export interface ChatListItem {
   lastMessageAt: number | null;
   unread: number;
   profilePic: string | null;
+  aiMode: 'ai' | 'manual' | null;
 }
 
 export interface MirrorMessage {
@@ -143,6 +144,7 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
       lastMessageAt: ts,
       unread: 0, // computed from inbox_messages below
       profilePic: str(c.profilePicUrl) || null,
+      aiMode: null, // populated below from chatbot_conversation_overrides
     });
   }
 
@@ -174,6 +176,19 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
       const phone = r.chat_id.replace('@s.whatsapp.net', '').replace(/^\+/, '');
       const idx = phoneToIndex[phone];
       if (idx !== undefined) items[idx].unread = r.cnt;
+    }
+  }
+
+  // Batch-load AI override modes for all JIDs in one query — no N+1
+  if (items.length > 0) {
+    const jids = items.map((i) => i.jid);
+    const placeholders = jids.map(() => '?').join(',');
+    const rows = db.prepare(
+      `SELECT conversation_id, mode FROM chatbot_conversation_overrides WHERE conversation_id IN (${placeholders})`
+    ).all(...jids) as { conversation_id: string; mode: string }[];
+    const overrideMap = new Map(rows.map((r) => [r.conversation_id, r.mode as 'ai' | 'manual']));
+    for (const item of items) {
+      item.aiMode = overrideMap.get(item.jid) ?? null;
     }
   }
 

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import { logAuditAction } from '../../utils/audit.js';
 import { dispatchConversationAssigned, dispatchConversationPriorityChanged, dispatchConversationStatusChanged } from '../../modules/platform/events/index.js';
+import { emitAiOverrideChanged } from '../../utils/gateway.js';
 import db from '../../database.js';
 
 // =============================================================================
@@ -19,6 +20,25 @@ function wsId(req: Request): string {
 function buildCtx(req: Request) {
   const workspaceId = wsId(req);
   return { workspaceId, actorUserId: workspaceId, roleId: 'role_0', perms: ['*'] };
+}
+
+/** Insert a system/timeline message into the inbox for audit purposes. */
+function insertTimelineMessage(conversationId: string, content: string, workspaceId: string): void {
+  db.prepare(`INSERT INTO inbox_messages
+    (id, conversation_id, workspace_id, from_number, from_name, message_type, content, direction, is_read, timestamp, is_system)
+    VALUES (?, ?, ?, '', ?, 'text', ?, 'system', 1, ?, 1)`
+  ).run(
+    `sys_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    conversationId, workspaceId, content, new Date().toISOString(),
+  );
+}
+
+/** Resolve an instance name for a workspace (client_id). Used for SSE emission. */
+function resolveInstanceName(workspaceId: string): string | null {
+  const row = db.prepare(
+    'SELECT name FROM instances WHERE client_id = ? LIMIT 1'
+  ).get(workspaceId) as { name: string } | undefined;
+  return row?.name ?? null;
 }
 
 // GET / — list conversations (?status=&assignee=&priority=&q=&sla_at_risk=&teams=)
@@ -137,6 +157,232 @@ router.patch('/:id', (req: Request, res: Response) => {
       logAuditAction(req, 'CONVERSATION_UPDATED', 'conversation', req.params.id, JSON.stringify(req.body));
     }
     res.json({ success: true });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Human Takeover ───────────────────────────────────────────────────────────────
+
+// GET /override/:chatId — check AI override mode for a WhatsApp chat (by JID).
+// Returns { mode: 'ai' | 'manual' | null }.
+router.get('/override/:chatId', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const chatId = req.params.chatId; // JID for WhatsApp chats
+
+    // Find the bot active on this chat's instance.
+    // conversations.chat_id stores the JID for WhatsApp conversations.
+    const bot = db.prepare(`
+      SELECT cc.id as chatbot_id
+      FROM chatbot_configs cc
+      JOIN chatbot_triggers ct ON ct.chatbot_id = cc.id AND ct.enabled = 1
+      LEFT JOIN conversations c ON c.instance_id = cc.instance_id AND c.chat_id = ?
+      WHERE cc.workspace_id = ? AND cc.enabled = 1
+      LIMIT 1
+    `).get(chatId, workspaceId) as { chatbot_id: string } | undefined;
+
+    if (!bot) {
+      res.json({ success: true, data: { mode: null } });
+      return;
+    }
+
+    const row = db.prepare(
+      'SELECT mode, expires_at, resume_policy, reason, overridden_by, overridden_at FROM chatbot_conversation_overrides WHERE conversation_id = ?'
+    ).get(chatId) as { mode: string; expires_at: string | null; resume_policy: string | null; reason: string | null; overridden_by: string | null; overridden_at: string | null } | undefined;
+
+    res.json({ success: true, data: {
+      mode: row?.mode ?? null,
+      expiresAt: row?.expires_at ?? null,
+      resumePolicy: row?.resume_policy ?? null,
+      reason: row?.reason ?? null,
+      overriddenBy: row?.overridden_by ?? null,
+      overriddenAt: row?.overridden_at ?? null,
+    } });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+router.post('/:id/takeover', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const conversationId = req.params.id;
+    const {
+      note, agent_id, chat_id,
+      expires_at,          // ISO timestamp or null
+      resume_policy,       // 'manual' | 'next_message' | 'timeout'
+      reason,              // handoff reason code
+    } = req.body as Record<string, unknown>;
+
+    const effectivePolicy = (resume_policy as string) || 'manual';
+    const effectiveReason = (reason as string) || null;
+
+    // WhatsApp path: chat_id (JID) is passed directly — no conversations UUID needed.
+    // The override key is the JID itself, matching what the worker uses.
+    if (chat_id && typeof chat_id === 'string') {
+      const bot = db.prepare(`
+        SELECT cc.id as chatbot_id
+        FROM chatbot_configs cc
+        JOIN chatbot_triggers ct ON ct.chatbot_id = cc.id AND ct.enabled = 1
+        JOIN instances i ON i.id = cc.instance_id AND i.client_id = ?
+        WHERE cc.workspace_id = ? AND cc.enabled = 1
+        LIMIT 1
+      `).get(workspaceId, workspaceId) as { chatbot_id: string } | undefined;
+
+      if (!bot) {
+        res.status(409).json({ success: false, error: 'No active chatbot on this workspace' });
+        return;
+      }
+
+      db.prepare(`INSERT OR REPLACE INTO chatbot_conversation_overrides
+        (conversation_id, chatbot_id, mode, overridden_by, note, overridden_at, expires_at, resume_policy, reason)
+        VALUES (?, ?, 'manual', ?, ?, datetime('now'), ?, ?, ?)`
+      ).run(chat_id, bot.chatbot_id, agent_id ?? null, note ?? null, expires_at ?? null, effectivePolicy, effectiveReason);
+
+      // Timeline message
+      insertTimelineMessage(chat_id, `Agent took over — AI paused${effectiveReason ? ` (${effectiveReason})` : ''}`, workspaceId);
+
+      // Emit SSE
+      const instanceName = resolveInstanceName(workspaceId);
+      if (instanceName) {
+        emitAiOverrideChanged(instanceName, {
+          chatId: chat_id, mode: 'manual',
+          overriddenBy: agent_id as string | undefined,
+          expiresAt: expires_at as string | undefined,
+          resumePolicy: effectivePolicy,
+        });
+      }
+
+      logAuditAction(req, 'UPDATE', 'conversation', chat_id, `Agent took over WhatsApp conversation from AI${effectiveReason ? ` (${effectiveReason})` : ''}`);
+      res.json({ success: true, message: 'AI disabled for this conversation' });
+      return;
+    }
+
+    // Standard path: conversation UUID
+    const conv = db.prepare('SELECT id FROM conversations WHERE id = ? AND workspace_id = ?')
+      .get(conversationId, workspaceId);
+    if (!conv) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
+    // Look up which bot is active for this conversation (if any)
+    const bot = db.prepare(`
+      SELECT cc.id as chatbot_id
+      FROM chatbot_configs cc
+      JOIN chatbot_triggers ct ON ct.chatbot_id = cc.id AND ct.enabled = 1
+      JOIN conversations c ON c.instance_id = cc.instance_id
+      WHERE c.id = ? AND cc.workspace_id = ? AND cc.enabled = 1
+      LIMIT 1
+    `).get(conversationId, workspaceId) as { chatbot_id: string } | undefined;
+
+    if (!bot) {
+      res.status(409).json({ success: false, error: 'No active chatbot on this conversation' });
+      return;
+    }
+
+    db.prepare(`INSERT OR REPLACE INTO chatbot_conversation_overrides
+      (conversation_id, chatbot_id, mode, overridden_by, note, overridden_at, expires_at, resume_policy, reason)
+      VALUES (?, ?, 'manual', ?, ?, datetime('now'), ?, ?, ?)`
+    ).run(conversationId, bot.chatbot_id, agent_id ?? null, note ?? null, expires_at ?? null, effectivePolicy, effectiveReason);
+
+    // Timeline message
+    insertTimelineMessage(conversationId, `Agent took over — AI paused${effectiveReason ? ` (${effectiveReason})` : ''}`, workspaceId);
+
+    // Emit SSE
+    const instanceName = resolveInstanceName(workspaceId);
+    if (instanceName) {
+      emitAiOverrideChanged(instanceName, {
+        chatId: conversationId, mode: 'manual',
+        overriddenBy: agent_id as string | undefined,
+        expiresAt: expires_at as string | undefined,
+        resumePolicy: effectivePolicy,
+      });
+    }
+
+    logAuditAction(req, 'UPDATE', 'conversation', conversationId, `Agent took over conversation from AI${effectiveReason ? ` (${effectiveReason})` : ''}`);
+    res.json({ success: true, message: 'AI disabled for this conversation' });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+router.post('/:id/resume-ai', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const conversationId = req.params.id;
+    const { chat_id } = req.body as Record<string, unknown>;
+
+    // WhatsApp path: chat_id (JID) is passed directly
+    if (chat_id && typeof chat_id === 'string') {
+      const info = db.prepare(
+        'DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?'
+      ).run(chat_id);
+
+      if (info.changes === 0) {
+        res.status(409).json({ success: false, error: 'No active override to resume from' });
+        return;
+      }
+
+      // Timeline message
+      insertTimelineMessage(chat_id as string, 'Agent resumed AI control', workspaceId);
+
+      // Emit SSE
+      const instanceName = resolveInstanceName(workspaceId);
+      if (instanceName) emitAiOverrideChanged(instanceName, { chatId: chat_id as string, mode: 'ai' });
+
+      logAuditAction(req, 'UPDATE', 'conversation', chat_id as string, 'Agent resumed AI control on WhatsApp');
+      res.json({ success: true, message: 'AI resumed for this conversation' });
+      return;
+    }
+
+    const conv = db.prepare('SELECT id FROM conversations WHERE id = ? AND workspace_id = ?')
+      .get(conversationId, workspaceId);
+    if (!conv) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
+    const info = db.prepare(
+      'DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?'
+    ).run(conversationId);
+
+    if (info.changes === 0) {
+      res.status(409).json({ success: false, error: 'No active override to resume from' });
+      return;
+    }
+
+    // Timeline message
+    insertTimelineMessage(conversationId, 'Agent resumed AI control', workspaceId);
+
+    // Emit SSE
+    const instanceName = resolveInstanceName(workspaceId);
+    if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
+
+    logAuditAction(req, 'UPDATE', 'conversation', conversationId, 'Agent resumed AI control');
+    res.json({ success: true, message: 'AI resumed for this conversation' });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── AI Response Metadata ───────────────────────────────────────────────────────
+
+router.get('/messages/:messageId/ai-metadata', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const { messageId } = req.params;
+
+    const msg = db.prepare(
+      'SELECT id FROM inbox_messages WHERE id = ? AND workspace_id = ?'
+    ).get(messageId, workspaceId);
+    if (!msg) { res.status(404).json({ success: false, error: 'Message not found' }); return; }
+
+    const meta = db.prepare(
+      'SELECT * FROM chatbot_response_metadata WHERE message_id = ?'
+    ).get(messageId);
+
+    if (!meta) {
+      res.status(404).json({ success: false, error: 'No AI metadata for this message' });
+      return;
+    }
+
+    res.json({ success: true, data: meta });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }

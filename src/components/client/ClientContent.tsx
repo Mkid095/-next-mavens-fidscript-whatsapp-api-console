@@ -8,7 +8,7 @@ import DocsSection from './DocsSection';
 import SandboxSection from './SandboxSection';
 import { MessagesPage } from '../../features/messages';
 import CampaignsView from './CampaignsView';
-import ChatbotsView from './chatbot/ChatbotsView';
+import ChatbotListPage from '../../features/chatbots/ChatbotListPage';
 import ContactsSection from './contacts/ContactsSection';
 import TokenStoreSection from './TokenStoreSection';
 import SettingsSection from './SettingsSection';
@@ -58,7 +58,7 @@ export default function ClientContent({
   if (activeSection === 'messages') {
     return (
       <div className="h-[calc(100vh-1rem)] p-2 lg:p-3">
-        <MessagesPage instances={instances} />
+        <MessagesPage instances={instances} clientToken={clientToken} />
       </div>
     );
   }
@@ -123,7 +123,7 @@ export default function ClientContent({
         />
       )}
       {activeSection === 'chatbots' && (
-        <ChatbotsView clientToken={clientToken ?? ''} instances={instances} />
+        clientToken && <ChatbotListPage clientToken={clientToken} instances={instances} />
       )}
       {activeSection === 'settings' && (
         <SettingsSection client={client} onLogout={onLogout} />

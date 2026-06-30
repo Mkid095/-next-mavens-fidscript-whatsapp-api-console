@@ -13,6 +13,8 @@ export interface ChatListItem {
   lastMessageAt: number | null;
   unread: number;
   profilePic: string | null;
+  /** AI mode for this chat — 'ai' = AI active, 'manual' = agent override, null = no override */
+  aiMode: 'ai' | 'manual' | null;
 }
 
 export interface MirrorMessage {
@@ -70,6 +72,30 @@ export const messagesApi = {
   /** Mark all incoming unread messages in a chat as read. Clears the badge. */
   markRead: (instanceName: string, jid: string) =>
     apiPost<{ updated: number }>(`/api/platform/chats/${encodeURIComponent(instanceName)}/mark-read`, { jid }),
+
+  /** Check AI override mode for a WhatsApp chat (by JID). Returns full override details. */
+  getAiOverride: (chatId: string) =>
+    apiGet<{ mode: 'ai' | 'manual' | null; expiresAt: string | null; resumePolicy: string | null; reason: string | null; overriddenBy: string | null; overriddenAt: string | null }>(
+      `/api/platform/conversations/override/${encodeURIComponent(chatId)}`
+    ),
+
+  /** Take over a WhatsApp chat (by JID) — disables AI, enables manual agent mode.
+   * @param opts.expiresAt    ISO timestamp — if set, AI auto-resumes at this time
+   * @param opts.resumePolicy  'manual' | 'next_message' | 'timeout'
+   * @param opts.reason       handoff reason code
+   * @param opts.note         free-text note
+   */
+  takeOver: (chatId: string, opts?: { expiresAt?: string; resumePolicy?: string; reason?: string; note?: string }) =>
+    apiPost<{ success: boolean; message?: string }>(
+      `/api/platform/conversations/takeover/${encodeURIComponent(chatId)}`,
+      { chat_id: chatId, ...opts }
+    ),
+
+  /** Resume AI for a WhatsApp chat (by JID) — removes the manual override. */
+  resumeAi: (chatId: string) =>
+    apiPost<{ success: boolean; message?: string }>(`/api/platform/conversations/resume-ai/${encodeURIComponent(chatId)}`, {
+      chat_id: chatId,
+    }),
 };
 
 /** Turn a contact phone (e.g. "+254712345678") into a 1:1 WhatsApp JID. */

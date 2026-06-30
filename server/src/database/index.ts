@@ -17,6 +17,14 @@ import { runPhase12Migrations } from './phase12.js';
 import { runPhase13Migrations } from './phase13.js';
 import { runPhonebookMigrations } from './phonebook.js';
 import { runEmailLogMigrations } from './emailLog.js';
+import { runPhase14Migrations } from './phase14.js';
+import { runPhase15bMigrations } from './phase15b.js';
+import { runPhase15cMigrations } from './phase15c.js';
+import { runPhase16Migrations } from './phase16.js';
+import { runPhase17Migrations } from './phase17.js';
+import { runPhase18Migrations } from './phase18.js';
+import { runPhase19Migrations } from './phase19.js';
+import { runPhase20Migrations } from './phase20.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +58,14 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase13Migrations(db);    // LLM model configs + API formats + group settings + contact assignments
   runPhonebookMigrations(db);  // contacts.instance_id for WhatsApp phonebook sync
   runEmailLogMigrations(db);     // email_send_log: every send (success/failure) audited
+  runPhase14Migrations(db);     // Draft autosave + publish jobs + runtime artifacts
+  runPhase15bMigrations(db);    // Job recovery: heartbeat, worker_id, retry_count
+  runPhase15cMigrations(db);    // Knowledge index versioning
+  runPhase16Migrations(db);    // Runtime cache + tool failures + conversation locks
+  runPhase17Migrations(db);    // Token usage + forecasting
+  runPhase18Migrations(db);    // Runtime traces + AI response explainability
+  runPhase19Migrations(db);     // Human takeover mode
+  runPhase20Migrations(db);     // Production-grade handoff (expiry, resume policies, timeline)
   await seedData(db);
   saveDatabase();
 

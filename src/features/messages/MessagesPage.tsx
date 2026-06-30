@@ -18,13 +18,14 @@ import type { ChatListItem } from './messagesApi';
 
 interface MessagesPageProps {
   instances: Instance[];
+  clientToken?: string;
 }
 
 function pickDefaultInstance(instances: Instance[]): Instance | null {
   return instances.find((i) => i.status === 'connected') ?? instances[0] ?? null;
 }
 
-export default function MessagesPage({ instances }: MessagesPageProps) {
+export default function MessagesPage({ instances, clientToken }: MessagesPageProps) {
   const [instance, setInstance] = useState<Instance | null>(() => pickDefaultInstance(instances));
   const [search, setSearch] = useState('');
   const [selectedJid, setSelectedJid] = useState<string | null>(null);
@@ -58,7 +59,7 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
     if (!selectedJid) return null;
     return chats.find((c) => c.jid === selectedJid) ?? {
       jid: selectedJid, name: selectedJid, isGroup: selectedJid.includes('@g.us'),
-      lastMessage: '', lastMessageAt: null, unread: 0, profilePic: null,
+      lastMessage: '', lastMessageAt: null, unread: 0, profilePic: null, aiMode: null,
     };
   }, [chats, selectedJid]);
 
@@ -197,6 +198,7 @@ export default function MessagesPage({ instances }: MessagesPageProps) {
           isMobileListVisible={!selectedJid}
           onBack={() => setSelectedJid(null)}
           onSend={onSend}
+          clientToken={clientToken}
         />
       </div>
 

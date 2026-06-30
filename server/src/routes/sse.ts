@@ -4,7 +4,9 @@ import { verifyToken } from '../middleware/auth/jwt.js';
 import { instanceEmitter } from '../utils/gateway.js';
 import { paymentEmitter } from '../utils/paymentEmitter.js';
 import { dashboardEmitter } from '../utils/dashboardEmitter.js';
+import { publishJobEmitter } from '../utils/publishJobEmitter.js';
 import type { Client } from '../types.js';
+import type { PublishJob } from '../types/chatbotDraft.js';
 
 const router = Router();
 
@@ -264,6 +266,80 @@ router.post('/dashboard/refresh', (req: Request, res: Response) => {
   }
   dashboardEmitter.emit('msgUpdate', decoded.id);
   res.json({ success: true });
+});
+
+/**
+ * GET /api/sse/publish-jobs/:jobId
+ * SSE endpoint for real-time publish job progress.
+ * Auth via query param: ?token=<client_jwt>
+ *
+ * On connect: immediately streams current job state.
+ * On job update: streams the updated job row via publishJobEmitter.
+ */
+router.get('/publish-jobs/:jobId', (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  if (!token) {
+    res.status(401).json({ success: false, error: 'Token required' });
+    return;
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded || decoded.type !== 'client') {
+    res.status(401).json({ success: false, error: 'Invalid or expired token' });
+    return;
+  }
+
+  const client = db.prepare('SELECT * FROM clients WHERE id = ? AND is_active = 1').get(decoded.id) as Client | undefined;
+  if (!client) {
+    res.status(401).json({ success: false, error: 'Client not found or inactive' });
+    return;
+  }
+
+  const jobId = req.params.jobId;
+
+  // Verify job belongs to this workspace
+  const job = db.prepare(
+    'SELECT * FROM chatbot_publish_jobs WHERE id = ? AND workspace_id = ?'
+  ).get(jobId, client.id) as PublishJob | undefined;
+  if (!job) {
+    res.status(404).json({ success: false, error: 'Job not found' });
+    return;
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  res.write(': connected\n\n');
+
+  const heartbeat = setInterval(() => {
+    res.write(': heartbeat\n\n');
+  }, 30000);
+
+  // Send initial job state
+  const sendJob = (j: PublishJob) => {
+    try {
+      res.write(`event: jobUpdate\ndata: ${JSON.stringify(j)}\n\n`);
+    } catch (_) { /* client may have disconnected */ }
+  };
+
+  sendJob(job);
+
+  // Forward job updates from the pipeline
+  const jobUpdateHandler = (emittedJobId: string, updatedJob: PublishJob) => {
+    if (emittedJobId === jobId) {
+      sendJob(updatedJob);
+    }
+  };
+
+  publishJobEmitter.on('jobUpdated', jobUpdateHandler);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    publishJobEmitter.off('jobUpdated', jobUpdateHandler);
+  });
 });
 
 export default router;

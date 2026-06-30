@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { Client, Instance, TokenPackage, DailyUsage, ClientMessage } from '../../services/api';
 import Sidebar, { ClientSection } from '../Sidebar';
 import BottomNav from '../shared/BottomNav';
@@ -7,6 +7,7 @@ import { UpdateToast } from '../shared/UpdateToast';
 import ClientContent from './ClientContent';
 import { useInstanceSSE, type InstanceStateChange } from './whatsapp/useInstanceSSE';
 import { CommandKProvider } from '../../features/search/index.js';
+import ChatbotBuilderShell from '../../features/chatbots/ChatbotBuilderShell';
 
 interface ClientDashboardProps {
   client: Client;
@@ -113,6 +114,47 @@ export default function ClientDashboard({
     onLogout();
   };
 
+  // ── Intercept chatbot builder routes ─────────────────────────────────
+  const isBuilderRoute = location.pathname.startsWith('/client/chatbots/') &&
+    location.pathname !== '/client/chatbots';
+  const isNewChatbot = location.pathname === '/client/chatbots/new';
+  const isEditChatbot = /^\/client\/chatbots\/[^/]+$/ .test(location.pathname) && !isNewChatbot;
+
+  // ── Builder mode (full-screen, no ClientContent chrome) ────────────────
+  if (isBuilderRoute) {
+    return (
+      <CommandKProvider>
+        <div className="flex h-screen bg-[#11100b] overflow-hidden">
+          <Sidebar
+            activeSection="chatbots"
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            clientName={client.name}
+            tokenBalance={tokenBalance}
+            onLogout={handleLogout}
+          />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+              {clientToken && (
+                <ChatbotBuilderShell
+                  clientToken={clientToken}
+                  instances={instances}
+                />
+              )}
+            </div>
+            <BottomNav
+              activeMenuItem="chatbots"
+              onMenuItemChange={handleSectionChange}
+              onLogout={handleLogout}
+            />
+          </div>
+          <UpdateToast />
+        </div>
+      </CommandKProvider>
+    );
+  }
+
+  // ── Normal section-based rendering ────────────────────────────────────
   return (
     <CommandKProvider>
     <div className="flex h-screen bg-[#11100b] overflow-hidden">

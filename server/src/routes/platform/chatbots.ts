@@ -3,6 +3,8 @@ import { clientJwtAuth } from '../../middleware/auth.js';
 import { logAuditAction } from '../../utils/audit.js';
 import db from '../../database.js';
 import { evaluateTriggers } from '../../modules/ai/chatbotEngine.js';
+import { validatePublish } from '../../modules/chatbot/validation/index.js';
+import { runPublishPipeline } from '../../modules/chatbot/publishPipeline.js';
 
 // Ensure chatbot_response_rules table exists (may not have been created by phase9 migration
 // if DB was already past that version — safe to run on every startup via CREATE TABLE IF NOT EXISTS)
@@ -407,6 +409,362 @@ router.patch('/:id/toggle', (req: Request, res: Response) => {
     db.prepare('UPDATE chatbot_configs SET enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(enabled ? 1 : 0, req.params.id);
     res.json({ success: true, message: `Chatbot ${enabled ? 'enabled' : 'disabled'}` });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Publish Pipeline ──────────────────────────────────────────────────────────
+
+router.post('/:id/publish', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT * FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const { draft_json } = req.body;
+    if (!draft_json) {
+      return res.status(400).json({ success: false, error: 'draft_json is required in request body' });
+    }
+
+    let draft: Record<string, unknown>;
+    try {
+      draft = JSON.parse(draft_json) as Record<string, unknown>;
+    } catch {
+      return res.status(400).json({ success: false, error: 'draft_json must be valid JSON' });
+    }
+
+    // Run publish gate validation
+    const validation = validatePublish(draft as Parameters<typeof validatePublish>[0]);
+    if (!validation.valid) {
+      res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        errors: validation.errors,
+        warnings: validation.warnings,
+      });
+      return;
+    }
+
+    // Create job row
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    db.prepare(`INSERT INTO chatbot_publish_jobs (id, chatbot_id, workspace_id, status, progress, current_step, message)
+      VALUES (?, ?, ?, 'pending', 0, 'queued', 'Publish queued…')`
+    ).run(jobId, req.params.id, workspaceId);
+
+    // Fire and forget — pipeline updates the job row; frontend polls for status
+    runPublishPipeline(req.params.id, workspaceId, draft as Parameters<typeof runPublishPipeline>[2], jobId);
+
+    logAuditAction(req, 'UPDATE', 'chatbot', req.params.id, `Published chatbot "${bot.name as string}"`);
+    res.json({ success: true, data: { jobId }, message: 'Publish started' });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Publish Job Status ────────────────────────────────────────────────────────
+
+router.get('/:id/publish-job', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    // Find most recent job for this chatbot
+    const row = db.prepare(
+      'SELECT * FROM chatbot_publish_jobs WHERE chatbot_id = ? AND workspace_id = ? ORDER BY created_at DESC LIMIT 1'
+    ).get(req.params.id, workspaceId);
+    if (!row) { res.status(404).json({ success: false, error: 'No publish job found' }); return; }
+    res.json({ success: true, data: row });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Health Check ──────────────────────────────────────────────────────────────
+
+router.get('/:id/health', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT * FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const knowledge = db.prepare(
+      "SELECT COUNT(*) as cnt FROM chatbot_knowledge WHERE chatbot_id = ? AND status = 'active'"
+    ).get(req.params.id) as { cnt: number } | undefined;
+
+    const tools = db.prepare(
+      'SELECT COUNT(*) as cnt FROM chatbot_tools WHERE chatbot_id = ? AND enabled = 1'
+    ).get(req.params.id) as { cnt: number } | undefined;
+
+    const triggers = db.prepare(
+      'SELECT COUNT(*) as cnt FROM chatbot_triggers WHERE chatbot_id = ? AND enabled = 1'
+    ).get(req.params.id) as { cnt: number } | undefined;
+
+    const lastTest = db.prepare(
+      'SELECT created_at FROM chatbot_test_sessions WHERE chatbot_id = ? ORDER BY created_at DESC LIMIT 1'
+    ).get(req.params.id) as { created_at: string } | undefined;
+
+    const aiConfig = db.prepare(
+      'SELECT provider, model FROM chatbot_ai_configs WHERE chatbot_id = ? LIMIT 1'
+    ).get(req.params.id) as { provider: string; model: string } | undefined;
+
+    res.json({
+      success: true,
+      data: {
+        status: (bot as { enabled: number }).enabled ? 'healthy' : 'disabled',
+        provider: aiConfig?.provider ?? 'not configured',
+        model: aiConfig?.model ?? null,
+        knowledge: knowledge?.cnt ?? 0,
+        tools: tools?.cnt ?? 0,
+        triggers: triggers?.cnt ?? 0,
+        last_test: lastTest?.created_at ?? null,
+      },
+    });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Test Configuration ────────────────────────────────────────────────────────
+
+router.post('/:id/test-config', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT * FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const { draft_json } = req.body;
+    if (!draft_json) {
+      return res.status(400).json({ success: false, error: 'draft_json is required' });
+    }
+
+    let draft: Record<string, unknown>;
+    try {
+      draft = JSON.parse(draft_json) as Record<string, unknown>;
+    } catch {
+      return res.status(400).json({ success: false, error: 'draft_json must be valid JSON' });
+    }
+
+    const validation = validatePublish(draft as Parameters<typeof validatePublish>[0]);
+
+    const checks = {
+      provider: { ok: true, message: '' as string },
+      knowledge: { ok: true, message: '' as string },
+      tools: { ok: true, message: '' as string },
+    };
+
+    // Check knowledge sources in error state
+    const knowledge = draft.knowledge as { sources: Array<{ name: string; status: string }> } | undefined;
+    const errorSources = knowledge?.sources?.filter(s => s.status === 'error') ?? [];
+    if (errorSources.length > 0) {
+      checks.knowledge = { ok: false, message: `${errorSources.length} source(s) in error state` };
+    }
+
+    // Check tools
+    const tools = draft.tools as { tools: Array<{ name: string; type: string; config: Record<string, unknown> }> } | undefined;
+    const badTools = tools?.tools?.filter(t => {
+      if (!t.name) return true;
+      if ((t.type === 'http-request' || t.type === 'webhook')) {
+        const url = t.config?.url as string | undefined;
+        return url && !url.startsWith('http');
+      }
+      return false;
+    }) ?? [];
+    if (badTools.length > 0) {
+      checks.tools = { ok: false, message: `${badTools.length} tool(s) with invalid URL` };
+    }
+
+    res.json({
+      success: true,
+      data: {
+        valid: validation.valid,
+        errors: validation.errors,
+        warnings: validation.warnings,
+        checks,
+      },
+    });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Version History ───────────────────────────────────────────────────────────
+
+router.get('/:id/versions', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const versions = db.prepare(
+      'SELECT * FROM chatbot_versions WHERE chatbot_id = ? ORDER BY version DESC'
+    ).all(req.params.id);
+
+    res.json({ success: true, data: versions });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Rollback ─────────────────────────────────────────────────────────────────
+
+router.post('/:id/rollback', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT * FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId) as { id: string; name: string } | undefined;
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const { version_id } = req.body;
+    if (!version_id) {
+      return res.status(400).json({ success: false, error: 'version_id is required' });
+    }
+
+    const version = db.prepare(
+      'SELECT * FROM chatbot_versions WHERE id = ? AND chatbot_id = ?'
+    ).get(version_id, req.params.id) as { config_snapshot_json: string } | undefined;
+    if (!version) { res.status(404).json({ success: false, error: 'Version not found' }); return; }
+
+    // Restore config_json from the snapshot
+    db.prepare(`UPDATE chatbot_configs SET
+      config_json = ?,
+      updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?`
+    ).run(version.config_snapshot_json, req.params.id);
+
+    logAuditAction(req, 'UPDATE', 'chatbot', req.params.id, `Rolled back to version ${version_id}`);
+    res.json({ success: true, message: 'Rolled back to previous version' });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Duplicate Chatbot ─────────────────────────────────────────────────────────
+
+router.post('/:id/duplicate', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT * FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId) as { name: string; description: string; config_json: string; instance_id: string; priority: number } | undefined;
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const newId = `bot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const newName = `${bot.name} (Copy)`;
+
+    db.prepare(`INSERT INTO chatbot_configs (id, workspace_id, instance_id, name, description, priority, config_json, enabled)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 0)`
+    ).run(newId, workspaceId, bot.instance_id, newName, bot.description, bot.priority, bot.config_json);
+
+    // Auto-create AI config and policy rows for the new bot
+    db.prepare('INSERT INTO chatbot_ai_configs (id, chatbot_id) VALUES (?, ?)').run(`aicfg_${Date.now()}`, newId);
+    db.prepare('INSERT INTO chatbot_response_policies (id, chatbot_id) VALUES (?, ?)').run(`pol_${Date.now()}`, newId);
+
+    logAuditAction(req, 'CREATE', 'chatbot', newId, `Duplicated chatbot from ${req.params.id}`);
+    res.status(201).json({ success: true, data: { id: newId }, message: 'Chatbot duplicated' });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Token Forecast ─────────────────────────────────────────────────────────────
+
+router.get('/:id/token-forecast', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dayOfMonth = now.getDate();
+    const remainingDays = daysInMonth - dayOfMonth;
+
+    // Current month totals
+    const monthRow = db.prepare(`
+      SELECT
+        COALESCE(SUM(prompt_tokens), 0) as input_tokens,
+        COALESCE(SUM(completion_tokens), 0) as output_tokens,
+        COALESCE(SUM(total_tokens), 0) as total_tokens,
+        COALESCE(SUM(cost_usd), 0) as cost_usd
+      FROM chatbot_token_usage
+      WHERE chatbot_id = ? AND period_start >= ?
+    `).get(req.params.id, startOfMonth) as { input_tokens: number; output_tokens: number; total_tokens: number; cost_usd: number } | undefined;
+
+    const inputTokens = monthRow?.input_tokens ?? 0;
+    const outputTokens = monthRow?.output_tokens ?? 0;
+    const totalTokens = monthRow?.total_tokens ?? 0;
+    const costCents = Math.round((monthRow?.cost_usd ?? 0) * 100);
+
+    // Daily average (for forecasting)
+    const dailyAvg = dayOfMonth > 0
+      ? { inputTokens: Math.round(inputTokens / dayOfMonth), outputTokens: Math.round(outputTokens / dayOfMonth) }
+      : { inputTokens: 0, outputTokens: 0 };
+
+    const forecastInput = Math.round(dailyAvg.inputTokens * daysInMonth);
+    const forecastOutput = Math.round(dailyAvg.outputTokens * daysInMonth);
+    const forecastCost = Math.round((forecastInput * 0.001 + forecastOutput * 0.002) * 100); // $0.001/1K input, $0.002/1K output
+
+    res.json({
+      success: true,
+      data: {
+        currentMonth: { inputTokens, outputTokens, totalTokens, costCents },
+        forecastMonth: {
+          inputTokens: forecastInput,
+          outputTokens: forecastOutput,
+          costCents: forecastCost,
+        },
+        dailyAverage: dailyAvg,
+        remainingDays,
+        daysInMonth,
+      },
+    });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Runtime Traces ─────────────────────────────────────────────────────────────
+
+router.get('/:id/traces', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const { conversationId, limit = '50' } = req.query;
+    const limitNum = Math.min(Number(limit), 200);
+
+    let rows: Record<string, unknown>[];
+    if (conversationId) {
+      rows = db.prepare(`
+        SELECT * FROM chatbot_traces
+        WHERE chatbot_id = ? AND conversation_id = ?
+        ORDER BY created_at DESC
+        LIMIT ?
+      `).all(req.params.id, conversationId, limitNum);
+    } else {
+      rows = db.prepare(`
+        SELECT * FROM chatbot_traces
+        WHERE chatbot_id = ?
+        ORDER BY created_at DESC
+        LIMIT ?
+      `).all(req.params.id, limitNum);
+    }
+
+    res.json({ success: true, data: rows });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }
