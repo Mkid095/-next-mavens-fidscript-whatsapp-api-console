@@ -236,8 +236,8 @@ router.post('/:id/takeover', (req: Request, res: Response) => {
       }
 
       db.prepare(`INSERT OR REPLACE INTO chatbot_conversation_overrides
-        (conversation_id, chatbot_id, mode, overridden_by, note, overridden_at, expires_at, resume_policy, reason)
-        VALUES (?, ?, 'manual', ?, ?, datetime('now'), ?, ?, ?)`
+        (conversation_id, chatbot_id, mode, overridden_by, note, overridden_at, expires_at, resume_policy, reason, status, source)
+        VALUES (?, ?, 'manual', ?, ?, datetime('now'), ?, ?, ?, 'active', 'manual')`
       ).run(chat_id, bot.chatbot_id, agent_id ?? null, note ?? null, expires_at ?? null, effectivePolicy, effectiveReason);
 
       // Timeline message
@@ -280,8 +280,8 @@ router.post('/:id/takeover', (req: Request, res: Response) => {
     }
 
     db.prepare(`INSERT OR REPLACE INTO chatbot_conversation_overrides
-      (conversation_id, chatbot_id, mode, overridden_by, note, overridden_at, expires_at, resume_policy, reason)
-      VALUES (?, ?, 'manual', ?, ?, datetime('now'), ?, ?, ?)`
+      (conversation_id, chatbot_id, mode, overridden_by, note, overridden_at, expires_at, resume_policy, reason, status, source)
+      VALUES (?, ?, 'manual', ?, ?, datetime('now'), ?, ?, ?, 'active', 'manual')`
     ).run(conversationId, bot.chatbot_id, agent_id ?? null, note ?? null, expires_at ?? null, effectivePolicy, effectiveReason);
 
     // Timeline message
@@ -314,8 +314,8 @@ router.post('/:id/resume-ai', (req: Request, res: Response) => {
     // WhatsApp path: chat_id (JID) is passed directly
     if (chat_id && typeof chat_id === 'string') {
       const info = db.prepare(
-        'DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?'
-      ).run(chat_id);
+        `UPDATE chatbot_conversation_overrides SET status='cancelled', ended_at=?, ended_reason='admin_cancelled' WHERE conversation_id=? AND status='active'`
+      ).run(new Date().toISOString(), chat_id as string);
 
       if (info.changes === 0) {
         res.status(409).json({ success: false, error: 'No active override to resume from' });
@@ -339,8 +339,8 @@ router.post('/:id/resume-ai', (req: Request, res: Response) => {
     if (!conv) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
 
     const info = db.prepare(
-      'DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?'
-    ).run(conversationId);
+      `UPDATE chatbot_conversation_overrides SET status='cancelled', ended_at=?, ended_reason='admin_cancelled' WHERE conversation_id=? AND status='active'`
+    ).run(new Date().toISOString(), conversationId);
 
     if (info.changes === 0) {
       res.status(409).json({ success: false, error: 'No active override to resume from' });

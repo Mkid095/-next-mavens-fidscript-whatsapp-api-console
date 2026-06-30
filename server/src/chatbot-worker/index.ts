@@ -109,13 +109,20 @@ async function processMessage(msg: InboundMessage): Promise<void> {
   try {
     // 2. Check for active human-takeover override
     const override = db.prepare(
-      'SELECT mode, expires_at, resume_policy FROM chatbot_conversation_overrides WHERE conversation_id = ?'
-    ).get(conversationId) as { mode: string; expires_at?: string | null; resume_policy?: string | null } | undefined;
+      'SELECT id, mode, status, expires_at, resume_policy FROM chatbot_conversation_overrides WHERE conversation_id = ?'
+    ).get(conversationId) as { id: string; mode: string; status: string; expires_at?: string | null; resume_policy?: string | null } | undefined;
 
     if (override?.mode === 'manual') {
+      // Skip if not active (expired/completed/cancelled — already transitioned)
+      if (override.status !== 'active') {
+        console.log(`[worker] Conversation ${conversationId} override status=${override.status} — skipping AI`);
+        return;
+      }
       if (!isOverrideActive(override)) {
-        // Expired — delete override, insert timeline, emit SSE, resume AI
-        db.prepare('DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?').run(conversationId);
+        // Expired — transition to expired, insert timeline, emit SSE, resume AI
+        db.prepare(
+          `UPDATE chatbot_conversation_overrides SET status='expired', ended_at=?, ended_reason='timeout_expired' WHERE id=?`
+        ).run(new Date().toISOString(), override.id);
         insertTimelineMessage(conversationId, 'AI resumed automatically (override expired)', workspaceId);
         if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
         console.log(`[worker] Override expired for ${conversationId} — AI resumed`);
@@ -266,12 +273,14 @@ async function processMessage(msg: InboundMessage): Promise<void> {
         model: String(aiConfig.model ?? 'gemini'),
       });
 
-      // next_message policy: after AI responds, clear override so next message goes to AI
-      if (willResumeNextMessage) {
-        db.prepare('DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?').run(conversationId);
+      // next_message policy: after AI responds, transition override to completed
+      if (willResumeNextMessage && override) {
+        db.prepare(
+          `UPDATE chatbot_conversation_overrides SET status='completed', ended_at=?, ended_reason='next_message_completed' WHERE id=?`
+        ).run(new Date().toISOString(), override.id);
         insertTimelineMessage(conversationId, 'AI resumed automatically (one-shot manual)', workspaceId);
         if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
-        console.log(`[worker] next_message policy — override cleared after AI response`);
+        console.log(`[worker] next_message policy — override transitioned to completed after AI response`);
       }
 
       saveDatabase();

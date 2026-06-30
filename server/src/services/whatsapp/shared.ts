@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Request } from 'express';
 import db from '../../database.js';
 import type { Instance, Client } from '../../types.js';
-import { emitTokenUpdate } from '../../utils/gateway.js';
+import { emitTokenUpdate, emitAiOverrideChanged } from '../../utils/gateway.js';
 import { logApiRequest } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import { normalizePhone } from '../../utils/phone.js';
@@ -88,18 +88,19 @@ export function saveSentMessage(
   isGroup = 0,
   conversationId?: string,
   customerId?: string,
+  senderType = 'agent',
 ) {
   const normalized = normalizePhone(to);
   const chat = chatId || normalized || null;
   db.prepare(`
     INSERT INTO inbox_messages
       (id, instance_id, client_id, workspace_id, from_number, from_name, message_type,
-       content, media_url, is_read, direction, chat_id, is_group, conversation_id, customer_id)
-    VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, 1, 'outgoing', ?, ?, ?, ?)
+       content, media_url, is_read, direction, chat_id, is_group, conversation_id, customer_id, sender_type)
+    VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, 1, 'outgoing', ?, ?, ?, ?, ?)
   `).run(
     msgId, instanceId, clientId, workspaceId,
     normalized || to, messageType, content, mediaUrl || null,
-    chat, isGroup, conversationId || null, customerId || null,
+    chat, isGroup, conversationId || null, customerId || null, senderType,
   );
 }
 
@@ -147,6 +148,7 @@ export async function finalize(
   isGroup = 0,
   _conversationId?: string,
   _customerId?: string,
+  senderType: 'agent' | 'bot' | 'system' = 'agent',
 ): Promise<void> {
   const workspaceId = ctx.instance.client_id; // client_id = workspace_id bridge
 
@@ -163,7 +165,7 @@ export async function finalize(
   saveSentMessage(
     ctx.instance.id, ctx.instance.client_id, workspaceId,
     msgId, to, content, type, mediaUrl, chatId, isGroup,
-    convId, custId,
+    convId, custId, senderType,
   );
   logApiRequest(ctx.req, ctx.instance.id, ctx.instance.client_id, 200, logBody);
   emitDashboardRefresh(ctx.instance.client_id);
@@ -174,6 +176,70 @@ export async function finalize(
       { workspaceId, actorUserId: workspaceId, roleId: 'role_0', perms: ['*'] },
       { conversationId: convId, customerId: custId, messageId: msgId, messageType: type, content, toNumber: to }
     ).catch(err => console.error('[shared] dispatchMessageSent failed:', err));
+  }
+
+  // ── Auto-takeover: when an agent sends an outbound reply, automatically pause AI
+  // so the next incoming customer message goes to the agent (next_message policy).
+  // Only triggers for agent sends that resolved to a real conversation.
+  if (senderType === 'agent' && convId) {
+    autoTakeoverForAgentReply(ctx.instance.name, workspaceId, convId, ctx.instance.id);
+  }
+}
+
+/**
+ * Auto-takeover: when an agent manually replies to a conversation where the AI is
+ * still active, insert a next_message override so the AI does NOT reply to the
+ * next incoming message — the agent has already responded.
+ *
+ * Only inserts if:
+ *   1. No active override exists for this conversation (avoid duplicate stacking)
+ *   2. A bot is configured for this workspace/instance
+ */
+function autoTakeoverForAgentReply(
+  instanceName: string,
+  workspaceId: string,
+  conversationId: string,
+  instanceId: string,
+): void {
+  try {
+    // Only insert if no active override already exists
+    const existing = db.prepare(
+      `SELECT id FROM chatbot_conversation_overrides WHERE conversation_id = ? AND status = 'active' LIMIT 1`
+    ).get(conversationId);
+    if (existing) return; // already overridden or a manual override is in place
+
+    // Find the active bot for this instance
+    const bot = db.prepare(`
+      SELECT id FROM chatbot_configs
+      WHERE instance_id = ? AND workspace_id = ? AND enabled = 1
+      LIMIT 1
+    `).get(instanceId, workspaceId) as { id: string } | undefined;
+    if (!bot) return;
+
+    // Insert a next_message override: AI pauses for one reply then resumes automatically
+    db.prepare(`
+      INSERT INTO chatbot_conversation_overrides
+        (conversation_id, chatbot_id, mode, overridden_at, resume_policy, status, source, ended_reason)
+      VALUES (?, ?, 'manual', datetime('now'), 'next_message', 'active', 'automatic', 'agent_reply')
+    `).run(conversationId, bot.id);
+
+    // Timeline message
+    const msgId = `sys_${Date.now()}`;
+    db.prepare(`
+      INSERT INTO inbox_messages
+        (id, conversation_id, workspace_id, from_number, from_name, message_type, content,
+         direction, is_read, timestamp, is_system, sender_type)
+      VALUES (?, ?, ?, '', 'System', 'text', 'AI paused automatically — agent replied',
+              'system', 1, datetime('now'), 1, 'system')
+    `).run(msgId, conversationId, workspaceId);
+
+    // Emit SSE so chat list updates in real time
+    emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'manual' });
+
+    console.log(`[autoTakeover] Agent reply → AI paused for conversation ${conversationId}`);
+  } catch (err) {
+    // Non-fatal: must never break the send path
+    console.error('[autoTakeover] Failed:', err);
   }
 }
 
