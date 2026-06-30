@@ -224,9 +224,9 @@ function autoTakeoverForAgentReply(
       VALUES (?, ?, 'manual', datetime('now'), 'next_message', 'active', 'automatic', 'agent_reply')
     `).run(conversationId, bot.id);
 
-    // Update conversation's active_agent_id if we have an authenticated agent
+    // Update conversation's active_agent_id and transition to waiting_customer
     if (agentUserId) {
-      db.prepare(`UPDATE conversations SET active_agent_id=? WHERE id=?`).run(agentUserId, conversationId);
+      db.prepare(`UPDATE conversations SET active_agent_id=?, status='waiting_customer' WHERE id=?`).run(agentUserId, conversationId);
     }
 
     // Timeline message

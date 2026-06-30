@@ -408,14 +408,14 @@ router.post('/:id/assign', async (req: Request, res: Response) => {
     // Insert assignment history
     db.prepare(`
       INSERT INTO conversation_assignments
-        (id, conversation_id, user_id, team_id, assigned_by, status, notes)
-      VALUES (?, ?, ?, ?, ?, 'active', ?)`
-    ).run(id, conversationId, userId ?? null, teamId ?? null, actorUserId, notes ?? null);
+        (id, conversation_id, user_id, team_id, assigned_by, assignee_type, status, notes)
+      VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`
+    ).run(id, conversationId, userId ?? null, teamId ?? null, actorUserId, assigneeType, notes ?? null);
 
-    // Update conversation assignee fields
+    // Update conversation assignee fields and transition to 'assigned'
     db.prepare(`
       UPDATE conversations
-      SET assignee_type = ?, assignee_id = ?, team_id = ?, active_agent_id = ?
+      SET assignee_type = ?, assignee_id = ?, team_id = ?, active_agent_id = ?, status = 'assigned'
       WHERE id = ?`
     ).run(assigneeType, userId ?? null, teamId ?? null, userId ?? null, conversationId);
 
@@ -495,11 +495,11 @@ router.post('/:id/transfer', async (req: Request, res: Response) => {
 
     db.prepare(`
       INSERT INTO conversation_assignments
-        (id, conversation_id, user_id, team_id, assigned_by, status, notes)
-      VALUES (?, ?, ?, ?, ?, 'active', ?)`
-    ).run(newId, conversationId, userId ?? null, teamId ?? null, actorUserId, notes ?? null);
+        (id, conversation_id, user_id, team_id, assigned_by, assignee_type, status, notes)
+      VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`
+    ).run(newId, conversationId, userId ?? null, teamId ?? null, actorUserId, assigneeType, notes ?? null);
 
-    db.prepare(`UPDATE conversations SET assignee_type=?, assignee_id=?, team_id=?, active_agent_id=? WHERE id=?`)
+    db.prepare(`UPDATE conversations SET assignee_type=?, assignee_id=?, team_id=?, active_agent_id=?, status='assigned' WHERE id=?`)
       .run(assigneeType, userId ?? null, teamId ?? null, userId ?? null, conversationId);
 
     let toName = assigneeId;
@@ -553,8 +553,8 @@ router.post('/:id/release', async (req: Request, res: Response) => {
         .run(current.id);
     }
 
-    // Clear assignee on conversation
-    db.prepare(`UPDATE conversations SET assignee_type='unassigned', assignee_id=null, team_id=null, active_agent_id=null WHERE id=?`)
+    // Clear assignee on conversation and mark as resolved
+    db.prepare(`UPDATE conversations SET assignee_type='unassigned', assignee_id=null, team_id=null, active_agent_id=null, status='resolved' WHERE id=?`)
       .run(conversationId);
 
     insertTimelineMessage(conversationId, `Conversation released by ${releasedBy}`, workspaceId);
