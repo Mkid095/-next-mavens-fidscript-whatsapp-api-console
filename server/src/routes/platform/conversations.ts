@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { clientJwtAuth } from '../../middleware/auth.js';
+import { workspaceAuth } from '../../modules/platform/workspace/context.js';
 import { logAuditAction } from '../../utils/audit.js';
 import { dispatchConversationAssigned, dispatchConversationPriorityChanged, dispatchConversationStatusChanged } from '../../modules/platform/events/index.js';
 import { emitAiOverrideChanged } from '../../utils/gateway.js';
+import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import db from '../../database.js';
 
 // =============================================================================
@@ -12,6 +14,7 @@ import db from '../../database.js';
 
 const router = Router();
 router.use(clientJwtAuth);
+router.use(workspaceAuth); // populates req.workspace.userId for assignee=me + assignment routes
 
 function wsId(req: Request): string {
   return req.client!.id;
@@ -66,7 +69,11 @@ router.get('/', (req: Request, res: Response) => {
     if (status) { sql += ' AND conv.status = ?'; params.push(status); }
     if (priority) { sql += ' AND conv.priority = ?'; params.push(priority); }
     if (assignee === 'me') {
-      sql += ' AND conv.assignee_type = ?'; params.push('user');
+      // Only show conversations assigned to the requesting user
+      const userId = (req as any).workspace?.userId;
+      if (userId) {
+        sql += ' AND conv.assignee_type = ? AND conv.assignee_id = ?'; params.push('user', userId);
+      }
     } else if (assignee === 'unassigned') {
       sql += ' AND conv.assignee_type = ?'; params.push('unassigned');
     } else if (assignee === 'team') {
@@ -356,6 +363,210 @@ router.post('/:id/resume-ai', (req: Request, res: Response) => {
 
     logAuditAction(req, 'UPDATE', 'conversation', conversationId, 'Agent resumed AI control');
     res.json({ success: true, message: 'AI resumed for this conversation' });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Conversation Assignments ────────────────────────────────────────────────────
+
+/** POST /conversations/:id/assign — assign a user or team to a conversation */
+router.post('/:id/assign', async (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const conversationId = req.params.id;
+    const { userId, teamId, notes } = req.body as Record<string, unknown>;
+    const authReq = req as any;
+    const actorUserId = authReq.workspace?.userId ?? workspaceId;
+
+    // Validate: exactly one of userId or teamId
+    if (!userId && !teamId) {
+      res.status(400).json({ success: false, error: 'userId or teamId is required' }); return;
+    }
+    if (userId && teamId) {
+      res.status(400).json({ success: false, error: 'provide only userId OR teamId, not both' }); return;
+    }
+
+    // Conversation ownership check
+    const conv = db.prepare('SELECT id FROM conversations WHERE id = ? AND workspace_id = ?')
+      .get(conversationId, workspaceId) as { id: string } | undefined;
+    if (!conv) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
+    // If userId, verify the user is a member of this workspace
+    if (userId) {
+      const member = db.prepare('SELECT 1 FROM workspace_members WHERE workspace_id = ? AND user_id = ?')
+        .get(workspaceId, userId as string);
+      if (!member) { res.status(400).json({ success: false, error: 'User is not a member of this workspace' }); return; }
+    }
+    // If teamId, verify the team exists (workspace-level team check — teams table must exist)
+    // For now, accept teamId as a string without a strict team table check
+
+    const assigneeType = userId ? 'user' : 'team';
+    const assigneeId = (userId ?? teamId) as string;
+    const id = `asgn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    // Insert assignment history
+    db.prepare(`
+      INSERT INTO conversation_assignments
+        (id, conversation_id, user_id, team_id, assigned_by, status, notes)
+      VALUES (?, ?, ?, ?, ?, 'active', ?)`
+    ).run(id, conversationId, userId ?? null, teamId ?? null, actorUserId, notes ?? null);
+
+    // Update conversation assignee fields
+    db.prepare(`
+      UPDATE conversations
+      SET assignee_type = ?, assignee_id = ?, team_id = ?, active_agent_id = ?
+      WHERE id = ?`
+    ).run(assigneeType, userId ?? null, teamId ?? null, userId ?? null, conversationId);
+
+    // Resolve name for timeline message
+    let assigneeName = assigneeId;
+    if (userId) {
+      const u = db.prepare('SELECT name FROM users WHERE id = ?').get(userId) as { name: string } | undefined;
+      assigneeName = u?.name ?? assigneeId;
+    }
+
+    insertTimelineMessage(conversationId, `Conversation assigned to ${assigneeName}`, workspaceId);
+
+    // Emit SSE via dashboard refresh
+    emitDashboardRefresh(workspaceId);
+
+    // Dispatch domain event
+    await dispatchConversationAssigned(
+      { workspaceId, actorUserId, roleId: authReq.workspace?.roleId ?? 'role_0', perms: authReq.workspace?.perms ?? ['*'] },
+      { conversationId, assigneeType, assigneeId, byUserId: actorUserId }
+    );
+
+    logAuditAction(req, 'ASSIGN', 'conversation', conversationId, `Assigned to ${assigneeName}`);
+    res.json({ success: true, message: `Assigned to ${assigneeName}` });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+/** POST /conversations/:id/transfer — reassign to a different user or team */
+router.post('/:id/transfer', async (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const conversationId = req.params.id;
+    const { userId, teamId, notes } = req.body as Record<string, unknown>;
+    const authReq = req as any;
+    const actorUserId = authReq.workspace?.userId ?? workspaceId;
+
+    if (!userId && !teamId) {
+      res.status(400).json({ success: false, error: 'userId or teamId is required' }); return;
+    }
+    if (userId && teamId) {
+      res.status(400).json({ success: false, error: 'provide only userId OR teamId, not both' }); return;
+    }
+
+    const conv = db.prepare('SELECT id FROM conversations WHERE id = ? AND workspace_id = ?')
+      .get(conversationId, workspaceId) as { id: string } | undefined;
+    if (!conv) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
+    if (userId) {
+      const member = db.prepare('SELECT 1 FROM workspace_members WHERE workspace_id = ? AND user_id = ?')
+        .get(workspaceId, userId as string);
+      if (!member) { res.status(400).json({ success: false, error: 'User is not a member of this workspace' }); return; }
+    }
+
+    // Close the current active assignment
+    const current = db.prepare(
+      `SELECT id, user_id, team_id FROM conversation_assignments WHERE conversation_id = ? AND status = 'active' LIMIT 1`
+    ).get(conversationId) as { id: string; user_id: string | null; team_id: string | null } | undefined;
+
+    let fromName = 'unknown';
+    if (current?.user_id) {
+      const u = db.prepare('SELECT name FROM users WHERE id = ?').get(current.user_id) as { name: string } | undefined;
+      fromName = u?.name ?? current.user_id;
+    } else if (current?.team_id) {
+      fromName = current.team_id;
+    }
+
+    if (current) {
+      db.prepare(`UPDATE conversation_assignments SET status='transferred', released_at=datetime('now') WHERE id=?`)
+        .run(current.id);
+    }
+
+    // Insert new assignment
+    const newId = `asgn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const assigneeType = userId ? 'user' : 'team';
+    const assigneeId = (userId ?? teamId) as string;
+
+    db.prepare(`
+      INSERT INTO conversation_assignments
+        (id, conversation_id, user_id, team_id, assigned_by, status, notes)
+      VALUES (?, ?, ?, ?, ?, 'active', ?)`
+    ).run(newId, conversationId, userId ?? null, teamId ?? null, actorUserId, notes ?? null);
+
+    db.prepare(`UPDATE conversations SET assignee_type=?, assignee_id=?, team_id=?, active_agent_id=? WHERE id=?`)
+      .run(assigneeType, userId ?? null, teamId ?? null, userId ?? null, conversationId);
+
+    let toName = assigneeId;
+    if (userId) {
+      const u = db.prepare('SELECT name FROM users WHERE id = ?').get(userId) as { name: string } | undefined;
+      toName = u?.name ?? assigneeId;
+    }
+
+    insertTimelineMessage(conversationId, `Conversation transferred from ${fromName} to ${toName}`, workspaceId);
+    emitDashboardRefresh(workspaceId);
+
+    await dispatchConversationAssigned(
+      { workspaceId, actorUserId, roleId: authReq.workspace?.roleId ?? 'role_0', perms: authReq.workspace?.perms ?? ['*'] },
+      { conversationId, assigneeType, assigneeId, byUserId: actorUserId }
+    );
+
+    logAuditAction(req, 'TRANSFER', 'conversation', conversationId, `Transferred from ${fromName} to ${toName}`);
+    res.json({ success: true, message: `Transferred from ${fromName} to ${toName}` });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+/** POST /conversations/:id/release — unassign / release a conversation */
+router.post('/:id/release', async (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const conversationId = req.params.id;
+    const authReq = req as any;
+    const actorUserId = authReq.workspace?.userId ?? workspaceId;
+
+    const conv = db.prepare('SELECT id FROM conversations WHERE id = ? AND workspace_id = ?')
+      .get(conversationId, workspaceId) as { id: string } | undefined;
+    if (!conv) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
+    // Close active assignment
+    const current = db.prepare(
+      `SELECT id, user_id, team_id FROM conversation_assignments WHERE conversation_id = ? AND status = 'active' LIMIT 1`
+    ).get(conversationId) as { id: string; user_id: string | null; team_id: string | null } | undefined;
+
+    let releasedBy = actorUserId;
+    if (current?.user_id) {
+      const u = db.prepare('SELECT name FROM users WHERE id = ?').get(current.user_id) as { name: string } | undefined;
+      releasedBy = u?.name ?? actorUserId;
+    } else if (current?.team_id) {
+      releasedBy = current.team_id;
+    }
+
+    if (current) {
+      db.prepare(`UPDATE conversation_assignments SET status='released', released_at=datetime('now') WHERE id=?`)
+        .run(current.id);
+    }
+
+    // Clear assignee on conversation
+    db.prepare(`UPDATE conversations SET assignee_type='unassigned', assignee_id=null, team_id=null, active_agent_id=null WHERE id=?`)
+      .run(conversationId);
+
+    insertTimelineMessage(conversationId, `Conversation released by ${releasedBy}`, workspaceId);
+    emitDashboardRefresh(workspaceId);
+
+    await dispatchConversationAssigned(
+      { workspaceId, actorUserId, roleId: authReq.workspace?.roleId ?? 'role_0', perms: authReq.workspace?.perms ?? ['*'] },
+      { conversationId, assigneeType: 'unassigned', assigneeId: null, byUserId: actorUserId }
+    );
+
+    logAuditAction(req, 'RELEASE', 'conversation', conversationId, 'Conversation released');
+    res.json({ success: true, message: 'Conversation released' });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }

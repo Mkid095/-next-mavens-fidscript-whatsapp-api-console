@@ -182,7 +182,7 @@ export async function finalize(
   // so the next incoming customer message goes to the agent (next_message policy).
   // Only triggers for agent sends that resolved to a real conversation.
   if (senderType === 'agent' && convId) {
-    autoTakeoverForAgentReply(ctx.instance.name, workspaceId, convId, ctx.instance.id);
+    autoTakeoverForAgentReply(ctx.instance.name, workspaceId, convId, ctx.instance.id, (ctx.req as any)?.workspace?.userId);
   }
 }
 
@@ -200,6 +200,7 @@ function autoTakeoverForAgentReply(
   workspaceId: string,
   conversationId: string,
   instanceId: string,
+  agentUserId?: string,
 ): void {
   try {
     // Only insert if no active override already exists
@@ -222,6 +223,11 @@ function autoTakeoverForAgentReply(
         (conversation_id, chatbot_id, mode, overridden_at, resume_policy, status, source, ended_reason)
       VALUES (?, ?, 'manual', datetime('now'), 'next_message', 'active', 'automatic', 'agent_reply')
     `).run(conversationId, bot.id);
+
+    // Update conversation's active_agent_id if we have an authenticated agent
+    if (agentUserId) {
+      db.prepare(`UPDATE conversations SET active_agent_id=? WHERE id=?`).run(agentUserId, conversationId);
+    }
 
     // Timeline message
     const msgId = `sys_${Date.now()}`;

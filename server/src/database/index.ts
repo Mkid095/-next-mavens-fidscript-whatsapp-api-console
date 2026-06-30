@@ -26,6 +26,7 @@ import { runPhase18Migrations } from './phase18.js';
 import { runPhase19Migrations } from './phase19.js';
 import { runPhase20Migrations } from './phase20.js';
 import { runPhase21Migrations } from './phase21.js';
+import { runPhase22Migrations } from './phase22.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,6 +69,7 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase19Migrations(db);     // Human takeover mode
   runPhase20Migrations(db);     // Production-grade handoff (expiry, resume policies, timeline)
   runPhase21Migrations(db);     // Override history (status/ended_at/ended_reason/source) + auto-takeover
+  runPhase22Migrations(db);     // Conversation assignments table
   await seedData(db);
   saveDatabase();
 
