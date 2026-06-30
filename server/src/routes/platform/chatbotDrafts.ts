@@ -155,7 +155,7 @@ router.post('/publish-jobs/:id/reset', (req: Request, res: Response) => {
     }
 
     const maxRetries = 3;
-    const currentRetries = (job as Record<string, unknown>).retry_count as number ?? 0;
+    const currentRetries = job.retry_count ?? 0;
 
     if (currentRetries >= maxRetries) {
       res.status(409).json({ success: false, error: 'Maximum retries exceeded' });
@@ -176,7 +176,7 @@ router.post('/publish-jobs/:id/reset', (req: Request, res: Response) => {
       WHERE id = ?`
     ).run(req.params.id);
 
-    const updated = db.prepare('SELECT * FROM chatbot_publish_jobs WHERE id = ?').get(req.params.id) as PublishJob;
+    const updated = db.prepare('SELECT * FROM chatbot_publish_jobs WHERE id = ?').get(req.params.id) as unknown as PublishJob;
     publishJobEmitter.emit('jobUpdated', req.params.id, updated);
 
     res.json({ success: true, data: updated });

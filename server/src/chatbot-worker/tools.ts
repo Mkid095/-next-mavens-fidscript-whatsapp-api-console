@@ -3,7 +3,7 @@
  * Tools are defined in chatbot_tools and executed on behalf of the LLM.
  */
 import db, { saveDatabase } from '../database.js';
-import { withCircuitBreak, CircuitOpenError } from './circuitBreaker.js';
+import { withCircuitBreak, CircuitOpenError, isCircuitOpen } from './circuitBreaker.js';
 
 interface ToolCall {
   toolId: string;

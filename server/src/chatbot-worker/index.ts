@@ -157,132 +157,140 @@ async function processMessage(msg: InboundMessage): Promise<void> {
 
     const { rule } = evalResult;
 
-  // 2b. Handle non-AI actions
-  if (rule.action === 'skip') {
-    console.log(`[worker] Rule matched: skip (no response)`);
-    return;
-  }
-
-  if (rule.action === 'manual') {
-    // Flag for human agent — update conversation state
-    console.log(`[worker] Rule matched: manual handoff`);
-    db.prepare(`INSERT OR REPLACE INTO conversation_states (conversation_id, state, updated_at)
-      VALUES (?, 'WAITING_AGENT', CURRENT_TIMESTAMP)`
-    ).run(conversationId);
-    saveDatabase();
-    return;
-  }
-
-  if (rule.action === 'workflow') {
-    // TODO: execute workflow nodes
-    console.log(`[worker] Rule matched: workflow (not yet implemented)`);
-    return;
-  }
-
-  // 3b. AI response
-  const bot = db.prepare('SELECT * FROM chatbot_configs WHERE id = ?').get(botId) as Record<string, unknown> | undefined;
-  if (!bot) return;
-
-  const aiConfig = db.prepare('SELECT * FROM chatbot_ai_configs WHERE chatbot_id = ?').get(botId) as Record<string, unknown> | undefined;
-  if (!aiConfig) return;
-
-  const policies = db.prepare('SELECT * FROM chatbot_response_policies WHERE chatbot_id = ?').get(botId) as Record<string, unknown> | undefined;
-
-  // Load conversation history
-  const history = db.prepare(`
-    SELECT from_number, from_name, content, direction, timestamp
-    FROM inbox_messages
-    WHERE conversation_id = ?
-    ORDER BY timestamp ASC
-    LIMIT ${Number(aiConfig.max_history_messages ?? 20) * 2}
-  `).all(conversationId) as Record<string, string>[];
-
-  const llmMessages: Array<{ role: 'system' | 'user' | 'model' | 'assistant'; content: string }> = [];
-
-  // System prompt from AI config
-  const systemPrompt = String(aiConfig.system_prompt ?? '');
-  if (systemPrompt) llmMessages.push({ role: 'system', content: systemPrompt });
-
-  // History as messages
-  for (const h of history) {
-    const role = h.direction === 'outgoing' ? 'model' : 'user';
-    llmMessages.push({ role, content: h.content });
-  }
-
-  // Current message
-  llmMessages.push({ role: 'user', content: message });
-
-  try {
-    const gateway = LLMGateway.resolve(botId, workspaceId);
-
-    const response = await traceAsync(
-      conversationId,
-      botId,
-      workspaceId,
-      'llm_call',
-      () => gateway.call({
-        messages: llmMessages,
-        systemPrompt,
-        maxTokens: Number(aiConfig.max_tokens ?? 2048),
-        temperature: Number(aiConfig.temperature ?? 0.7),
-      }),
-      (r) => ({ tokenCount: r.tokensUsed.total })
-    );
-
-    const { reply, confidence, tokensUsed } = response;
-
-    // 4. Log token usage
-    logTokenUsage(botId, conversationId, String(aiConfig.model ?? 'gemini'), tokensUsed.prompt, tokensUsed.completion, tokensUsed.total);
-
-    // 5. Check confidence threshold
-    const threshold = Number(policies?.confidence_threshold ?? 0.6);
-    if (confidence < threshold) {
-      console.log(`[worker] Low confidence ${confidence} < ${threshold} — escalate`);
-      // TODO: escalate to human
+    // 2b. Handle non-AI actions
+    if (rule.action === 'skip') {
+      console.log(`[worker] Rule matched: skip (no response)`);
+      return;
     }
 
-    // 6. Send reply via WhatsApp
-    if (reply && instanceName) {
-      await traceAsync(
-        conversationId, botId, workspaceId, 'response_send',
-        () => sendWhatsAppText(instanceName, chatId, reply),
-        () => ({ triggered: true })
+    if (rule.action === 'manual') {
+      // Flag for human agent — update conversation state
+      console.log(`[worker] Rule matched: manual handoff`);
+      db.prepare(`INSERT OR REPLACE INTO conversation_states (conversation_id, state, updated_at)
+        VALUES (?, 'WAITING_AGENT', CURRENT_TIMESTAMP)`
+      ).run(conversationId);
+      saveDatabase();
+      return;
+    }
+
+    if (rule.action === 'workflow') {
+      // TODO: execute workflow nodes
+      console.log(`[worker] Rule matched: workflow (not yet implemented)`);
+      return;
+    }
+
+    // 3b. AI response
+    const bot = db.prepare('SELECT * FROM chatbot_configs WHERE id = ?').get(botId) as Record<string, unknown> | undefined;
+    if (!bot) return;
+
+    const aiConfig = db.prepare('SELECT * FROM chatbot_ai_configs WHERE chatbot_id = ?').get(botId) as Record<string, unknown> | undefined;
+    if (!aiConfig) return;
+
+    const policies = db.prepare('SELECT * FROM chatbot_response_policies WHERE chatbot_id = ?').get(botId) as Record<string, unknown> | undefined;
+
+    // Load conversation history
+    const history = db.prepare(`
+      SELECT from_number, from_name, content, direction, timestamp
+      FROM inbox_messages
+      WHERE conversation_id = ?
+      ORDER BY timestamp ASC
+      LIMIT ${Number(aiConfig.max_history_messages ?? 20) * 2}
+    `).all(conversationId) as Record<string, string>[];
+
+    const llmMessages: Array<{ role: 'system' | 'user' | 'model' | 'assistant'; content: string }> = [];
+
+    // System prompt from AI config
+    const systemPrompt = String(aiConfig.system_prompt ?? '');
+    if (systemPrompt) llmMessages.push({ role: 'system', content: systemPrompt });
+
+    // History as messages
+    for (const h of history) {
+      const role = h.direction === 'outgoing' ? 'model' : 'user';
+      llmMessages.push({ role, content: h.content });
+    }
+
+    // Current message
+    llmMessages.push({ role: 'user', content: message });
+
+    try {
+      const gateway = LLMGateway.resolve(botId, workspaceId);
+
+      const response = await traceAsync(
+        conversationId,
+        botId,
+        workspaceId,
+        'llm_call',
+        () => gateway.call({
+          messages: llmMessages,
+          systemPrompt,
+          maxTokens: Number(aiConfig.max_tokens ?? 2048),
+          temperature: Number(aiConfig.temperature ?? 0.7),
+        }),
+        (r) => ({ tokenCount: r.tokensUsed.total })
       );
-      console.log(`[worker] Sent reply to ${chatId}: "${reply.slice(0, 50)}..."`);
+
+      const { reply, confidence, tokensUsed } = response;
+
+      // 4. Log token usage
+      logTokenUsage(botId, conversationId, String(aiConfig.model ?? 'gemini'), tokensUsed.prompt, tokensUsed.completion, tokensUsed.total);
+
+      // 5. Check confidence threshold
+      const threshold = Number(policies?.confidence_threshold ?? 0.6);
+      if (confidence < threshold) {
+        console.log(`[worker] Low confidence ${confidence} < ${threshold} — escalate`);
+        // TODO: escalate to human
+      }
+
+      // 6. Send reply via WhatsApp
+      if (reply && instanceName) {
+        await traceAsync(
+          conversationId, botId, workspaceId, 'response_send',
+          () => sendWhatsAppText(instanceName, chatId, reply),
+          () => ({ triggered: true })
+        );
+        console.log(`[worker] Sent reply to ${chatId}: "${reply.slice(0, 50)}..."`);
+      }
+
+      // 7. Insert AI reply into inbox
+      const messageId = `ai_${Date.now()}`;
+      db.prepare(`INSERT INTO inbox_messages
+        (id, workspace_id, customer_id, conversation_id, from_number, from_name, message_type, content, media_url, is_read, timestamp, direction)
+        VALUES (?, ?, ?, ?, ?, ?, 'text', ?, '', 1, datetime('now'), 'outgoing')`
+      ).run(messageId, workspaceId, msg.customerId, conversationId, chatId, String(bot.name ?? 'Bot'), reply);
+
+      // 8. Record AI response explainability metadata
+      recordResponseMetadata({
+        messageId,
+        chatbotId: botId,
+        confidence,
+        model: String(aiConfig.model ?? 'gemini'),
+      });
+
+      // next_message policy: after AI responds, clear override so next message goes to AI
+      if (willResumeNextMessage) {
+        db.prepare('DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?').run(conversationId);
+        insertTimelineMessage(conversationId, 'AI resumed automatically (one-shot manual)', workspaceId);
+        if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
+        console.log(`[worker] next_message policy — override cleared after AI response`);
+      }
+
+      saveDatabase();
+    } catch (err) {
+      console.error(`[worker] LLM call failed:`, err);
+      // Send fallback
+      const fallback = String(policies?.fallback_reply ?? 'Sorry, I could not process your request.');
+      if (instanceName) await sendWhatsAppText(instanceName, chatId, fallback);
+    } finally {
+      // Always release the conversation lock
+      if (lockedBotId) {
+        db.prepare('DELETE FROM chatbot_conversation_locks WHERE conversation_id = ? AND chatbot_id = ?')
+          .run(conversationId, lockedBotId);
+      }
     }
-
-    // 7. Insert AI reply into inbox
-    const messageId = `ai_${Date.now()}`;
-    db.prepare(`INSERT INTO inbox_messages
-      (id, workspace_id, customer_id, conversation_id, from_number, from_name, message_type, content, media_url, is_read, timestamp, direction)
-      VALUES (?, ?, ?, ?, ?, ?, 'text', ?, '', 1, datetime('now'), 'outgoing')`
-    ).run(messageId, workspaceId, msg.customerId, conversationId, chatId, String(bot.name ?? 'Bot'), reply);
-
-    // 8. Record AI response explainability metadata
-    recordResponseMetadata({
-      messageId,
-      chatbotId: botId,
-      confidence,
-      model: String(aiConfig.model ?? 'gemini'),
-    });
-
-    saveDatabase();
-
-    // next_message policy: after AI responds, clear override so next message goes to AI
-    if (willResumeNextMessage) {
-      db.prepare('DELETE FROM chatbot_conversation_overrides WHERE conversation_id = ?').run(conversationId);
-      insertTimelineMessage(conversationId, 'AI resumed automatically (one-shot manual)', workspaceId);
-      if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
-      console.log(`[worker] next_message policy — override cleared after AI response`);
-    }
-
   } catch (err) {
-    console.error(`[worker] LLM call failed:`, err);
-    // Send fallback
-    const fallback = String(policies?.fallback_reply ?? 'Sorry, I could not process your request.');
-    if (instanceName) await sendWhatsAppText(instanceName, chatId, fallback);
+    console.error(`[worker] processMessage error:`, err);
   } finally {
-    // Always release the conversation lock
+    // Ensure lock is always released
     if (lockedBotId) {
       db.prepare('DELETE FROM chatbot_conversation_locks WHERE conversation_id = ? AND chatbot_id = ?')
         .run(conversationId, lockedBotId);

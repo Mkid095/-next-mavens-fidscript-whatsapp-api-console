@@ -146,6 +146,9 @@ export interface PublishJob {
   message: string | null;
   error: string | null;
   result_json: string | null;
+  retry_count: number;
+  last_heartbeat_at: string | null;
+  worker_id: string | null;
   created_at: string;
   updated_at: string;
 }

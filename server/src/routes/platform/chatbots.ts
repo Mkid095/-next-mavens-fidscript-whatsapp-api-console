@@ -437,7 +437,7 @@ router.post('/:id/publish', (req: Request, res: Response) => {
     }
 
     // Run publish gate validation
-    const validation = validatePublish(draft as Parameters<typeof validatePublish>[0]);
+    const validation = validatePublish(draft as unknown as Parameters<typeof validatePublish>[0]);
     if (!validation.valid) {
       res.status(400).json({
         success: false,
@@ -455,7 +455,7 @@ router.post('/:id/publish', (req: Request, res: Response) => {
     ).run(jobId, req.params.id, workspaceId);
 
     // Fire and forget — pipeline updates the job row; frontend polls for status
-    runPublishPipeline(req.params.id, workspaceId, draft as Parameters<typeof runPublishPipeline>[2], jobId);
+    runPublishPipeline(req.params.id, workspaceId, draft as unknown as Parameters<typeof runPublishPipeline>[2], jobId);
 
     logAuditAction(req, 'UPDATE', 'chatbot', req.params.id, `Published chatbot "${bot.name as string}"`);
     res.json({ success: true, data: { jobId }, message: 'Publish started' });
@@ -549,7 +549,7 @@ router.post('/:id/test-config', (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'draft_json must be valid JSON' });
     }
 
-    const validation = validatePublish(draft as Parameters<typeof validatePublish>[0]);
+    const validation = validatePublish(draft as unknown as Parameters<typeof validatePublish>[0]);
 
     const checks = {
       provider: { ok: true, message: '' as string },
