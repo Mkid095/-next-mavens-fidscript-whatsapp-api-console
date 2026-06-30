@@ -53,18 +53,25 @@ export default function ChatThread({ chat, instance, messages, loading, error, o
   const [aiOverride, setAiOverride] = useState<'ai' | 'manual' | null>(null);
   const [overrideLoading, setOverrideLoading] = useState(false);
   const [showTakeoverMenu, setShowTakeoverMenu] = useState(false);
+  // Whether this workspace has an active chatbot — controls Take Over UI visibility
+  const [hasChatbot, setHasChatbot] = useState(false);
 
   const groups = useMemo(() => groupByDay(messages), [messages]);
 
   // Fetch AI override status when the chat changes
   useEffect(() => {
     setShowTakeoverMenu(false);
+    setHasChatbot(false);
     if (!chat?.jid || !clientToken) { setAiOverride(null); return; }
     setOverrideLoading(true);
     messagesApi.getAiOverride(chat.jid)
       .then((res) => {
-        if (res.success && res.data) setAiOverride(res.data.mode);
-        else setAiOverride(null);
+        if (res.success && res.data) {
+          setAiOverride(res.data.mode);
+          setHasChatbot(res.data.hasChatbot ?? false);
+        } else {
+          setAiOverride(null);
+        }
       })
       .catch(() => setAiOverride(null))
       .finally(() => setOverrideLoading(false));
@@ -164,7 +171,7 @@ export default function ChatThread({ chat, instance, messages, loading, error, o
                     <Zap size={12} className="text-green-500" />
                     {overrideLoading ? '…' : 'Resume AI'}
                   </button>
-                ) : (
+                ) : hasChatbot && !chat.isGroup ? (
                   <div className="relative">
                     <button
                       onClick={() => setShowTakeoverMenu((v) => !v)}
@@ -199,7 +206,7 @@ export default function ChatThread({ chat, instance, messages, loading, error, o
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
             )}
           </div>

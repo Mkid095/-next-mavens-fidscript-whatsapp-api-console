@@ -75,7 +75,7 @@ export const messagesApi = {
 
   /** Check AI override mode for a WhatsApp chat (by JID). Returns full override details. */
   getAiOverride: (chatId: string) =>
-    apiGet<{ mode: 'ai' | 'manual' | null; expiresAt: string | null; resumePolicy: string | null; reason: string | null; overriddenBy: string | null; overriddenAt: string | null }>(
+    apiGet<{ mode: 'ai' | 'manual' | null; hasChatbot?: boolean; expiresAt: string | null; resumePolicy: string | null; reason: string | null; overriddenBy: string | null; overriddenAt: string | null }>(
       `/api/platform/conversations/override/${encodeURIComponent(chatId)}`
     ),
 
@@ -88,14 +88,14 @@ export const messagesApi = {
   takeOver: (chatId: string, opts?: { expiresAt?: string; resumePolicy?: string; reason?: string; note?: string }) =>
     apiPost<{ success: boolean; message?: string }>(
       `/api/platform/conversations/takeover/${encodeURIComponent(chatId)}`,
-      { chat_id: chatId, ...opts }
+      opts
     ),
 
   /** Resume AI for a WhatsApp chat (by JID) — removes the manual override. */
   resumeAi: (chatId: string) =>
-    apiPost<{ success: boolean; message?: string }>(`/api/platform/conversations/resume-ai/${encodeURIComponent(chatId)}`, {
-      chat_id: chatId,
-    }),
+    apiPost<{ success: boolean; message?: string }>(
+      `/api/platform/conversations/resume-ai/${encodeURIComponent(chatId)}`
+    ),
 };
 
 /** Turn a contact phone (e.g. "+254712345678") into a 1:1 WhatsApp JID. */
