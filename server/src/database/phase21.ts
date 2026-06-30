@@ -35,4 +35,10 @@ export function runPhase21Migrations(db: Database): void {
 
   // 2. Sender type on inbox_messages (for auto-takeover detection)
   try { db.run("ALTER TABLE inbox_messages ADD COLUMN sender_type TEXT DEFAULT 'customer'"); } catch (e: any) { /* already exists */ }
+
+  // 3. Performance indexes on chatbot_conversation_overrides
+  //    Queries that filter by status='active' are frequent (worker + API routes)
+  try { db.run("CREATE INDEX IF NOT EXISTS idx_overrides_active ON chatbot_conversation_overrides(conversation_id, status)"); } catch (e: any) { /* already exists */ }
+  try { db.run("CREATE INDEX IF NOT EXISTS idx_overrides_chatbot ON chatbot_conversation_overrides(chatbot_id, status)"); } catch (e: any) { /* already exists */ }
+  try { db.run("CREATE INDEX IF NOT EXISTS idx_overrides_ended ON chatbot_conversation_overrides(ended_at)"); } catch (e: any) { /* already exists */ }
 }
