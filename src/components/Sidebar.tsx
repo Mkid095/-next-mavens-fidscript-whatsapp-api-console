@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import SidebarNav from './shared/SidebarNav';
 import { useCommandK } from '../features/search/index.js';
 import type { ClientSection } from './shared/SidebarNav';
@@ -23,6 +23,7 @@ export default function Sidebar({
   onLogout,
 }: SidebarProps) {
   const { openPalette } = useCommandK();
+
   return (
     <>
       <aside
@@ -30,31 +31,51 @@ export default function Sidebar({
           collapsed ? 'w-[68px]' : 'w-[240px]'
         }`}
       >
-        <div className="p-4 border-b border-[#2d2813]">
+        {/* Header with logo + collapse toggle */}
+        <div className="p-3 border-b border-[#2d2813] flex items-center justify-between gap-2">
+          {/* Logo */}
           {!collapsed ? (
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <img src="/logo.png" alt="FidScript" className="w-8 h-8 object-contain" />
-                <div>
-                  <h1 className="text-sm font-bold text-white">FidScript</h1>
-                  <p className="text-[9px] text-[#8f834a]">Messaging gateway</p>
-                </div>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <img src="/logo.png" alt="FidScript" className="w-8 h-8 object-contain shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm font-bold text-white leading-tight">FidScript</h1>
+                <p className="text-[9px] text-[#8f834a] leading-tight">Messaging gateway</p>
               </div>
-              <p className="text-[10px] text-[#6e684a] mt-2 truncate">{clientName}</p>
             </div>
           ) : (
             <div className="w-8 h-8 mx-auto">
               <img src="/logo.png" alt="FidScript" className="w-full h-full object-contain" />
             </div>
           )}
+          {/* Collapse toggle button */}
+          <button
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="shrink-0 w-7 h-7 rounded-lg bg-[#1f1d0b] border border-[#2d2813] flex items-center justify-center text-[#6e684a] hover:text-white hover:border-[#eab308]/30 transition-all"
+          >
+            {collapsed
+              ? <ChevronRight size={13} />
+              : <ChevronLeft size={13} />
+            }
+          </button>
         </div>
 
-        {/* Global ⌘K search trigger — lives in the chrome, not floating over content. */}
-        <div className="px-3 pb-1">
+        {/* Client name — below header, only when expanded */}
+        {!collapsed && (
+          <div className="px-3 py-2 border-b border-[#2d2813]">
+            <p className="text-[10px] text-[#6e684a] truncate" title={clientName}>
+              {clientName}
+            </p>
+          </div>
+        )}
+
+        {/* Global ⌘K search trigger */}
+        <div className="px-3 py-2">
           {collapsed ? (
             <button
               onClick={openPalette}
               aria-label="Search (⌘K)"
+              title="Search (⌘K)"
               className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-[#2d2813] bg-[#1f1d0b] text-[#8f834a] transition hover:border-yellow-500/30 hover:text-white"
             >
               <Search size={14} />
@@ -73,6 +94,7 @@ export default function Sidebar({
 
         <SidebarNav activeSection={activeSection} collapsed={collapsed} />
 
+        {/* Footer */}
         <div className="p-3 border-t border-[#2d2813]">
           {!collapsed ? (
             <div className="space-y-2">
@@ -88,8 +110,14 @@ export default function Sidebar({
               </button>
             </div>
           ) : (
-            <div className="bg-[#1f1d0b] border border-yellow-500/10 rounded-xl p-2 text-center">
-              <p className="text-xs font-black text-yellow-400 font-mono">{tokenBalance}</p>
+            <div className="relative group">
+              <div className="bg-[#1f1d0b] border border-yellow-500/10 rounded-xl p-2 text-center cursor-default">
+                <p className="text-xs font-black text-yellow-400 font-mono">{tokenBalance.toLocaleString()}</p>
+              </div>
+              {/* Tooltip on hover */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[#1f1d0b] border border-[#2d2813] rounded-lg text-[10px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+                Token Balance
+              </div>
             </div>
           )}
         </div>

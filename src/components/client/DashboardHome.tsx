@@ -1,24 +1,21 @@
 import React from 'react';
-import {
-  BarChart3, Clock,
-  CheckCircle, XCircle, MessageSquare
-} from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { Client, Instance, DailyUsage, ClientMessage } from '../../services/api';
+import type { Client, Instance, DailyUsage } from '../../services/api';
 import StatCards from './StatCards';
 import TokenCosts from './TokenCosts';
+import QuickActions from './QuickActions';
 
 interface DashboardHomeProps {
   client: Client;
   tokenBalance: number;
   instances: Instance[];
   dailyUsage: DailyUsage[];
-  recentMessages: ClientMessage[];
   messagesToday: number;
 }
 
 export default function DashboardHome({
-  client, tokenBalance, instances, dailyUsage, recentMessages, messagesToday
+  client, tokenBalance, instances, dailyUsage, messagesToday
 }: DashboardHomeProps) {
   if (!client) {
     return (
@@ -64,32 +61,32 @@ export default function DashboardHome({
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
+        <div className="lg:col-span-2 bg-[#181711] border border-[#2d2813] rounded-3xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5">
-                <BarChart3 className="w-4 h-4 text-yellow-700" />
+              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <BarChart3 className="w-4 h-4 text-[#eab308]" />
                 Message Volume
               </h3>
-              <p className="text-[10px] text-stone-500 mt-0.5">Daily messages sent over the last 7 days</p>
+              <p className="text-[10px] text-[#6e684a] mt-0.5">Daily messages sent over the last 7 days</p>
             </div>
-            <div className="flex items-center gap-2 text-[10px]">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-full" /> Sent</span>
+            <div className="flex items-center gap-2 text-[10px] text-[#6e684a]">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#eab308] rounded-full" /> Sent</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-full" /> Delivered</span>
             </div>
           </div>
           <div className="h-[200px] min-h-[200px]">
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eaebe4" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6a6c5d' }} />
-                <YAxis tick={{ fontSize: 10, fill: '#6a6c5d' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2813" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6e684a' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#6e684a' }} />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #eaebe4' }}
+                  contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #2d2813', backgroundColor: '#181711', color: '#a8a99e' }}
                   formatter={(value) => [`${value ?? 0}`, '']}
                 />
-                <Area type="monotone" dataKey="messages_sent" stroke="#eab308" fill="#fef9c3" strokeWidth={2} />
-                <Area type="monotone" dataKey="messages_delivered" stroke="#22c55e" fill="#dcfce7" strokeWidth={2} />
+                <Area type="monotone" dataKey="messages_sent" stroke="#eab308" fill="#2d2813" strokeWidth={2} />
+                <Area type="monotone" dataKey="messages_delivered" stroke="#22c55e" fill="#1a2e1a" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -98,43 +95,7 @@ export default function DashboardHome({
         <TokenCosts />
       </div>
 
-      <div className="bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-yellow-700" />
-            Recent Messages
-          </h3>
-          <span className="text-[10px] text-stone-400">Last 10 messages</span>
-        </div>
-        {recentMessages.length > 0 ? (
-          <div className="space-y-2">
-            {recentMessages.slice(0, 10).map((msg) => (
-              <div key={msg.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  {msg.direction === 'outgoing' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
-                   msg.is_read === 0 ? <Clock className="w-4 h-4 text-amber-500" /> :
-                   <XCircle className="w-4 h-4 text-red-500" />}
-                  <div>
-                    <p className="text-xs font-bold text-forest-deep font-mono">{msg.from_number}</p>
-                    <p className="text-[10px] text-stone-500 truncate max-w-[200px]">{msg.content}</p>
-                  </div>
-                </div>
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                  msg.direction === 'outgoing' ? 'bg-green-100 text-green-800' :
-                  msg.is_read === 0 ? 'bg-amber-100 text-amber-800' :
-                  'bg-stone-100 text-stone-600'
-                }`}>{msg.direction === 'outgoing' ? 'Sent' : msg.is_read === 0 ? 'New' : 'Received'}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-stone-400">
-            <MessageSquare className="w-8 h-8 mx-auto mb-2 text-stone-300" />
-            <p className="text-xs font-semibold">No messages yet</p>
-            <p className="text-[10px]">Start by creating a container and sending your first message.</p>
-          </div>
-        )}
-      </div>
+      <QuickActions />
     </div>
   );
 }
