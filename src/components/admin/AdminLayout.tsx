@@ -62,25 +62,25 @@ export function AdminLayout({
       />
 
       {/* Main content */}
-      <div className="flex-1 bg-[#f9f9f2] rounded-none md:rounded-[1.75rem] md:m-3 flex flex-col overflow-hidden shadow-xl">
+      <div className="flex-1 bg-[#181711] flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-white/70 backdrop-blur border-b border-[#e1e9e5]/80 flex items-center justify-between px-6 shrink-0">
+        <header className="h-16 bg-[#181711] border-b border-[#2d2813] flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-lg hover:bg-[#e3e8ea]"
+              className="p-1.5 rounded-lg hover:bg-[#2d2813]"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 text-[#a8a99e]" />
             </button>
-            <div className="hidden sm:flex items-center gap-2 text-xs text-[#60737a]">
-              <span className="text-yellow-700 font-medium">FIDScript</span>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-[#6e684a]">
+              <span className="text-[#eab308] font-medium">FIDScript</span>
               <span>/</span>
-              <span className="text-[#272c30] font-semibold">{currentTab}</span>
+              <span className="text-white font-semibold">{currentTab}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-[#45524c] bg-white border border-[#e1e9e5] px-3.5 py-2 rounded-xl">
-              <Clock className="w-3.5 h-3.5 text-yellow-600" />
+            <div className="flex items-center gap-1.5 text-xs text-[#a8a99e] bg-[#1a1915] border border-[#2d2813] px-3.5 py-2 rounded-xl">
+              <Clock className="w-3.5 h-3.5 text-[#eab308]" />
               <span>
                 {new Date().toLocaleDateString('en-US', {
                   weekday: 'short',
@@ -91,9 +91,9 @@ export function AdminLayout({
             </div>
             <button
               onClick={() => addToast('All systems operational. 100% SLA uptime.')}
-              className="relative p-2 bg-white hover:bg-[#f9f9f2] border border-[#e1e9e5] rounded-xl"
+              className="relative p-2 bg-[#1a1915] hover:bg-[#2d2813] border border-[#2d2813] rounded-xl"
             >
-              <Bell className="w-4 h-4" />
+              <Bell className="w-4 h-4 text-[#a8a99e]" />
             </button>
           </div>
         </header>

@@ -24,21 +24,21 @@ export default function StatCard({
   trend,
   trendValue,
   icon,
-  iconBgClass = 'bg-[#f9f9f2]',
+  iconBgClass = 'bg-[#2d2813]',
   iconColor = 'text-[#eab308]',
-  cardBgClass = 'bg-white',
-  cardBorderClass = 'border-[#eaebe4]',
-  cardContentClass = 'text-stone-500',
-  valueColor = 'text-[#181711]',
-  trendColor = 'text-yellow-600',
+  cardBgClass = 'bg-[#181711]',
+  cardBorderClass = 'border-[#2d2813]',
+  cardContentClass = 'text-[#6e684a]',
+  valueColor = 'text-white',
+  trendColor = 'text-[#eab308]',
   chartData = [],
-  chartBarClass = 'bg-stone-100',
+  chartBarClass = 'bg-[#2d2813]',
 }: StatCardProps) {
   return (
     <div className={`${cardBgClass} border ${cardBorderClass} p-5 rounded-2xl shadow-sm flex flex-col justify-between relative group`}>
       <div className="space-y-3">
         <div className="flex items-center justify-between text-xs font-semibold tracking-wide">
-          <span className="text-stone-500">{label}</span>
+          <span className="text-[#6e684a]">{label}</span>
           <span className={`p-1.5 rounded-lg ${iconBgClass} ${iconColor}`}>
             {icon}
           </span>
@@ -59,7 +59,7 @@ export default function StatCard({
           {chartData.map((val, idx) => (
             <div
               key={idx}
-              className={`flex-1 rounded-t ${chartBarClass} group-hover:bg-yellow-100 transition-colors`}
+              className={`flex-1 rounded-t ${chartBarClass} group-hover:bg-[#3d3a1e] transition-colors`}
               style={{ height: `${Math.max(val, 4)}%` }}
             />
           ))}

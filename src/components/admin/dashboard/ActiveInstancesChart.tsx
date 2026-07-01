@@ -18,13 +18,13 @@ export default function ActiveInstancesChart({ dailyTrends = [] }: ActiveInstanc
   }));
 
   return (
-    <div className="lg:col-span-2 bg-white border border-[#eaebe4] p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+    <div className="lg:col-span-2 bg-[#181711] border border-[#2d2813] p-5 rounded-2xl flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-[15px] font-bold text-[#181711]">Messages per Day</h3>
-          <p className="text-xs text-stone-400">Daily volume — last 7 days</p>
+          <h3 className="text-[15px] font-bold text-white">Messages per Day</h3>
+          <p className="text-xs text-[#6e684a]">Daily volume — last 7 days</p>
         </div>
-        <div className="flex items-center gap-1 bg-[#f9f9f2] border border-[#eaebe4] rounded-xl px-3 py-1.5 text-xs text-stone-500 font-medium">
+        <div className="flex items-center gap-1 bg-[#2d2813] border border-[#2d2813] rounded-xl px-3 py-1.5 text-xs text-[#a8a99e] font-medium">
           Last 7 days
           <ChevronDown className="w-3 h-3" />
         </div>
@@ -36,7 +36,7 @@ export default function ActiveInstancesChart({ dailyTrends = [] }: ActiveInstanc
           <span>{bars.reduce((s, b) => s + b.pct, 0).toLocaleString()} total msgs</span>
         </div>
 
-        <div className="flex items-end justify-between gap-1 h-36 border-b border-dashed border-[#eaebe4]">
+        <div className="flex items-end justify-between gap-1 h-36 border-b border-dashed border-[#2d2813]">
           {bars.map((bar, idx) => (
             <div
               key={idx}
@@ -47,12 +47,12 @@ export default function ActiveInstancesChart({ dailyTrends = [] }: ActiveInstanc
               <div
                 className={`w-full rounded-t transition-all ${
                   bar.active
-                    ? 'bg-yellow-500'
-                    : hoveredBar === idx ? 'bg-[#eab308]/40' : 'bg-[#f0f0eb]'
+                    ? 'bg-[#eab308]'
+                    : hoveredBar === idx ? 'bg-[#eab308]/40' : 'bg-[#2d2813]'
                 }`}
                 style={{ height: `${Math.max(bar.pct, 4)}%` }}
               />
-              <span className="text-[9px] font-bold mt-2 text-stone-400 group-hover:text-[#181711] transition-colors">
+              <span className="text-[9px] font-bold mt-2 text-[#6e684a] group-hover:text-white transition-colors">
                 {bar.week}
               </span>
 

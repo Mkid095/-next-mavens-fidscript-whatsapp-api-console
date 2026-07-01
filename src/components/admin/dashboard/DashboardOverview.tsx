@@ -11,6 +11,7 @@ import RecentLogs from './RecentLogs';
 import QuickAlertBar from './QuickAlertBar';
 import BillingYieldCard from './BillingYieldCard';
 import InstanceStatusCard from './InstanceStatusCard';
+import TokenCostGuide from './TokenCostGuide';
 
 interface DashboardOverviewProps {
   instances: Instance[];
@@ -69,13 +70,7 @@ export default function DashboardOverview({
           trend="all time across platform"
           trendValue=""
           icon={<CheckCircle2 size={18} />}
-          iconBgClass="bg-[#f9f9f2]"
-          iconColor="text-yellow-600"
-          cardBgClass="bg-white"
-          cardBorderClass="border-[#eaebe4]"
-          valueColor="text-[#181711]"
           chartData={deliveryTrend.length ? deliveryTrend : [0]}
-          chartBarClass="bg-stone-100"
         />
         <StatCard
           label="Active Containers"
@@ -83,13 +78,7 @@ export default function DashboardOverview({
           trend="containers connected"
           trendValue={connectingCount > 0 ? `${connectingCount} connecting` : ''}
           icon={<Smartphone size={18} />}
-          iconBgClass="bg-[#f9f9f2]"
-          iconColor="text-yellow-600"
-          cardBgClass="bg-white"
-          cardBorderClass="border-[#eaebe4]"
-          valueColor="text-[#181711]"
           chartData={volumeTrend.length ? volumeTrend : [0]}
-          chartBarClass="bg-stone-100"
         />
       </div>
 
@@ -103,7 +92,10 @@ export default function DashboardOverview({
         <InstanceStatusCard instances={instances} />
       </div>
 
-      <RecentLogs logs={logs} onNavigate={onNavigate} connectingCount={connectingCount} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <RecentLogs logs={logs} onNavigate={onNavigate} connectingCount={connectingCount} />
+        <TokenCostGuide />
+      </div>
     </div>
   );
 }
