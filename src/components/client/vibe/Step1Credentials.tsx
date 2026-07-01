@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Bot, Check, ArrowRight, AlertCircle, Key } from 'lucide-react';
+import { Bot, Check, ArrowRight, AlertCircle } from 'lucide-react';
 import { PUBLIC_API_BASE } from '../../../data/apiEndpoints/index';
-import VibeCopyButton from './VibeCopyButton.js';
+import VibeCopyButton from './VibeCopyButton';
 
 interface KeyItem {
   id: string;
@@ -52,13 +52,13 @@ export default function Step1Credentials({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3 p-4 bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl">
-        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-          <Bot className="w-5 h-5 text-blue-700" />
+      <div className="flex items-center gap-3 p-4 bg-[#1a1915] border border-[#2d2813] rounded-2xl">
+        <div className="w-10 h-10 rounded-xl bg-[#2d2813] flex items-center justify-center shrink-0">
+          <Bot className="w-5 h-5 text-[#eab308]" />
         </div>
         <div>
-          <p className="text-xs font-bold text-forest-deep">Vibe Coding Wizard</p>
-          <p className="text-[10px] text-graphite">Generate an AI-ready integration prompt for your selected endpoints.</p>
+          <p className="text-xs font-bold text-[#a8a99e]">Vibe Coding Wizard</p>
+          <p className="text-[10px] text-[#6e684a]">Generate an AI-ready integration prompt for your selected endpoints.</p>
         </div>
       </div>
 
@@ -66,8 +66,8 @@ export default function Step1Credentials({
         {/* API Key selection */}
         {activeKeys.length > 0 && (
           <div>
-            <label className="block text-[10px] font-bold text-graphite uppercase mb-2">Select API Key</label>
-            <div className="rounded-xl border border-[#eaebe4] bg-stone-50 divide-y divide-[#eaebe4]/60 max-h-40 overflow-y-auto">
+            <label className="block text-[10px] font-bold text-[#a8a99e] uppercase mb-2">Select API Key</label>
+            <div className="rounded-xl border border-[#2d2813] bg-[#181711] divide-y divide-[#2d2813]/60 max-h-40 overflow-y-auto">
               {activeKeys.map(k => {
                 const isSelected = selectedKeyId === k.id;
                 const prefix = k.key_prefix || 'fidscript_live_';
@@ -78,28 +78,28 @@ export default function Step1Credentials({
                       setSelectedKeyId(k.id);
                       setPastedKey(''); // clear paste when selecting
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all ${isSelected ? 'bg-yellow-50 border-l-2 border-l-yellow-500' : 'hover:bg-stone-100'}`}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all ${isSelected ? 'bg-[#2d2813] border-l-2 border-l-[#eab308]' : 'hover:bg-[#3d3a1e]'}`}
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'bg-yellow-500 border-yellow-500' : 'border-stone-300'}`}>
-                      {isSelected && <Check className="w-3 h-3 text-white" />}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#eab308] border-[#eab308]' : 'border-[#5a554a]'}`}>
+                      {isSelected && <Check className="w-3 h-3 text-[#181711]" />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-[11px] text-forest-deep truncate">{k.name}</p>
-                      <p className="font-mono text-[10px] text-stone-500 truncate">{prefix}••••••••</p>
+                      <p className="font-bold text-[11px] text-[#a8a99e] truncate">{k.name}</p>
+                      <p className="font-mono text-[10px] text-[#6e684a] truncate">{prefix}••••••••</p>
                     </div>
-                    <span className="text-[8px] text-stone-400 shrink-0">{k.last_used || 'Never used'}</span>
+                    <span className="text-[8px] text-[#5a554a] shrink-0">{k.last_used || 'Never used'}</span>
                   </button>
                 );
               })}
             </div>
-            <p className="text-[9px] text-stone-400 mt-1">Select a key above — the full secret is fetched server-side automatically.</p>
+            <p className="text-[9px] text-[#5a554a] mt-1">Select a key above — the full secret is fetched server-side automatically.</p>
           </div>
         )}
 
         {/* Or paste a key manually */}
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">
-            Or Paste API Key {activeKeys.length > 0 && <span className="normal-case font-normal text-stone-400">(paste if your key is not listed above)</span>}
+          <label className="block text-[10px] font-bold text-[#a8a99e] uppercase mb-2">
+            Or Paste API Key {activeKeys.length > 0 && <span className="normal-case font-normal text-[#5a554a]">(paste if your key is not listed above)</span>}
           </label>
           <input
             type="text"
@@ -109,18 +109,18 @@ export default function Step1Credentials({
               setSelectedKeyId(''); // clear selection when pasting
             }}
             placeholder="fidscript_live_xxxxxxxxxxxx"
-            className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 font-mono text-xs text-forest-deep placeholder:text-stone-400"
+            className="w-full px-3 py-2.5 border border-[#2d2813] bg-[#1a1915] rounded-xl focus:outline-none focus:border-[#eab308] font-mono text-xs text-[#a8a99e] placeholder:text-[#5a554a]"
           />
           {pastedKey && !isValidKey && (
-            <p className="text-[9px] text-red-500 mt-1">Key must start with fidscript_live_ or fidscript_test_</p>
+            <p className="text-[9px] text-red-400 mt-1">Key must start with fidscript_live_ or fidscript_test_</p>
           )}
           {matchedPasteKey && (
-            <p className="text-[9px] text-green-600 mt-1 flex items-center gap-1">
-              <Check className="w-3 h-3" /> Matches "{matchedPasteKey.name}" — no need to paste, just select it above
+            <p className="text-[9px] text-green-400 mt-1 flex items-center gap-1">
+              <Check className="w-3 h-3" /> Matches &quot;{matchedPasteKey.name}&quot; — no need to paste, just select it above
             </p>
           )}
           {isValidKey && !matchedPasteKey && (
-            <p className="text-[9px] text-green-600 mt-1 flex items-center gap-1">
+            <p className="text-[9px] text-green-400 mt-1 flex items-center gap-1">
               <Check className="w-3 h-3" /> Valid key format
             </p>
           )}
@@ -128,13 +128,13 @@ export default function Step1Credentials({
 
         {/* Container / instance selector */}
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-2">
-            WhatsApp Container <span className="normal-case font-normal text-stone-400">(optional)</span>
+          <label className="block text-[10px] font-bold text-[#a8a99e] uppercase mb-2">
+            WhatsApp Container <span className="normal-case font-normal text-[#5a554a]">(optional)</span>
           </label>
           <select
             value={selectedInstance}
             onChange={e => setSelectedInstance(e.target.value)}
-            className="w-full px-3 py-2.5 border border-[#eaebe4] bg-white rounded-xl focus:outline-none focus:border-yellow-500 text-xs text-forest-deep"
+            className="w-full px-3 py-2.5 border border-[#2d2813] bg-[#1a1915] rounded-xl focus:outline-none focus:border-[#eab308] text-xs text-[#a8a99e]"
           >
             <option value="">— Leave unset —</option>
             {instances.map(i => (
@@ -147,14 +147,14 @@ export default function Step1Credentials({
 
         {/* Base URL */}
         <div className="flex items-center gap-2">
-          <code className="flex-1 text-[11px] font-mono bg-stone-50 border border-[#eaebe4] px-3 py-2 rounded-lg text-stone-700">{PUBLIC_API_BASE}</code>
+          <code className="flex-1 text-[11px] font-mono bg-[#1a1915] border border-[#2d2813] px-3 py-2 rounded-lg text-[#a8a99e]">{PUBLIC_API_BASE}</code>
           <VibeCopyButton text={PUBLIC_API_BASE} label="Copy" />
         </div>
 
         {/* Info notice */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
-          <p className="text-[10px] text-amber-900 leading-relaxed">
+        <div className="p-3 bg-[#1a1915] border border-[#2d2813] rounded-xl flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-[#eab308] mt-0.5 shrink-0" />
+          <p className="text-[10px] text-[#a8a99e] leading-relaxed">
             {activeKeys.length > 0
               ? 'Select a key above or paste your secret. The key will be fetched server-side — never stored in the prompt itself.'
               : 'Paste the API key you saved when it was created. Keys are only shown once.'}
@@ -166,18 +166,18 @@ export default function Step1Credentials({
         <label className="flex items-center gap-2 cursor-pointer">
           <button
             onClick={() => setConfirmed(v => !v)}
-            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${confirmed ? 'bg-forest-deep border-forest-deep' : 'border-stone-300'}`}
+            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${confirmed ? 'bg-[#eab308] border-[#eab308]' : 'border-[#5a554a]'}`}
           >
-            {confirmed && <Check className="w-3 h-3 text-white" />}
+            {confirmed && <Check className="w-3 h-3 text-[#181711]" />}
           </button>
-          <span className="text-[11px] text-graphite">I understand credentials will be embedded in the generated prompt</span>
+          <span className="text-[11px] text-[#a8a99e]">I understand credentials will be embedded in the generated prompt</span>
         </label>
       </div>
 
       <button
         onClick={onNext}
         disabled={!confirmed || !hasCredentials}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-forest-deep hover:bg-[#33301a] disabled:bg-stone-300 text-white text-xs font-bold rounded-xl transition-all"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#eab308] hover:bg-[#c4940a] disabled:bg-[#2d2813] disabled:text-[#5a554a] text-[#181711] text-xs font-bold rounded-xl transition-all"
       >
         Continue to Endpoint Selection <ArrowRight className="w-4 h-4" />
       </button>

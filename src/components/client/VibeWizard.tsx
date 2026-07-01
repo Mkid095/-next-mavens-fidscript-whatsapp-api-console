@@ -2,9 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check } from 'lucide-react';
 import { API_ENDPOINTS } from '../../data/apiEndpoints/index';
-import Step1Credentials from './vibe/Step1Credentials.js';
-import Step2Select, { type Step2State } from './vibe/Step2Select.js';
-import Step3Prompt from './vibe/Step3Prompt.js';
+import Step1Credentials from './vibe/Step1Credentials';
+import Step2Select, { type Step2State } from './vibe/Step2Select';
+import Step3Prompt from './vibe/Step3Prompt';
 
 interface VibeWizardProps {
   clientName?: string;
@@ -41,15 +41,21 @@ export default function VibeWizard({ clientName, clientToken, instances, activeK
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <div className="flex items-center gap-0 flex-wrap">
         {([1, 2, 3] as WizardStep[]).map((s, i) => (
           <React.Fragment key={s}>
-            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-colors ${step === s ? 'bg-forest-deep text-white' : s < step ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-500'}`}>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-colors ${
+              step === s
+                ? 'bg-[#eab308] text-[#181711]'
+                : s < step
+                  ? 'bg-green-900/40 text-green-400 border border-green-900/50'
+                  : 'bg-[#2d2813] text-[#6e684a]'
+            }`}>
               <span className="w-4 h-4 rounded-full bg-current flex items-center justify-center text-[8px] shrink-0">{s < step ? <Check size={8} /> : s}</span>
               <span className="hidden sm:inline">{STEP_LABELS[i]}</span>
             </div>
-            {i < 2 && <div className={`flex-1 h-0.5 mx-1 min-w-4 ${s < step ? 'bg-green-400' : 'bg-stone-200'}`} />}
+            {i < 2 && <div className={`flex-1 h-0.5 mx-1 min-w-4 rounded ${s < step ? 'bg-green-600' : 'bg-[#2d2813]'}`} />}
           </React.Fragment>
         ))}
       </div>
