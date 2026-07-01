@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Send, Paperclip, X } from 'lucide-react';
+import { Loader2, Send, Paperclip, X, ShieldOff } from 'lucide-react';
 import { getAuthHeaders } from '../../data/api/client';
 import type { Instance } from '../../services/api';
 import { instancesApi } from '../../services/api';
@@ -27,9 +27,11 @@ interface MessageComposerProps {
   chatJid: string;
   instance: Instance | null;
   onSent: (optimistic: MirrorMessage) => void;
+  /** Lock the composer for non-admin members of restricted groups */
+  locked?: boolean;
 }
 
-export default function MessageComposer({ chatJid, instance, onSent }: MessageComposerProps) {
+export default function MessageComposer({ chatJid, instance, onSent, locked }: MessageComposerProps) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -48,7 +50,7 @@ export default function MessageComposer({ chatJid, instance, onSent }: MessageCo
 
   useEffect(() => { adjustHeight(); }, [text, adjustHeight]);
 
-  const canSend = !!instance && instance.status === 'connected' && !sending && !uploading;
+  const canSend = !!instance && instance.status === 'connected' && !sending && !uploading && !locked;
   const charCount = text.length;
   const segments = charCount > 1600 ? 3 : charCount > 160 ? 2 : 1;
 
@@ -164,6 +166,14 @@ export default function MessageComposer({ chatJid, instance, onSent }: MessageCo
     <div className="border-t border-[#2d2813] bg-[#181711] px-3 py-2">
       {error && <p className="mb-2 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-xs text-red-400">{error}</p>}
 
+      {/* Restricted group banner */}
+      {locked && (
+        <div className="mb-2 flex items-center gap-2 rounded-lg border border-[#2d2813] bg-[#1a1915] px-3 py-2 text-xs text-[#6e684a]">
+          <ShieldOff size={14} className="shrink-0 text-[#eab308]" />
+          Only admins can send messages in this group
+        </div>
+      )}
+
       {/* Attachment preview */}
       {attachment && (
         <div className="mb-2 flex items-center gap-2 rounded-xl bg-[#1a1915] border border-[#2d2813] p-2">
@@ -194,13 +204,15 @@ export default function MessageComposer({ chatJid, instance, onSent }: MessageCo
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend(); }
             }}
             placeholder={
-              !instance || instance.status !== 'connected'
+              locked
+                ? 'Only admins can send in this group'
+                : !instance || instance.status !== 'connected'
                 ? 'Instance is not connected'
                 : attachment
                 ? 'Add a caption (optional)…'
                 : 'Type a message… (Enter to send, Shift+Enter for new line)'
             }
-            disabled={!instance || instance.status !== 'connected' || sending}
+            disabled={!instance || instance.status !== 'connected' || sending || locked}
             rows={1}
             style={{ minHeight: '40px', maxHeight: '144px' }}
             className="w-full resize-none rounded-xl border border-[#2d2813] bg-[#1a1915] px-3 py-2 pr-16 text-sm text-[#a8a99e] placeholder:text-[#5a554a] outline-none transition-colors focus:border-[#eab308]/50 disabled:opacity-50"

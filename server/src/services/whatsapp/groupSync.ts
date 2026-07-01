@@ -19,6 +19,7 @@ interface GatewayGroup {
   id?: { user?: string; server?: string } | string;
   subject?: string;
   size?: number;
+  restrict?: boolean;
   participants?: Array<{ id?: { user?: string; server?: string }; admin?: 'admin' | 'superadmin' | null }>;
 }
 
@@ -50,15 +51,28 @@ function extractPhoneFromParticipant(participant: { id?: { user?: string; server
 }
 
 /**
- * Fetch and cache group metadata (subject, size) in our DB so group
- * conversations display human-readable names without an extra API call.
+ * Fetch and cache group metadata (subject, size, restrict, self_is_admin) in
+ * our DB so group conversations display human-readable names and admin status
+ * without an extra API call.
+ *
+ * @param groupJid      The group's full JID (e.g. 123456789@g.us)
+ * @param subject       Human-readable group name
+ * @param size          Number of participants
+ * @param restrict      Whether only admins can send (from WhatsApp group settings)
+ * @param selfIsAdmin   Whether our own phone number is an admin/superadmin
  */
-export function cacheGroupInfo(groupJid: string, subject: string, size: number): void {
+export function cacheGroupInfo(
+  groupJid: string,
+  subject: string,
+  size: number,
+  restrict = false,
+  selfIsAdmin = false,
+): void {
   try {
     db.prepare(`
-      INSERT OR REPLACE INTO cached_group_info (group_jid, subject, size, updated_at)
-      VALUES (?, ?, ?, ?)
-    `).run(groupJid, subject, size, new Date().toISOString());
+      INSERT OR REPLACE INTO cached_group_info (group_jid, subject, size, restrict, self_is_admin, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(groupJid, subject, size, restrict ? 1 : 0, selfIsAdmin ? 1 : 0, new Date().toISOString());
   } catch { /* non-critical */ }
 }
 
@@ -85,6 +99,11 @@ export async function syncGroupsForInstance(
     req: { headers: {} } as SendContext['req'],
   };
 
+  // Our own phone number — used to determine if we are an admin in each group
+  const selfPhoneRaw = (instance as { phone_number?: string }).phone_number || '';
+  // Normalize to the same format as participant JIDs: digits only (no +)
+  const selfPhoneDigits = selfPhoneRaw.replace(/\D/g, '');
+
   try {
     // 1. Fetch all groups from the gateway
     const result = await fetchAllGroups(ctx, false);
@@ -110,6 +129,21 @@ export async function syncGroupsForInstance(
 
       const subject = group.subject || 'Unnamed Group';
       const size = group.size || group.participants?.length || 0;
+      const restrict = !!group.restrict;
+
+      // Check if our own phone number is an admin/superadmin in this group
+      let selfIsAdmin = false;
+      if (selfPhoneDigits && group.participants) {
+        for (const p of group.participants) {
+          const pJid = extractParticipantJid(p);
+          if (!pJid) continue;
+          const pPhone = pJid.replace(/\D/g, '');
+          if (pPhone === selfPhoneDigits && (p.admin === 'admin' || p.admin === 'superadmin')) {
+            selfIsAdmin = true;
+            break;
+          }
+        }
+      }
 
       try {
         // Upsert group conversation
@@ -134,8 +168,8 @@ export async function syncGroupsForInstance(
           );
         }
 
-        // Cache group metadata for display
-        cacheGroupInfo(jid, subject, size);
+        // Cache group metadata including restrict flag and self admin status
+        cacheGroupInfo(jid, subject, size, restrict, selfIsAdmin);
 
         // 3. Try to identify group participants against saved contacts
         syncGroupParticipants(workspaceId, jid, group.participants || []);

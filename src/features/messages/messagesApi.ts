@@ -15,6 +15,10 @@ export interface ChatListItem {
   profilePic: string | null;
   /** AI mode for this chat — 'ai' = AI active, 'manual' = agent override, null = no override */
   aiMode: 'ai' | 'manual' | null;
+  /** true = only admins can send in this group */
+  isRestricted: boolean;
+  /** true = our instance is an admin in this group */
+  isAdmin: boolean;
 }
 
 export interface MirrorMessage {

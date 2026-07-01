@@ -61,6 +61,8 @@ export interface ChatListItem {
   unread: number;
   profilePic: string | null;
   aiMode: 'ai' | 'manual' | null;
+  isRestricted: boolean; // true = only admins can send (group restrict flag)
+  isAdmin: boolean;      // true = our instance is an admin in this group
 }
 
 export interface MirrorMessage {
@@ -149,6 +151,8 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
       unread: 0, // computed from inbox_messages below
       profilePic: str(c.profilePicUrl) || null,
       aiMode: null, // populated below from chatbot_conversation_overrides
+      isRestricted: false,
+      isAdmin: false,
     });
   }
 
@@ -180,6 +184,26 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
       const phone = r.chat_id.replace('@s.whatsapp.net', '').replace(/^\+/, '');
       const idx = phoneToIndex[phone];
       if (idx !== undefined) items[idx].unread = r.cnt;
+    }
+  }
+
+  // Batch-load restrict/admin flags for group JIDs from cached_group_info
+  if (items.length > 0) {
+    const groupItems = items.filter((i) => i.isGroup);
+    if (groupItems.length > 0) {
+      const groupJids = groupItems.map((i) => i.jid);
+      const placeholders = groupJids.map(() => '?').join(',');
+      const rows = db.prepare(
+        `SELECT group_jid, restrict, self_is_admin FROM cached_group_info WHERE group_jid IN (${placeholders})`
+      ).all(...groupJids) as { group_jid: string; restrict: number; self_is_admin: number }[];
+      const flagsMap = new Map(rows.map((r) => [r.group_jid, { restrict: r.restrict === 1, self_is_admin: r.self_is_admin === 1 }]));
+      for (const item of groupItems) {
+        const flags = flagsMap.get(item.jid);
+        if (flags) {
+          item.isRestricted = flags.restrict;
+          item.isAdmin = flags.self_is_admin;
+        }
+      }
     }
   }
 

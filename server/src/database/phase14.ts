@@ -4,6 +4,7 @@
  * 1. chatbot_drafts          — per-workspace draft autosave
  * 2. chatbot_publish_jobs    — async publish pipeline job tracking
  * 3. chatbot_versions        — extend with compiled runtime artifacts
+ * 4. cached_group_info       — extend with restrict flag + self participant info
  */
 import type { Database } from 'sql.js';
 
@@ -51,5 +52,11 @@ export function runPhase14Migrations(db: Database): void {
   try { db.run(`ALTER TABLE chatbot_versions ADD COLUMN compiled_capabilities TEXT`); } catch (_) { /* ok */ }
   try { db.run(`ALTER TABLE chatbot_versions ADD COLUMN change_summary TEXT`); } catch (_) { /* may already exist in phase9 */ }
 
-  console.log('✅ Phase 14 migrations complete (drafts, publish jobs, runtime artifacts)');
+  // ─── Extend cached_group_info with restrict flag + self participant ──────────
+  // restrict: 1 = only admins can send messages
+  // self_is_admin: 1 = our phone number is an admin in this group
+  try { db.run(`ALTER TABLE cached_group_info ADD COLUMN restrict INTEGER DEFAULT 0`); } catch (_) { /* may already exist */ }
+  try { db.run(`ALTER TABLE cached_group_info ADD COLUMN self_is_admin INTEGER DEFAULT 0`); } catch (_) { /* may already exist */ }
+
+  console.log('✅ Phase 14 migrations complete (drafts, publish jobs, runtime artifacts, group restrict)');
 }

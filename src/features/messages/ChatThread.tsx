@@ -308,6 +308,7 @@ export default function ChatThread({ chat, instance, messages, loading, error, o
             chatJid={chat.jid}
             instance={instance}
             onSent={onSend}
+            locked={chat.isGroup && chat.isRestricted && !chat.isAdmin}
           />
         </>
       ) : (
