@@ -6,14 +6,14 @@ import { scheduleRefresh } from './useSharedRefreshGate';
 /** Client-side cache keyed by "instanceName|jid" so chat switches are instant. */
 const messageCache = new Map<string, MirrorMessage[]>();
 
-// Live thread for one (instance, jid). Chat switching is served from a
-// client-side cache (instant) while a background refresh keeps it fresh.
-// All other events go through the shared throttle gate (10/sec backend cap).
+// Live thread for one (instance, jid). Chat switching clears the thread
+// immediately and either shows cached messages or fetches fresh ones.
 export function useChatMessages(instanceName: string | null, jid: string | null) {
   const [messages, setMessages] = useState<MirrorMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isFirstRender = useRef(true);
+  // Track the previous jid so we can clear messages immediately on chat switch
+  const prevJidRef = useRef<string | null>(null);
 
   const cacheKey = instanceName && jid ? `${instanceName}|${jid}` : null;
 
@@ -25,7 +25,6 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
     setLoading(false);
     if (res.success && res.data) {
       const msgs = res.data.messages;
-      // Always update cache on successful fetch
       if (cacheKey) messageCache.set(cacheKey, msgs);
       setMessages(msgs);
       return;
@@ -33,38 +32,34 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
     setError(res.error || 'Failed to load messages');
   }, [instanceName, jid, cacheKey]);
 
-  // Switch chats: serve from cache immediately, then refresh in background.
-  // Reset loading on every jid change so the spinner shows even on subsequent
-  // chat switches (not just the first mount).
+  // Chat switch: when jid changes, clear messages immediately so old chat's
+  // history never bleeds into the new chat, even briefly.
   useEffect(() => {
-    if (!instanceName || !jid) { setMessages([]); setLoading(false); return; }
+    const prevJid = prevJidRef.current;
+    prevJidRef.current = jid;
 
-    const cached = cacheKey ? messageCache.get(cacheKey) : undefined;
-
-    // Always show loading state on chat switch to clear old messages immediately
-    if (!cached) setLoading(true);
-
-    if (isFirstRender.current) {
-      // First mount: use cache if available, otherwise load from network
-      isFirstRender.current = false;
-      if (cached) {
-        setMessages(cached);
-        // Fetch fresh data in background
-        void refresh();
-        return;
-      } else {
-        void refresh();
-        return;
-      }
+    if (!instanceName || !jid) {
+      setMessages([]);
+      setLoading(false);
+      return;
     }
 
+    // If jid changed (chat switch), clear messages immediately before loading
+    if (prevJid !== null && prevJid !== jid) {
+      setMessages([]);
+      setLoading(true);
+    }
+
+    const ck = cacheKey;
+    const cached = ck ? messageCache.get(ck) : undefined;
+
     if (cached) {
-      // Subsequent chat switches: show cached immediately, refresh in background
       setMessages(cached);
       void refresh();
     } else {
       void refresh();
     }
+  // refresh is stable for the same [instanceName, jid] pair via useCallback
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instanceName, jid]);
 
@@ -80,7 +75,6 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
     if (!jid) return;
     const off = dataEvents.on('message.received', (event) => {
       const payload = event.payload as { chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
-      // Only handle messages for the open conversation
       if (payload.chatId !== jid && payload.chatId !== ` ${jid}`) return;
       const msg: MirrorMessage = {
         id: `sse_${Date.now()}`,
