@@ -260,23 +260,6 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
     return () => window.removeEventListener('beforeunload', handler);
   }, [draft.isDirty]);
 
-  // ── Keyboard navigation ─────────────────────────────────────────────────
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (draft.isDirty) setShowLeaveConfirm(true);
-        else navigate('/client/chatbots');
-      }
-      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-        if (isLastStep()) handlePublish();
-        else handleSave();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [draft, isEditMode, isLastStep, handlePublish, handleSave, navigate]);
-
   // ── Save ─────────────────────────────────────────────────────────────────
 
   const handleSave = useCallback(async () => {
@@ -338,6 +321,25 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
       useChatbotBuilderStore.getState().setSaving(false);
     }
   }, [draft, botId, clientToken]);
+
+  // ── Keyboard navigation ──────────────────────────────────────────────────
+  // Declared AFTER handleSave and handlePublish to ensure stable references
+  // are available before this effect's dependency array is evaluated.
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (draft.isDirty) setShowLeaveConfirm(true);
+        else navigate('/client/chatbots');
+      }
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        if (isLastStep()) handlePublish();
+        else handleSave();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [draft.isDirty, isLastStep, handlePublish, handleSave, navigate]);
 
   // ── Poll publish job ─────────────────────────────────────────────────────
 
