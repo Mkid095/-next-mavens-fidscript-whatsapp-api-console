@@ -120,6 +120,14 @@ export function createTables(db: Database): void {
 
   // Add whatsapp_name column if it doesn't exist (for existing installs)
   try { db.run("ALTER TABLE contacts ADD COLUMN whatsapp_name TEXT"); } catch { /* already exists */ }
+  // Add google_name column if it doesn't exist (for existing installs)
+  try { db.run("ALTER TABLE contacts ADD COLUMN google_name TEXT"); } catch { /* already exists */ }
+
+  // Google OAuth columns for contacts sync (migrations)
+  try { db.run("ALTER TABLE clients ADD COLUMN google_access_token TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE clients ADD COLUMN google_refresh_token TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE clients ADD COLUMN google_token_expiry TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE clients ADD COLUMN google_oauth_state TEXT"); } catch { /* already exists */ }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS client_api_keys (

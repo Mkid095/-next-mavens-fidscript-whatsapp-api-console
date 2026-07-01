@@ -50,7 +50,76 @@ export const contactsApi = {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
+
+  // ─── Google OAuth ───────────────────────────────────────────────────────────
+
+  googleAuthUrl: () => fetchApi<{ url: string }>('/api/contacts/google/auth-url'),
+
+  googleStatus: () => fetchApi<{
+    linked: boolean;
+    name?: string;
+    email?: string;
+    picture?: string;
+  }>('/api/contacts/google/status'),
+
+  googleImport: () =>
+    fetchApi<{ imported: number; errors: number; total: number }>(
+      '/api/contacts/google/import',
+      { method: 'POST' }
+    ),
+
+  googleUnlink: () =>
+    fetchApi<void>('/api/contacts/google/link', { method: 'DELETE' }),
 };
+
+/**
+ * Opens Google OAuth in a popup window and resolves when the callback completes.
+ * The callback redirects to /client/contacts with google_linked=1 query param,
+ * which this function detects via window.location polling.
+ */
+export function openGoogleOAuthPopup(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    contactsApi.googleAuthUrl().then(async (res) => {
+      if (!res.success || !res.data?.url) {
+        reject(new Error(res.error || 'Failed to get Google auth URL'));
+        return;
+      }
+      const popup = window.open(res.data.url, 'google_oauth', 'width=600,height=700,scrollbars=yes');
+      if (!popup) {
+        reject(new Error('Popup was blocked — allow popups for this site'));
+        return;
+      }
+
+      // Poll for success or failure via URL query params
+      const poll = setInterval(() => {
+        try {
+          const url = popup.location.href;
+          if (url.includes('google_linked=1')) {
+            clearInterval(poll);
+            popup.close();
+            resolve();
+          } else if (url.includes('google_error=')) {
+            clearInterval(poll);
+            const errMatch = url.match(/google_error=([^&]+)/);
+            popup.close();
+            reject(new Error(decodeURIComponent(errMatch?.[1] || 'Google OAuth failed')));
+          }
+        } catch {
+          // Cross-origin — can't read URL yet, keep polling
+        }
+      }, 500);
+
+      // Fallback: reject if popup is closed without resolution
+      const closeCheck = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(poll);
+          clearInterval(closeCheck);
+          reject(new Error('Popup closed without completing Google sign-in'));
+        }
+      }, 1000);
+    }).catch(reject);
+  });
+}
 
 export const clientMessagesApi = {
   getAll: (instanceName?: string) => {

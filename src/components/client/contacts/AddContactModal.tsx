@@ -87,21 +87,21 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-96 overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50">
+      <div className="bg-[#1a1915] rounded-2xl shadow-xl w-96 overflow-hidden border border-[#2d2813]">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-[#eaebe4] flex items-center justify-between bg-[#fafaf5]">
+        <div className="px-5 py-4 border-b border-[#2d2813] flex items-center justify-between bg-[#181711]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-forest-deep flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl bg-[#2d2813] flex items-center justify-center">
+              <User className="w-4 h-4 text-[#eab308]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-forest-deep">Add Contact</h3>
-              <p className="text-[10px] text-graphite">Add a single contact to your list</p>
+              <h3 className="text-sm font-bold text-[#a8a99e]">Add Contact</h3>
+              <p className="text-[10px] text-[#6e684a]">Add a single contact to your list</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition-all">
-            <X className="w-4 h-4 text-stone-400" />
+          <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-[#2d2813] flex items-center justify-center transition-all">
+            <X className="w-4 h-4 text-[#6e684a]" />
           </button>
         </div>
 
@@ -109,40 +109,40 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {/* Name */}
           <div>
-            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Full Name</label>
+            <label className="text-[10px] font-bold text-[#6e684a] uppercase tracking-wide">Full Name</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Jane Wanjiku"
-              className="w-full mt-1 px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500"
+              className="w-full mt-1 px-3 py-2 text-xs border border-[#2d2813] rounded-xl focus:outline-none focus:border-[#eab308] bg-[#181711] text-[#a8a99e] placeholder:text-[#6e684a]"
             />
           </div>
 
           {/* Country + Phone */}
           <div>
-            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Phone Number</label>
-            <div className="mt-1 flex rounded-xl border border-[#eaebe4] overflow-hidden focus-within:border-yellow-500">
+            <label className="text-[10px] font-bold text-[#6e684a] uppercase tracking-wide">Phone Number</label>
+            <div className="mt-1 flex rounded-xl border border-[#2d2813] overflow-hidden focus-within:border-[#eab308] transition-colors">
               {/* Country picker */}
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setShowCountryPicker(!showCountryPicker)}
-                  className="h-full px-3 py-2 bg-stone-50 border-r border-[#eaebe4] flex items-center gap-1.5 text-[11px] font-bold text-forest-deep hover:bg-stone-100 transition-all"
+                  className="h-full px-3 py-2 bg-[#181711] border-r border-[#2d2813] flex items-center gap-1.5 text-[11px] font-bold text-[#a8a99e] hover:bg-[#2d2813] transition-all"
                 >
                   {selectedCountry}
-                  <ChevronDown className="w-3 h-3 text-stone-400" />
+                  <ChevronDown className="w-3 h-3 text-[#6e684a]" />
                 </button>
                 {showCountryPicker && (
-                  <div className="absolute bottom-full left-0 mb-1 w-48 bg-white border border-[#eaebe4] rounded-xl shadow-lg z-10 max-h-56 overflow-y-auto">
+                  <div className="absolute bottom-full left-0 mb-1 w-48 bg-[#1a1915] border border-[#2d2813] rounded-xl shadow-lg z-10 max-h-56 overflow-y-auto">
                     {COUNTRY_OPTIONS.map(c => (
                       <button
                         key={c.code}
                         type="button"
                         onClick={() => { setSelectedCountry(c.code); setShowCountryPicker(false); }}
-                        className={`w-full px-3 py-2 text-left text-[11px] hover:bg-stone-50 flex items-center gap-2 ${selectedCountry === c.code ? 'bg-yellow-50 font-bold text-forest-deep' : 'text-stone-600'}`}
+                        className={`w-full px-3 py-2 text-left text-[11px] hover:bg-[#3d3a1e] flex items-center gap-2 ${selectedCountry === c.code ? 'bg-[#eab308]/10 font-bold text-[#eab308]' : 'text-[#6e684a]'}`}
                       >
-                        <span className="font-mono text-[10px] text-stone-400 w-10">{c.code}</span>
+                        <span className="font-mono text-[10px] text-[#6e684a] w-10">{c.code}</span>
                         <span>{c.country}</span>
                       </button>
                     ))}
@@ -155,32 +155,32 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
                 placeholder="712 345 678"
-                className="flex-1 px-3 py-2 text-xs font-mono focus:outline-none bg-white"
+                className="flex-1 px-3 py-2 text-xs font-mono focus:outline-none bg-[#181711] text-[#a8a99e] placeholder:text-[#6e684a]"
                 autoFocus
               />
             </div>
             {phoneInput && (
-              <p className="text-[9px] text-stone-400 mt-1">
-                Full: <span className="font-mono font-bold text-forest-deep">{selectedCountry} {phoneInput}</span>
+              <p className="text-[9px] text-[#6e684a] mt-1">
+                Full: <span className="font-mono font-bold text-[#a8a99e]">{selectedCountry} {phoneInput}</span>
               </p>
             )}
           </div>
 
           {/* Tags */}
           <div>
-            <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">Tags <span className="normal-case font-normal text-stone-400">(optional)</span></label>
+            <label className="text-[10px] font-bold text-[#6e684a] uppercase tracking-wide">Tags <span className="normal-case font-normal text-[#5a554a]">(optional)</span></label>
             <input
               type="text"
               value={tags}
               onChange={e => setTags(e.target.value)}
               placeholder="vip, lead, customer"
-              className="w-full mt-1 px-3 py-2 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500"
+              className="w-full mt-1 px-3 py-2 text-xs border border-[#2d2813] rounded-xl focus:outline-none focus:border-[#eab308] bg-[#181711] text-[#a8a99e] placeholder:text-[#6e684a]"
             />
-            <p className="text-[9px] text-stone-400 mt-1">Separate multiple tags with commas</p>
+            <p className="text-[9px] text-[#5a554a] mt-1">Separate multiple tags with commas</p>
           </div>
 
           {error && (
-            <div className="px-3 py-2 bg-red-50 rounded-xl text-[11px] text-red-600">{error}</div>
+            <div className="px-3 py-2 bg-red-900/30 rounded-xl text-[11px] text-red-400 border border-red-900/50">{error}</div>
           )}
 
           {/* Actions */}
@@ -188,14 +188,14 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 text-xs font-bold text-stone-500 hover:text-stone-700 transition-all"
+              className="flex-1 py-2 text-xs font-bold text-[#6e684a] hover:text-[#a8a99e] transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || !phoneInput.trim()}
-              className="flex-1 py-2 bg-forest-deep hover:bg-[#33301a] text-white text-xs font-bold rounded-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+              className="flex-1 py-2 bg-[#eab308] hover:bg-yellow-400 text-[#181711] text-xs font-bold rounded-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2"
             >
               <Save className="w-3.5 h-3.5" />
               {saving ? 'Saving...' : 'Save Contact'}

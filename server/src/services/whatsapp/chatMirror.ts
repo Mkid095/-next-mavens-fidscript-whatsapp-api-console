@@ -103,7 +103,7 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
     // Normalize the JID phone to match how contacts are stored (international + format)
     const normalizedForDb = normalizePhone(rawPhone);
     const contact = db.prepare(
-      'SELECT name FROM contacts WHERE client_id = ? AND phone = ?'
+      'SELECT COALESCE(NULLIF(name, ""), whatsapp_name, google_name) AS name FROM contacts WHERE client_id = ? AND phone = ?'
     ).get(workspaceId, normalizedForDb) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
   }

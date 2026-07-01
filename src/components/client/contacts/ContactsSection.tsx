@@ -123,13 +123,13 @@ export default function ContactsSection({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
-        <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+      <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-[#2d2813]">
           <div>
-            <h3 className="text-sm font-bold text-forest-deep flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-yellow-700" /> My Contacts
+            <h3 className="text-sm font-bold text-[#a8a99e] flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-[#eab308]" /> My Contacts
             </h3>
-            <p className="text-xs text-graphite mt-0.5">
+            <p className="text-xs text-[#6e684a] mt-0.5">
               {contacts.length} contacts saved
               {searchQuery && ` · ${filteredContacts.length} matching "${searchQuery}"`}
             </p>
@@ -138,15 +138,15 @@ export default function ContactsSection({
             {selectedContacts.size > 0 && (
               <button
                 onClick={deleteSelected}
-                className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-red-100 transition-all"
+                className="px-3 py-1.5 bg-red-900/30 text-red-400 text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-red-900/50 transition-all border border-red-900/50"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Delete ({selectedContacts.size})
               </button>
             )}
-            <button onClick={() => setShowImportModal(true)} className="px-3.5 py-1.5 bg-forest-deep text-white text-xs font-bold rounded-xl flex items-center gap-1.5">
+            <button onClick={() => setShowImportModal(true)} className="px-3.5 py-1.5 bg-[#2d2813] text-[#a8a99e] text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#3d3a1e] transition-all border border-[#3d3a1e]">
               <FileUp className="w-3.5 h-3.5" /> Import
             </button>
-            <button onClick={() => setShowAddModal(true)} className="px-3.5 py-1.5 bg-yellow-500 text-stone-950 text-xs font-bold rounded-xl flex items-center gap-1.5">
+            <button onClick={() => setShowAddModal(true)} className="px-3.5 py-1.5 bg-[#eab308] text-[#181711] text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-yellow-400 transition-all">
               <UserPlus className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -154,29 +154,29 @@ export default function ContactsSection({
 
         {/* Search bar */}
         {contacts.length > 0 && (
-          <div className="flex items-center gap-2 py-3 border-b border-stone-100">
-            <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-stone-50 border border-[#eaebe4] rounded-xl">
-              <Search className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+          <div className="flex items-center gap-2 py-3 border-b border-[#2d2813]">
+            <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-[#181711] border border-[#2d2813] rounded-xl focus-within:border-[#eab308] transition-colors">
+              <Search className="w-3.5 h-3.5 text-[#6e684a] shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search contacts by name or phone…"
-                className="flex-1 bg-transparent text-xs outline-none placeholder:text-stone-400"
+                className="flex-1 bg-transparent text-xs text-[#a8a99e] outline-none placeholder:text-[#6e684a]"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-stone-400 hover:text-stone-600">
+                <button onClick={() => setSearchQuery('')} className="text-[#6e684a] hover:text-[#a8a99e]">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
             {selectedContacts.size > 0 && (
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 cursor-pointer shrink-0">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6e684a] cursor-pointer shrink-0">
                 <input
                   type="checkbox"
                   checked={selectedContacts.size === contacts.length}
                   onChange={selectAll}
-                  className="rounded border-stone-300"
+                  className="rounded border-[#2d2813] bg-[#181711]"
                 />
                 Select All
               </label>
@@ -184,14 +184,14 @@ export default function ContactsSection({
           </div>
         )}
 
-        <div className="divide-y divide-stone-100 max-h-[340px] overflow-y-auto mt-2">
+        <div className="divide-y divide-[#2d2813] max-h-[340px] overflow-y-auto mt-2">
           {filteredContacts.length > 0 ? filteredContacts.map((contact) => (
-            <div key={contact.id} className="p-3 flex items-center gap-3 hover:bg-stone-50/50 transition-all group">
+            <div key={contact.id} className="p-3 flex items-center gap-3 hover:bg-[#3d3a1e]/50 transition-all group">
               <input
                 type="checkbox"
                 checked={selectedContacts.has(contact.id)}
                 onChange={() => toggleContact(contact.id)}
-                className="rounded border-stone-300 shrink-0"
+                className="rounded border-[#2d2813] bg-[#181711] shrink-0"
               />
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 {/* Inline name editing */}
@@ -206,19 +206,19 @@ export default function ContactsSection({
                         if (e.key === 'Escape') cancelEdit();
                       }}
                       autoFocus
-                      className="flex-1 px-2 py-0.5 border border-forest-deep rounded-lg text-xs text-forest-deep outline-none bg-white"
+                      className="flex-1 px-2 py-0.5 border border-[#eab308] rounded-lg text-xs text-[#a8a99e] outline-none bg-[#181711]"
                     />
                     <button
                       onClick={() => saveEdit(contact.id)}
                       disabled={savingId === contact.id}
-                      className="p-1 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors disabled:opacity-50"
+                      className="p-1 rounded-lg bg-green-900/40 text-green-400 hover:bg-green-900/60 transition-colors disabled:opacity-50 border border-green-900/50"
                       title="Save"
                     >
                       <Check className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={cancelEdit}
-                      className="p-1 rounded-lg text-stone-400 hover:bg-stone-100 transition-colors"
+                      className="p-1 rounded-lg text-[#6e684a] hover:bg-[#2d2813] transition-colors"
                       title="Cancel"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -227,12 +227,12 @@ export default function ContactsSection({
                 ) : (
                   <>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-forest-deep truncate">{contact.name}</p>
-                      <p className="text-[11px] text-stone-500 font-mono">{contact.phone}</p>
+                      <p className="text-xs font-bold text-[#a8a99e] truncate">{contact.name || contact.phone}</p>
+                      <p className="text-[11px] text-[#6e684a] font-mono">{contact.phone}</p>
                     </div>
                     <button
                       onClick={() => startEditing(contact)}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-forest-deep transition-all shrink-0"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-[#2d2813] text-[#6e684a] hover:text-[#eab308] transition-all shrink-0"
                       title="Edit name"
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -242,26 +242,26 @@ export default function ContactsSection({
               </div>
               <button
                 onClick={() => deleteContact(contact.id)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all shrink-0"
+                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-900/30 text-red-500 transition-all shrink-0 border border-transparent hover:border-red-900/50"
                 title="Delete contact"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           )) : contacts.length === 0 ? (
-            <div className="py-12 text-center text-graphite space-y-3">
-              <Users className="w-10 h-10 text-yellow-300 mx-auto" />
-              <p className="font-bold text-forest-deep">No contacts yet</p>
-              <p className="text-[10px] text-graphite">Import contacts via CSV or phone list.</p>
-              <button onClick={() => setShowImportModal(true)} className="px-4 py-2 bg-yellow-500 text-stone-950 font-bold text-xs rounded-xl">
+            <div className="py-12 text-center text-[#6e684a] space-y-3">
+              <Users className="w-10 h-10 text-[#6e684a] mx-auto" />
+              <p className="font-bold text-[#a8a99e]">No contacts yet</p>
+              <p className="text-[10px] text-[#6e684a]">Import contacts via CSV or phone list.</p>
+              <button onClick={() => setShowImportModal(true)} className="px-4 py-2 bg-[#eab308] text-[#181711] font-bold text-xs rounded-xl hover:bg-yellow-400 transition-all">
                 Import Contacts
               </button>
             </div>
           ) : (
-            <div className="py-8 text-center text-stone-400">
+            <div className="py-8 text-center text-[#6e684a]">
               <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
               <p className="text-xs">No contacts match "{searchQuery}"</p>
-              <button onClick={() => setSearchQuery('')} className="mt-1 text-xs text-forest-deep hover:underline">
+              <button onClick={() => setSearchQuery('')} className="mt-1 text-xs text-[#eab308] hover:underline">
                 Clear search
               </button>
             </div>
