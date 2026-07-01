@@ -118,10 +118,9 @@ router.post('/usage/check-batch/:name', async (req, res) => {
 });
 
 // POST /api/platform/chats/:name/mark-read { jid }
-// Marks all incoming unread messages in the given chat as read.
-// Updates our own inbox_messages, then emits a message.read SSE event so the
-// chat list badge clears in real time. Does NOT call Evolution API (which
-// would only mark-read on the server, not our local DB).
+// Marks all incoming unread messages in the given chat as read locally AND
+// sends a read receipt to WhatsApp via Evolution API so the sender sees
+// blue ticks on their WhatsApp app.
 router.post('/chats/:name/mark-read', async (req, res) => {
   const ctx = buildSendCtx(req, res, req.params.name);
   if (!ctx) return;
@@ -131,9 +130,30 @@ router.post('/chats/:name/mark-read', async (req, res) => {
   const jid: string = typeof req.body?.jid === 'string' ? req.body.jid : '';
   if (!jid) { res.status(400).json({ success: false, error: 'jid required' }); return; }
 
+  // Query unread incoming message IDs for this chat so we can send read receipts
+  const unreadRows = db.prepare(
+    `SELECT id FROM inbox_messages
+     WHERE instance_id = ? AND chat_id = ? AND is_read = 0 AND direction = 'incoming'`
+  ).all(ctx.instance.id, jid) as { id: string }[];
+
+  // Mark as read in our DB immediately (optimistic)
   const info = db.prepare(
     'UPDATE inbox_messages SET is_read = 1 WHERE instance_id = ? AND chat_id = ? AND is_read = 0 AND direction = ?'
   ).run(ctx.instance.id, jid, 'incoming');
+
+  // Send read receipts to WhatsApp via Evolution API — this makes the sender
+  // see blue ticks on their WhatsApp. Fire-and-forget; we already updated our DB.
+  if (unreadRows.length > 0) {
+    const { markRead } = await import('../../services/whatsapp/chats.js');
+    const readMessages = unreadRows.map((r) => ({
+      key: { remoteJid: jid, fromMe: false, id: r.id },
+    }));
+    // Best-effort: log errors but still return success to the client
+    const result = await markRead(ctx, { readMessages });
+    if (!result.ok) {
+      console.error('[chatMirror] markRead Evolution API error:', result.error);
+    }
+  }
 
   // Emit so SSE listeners (useChatList) can decrement the badge in real time
   instanceEmitter.emit('message.read', ctx.instance.name, { conversationId: null, messageId: '', chatId: jid });

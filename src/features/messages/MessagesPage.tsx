@@ -46,7 +46,7 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
     setInstance(next);
   }, []);
 
-  const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null);
+  const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null, selectedJid);
   const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(instance?.name ?? null, selectedJid);
 
   // Mark chat as read when it is opened — clears the unread badge in real time
