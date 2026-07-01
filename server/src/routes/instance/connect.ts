@@ -38,6 +38,20 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
       },
     }).catch(err => console.warn('Failed to set webhook on instance:', err));
 
+    // Apply saved settings to Evolution (all fields required by the API)
+    const savedSettings = JSON.parse(instance.settings || '{}');
+    const evoSettings = {
+      rejectCall: Boolean(savedSettings.reject_calls ?? false),
+      groupsIgnore: Boolean(savedSettings.groups_ignore ?? false),
+      alwaysOnline: Boolean(savedSettings.always_online ?? false),
+      readMessages: Boolean(savedSettings.read_messages ?? false),
+      readStatus: Boolean(savedSettings.read_status ?? false),
+      syncFullHistory: Boolean(savedSettings.sync_full_history ?? false),
+      msgCall: String(savedSettings.msg_call ?? ''),
+    };
+    callGateway('POST', `/instance/settings/set/${evolutionInstanceName}`, evoSettings)
+      .catch(err => console.warn(`[connect] failed to apply settings to Evolution for ${req.params.name}:`, err));
+
     const evoRes = await callGateway('GET', `/instance/connect/${evolutionInstanceName}`);
 
     // the gateway API v2: { qrcode: { code, base64, pairingCode, count } } or flat { code, base64, pairingCode }

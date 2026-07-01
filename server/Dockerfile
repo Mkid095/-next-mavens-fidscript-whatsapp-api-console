@@ -4,6 +4,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY dist/ ./dist/
 COPY openapi.json ./openapi.json
+COPY public/ ./public/
 EXPOSE 3099
 ENV PORT=3099 NODE_ENV=production
 ENV JWT_SECRET=fidscript-jwt-secret-change-in-production

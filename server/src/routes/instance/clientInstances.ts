@@ -108,9 +108,27 @@ router.post('/client-settings/:name', clientJwtAuth, async (req: Request, res: R
     if (!instance) {
       return res.status(404).json({ success: false, error: 'Instance not found' });
     }
+
+    // Save to local DB
     const current = JSON.parse(instance.settings || '{}');
     const updated = { ...current, ...req.body };
     db.prepare('UPDATE instances SET settings = ? WHERE name = ?').run(JSON.stringify(updated), req.params.name);
+
+    // Apply settings to Evolution API (best-effort — never block on gateway errors)
+    // All fields are required by the API — default false for absent booleans
+    const evoName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
+    const evoSettings = {
+      rejectCall: Boolean(updated.reject_calls ?? false),
+      groupsIgnore: Boolean(updated.groups_ignore ?? false),
+      alwaysOnline: Boolean(updated.always_online ?? false),
+      readMessages: Boolean(updated.read_messages ?? false),
+      readStatus: Boolean(updated.read_status ?? false),
+      syncFullHistory: Boolean(updated.sync_full_history ?? false),
+      msgCall: String(updated.msg_call ?? ''),
+    };
+    callGateway('POST', `/instance/settings/set/${evoName}`, evoSettings)
+      .catch(err => console.warn(`[client-settings] failed to apply settings to Evolution for ${instance.name}:`, err));
+
     res.json({ success: true, data: updated });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });

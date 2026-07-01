@@ -13,12 +13,12 @@ interface StatusListProps {
 }
 
 const STATE_STYLES: Record<StatusPost['post_state'], { bg: string; text: string; label: string }> = {
-  draft:     { bg: 'bg-stone-100',   text: 'text-stone-600',   label: 'Draft' },
-  scheduled: { bg: 'bg-yellow-100',  text: 'text-yellow-800',  label: 'Scheduled' },
-  posting:   { bg: 'bg-blue-100',    text: 'text-blue-800',    label: 'Posting' },
-  posted:    { bg: 'bg-green-100',   text: 'text-green-800',   label: 'Posted' },
-  failed:    { bg: 'bg-red-100',     text: 'text-red-800',     label: 'Failed' },
-  cancelled: { bg: 'bg-stone-200',   text: 'text-stone-700',   label: 'Cancelled' },
+  draft:     { bg: 'bg-[#2d2813]',   text: 'text-[#a8a99e]',   label: 'Draft' },
+  scheduled: { bg: 'bg-yellow-900/30',  text: 'text-yellow-500',  label: 'Scheduled' },
+  posting:   { bg: 'bg-blue-900/40',    text: 'text-blue-400',    label: 'Posting' },
+  posted:    { bg: 'bg-green-900/40',   text: 'text-green-400',   label: 'Posted' },
+  failed:    { bg: 'bg-red-900/30',     text: 'text-red-400',     label: 'Failed' },
+  cancelled: { bg: 'bg-[#2d2813]',   text: 'text-[#6e684a]',   label: 'Cancelled' },
 };
 
 function KindIcon({ kind }: { kind: StatusPost['kind'] }) {
@@ -33,7 +33,7 @@ function StatusBody({ post, instances }: { post: StatusPost; instances: Instance
   if (post.kind === 'text') {
     return (
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-stone-800 line-clamp-2 whitespace-pre-wrap">{post.content || <em className="text-stone-400">(empty)</em>}</p>
+        <p className="text-xs text-[#a8a99e] line-clamp-2 whitespace-pre-wrap">{post.content || <em className="text-[#6e684a]">(empty)</em>}</p>
       </div>
     );
   }
@@ -43,13 +43,13 @@ function StatusBody({ post, instances }: { post: StatusPost; instances: Instance
       {asset?.kind === 'image' ? (
         <img src={asset.url} alt={asset.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
       ) : (
-        <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center text-stone-500 text-[9px] font-bold shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-[#2d2813] flex items-center justify-center text-[#6e684a] text-[9px] font-bold shrink-0">
           {asset ? asset.kind.toUpperCase() : '?'}
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-forest-deep truncate">{asset?.name || '(media missing)'}</p>
-        {post.caption && <p className="text-[10px] text-stone-500 truncate">{post.caption}</p>}
+        <p className="text-xs font-bold text-[#a8a99e] truncate">{asset?.name || '(media missing)'}</p>
+        {post.caption && <p className="text-[10px] text-[#6e684a] truncate">{post.caption}</p>}
       </div>
     </div>
   );
@@ -58,16 +58,16 @@ function StatusBody({ post, instances }: { post: StatusPost; instances: Instance
 export default function StatusList({ posts, instances, onPostNow, onCancel, onDelete, busyId }: StatusListProps) {
   if (posts.length === 0) {
     return (
-      <div className="p-8 bg-white border border-[#eaebe4] rounded-2xl text-center space-y-2">
-        <Type className="w-8 h-8 text-yellow-200 mx-auto" />
-        <p className="text-xs font-bold text-forest-deep">No status posts yet</p>
-        <p className="text-[10px] text-stone-500">Compose one above to share a text or media update to your WhatsApp status feed.</p>
+      <div className="p-8 bg-[#1a1915] border border-[#2d2813] rounded-2xl text-center space-y-2">
+        <Type className="w-8 h-8 text-[#eab308]/30 mx-auto" />
+        <p className="text-xs font-bold text-[#a8a99e]">No status posts yet</p>
+        <p className="text-[10px] text-[#6e684a]">Compose one above to share a text or media update to your WhatsApp status feed.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-[#eaebe4] rounded-2xl overflow-hidden">
+    <div className="bg-[#1a1915] border border-[#2d2813] rounded-2xl overflow-hidden">
       {posts.map(p => {
         const s = STATE_STYLES[p.post_state];
         const inst = instances.find(i => i.id === p.instance_id);
@@ -76,41 +76,41 @@ export default function StatusList({ posts, instances, onPostNow, onCancel, onDe
         const canDelete = p.post_state !== 'posting';
         const isBusy = busyId === p.id;
         return (
-          <div key={p.id} className="flex items-center gap-3 p-3 border-b border-[#eaebe4] last:border-b-0">
+          <div key={p.id} className="flex items-center gap-3 p-3 border-b border-[#2d2813] last:border-b-0 hover:bg-[#181711] transition-colors">
             <span className={`flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold rounded shrink-0 ${s.bg} ${s.text}`}>
               <KindIcon kind={p.kind} /> {s.label}
             </span>
             <StatusBody post={p} instances={instances} />
             <div className="text-right shrink-0 space-y-0.5">
-              <p className="text-[10px] text-stone-500 font-mono">{inst?.name || p.instance_id}</p>
+              <p className="text-[10px] text-[#6e684a] font-mono">{inst?.name || p.instance_id}</p>
               {p.scheduled_at && p.post_state === 'scheduled' && (
-                <p className="text-[10px] text-yellow-700 flex items-center justify-end gap-1">
+                <p className="text-[10px] text-yellow-500 flex items-center justify-end gap-1">
                   <Calendar className="w-3 h-3" /> {new Date(p.scheduled_at).toLocaleString()}
                 </p>
               )}
               {p.posted_at && (
-                <p className="text-[10px] text-green-700">↗ {new Date(p.posted_at).toLocaleString()}</p>
+                <p className="text-[10px] text-green-400">↗ {new Date(p.posted_at).toLocaleString()}</p>
               )}
               {p.error_message && (
-                <p className="text-[9px] text-red-600 max-w-[12rem] truncate" title={p.error_message}>{p.error_message}</p>
+                <p className="text-[9px] text-red-400 max-w-[12rem] truncate" title={p.error_message}>{p.error_message}</p>
               )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {canPostNow && (
                 <button onClick={() => onPostNow(p.id)} disabled={isBusy}
-                  className="p-1.5 text-stone-400 hover:text-forest-deep bg-white border border-stone-200 rounded-lg disabled:opacity-50" title="Post now">
+                  className="p-1.5 text-[#6e684a] hover:text-[#eab308] bg-[#1a1915] border border-[#2d2813] rounded-lg disabled:opacity-50" title="Post now">
                   <Send className="w-3.5 h-3.5" />
                 </button>
               )}
               {canCancel && (
                 <button onClick={() => onCancel(p.id)} disabled={isBusy}
-                  className="p-1.5 text-stone-400 hover:text-yellow-700 bg-white border border-stone-200 rounded-lg disabled:opacity-50" title="Cancel">
+                  className="p-1.5 text-[#6e684a] hover:text-yellow-500 bg-[#1a1915] border border-[#2d2813] rounded-lg disabled:opacity-50" title="Cancel">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
               {canDelete && (
                 <button onClick={() => onDelete(p.id)} disabled={isBusy}
-                  className="p-1.5 text-stone-400 hover:text-red-600 bg-white border border-stone-200 rounded-lg disabled:opacity-50" title="Delete">
+                  className="p-1.5 text-[#6e684a] hover:text-red-400 bg-[#1a1915] border border-[#2d2813] rounded-lg disabled:opacity-50" title="Delete">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}

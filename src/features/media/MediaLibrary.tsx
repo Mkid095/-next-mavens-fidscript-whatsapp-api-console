@@ -40,13 +40,13 @@ export default function MediaLibrary() {
         onFile={handleFile} onPasteUrl={handlePasteUrl}
       />
 
-      {error && <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">{error}</p>}
-      {loading && assets.length === 0 && <p className="text-xs text-stone-400">Loading media…</p>}
+      {error && <p className="text-[11px] text-red-400 bg-red-900/30 border border-red-800/40 rounded-lg p-2">{error}</p>}
+      {loading && assets.length === 0 && <p className="text-xs text-[#6e684a]">Loading media…</p>}
 
       {assets.length === 0 && !loading ? (
-        <div className="p-8 border-2 border-dashed border-stone-200 rounded-2xl text-center">
-          <ImageIcon className="w-8 h-8 mx-auto text-stone-300 mb-2" />
-          <p className="text-xs text-stone-500">No media yet. Upload a file or add a URL to get started.</p>
+        <div className="p-8 border-2 border-dashed border-[#2d2813] rounded-2xl text-center">
+          <ImageIcon className="w-8 h-8 mx-auto text-[#6e684a] mb-2" />
+          <p className="text-xs text-[#6e684a]">No media yet. Upload a file or add a URL to get started.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">

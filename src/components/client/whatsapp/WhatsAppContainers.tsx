@@ -80,15 +80,15 @@ export default function WhatsAppContainers({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-[#eaebe4] rounded-3xl p-5 shadow-sm">
-        <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+      <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-[#2d2813]">
           <div>
-            <h3 className="text-sm font-bold text-forest-deep">My containers</h3>
-            <p className="text-xs text-graphite mt-0.5">Create containers and connect via QR code.</p>
+            <h3 className="text-sm font-bold text-[#a8a99e]">My containers</h3>
+            <p className="text-xs text-[#6e684a] mt-0.5">Create containers and connect via QR code.</p>
           </div>
           <button
             onClick={() => setShowNewInstanceModal(true)}
-            className="px-3.5 py-1.5 bg-forest-deep text-white text-xs font-bold rounded-xl hover:bg-[#33301a] transition-all flex items-center gap-1"
+            className="px-3.5 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-[#181711] text-xs font-bold rounded-xl transition-all flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Container</span>
@@ -110,10 +110,10 @@ export default function WhatsAppContainers({
             ))}
           </div>
         ) : (
-          <div className="py-12 text-center text-graphite space-y-3">
-            <Smartphone className="w-12 h-12 text-yellow-300 mx-auto" />
-            <p className="font-bold text-forest-deep">No containers provisioned yet.</p>
-            <button onClick={() => setShowNewInstanceModal(true)} className="px-4 py-2 bg-yellow-500 text-stone-950 font-bold text-xs rounded-xl">
+          <div className="py-12 text-center space-y-3">
+            <Smartphone className="w-12 h-12 text-yellow-500 mx-auto" />
+            <p className="font-bold text-[#a8a99e]">No containers provisioned yet.</p>
+            <button onClick={() => setShowNewInstanceModal(true)} className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-[#181711] font-bold text-xs rounded-xl transition-all">
               Create your first container
             </button>
           </div>

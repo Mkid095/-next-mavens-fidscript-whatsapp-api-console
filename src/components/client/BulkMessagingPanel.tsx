@@ -16,11 +16,12 @@ interface BulkMessagingPanelProps {
 type Step = 'create' | 'history';
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-stone-100 text-stone-600',
-  scheduled: 'bg-blue-100 text-blue-700',
-  sending: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-600',
+  draft: 'bg-[#2d2813] text-[#a8a99e]',
+  scheduled: 'bg-blue-900/40 text-blue-400 border-blue-800/50',
+  sending: 'bg-yellow-900/30 text-yellow-500 border-yellow-700/50 animate-pulse',
+  completed: 'bg-green-900/40 text-green-400 border-green-800/50',
+  cancelled: 'bg-red-900/30 text-red-400 border-red-800/40',
+  failed: 'bg-red-900/30 text-red-400 border-red-800/40',
 };
 
 /**
@@ -135,17 +136,17 @@ export default function BulkMessagingPanel({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="p-3 border-b border-[#eaebe4] shrink-0">
-        <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl">
+      <div className="p-3 border-b border-[#2d2813] shrink-0">
+        <div className="flex items-center gap-1 p-1 bg-[#181711] border border-[#2d2813] rounded-xl">
           <button
             onClick={() => setStep('create')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${step === 'create' ? 'bg-white text-forest-deep shadow-sm' : 'text-stone-500'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${step === 'create' ? 'bg-[#eab308] text-[#181711] font-semibold' : 'text-[#6e684a] hover:text-[#a8a99e]'}`}
           >
             <Zap className="w-3.5 h-3.5" /> Create
           </button>
           <button
             onClick={() => setStep('history')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${step === 'history' ? 'bg-white text-forest-deep shadow-sm' : 'text-stone-500'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${step === 'history' ? 'bg-[#eab308] text-[#181711] font-semibold' : 'text-[#6e684a] hover:text-[#a8a99e]'}`}
           >
             <Clock className="w-3.5 h-3.5" /> History
           </button>

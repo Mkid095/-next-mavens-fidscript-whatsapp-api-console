@@ -89,22 +89,22 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <button onClick={onBack} className="p-1.5 text-stone-500 hover:text-forest-deep hover:bg-stone-100 rounded-lg">
+        <button onClick={onBack} className="p-1.5 text-[#6e684a] hover:text-[#a8a99e] hover:bg-[#2d2813] rounded-lg">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h3 className="text-sm font-bold text-forest-deep">New campaign</h3>
+        <h3 className="text-sm font-bold text-[#a8a99e]">New campaign</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-1">Campaign name</label>
+          <label className="block text-[10px] font-bold text-[#6e684a] uppercase mb-1">Campaign name</label>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Black Friday promo"
-            className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500" />
+            className="w-full px-3 py-2 border border-[#2d2813] bg-[#181711] rounded-xl text-xs text-[#a8a99e] placeholder:text-[#5a554a] focus:outline-none focus:border-[#eab308]" />
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-graphite uppercase mb-1">Send from</label>
+          <label className="block text-[10px] font-bold text-[#6e684a] uppercase mb-1">Send from</label>
           <select value={instanceName} onChange={e => setInstanceName(e.target.value)}
-            className="w-full px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs focus:outline-none focus:border-yellow-500">
+            className="w-full px-3 py-2 border border-[#2d2813] bg-[#181711] rounded-xl text-xs text-[#a8a99e] focus:outline-none focus:border-[#eab308]">
             <option value="">— select instance —</option>
             {instances.map(i => (
               <option key={i.id} value={i.name}>
@@ -139,7 +139,7 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
             selectedSegmentId={selectedSegmentId}
             onSegmentPicked={(id, phones) => { setSelectedSegmentId(id); setSegmentPhones(phones); }}
           />
-          <p className="text-[10px] text-stone-400 -mt-3">{resolvedPhones.length} recipient{resolvedPhones.length === 1 ? '' : 's'}</p>
+          <p className="text-[10px] text-[#6e684a] -mt-3">{resolvedPhones.length} recipient{resolvedPhones.length === 1 ? '' : 's'}</p>
         </>
       )}
 
@@ -147,25 +147,25 @@ export default function CampaignBuilder({ instances, savedContacts, onBack, onCr
         <DripBuilderPanel campaignId={createdId} instances={instances} />
       )}
 
-      {error && <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">{error}</p>}
+      {error && <p className="text-[11px] text-red-400 bg-red-900/30 border border-red-800/40 rounded-lg p-2">{error}</p>}
 
-      <div className="flex items-center gap-2 justify-end pt-2 border-t border-stone-100">
-        <button onClick={onBack} className="px-3 py-2 text-xs font-bold bg-white border border-stone-200 text-stone-700 rounded-xl">Cancel</button>
+      <div className="flex items-center gap-2 justify-end pt-2 border-t border-[#2d2813]">
+        <button onClick={onBack} className="px-3 py-2 text-xs font-bold bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] rounded-xl">Cancel</button>
         {!createdId ? (
           <>
             <button onClick={() => create(false)} disabled={!canSave || saving}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-white border border-stone-200 text-stone-700 rounded-xl disabled:opacity-50">
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] rounded-xl disabled:opacity-50">
               <Save className="w-3.5 h-3.5" /> Save draft
             </button>
             {type === 'broadcast' && (
               <button onClick={() => create(true)} disabled={!canSave || saving}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-forest-deep text-white rounded-xl disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-[#eab308] text-[#181711] rounded-xl disabled:opacity-50">
                 <Send className="w-3.5 h-3.5" /> {saving ? 'Launching…' : 'Save & launch'}
               </button>
             )}
           </>
         ) : (
-          <button onClick={onCreated} className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-forest-deep text-white rounded-xl">
+          <button onClick={onCreated} className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-[#eab308] text-[#181711] rounded-xl">
             Done
           </button>
         )}

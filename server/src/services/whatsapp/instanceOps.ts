@@ -1,6 +1,7 @@
 import { callGatewayChecked } from '../../utils/gateway.js';
 import { logApiRequest } from '../../utils/audit.js';
 import { paceWhatsApp, type WhatsAppCallKind } from './whatsappCallLimiter.js';
+import { overlayLogoOnQR } from '../../utils/qrLogo.js';
 import { type SendContext, type SendResult, gatewayNameOf } from './shared.js';
 
 // QR generation (connectInstance) is heavy — gate it to one call per 10s per
@@ -51,7 +52,23 @@ export const connectInstance = async (ctx: SendContext, number?: string): Promis
     const status = res.status >= 400 && res.status < 500 ? res.status : 502;
     return { ok: false, status, error: (res.data.message as string) || (res.data.error as string) || 'Gateway request failed' };
   }
-  return { ok: true, data: res.data as Record<string, unknown> };
+
+  // Apply branding: recolor QR from blue-on-white to forest-deep and overlay logo
+  const data = res.data as Record<string, unknown>;
+  const qrcode = (data.qrcode as { code?: string; base64?: string } | undefined) || data;
+  const rawQr = (qrcode?.base64 as string | undefined) || (qrcode?.code as string | undefined) || '';
+  if (rawQr) {
+    try {
+      const brandedQr = await overlayLogoOnQR(rawQr);
+      // Return branded QR as both qrcode.base64 and qrcode.code for compatibility
+      data.qrcode = { base64: brandedQr, code: brandedQr };
+    } catch (err) {
+      // Branding failed — return raw QR (never block on logo overlay failure)
+      console.warn('[instanceOps] QR branding failed, returning raw QR:', err);
+    }
+  }
+
+  return { ok: true, data };
 };
 
 /** Full connect flow: logout first (clears old session), then generate fresh QR. */

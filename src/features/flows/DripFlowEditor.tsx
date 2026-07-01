@@ -6,28 +6,19 @@ import StepRow from './StepRow.js';
 
 interface DripFlowEditorProps {
   campaignId: string;
-  /** Initial local steps; we sync from the server when this is set. */
   onStepsChange?: (steps: CampaignStep[]) => void;
 }
 
-/**
- * Phase 5 Slice D — DripFlowEditor. List of steps for one drip campaign.
- * Edits stay in local state until "Save" is pressed, then PATCH per row.
- * Local-only mode (campaignId='') lets a user compose a flow before saving
- * the parent campaign; the parent's `onStepsChange` receives the array.
- */
 export default function DripFlowEditor({ campaignId, onStepsChange }: DripFlowEditorProps) {
   const { steps: serverSteps, loading, create, update, remove } = useCampaignSteps(campaignId || null);
   const [local, setLocal] = useState<CampaignStep[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Sync from server when it loads (or when campaignId changes)
   useEffect(() => {
     if (campaignId) setLocal(serverSteps);
   }, [campaignId, serverSteps]);
 
-  // Notify parent of changes (for unsaved flows)
   useEffect(() => { onStepsChange?.(local); }, [local, onStepsChange]);
 
   const newStep = (action_type: StepActionType = 'send_text'): CampaignStep => ({
@@ -47,7 +38,6 @@ export default function DripFlowEditor({ campaignId, onStepsChange }: DripFlowEd
     if (!campaignId) return;
     setSaving(true); setError(null);
     try {
-      // Diff local vs server: figure out which to create, which to update, which to delete
       const serverIds = new Set(serverSteps.map(s => s.id));
       const localIds = new Set(local.map(s => s.id));
       for (const s of local) {
@@ -71,25 +61,25 @@ export default function DripFlowEditor({ campaignId, onStepsChange }: DripFlowEd
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold text-graphite uppercase">Drip steps</p>
-          <p className="text-[10px] text-stone-500">Sequence of actions fired per enrolled customer. Delays stack on top of the previous step's delay.</p>
+          <p className="text-[10px] font-bold text-[#6e684a] uppercase">Drip steps</p>
+          <p className="text-[10px] text-[#6e684a]">Sequence of actions fired per enrolled customer. Delays stack on top of the previous step's delay.</p>
         </div>
         <div className="flex items-center gap-1.5">
           {campaignId && (
             <button onClick={save} disabled={saving || loading}
-              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-forest-deep text-white rounded-lg disabled:opacity-50">
+              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-[#eab308] text-[#181711] rounded-lg disabled:opacity-50">
               {saving ? <><RefreshCw className="w-3 h-3 animate-spin" /> Saving…</> : <><Save className="w-3 h-3" /> Save flow</>}
             </button>
           )}
         </div>
       </div>
 
-      {error && <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">{error}</p>}
+      {error && <p className="text-[11px] text-red-400 bg-red-900/30 border border-red-800/40 rounded-lg p-2">{error}</p>}
 
       <div className="space-y-1.5">
         {local.length === 0 ? (
-          <div className="p-6 border-2 border-dashed border-stone-200 rounded-xl text-center">
-            <p className="text-xs text-stone-500">No steps yet. Add the first one to start the drip.</p>
+          <div className="p-6 border-2 border-dashed border-[#2d2813] rounded-xl text-center">
+            <p className="text-xs text-[#6e684a]">No steps yet. Add the first one to start the drip.</p>
           </div>
         ) : (
           local.map((s, i) => (
@@ -101,7 +91,7 @@ export default function DripFlowEditor({ campaignId, onStepsChange }: DripFlowEd
       </div>
 
       <button onClick={addStep}
-        className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold bg-white border border-stone-200 text-stone-700 rounded-lg">
+        className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold bg-[#1a1915] border border-[#2d2813] text-[#6e684a] rounded-lg hover:border-[#3d3a1e]">
         <Plus className="w-3 h-3" /> Add step
       </button>
     </div>

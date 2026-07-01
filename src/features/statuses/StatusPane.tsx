@@ -11,8 +11,7 @@ interface StatusPaneProps {
 
 /**
  * Phase 5 Slice E — Statuses tab content. Owns the composer + list and
- * threads the submit/delete/cancel callbacks between them. Sits inside
- * MarketingCenter as one of the 4 tabs.
+ * threads the submit/delete/cancel callbacks between them.
  */
 export default function StatusPane({ instances }: StatusPaneProps) {
   const { posts, loading, error: listError, create, postNow, cancel, remove } = useStatusPosts();
@@ -51,11 +50,11 @@ export default function StatusPane({ instances }: StatusPaneProps) {
         error={composerError}
       />
       <div>
-        <p className="text-[10px] font-bold text-graphite uppercase mb-1.5">Recent status posts</p>
+        <p className="text-[10px] font-bold text-[#6e684a] uppercase mb-1.5">Recent status posts</p>
         {loading ? (
-          <p className="text-[10px] text-stone-500 p-3">Loading…</p>
+          <p className="text-[10px] text-[#6e684a] p-3">Loading…</p>
         ) : listError ? (
-          <p className="text-[10px] text-red-600 p-3 bg-red-50 border border-red-200 rounded-lg">{listError}</p>
+          <p className="text-[10px] text-red-400 p-3 bg-red-900/30 border border-red-800/40 rounded-lg">{listError}</p>
         ) : (
           <StatusList
             posts={posts}

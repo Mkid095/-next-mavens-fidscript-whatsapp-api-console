@@ -44,34 +44,34 @@ export default function MarketingCenter({ clientToken, instances }: MarketingCen
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-[#f9f9f2] border border-[#eaebe4] rounded-2xl flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-          <Sparkles className="w-5 h-5 text-blue-700" />
+      <div className="p-4 bg-[#181711] border border-[#2d2813] rounded-2xl flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#2d2813] flex items-center justify-center shrink-0">
+          <Sparkles className="w-5 h-5 text-[#eab308]" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-forest-deep">Marketing Center</p>
-          <p className="text-[10px] text-graphite">
+          <p className="text-xs font-bold text-[#a8a99e]">Marketing Center</p>
+          <p className="text-[10px] text-[#6e684a]">
             Broadcasts · Media library · Segments · Drip flows · Status posts. Shares the same send pipeline as 1:1 chat — failed sends refund tokens automatically.
           </p>
         </div>
-        <Megaphone className="w-5 h-5 text-yellow-700 shrink-0" />
+        <Megaphone className="w-5 h-5 text-[#eab308] shrink-0" />
       </div>
 
-      <div className="flex items-center gap-1 p-1 bg-[#f9f9f2] border border-[#eaebe4] rounded-xl w-fit flex-wrap">
+      <div className="flex items-center gap-1 p-1 bg-[#181711] border border-[#2d2813] rounded-xl w-fit flex-wrap">
         <button onClick={() => setTab('campaigns')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'campaigns' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'campaigns' ? 'bg-[#eab308] text-[#181711]' : 'text-[#6e684a] hover:text-[#a8a99e] hover:bg-[#2d2813]/50'}`}>
           <Megaphone className="w-3.5 h-3.5" /> Campaigns
         </button>
         <button onClick={() => setTab('library')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'library' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'library' ? 'bg-[#eab308] text-[#181711]' : 'text-[#6e684a] hover:text-[#a8a99e] hover:bg-[#2d2813]/50'}`}>
           <ImageIcon className="w-3.5 h-3.5" /> Media library
         </button>
         <button onClick={() => setTab('segments')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'segments' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'segments' ? 'bg-[#eab308] text-[#181711]' : 'text-[#6e684a] hover:text-[#a8a99e] hover:bg-[#2d2813]/50'}`}>
           <Users className="w-3.5 h-3.5" /> Segments
         </button>
         <button onClick={() => setTab('statuses')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'statuses' ? 'bg-forest-deep text-white' : 'text-stone-600 hover:bg-stone-100'}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${tab === 'statuses' ? 'bg-[#eab308] text-[#181711]' : 'text-[#6e684a] hover:text-[#a8a99e] hover:bg-[#2d2813]/50'}`}>
           <Radio className="w-3.5 h-3.5" /> Statuses
         </button>
       </div>
