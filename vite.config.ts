@@ -12,12 +12,18 @@ export default defineConfig(() => {
       },
     },
     build: {
-      // Use terser to avoid React 19 + esbuild TDZ minification bug
       minify: 'terser',
       terserOptions: {
         compress: {
-          dead_code: true,
-          drop_console: false,
+          toplevel: false,
+          unsafe_arrows: true,
+          passes: 2,
+        },
+        mangle: {
+          toplevel: false,
+        },
+        format: {
+          comments: false,
         },
       },
     },
