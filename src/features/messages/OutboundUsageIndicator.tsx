@@ -36,7 +36,7 @@ export default function OutboundUsageIndicator({ instanceName }: Props) {
 
   if (!instanceName || !usage) {
     return (
-      <button onClick={() => void refresh()} className="text-stone-400 hover:text-stone-700" title={error || 'Refresh usage'}>
+      <button onClick={() => void refresh()} className="text-[#6e684a] hover:text-[#a8a99e]" title={error || 'Refresh usage'}>
         <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
       </button>
     );
@@ -54,30 +54,30 @@ export default function OutboundUsageIndicator({ instanceName }: Props) {
         ? 'Unlimited (Tier 4)'
         : `${usage.uniqueInitiationsToday} unique contacts messaged in the last 24h (limit ${usage.tierLimit}). Window resets ${new Date(usage.resetsAt).toLocaleString()}.`
     }>
-      <span className={`text-[10px] font-medium ${overLimit ? 'text-red-600' : 'text-stone-500'}`}>
+      <span className={`text-[10px] font-medium ${overLimit ? 'text-red-400' : 'text-[#6e684a]'}`}>
         {tierLabel}
       </span>
       {!isUnlimited && (
         <div className="flex items-center gap-1.5">
-          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-stone-200">
+          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-[#2d2813]">
             <div className={`h-full ${barColor} transition-all`} style={{ width: `${Math.min(100, usage.pct)}%` }} />
           </div>
-          <span className="font-mono text-[10px] text-stone-600">
+          <span className="font-mono text-[10px] text-[#a8a99e]">
             {usage.uniqueInitiationsToday} / {usage.tierLimit}
           </span>
           {nearUpgrade && (
-            <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-green-700" title={`≥${usage.upgradeThreshold} messages/day for 7 days triggers the next tier`}>
+            <span className="rounded-full bg-green-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-green-400" title={`≥${usage.upgradeThreshold} messages/day for 7 days triggers the next tier`}>
               upgrade ready
             </span>
           )}
           {overLimit && (
-            <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-red-700">
+            <span className="rounded-full bg-red-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-red-400">
               at limit
             </span>
           )}
         </div>
       )}
-      <button onClick={() => void refresh()} className="text-stone-400 hover:text-stone-700" title="Refresh">
+      <button onClick={() => void refresh()} className="text-[#6e684a] hover:text-[#a8a99e]" title="Refresh">
         <RefreshCw size={11} className={loading ? 'animate-spin' : ''} />
       </button>
     </div>

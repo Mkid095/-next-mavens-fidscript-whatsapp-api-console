@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Bot,
 } from 'lucide-react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { fetchApi } from '../../../services/api';
@@ -203,7 +204,7 @@ export default function TestStep() {
           {/* Chat header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-[#2d2813] bg-[#1a1915] shrink-0">
             <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0">
-              <span className="text-sm">🤖</span>
+              <Bot size={16} className="text-yellow-400" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate">

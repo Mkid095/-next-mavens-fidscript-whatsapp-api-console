@@ -25,6 +25,8 @@ export interface MirrorMessage {
   mediaUrl: string | null;
   mediaMimetype: string | null;
   senderName: string | null;
+  /** Full JID of the sender — used for group avatar lookup */
+  senderJid: string | null;
   timestamp: number;
 }
 

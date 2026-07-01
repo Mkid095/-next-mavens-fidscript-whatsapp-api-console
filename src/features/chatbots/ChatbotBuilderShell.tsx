@@ -223,13 +223,20 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
   }, [botId, isEditMode, clientToken]);
 
   // ── Deep linking: sync URL param → currentStep ───────────────────────────
+  // Runs once on mount to respect a ?step= URL param from external links.
+  // Uses a ref to detect whether the step came from URL navigation vs user click.
+  // This prevents the feedback loop with the URL-update effect below.
 
+  const isNavigatingRef = useRef(false);
   useEffect(() => {
+    if (isNavigatingRef.current) return;
     const step = new URLSearchParams(window.location.search).get('step') as BuilderStepId | null;
-    if (step && BUILDER_STEPS.some(s => s.id === step)) {
+    if (step && BUILDER_STEPS.some(s => s.id === step) && step !== draft.currentStep) {
+      isNavigatingRef.current = true;
       goToStep(step);
     }
-  }, [window.location.search]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally run once on mount only
 
   // ── Autosave on draft changes ────────────────────────────────────────────
 

@@ -34,13 +34,13 @@ export type ChatbotTemplate =
   | 'custom';
 
 export const TEMPLATE_META: Record<ChatbotTemplate, { label: string; description: string; icon: string }> = {
-  'customer-support':   { label: 'Customer Support',   description: 'Handle support requests, FAQs & ticket routing',     icon: '🎧' },
-  'sales-assistant':    { label: 'Sales Assistant',    description: 'Help customers find products & complete purchases',  icon: '💬' },
-  'faq-bot':            { label: 'FAQ Bot',              description: 'Answer common questions from your knowledge base',  icon: '❓' },
-  'lead-qualification': { label: 'Lead Qualification',  description: 'Qualify leads & capture contact information',       icon: '🎯' },
-  'booking-assistant':  { label: 'Booking Assistant',   description: 'Schedule appointments & manage reservations',      icon: '📅' },
-  'ecommerce':          { label: 'E-commerce',           description: 'Product search, cart & order management',            icon: '🛒' },
-  'custom':             { label: 'Custom',                description: 'Build from scratch with full control',               icon: '⚙️' },
+  'customer-support':   { label: 'Customer Support',   description: 'Handle support requests, FAQs & ticket routing',     icon: 'Headphones' },
+  'sales-assistant':    { label: 'Sales Assistant',    description: 'Help customers find products & complete purchases',  icon: 'MessageSquare' },
+  'faq-bot':            { label: 'FAQ Bot',              description: 'Answer common questions from your knowledge base',  icon: 'HelpCircle' },
+  'lead-qualification': { label: 'Lead Qualification',  description: 'Qualify leads & capture contact information',       icon: 'Target' },
+  'booking-assistant':  { label: 'Booking Assistant',   description: 'Schedule appointments & manage reservations',      icon: 'Calendar' },
+  'ecommerce':          { label: 'E-commerce',           description: 'Product search, cart & order management',            icon: 'ShoppingBag' },
+  'custom':             { label: 'Custom',                description: 'Build from scratch with full control',               icon: 'Settings' },
 };
 
 // ─── General ───────────────────────────────────────────────────────────────────

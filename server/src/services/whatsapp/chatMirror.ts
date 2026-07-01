@@ -71,6 +71,8 @@ export interface MirrorMessage {
   mediaUrl: string | null;
   mediaMimetype: string | null;
   senderName: string | null;
+  /** Full JID of the sender — used for group avatar lookup on the frontend */
+  senderJid: string | null;
   timestamp: number;
 }
 
@@ -96,9 +98,11 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
   const rawPhone = jid.split('@')[0];
   // Only look up CRM name if the raw phone is purely numeric
   if (/^\d+$/.test(rawPhone)) {
+    // Normalize the JID phone to match how contacts are stored (international + format)
+    const normalizedForDb = normalizePhone(rawPhone);
     const contact = db.prepare(
       'SELECT name FROM contacts WHERE client_id = ? AND phone = ?'
-    ).get(workspaceId, rawPhone) as { name: string | null } | undefined;
+    ).get(workspaceId, normalizedForDb) as { name: string | null } | undefined;
     if (contact?.name) return contact.name;
   }
   // Fall back to raw phone digits — exactly as the JID stores them
@@ -245,6 +249,7 @@ export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendR
       mediaUrl: parsed.mediaUrl,
       mediaMimetype: parsed.mediaMimetype,
       senderName,
+      senderJid: isGroup ? (str(m.participant) || str(key?.participant) || null) : null,
       timestamp: ts,
     });
   }

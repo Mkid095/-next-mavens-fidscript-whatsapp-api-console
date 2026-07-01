@@ -5,16 +5,16 @@
  * These are high-level operations the bot can execute during conversations.
  */
 import React, { useState } from 'react';
-import { Wrench, Plus, Trash2, Check, Zap } from 'lucide-react';
+import { Wrench, Plus, Trash2, Check, Zap, Globe, Server, Link, Hexagon, Zap as Lightning } from 'lucide-react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { type ToolDefinition, type ToolType } from '../types';
 
-const TOOL_TYPES: { value: ToolType; label: string; description: string; icon: string }[] = [
-  { value: 'http-request',   label: 'HTTP Request',   description: 'Call an external API',         icon: '🌐' },
-  { value: 'database-query', label: 'Database Query', description: 'Query your connected database', icon: '🗄️' },
-  { value: 'webhook',         label: 'Webhook',         description: 'Send data to a webhook URL',    icon: '🔗' },
-  { value: 'graphql',         label: 'GraphQL',          description: 'Query a GraphQL endpoint',     icon: '◈' },
-  { value: 'function',        label: 'Custom Function',  description: 'Run a custom function',         icon: '⚡' },
+const TOOL_TYPES: { value: ToolType; label: string; description: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
+  { value: 'http-request',   label: 'HTTP Request',   description: 'Call an external API',         icon: Globe },
+  { value: 'database-query', label: 'Database Query', description: 'Query your connected database', icon: Server },
+  { value: 'webhook',         label: 'Webhook',         description: 'Send data to a webhook URL',    icon: Link },
+  { value: 'graphql',         label: 'GraphQL',          description: 'Query a GraphQL endpoint',     icon: Hexagon },
+  { value: 'function',        label: 'Custom Function',  description: 'Run a custom function',         icon: Lightning },
 ];
 
 function ToolCard({ tool, onRemove }: { tool: ToolDefinition; onRemove: () => void }) {
@@ -31,7 +31,7 @@ function ToolCard({ tool, onRemove }: { tool: ToolDefinition; onRemove: () => vo
           </span>
         </div>
         <p className="text-[10px] text-[#6e684a] mt-0.5">
-          {TOOL_TYPES.find(t => t.value === tool.type)?.label} · {tool.requireConfirmation ? '⚠ Confirmation required' : 'Auto-execute'}
+          {TOOL_TYPES.find(t => t.value === tool.type)?.label} · {tool.requireConfirmation ? 'Awaiting confirmation' : 'Auto-execute'}
         </p>
       </div>
       <button onClick={onRemove} className="text-[#6e684a] hover:text-red-400 transition shrink-0">
@@ -78,8 +78,10 @@ function AddToolModal({ onClose, onAdd }: { onClose: () => void; onAdd: (t: Tool
               className={`flex items-center gap-2 p-3 rounded-xl border text-left transition ${
                 toolType === t.value ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-[#0d0c0a] border-[#2d2813]'
               }`}
-            >
-              <span>{t.icon}</span>
+              >
+              <span className={toolType === t.value ? 'text-yellow-400' : 'text-[#6e684a]'}>
+                {(() => { const Icon = t.icon; return <Icon size={16} />; })()}
+              </span>
               <div>
                 <p className={`text-xs font-semibold ${toolType === t.value ? 'text-white' : 'text-[#a8a99e]'}`}>{t.label}</p>
                 <p className="text-[10px] text-[#6e684a]">{t.description}</p>

@@ -14,7 +14,7 @@ import { requireConnected } from '../../services/whatsapp/shared.js';
 import { buildSendCtx, respondSendResult } from '../../services/whatsapp/http.js';
 import { mirrorChatList, mirrorThread, mirrorProfilePic } from '../../services/whatsapp/chatMirror.js';
 import { getOutboundUsage, newInitiationsInBatch } from '../../services/whatsapp/outboundUsage.js';
-import { instanceEmitter } from '../../utils/gateway.js';
+import { instanceEmitter, callGateway } from '../../utils/gateway.js';
 
 // 10/sec per client — responsive UI reads (find-chats/find-messages) without
 // approaching the ~80 MPS WhatsApp send throughput (reads aren't subject to
@@ -139,6 +139,51 @@ router.post('/chats/:name/mark-read', async (req, res) => {
   instanceEmitter.emit('message.read', ctx.instance.name, { conversationId: null, messageId: '', chatId: jid });
 
   res.json({ success: true, updated: info.changes });
+});
+
+// GET /api/platform/chatmirror/media?url=<encoded_media_url>
+// Proxy for Evolution API media URLs — fetches the media with the correct API
+// key headers and returns it with proper CORS headers so the browser can render
+// images/video/audio that would otherwise 403 (browser can't send apikey header).
+// The URL must belong to our Evolution API instance; we reject anything else.
+router.get('/media', async (req: Request, res) => {
+  const encodedUrl = typeof req.query.url === 'string' ? req.query.url : '';
+  if (!encodedUrl) { res.status(400).json({ success: false, error: 'url query param required' }); return; }
+
+  let mediaUrl: string;
+  try { mediaUrl = decodeURIComponent(encodedUrl); } catch { res.status(400).json({ success: false, error: 'Invalid URL encoding' }); return; }
+
+  // Security: only proxy URLs from our Evolution API base
+  const evBase = (process.env.EVOLUTION_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+  let targetUrl = mediaUrl;
+  if (!mediaUrl.startsWith(evBase)) {
+    // Allow relative paths: /mediafile/{instanceName}/{fileName}
+    if (mediaUrl.startsWith('/mediafile/')) {
+      targetUrl = `${evBase}${mediaUrl}`;
+    } else {
+      res.status(400).json({ success: false, error: 'Media URL not from Evolution API' }); return;
+    }
+  }
+
+  try {
+    const response = await fetch(targetUrl, {
+      headers: {
+        'apikey': process.env.EVOLUTION_API_KEY || '',
+        'Accept': 'image/*,video/*,audio/*,application/octet-stream,*/*',
+      },
+    });
+    if (!response.ok) { res.status(502).json({ success: false, error: `Evolution API returned ${response.status}` }); return; }
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    const buffer = await response.arrayBuffer();
+    res.status(200).send(Buffer.from(buffer));
+  } catch (err) {
+    console.error('[chatMirror] media proxy error:', err);
+    res.status(502).json({ success: false, error: 'Failed to fetch media' });
+  }
 });
 
 export default router;

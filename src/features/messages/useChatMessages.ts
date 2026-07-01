@@ -33,11 +33,16 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
     setError(res.error || 'Failed to load messages');
   }, [instanceName, jid, cacheKey]);
 
-  // Switch chats: serve from cache immediately, then refresh in background
+  // Switch chats: serve from cache immediately, then refresh in background.
+  // Reset loading on every jid change so the spinner shows even on subsequent
+  // chat switches (not just the first mount).
   useEffect(() => {
-    if (!instanceName || !jid) { setMessages([]); return; }
+    if (!instanceName || !jid) { setMessages([]); setLoading(false); return; }
 
     const cached = cacheKey ? messageCache.get(cacheKey) : undefined;
+
+    // Always show loading state on chat switch to clear old messages immediately
+    if (!cached) setLoading(true);
 
     if (isFirstRender.current) {
       // First mount: use cache if available, otherwise load from network

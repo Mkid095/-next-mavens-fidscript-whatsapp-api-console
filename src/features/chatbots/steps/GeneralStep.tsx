@@ -4,9 +4,29 @@
  * Fields: Name, Description, Template (cards), Priority, Enabled
  */
 import React from 'react';
-import { Bot, GripVertical, Eye, EyeOff } from 'lucide-react';
+import {
+  Bot,
+  Headphones,
+  MessageSquare,
+  HelpCircle,
+  Target,
+  Calendar,
+  ShoppingBag,
+  Settings,
+} from 'lucide-react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { TEMPLATE_META, type ChatbotTemplate } from '../types';
+
+// Icon lookup — maps template icon name to Lucide component
+const TEMPLATE_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Headphones,
+  MessageSquare,
+  HelpCircle,
+  Target,
+  Calendar,
+  ShoppingBag,
+  Settings,
+};
 
 export default function GeneralStep() {
   const { draft, updateGeneral } = useChatbotBuilderStore();
@@ -73,7 +93,12 @@ export default function GeneralStep() {
                     : 'bg-[#0d0c0a] border-[#2d2813] hover:border-[#3d3823]'
                 }`}
               >
-                <span className="text-lg">{meta.icon}</span>
+                <span className={isSelected ? 'text-yellow-400' : 'text-[#6e684a]'}>
+                  {(() => {
+                    const Icon = TEMPLATE_ICONS[meta.icon];
+                    return Icon ? <Icon size={18} /> : <Bot size={18} />;
+                  })()}
+                </span>
                 <p className={`text-xs font-semibold leading-tight ${isSelected ? 'text-white' : 'text-[#a8a99e]'}`}>
                   {meta.label}
                 </p>

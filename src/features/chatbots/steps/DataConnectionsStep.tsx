@@ -24,22 +24,35 @@ import {
   Globe,
   ShoppingCart,
   Settings,
+  Server,
+  Store,
+  Link,
   Eye,
   EyeOff,
   AlertCircle,
   ArrowRight,
   ExternalLink,
 } from 'lucide-react';
+import type { ElementType } from 'react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { fetchApi } from '../../../services/api';
 import { type DbType, type DataConnection } from '../types';
 
 // ─── Connection type definitions ─────────────────────────────────────────────
 
+const CONNECTION_ICONS: Record<string, ElementType> = {
+  postgresql: Database,
+  mysql: Server,
+  'rest-api': Link,
+  shopify: ShoppingCart,
+  woocommerce: Store,
+  custom: Settings,
+};
+
 const CONNECTION_TYPES: {
   value: DbType;
   label: string;
-  icon: string;
+  icon: ElementType;
   description: string;
   color: string;
   fields: { key: string; label: string; placeholder: string; type: 'text' | 'password' | 'number'; defaultValue?: string }[];
@@ -47,7 +60,7 @@ const CONNECTION_TYPES: {
   {
     value: 'postgresql',
     label: 'PostgreSQL',
-    icon: '🐘',
+    icon: Database,
     description: 'Connect to a PostgreSQL database',
     color: 'blue',
     fields: [
@@ -62,7 +75,7 @@ const CONNECTION_TYPES: {
   {
     value: 'mysql',
     label: 'MySQL',
-    icon: '🐬',
+    icon: Server,
     description: 'Connect to a MySQL database',
     color: 'orange',
     fields: [
@@ -76,7 +89,7 @@ const CONNECTION_TYPES: {
   {
     value: 'rest-api',
     label: 'REST API',
-    icon: '🔗',
+    icon: Link,
     description: 'Connect to any REST API endpoint',
     color: 'green',
     fields: [
@@ -89,7 +102,7 @@ const CONNECTION_TYPES: {
   {
     value: 'shopify',
     label: 'Shopify',
-    icon: '🛍️',
+    icon: ShoppingCart,
     description: 'Connect your Shopify store via API',
     color: 'green',
     fields: [
@@ -101,7 +114,7 @@ const CONNECTION_TYPES: {
   {
     value: 'woocommerce',
     label: 'WooCommerce',
-    icon: '🧱',
+    icon: Store,
     description: 'Connect your WooCommerce store',
     color: 'purple',
     fields: [
@@ -113,7 +126,7 @@ const CONNECTION_TYPES: {
   {
     value: 'custom',
     label: 'Custom',
-    icon: '⚙️',
+    icon: Settings,
     description: 'Define a custom connection handler',
     color: 'gray',
     fields: [
@@ -148,7 +161,7 @@ function ConnectionCard({
   return (
     <div className="flex items-start gap-3 p-4 bg-[#0d0c0a] border border-[#2d2813] rounded-xl">
       <div className="w-9 h-9 rounded-lg bg-[#1a1915] flex items-center justify-center text-base shrink-0">
-        {typeMeta?.icon ?? '🔌'}
+        {(() => { const Icon = typeMeta?.icon; return Icon ? <Icon size={18} className="text-[#6e684a]" /> : <Plug size={18} className="text-[#6e684a]" />; })()}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -306,7 +319,7 @@ function AddConnectionWizard({
               onClick={() => handleTypeSelect(t.value)}
               className="flex items-start gap-3 p-4 bg-[#0d0c0a] border border-[#2d2813] hover:border-yellow-500/30 rounded-xl text-left transition group"
             >
-              <span className="text-2xl shrink-0">{t.icon}</span>
+              <span className="text-2xl shrink-0">{(() => { const Icon = t.icon; return <Icon size={20} />; })()}</span>
               <div>
                 <p className="text-sm font-semibold text-white group-hover:text-yellow-300">{t.label}</p>
                 <p className="text-[10px] text-[#6e684a] mt-0.5 leading-snug">{t.description}</p>
@@ -561,7 +574,10 @@ function AddConnectionWizard({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#6e684a]">Type</span>
-            <span className="text-sm text-white">{typeMeta?.icon} {typeMeta?.label}</span>
+            <span className="text-sm text-white flex items-center gap-1.5">
+              {(() => { const Icon = typeMeta?.icon; return Icon ? <Icon size={14} /> : null; })()}
+              {typeMeta?.label}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#6e684a]">Status</span>

@@ -30,6 +30,11 @@ import {
   Search,
   ChevronDown,
   X,
+  Link,
+  FileText,
+  FileSpreadsheet,
+  Server,
+  Code,
 } from 'lucide-react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { type KnowledgeSource, type KnowledgeSourceType } from '../types';
@@ -40,17 +45,17 @@ const SOURCE_TYPES: {
   value: KnowledgeSourceType;
   label: string;
   description: string;
-  icon: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   color: string;
 }[] = [
-  { value: 'url',      label: 'Website URL',    description: 'Scrape content from a webpage',          icon: '🌐', color: 'blue'   },
-  { value: 'faq',      label: 'FAQ',             description: 'Structured question & answer pairs',      icon: '❓', color: 'purple' },
-  { value: 'text',     label: 'Plain Text',     description: 'Paste or write free-form text',          icon: '📝', color: 'yellow' },
-  { value: 'json',     label: 'JSON',            description: 'Structured data (products, inventory)', icon: '📦', color: 'orange' },
-  { value: 'pdf',      label: 'PDF',             description: 'Upload a PDF document',                  icon: '📄', color: 'red'    },
-  { value: 'csv',      label: 'CSV',             description: 'Spreadsheet or table data',              icon: '📊', color: 'green'  },
-  { value: 'database', label: 'Database',       description: 'Connect to your database',              icon: '🗄️', color: 'cyan'   },
-  { value: 'api',      label: 'API Endpoint',   description: 'Fetch data from an external API',       icon: '🔗', color: 'pink'   },
+  { value: 'url',      label: 'Website URL',    description: 'Scrape content from a webpage',          icon: Link,        color: 'blue'   },
+  { value: 'faq',      label: 'FAQ',             description: 'Structured question & answer pairs',      icon: FileText,   color: 'purple' },
+  { value: 'text',     label: 'Plain Text',     description: 'Paste or write free-form text',          icon: FileText,   color: 'yellow' },
+  { value: 'json',     label: 'JSON',            description: 'Structured data (products, inventory)', icon: Database,   color: 'orange' },
+  { value: 'pdf',      label: 'PDF',             description: 'Upload a PDF document',                  icon: FileText,   color: 'red'    },
+  { value: 'csv',      label: 'CSV',             description: 'Spreadsheet or table data',              icon: FileSpreadsheet, color: 'green'  },
+  { value: 'database', label: 'Database',       description: 'Connect to your database',              icon: Server,     color: 'cyan'   },
+  { value: 'api',      label: 'API Endpoint',   description: 'Fetch data from an external API',       icon: Code,       color: 'pink'   },
 ];
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -138,10 +143,10 @@ function SourceCard({
       {/* Main row */}
       <div className="flex items-center gap-3 p-4">
         {/* Icon */}
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 ${
-          source.status === 'active' ? 'bg-[#1a1915]' : 'bg-[#1a1915] opacity-60'
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+          source.status === 'active' ? 'bg-[#1a1915] text-[#6e684a]' : 'bg-[#1a1915] opacity-60 text-[#5a554a]'
         }`}>
-          {typeMeta?.icon ?? '📄'}
+          {(() => { const Icon = typeMeta?.icon ?? FileText; return <Icon size={18} />; })()}
         </div>
 
         {/* Name + meta */}
@@ -353,7 +358,9 @@ function AddSourceModal({
                     : 'bg-[#0d0c0a] border-[#2d2813] hover:border-[#3d3823]'
                 }`}
               >
-                <span className="text-base">{t.icon}</span>
+                <span className={type === t.value ? 'text-yellow-400' : 'text-[#6e684a]'}>
+                  {(() => { const Icon = t.icon; return <Icon size={16} />; })()}
+                </span>
                 <span className={`text-xs font-semibold ${type === t.value ? 'text-white' : 'text-[#a8a99e]'}`}>
                   {t.label}
                 </span>
@@ -492,7 +499,7 @@ function AddSourceModal({
         {/* PDF / CSV */}
         {(type === 'pdf' || type === 'csv') && (
           <div className="border-2 border-dashed border-[#2d2813] rounded-xl p-6 text-center">
-            <p className="text-3xl mb-2">{type === 'pdf' ? '📄' : '📊'}</p>
+            <p className="mb-2 text-[#6e684a]">{type === 'pdf' ? <FileText size={32} /> : <FileSpreadsheet size={32} />}</p>
             <p className="text-sm text-white font-semibold">
               {type === 'pdf' ? 'Upload PDF' : 'Upload CSV'}
             </p>

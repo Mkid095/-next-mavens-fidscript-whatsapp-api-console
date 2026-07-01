@@ -9,18 +9,18 @@
  * - Response Settings: Temperature, hallucination policy (user-friendly)
  */
 import React, { useState } from 'react';
-import { Brain, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Brain, ChevronDown, ChevronUp, Check, Bot, Sparkles, Cpu, Globe, Monitor, Settings } from 'lucide-react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { type AIProvider } from '../types';
 
-const PROVIDERS: { id: AIProvider; label: string; description: string; icon: string }[] = [
-  { id: 'fidscript',    label: 'Fidscript AI',    description: 'Powered by Gemini — great out of the box', icon: '🤖' },
-  { id: 'openai',       label: 'OpenAI',           description: 'GPT-4o, GPT-4o Mini, o1 & more',          icon: '🔵' },
-  { id: 'anthropic',    label: 'Anthropic',        description: 'Claude 3.5 Sonnet, Opus & more',          icon: '🟡' },
-  { id: 'gemini',       label: 'Google Gemini',    description: 'Gemini 1.5, 2.0 Flash & more',            icon: '💎' },
-  { id: 'openrouter',   label: 'OpenRouter',       description: 'Access 100+ models via single API',      icon: '🌐' },
-  { id: 'ollama',       label: 'Ollama',            description: 'Run open-source models locally',         icon: '🖥️' },
-  { id: 'custom',       label: 'Custom / BYOLLM',  description: 'Any OpenAI-compatible endpoint',         icon: '⚙️' },
+const PROVIDERS: { id: AIProvider; label: string; description: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
+  { id: 'fidscript',    label: 'Fidscript AI',    description: 'Powered by Gemini — great out of the box', icon: Bot },
+  { id: 'openai',       label: 'OpenAI',           description: 'GPT-4o, GPT-4o Mini, o1 & more',          icon: Sparkles },
+  { id: 'anthropic',    label: 'Anthropic',        description: 'Claude 3.5 Sonnet, Opus & more',          icon: Cpu },
+  { id: 'gemini',       label: 'Google Gemini',    description: 'Gemini 1.5, 2.0 Flash & more',            icon: Globe },
+  { id: 'openrouter',   label: 'OpenRouter',       description: 'Access 100+ models via single API',      icon: Monitor },
+  { id: 'ollama',       label: 'Ollama',            description: 'Run open-source models locally',         icon: Settings },
+  { id: 'custom',       label: 'Custom / BYOLLM',  description: 'Any OpenAI-compatible endpoint',         icon: Settings },
 ];
 
 const MODEL_SUGGESTIONS: Record<AIProvider, string[]> = {
@@ -72,7 +72,9 @@ export default function AIBrainStep() {
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
-                  <span className="text-base">{p.icon}</span>
+                  <span className={isSelected ? 'text-yellow-400' : 'text-[#6e684a]'}>
+                    {(() => { const Icon = p.icon; return <Icon size={18} />; })()}
+                  </span>
                   {isSelected && <Check className="w-3.5 h-3.5 text-yellow-400" />}
                 </div>
                 <p className={`text-xs font-semibold ${isSelected ? 'text-white' : 'text-[#a8a99e]'}`}>

@@ -82,7 +82,7 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
 
   if (instances.length === 0) {
     return (
-      <div className="flex h-full min-h-0 flex-1 items-center justify-center bg-stone-50 text-stone-400">
+      <div className="flex h-full min-h-0 flex-1 items-center justify-center bg-[#181711] text-[#6e684a]">
         <div className="text-center">
           <Inbox size={32} className="mx-auto mb-2" />
           <p className="text-sm">No WhatsApp instances yet</p>
@@ -98,18 +98,18 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
 
   if (isNotLinked) {
     return (
-      <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center bg-stone-50">
+      <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center bg-[#181711]">
         <div className="text-center max-w-xs">
-          <Link2Off size={40} className="mx-auto mb-3 text-stone-300" />
-          <h2 className="text-base font-semibold text-stone-700 mb-1">
+          <Link2Off size={40} className="mx-auto mb-3 text-[#6e684a]" />
+          <h2 className="text-base font-semibold text-[#a8a99e] mb-1">
             {instance.name} is not linked
           </h2>
-          <p className="text-xs text-stone-500 mb-5">
+          <p className="text-xs text-[#6e684a] mb-5">
             This container has no WhatsApp account connected. Scan a QR code to link it.
           </p>
           <button
             onClick={() => navigate('/client/whatsapp')}
-            className="rounded-lg bg-[#eab308] px-4 py-2 text-sm font-medium text-black hover:bg-[#ca8a04] transition"
+            className="rounded-lg bg-[#eab308] px-4 py-2 text-sm font-medium text-black hover:bg-[#fde047] transition"
           >
             Go to Containers
           </button>
@@ -124,13 +124,13 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 bg-white px-4 py-2.5">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[#2d2813] bg-[#181711] shadow-sm">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2d2813] bg-[#1a1915] px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <Inbox size={16} className="text-[#181711]" />
-          <h1 className="text-sm font-semibold text-stone-800">Messages</h1>
+          <Inbox size={16} className="text-[#eab308]" />
+          <h1 className="text-sm font-semibold text-white">Messages</h1>
           {instance && instance.status !== 'connected' && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+            <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-400">
               {instance.status}
             </span>
           )}
@@ -141,7 +141,7 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
             onClick={() => void handleSyncPhonebook()}
             disabled={!instance || instance.status !== 'connected' || syncState === 'syncing'}
             title="Sync WhatsApp phonebook (one-way: pulls contacts into your saved list)"
-            className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
+            className="flex items-center gap-1 rounded-lg border border-[#2d2813] bg-[#1a1915] px-2 py-1 text-[11px] text-[#a8a99e] transition hover:bg-[#2d2813] disabled:opacity-50"
           >
             <Users size={12} className={syncState === 'syncing' ? 'animate-pulse' : ''} />
             {syncState === 'syncing' ? 'Syncing…' : 'Sync contacts'}
@@ -150,10 +150,10 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
             <select
               value={instance?.id ?? ''}
               onChange={(e) => switchInstance(instances.find((i) => i.id === e.target.value) ?? null)}
-              className="appearance-none rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 pr-7 text-xs text-stone-700 outline-none focus:border-[#eab308]"
+              className="appearance-none rounded-lg border border-[#2d2813] bg-[#1a1915] px-2.5 py-1.5 pr-7 text-xs text-[#a8a99e] outline-none focus:border-[#eab308]"
             >
               {instances.map((i) => (
-                <option key={i.id} value={i.id}>{i.name}{i.status === 'connected' ? ' · connected' : ''}</option>
+                <option key={i.id} value={i.id} style={{ background: '#1a1915', color: '#a8a99e' }}>{i.name}{i.status === 'connected' ? ' · connected' : ''}</option>
               ))}
             </select>
           )}
@@ -162,13 +162,13 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
 
       {syncMessage && (
         <div className={`border-b px-4 py-1.5 text-[11px] ${
-          syncState === 'error' ? 'border-red-200 bg-red-50 text-red-700'
-            : syncState === 'done' ? 'border-green-200 bg-green-50 text-green-700'
-            : 'border-stone-200 bg-stone-50 text-stone-600'
+          syncState === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-400'
+            : syncState === 'done' ? 'border-green-500/30 bg-green-500/10 text-green-400'
+            : 'border-[#2d2813] bg-[#1a1915] text-[#6e684a]'
         }`}>
           {syncMessage}
           {syncState === 'done' && (
-            <button onClick={() => setSyncState('idle')} className="ml-2 text-stone-400 hover:text-stone-700" aria-label="Dismiss">
+            <button onClick={() => setSyncState('idle')} className="ml-2 text-[#6e684a] hover:text-[#a8a99e]" aria-label="Dismiss">
               <RefreshCw size={10} className="inline" />
             </button>
           )}

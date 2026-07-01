@@ -8,16 +8,16 @@
  * - Groups: How in WhatsApp groups (Disabled, Mention, Reply All, Admin Only)
  */
 import React from 'react';
-import { Users, MessageSquare, ChevronRight, Check } from 'lucide-react';
+import { Users, MessageSquare, ChevronRight, Check, Globe, Sparkles, RefreshCw, Tag, User } from 'lucide-react';
 import { useChatbotBuilderStore } from '../store/chatbotBuilderStore';
 import { type AudienceContactMode, type GroupMode } from '../types';
 
-const CONTACT_OPTIONS: { value: AudienceContactMode; label: string; description: string; icon: string }[] = [
-  { value: 'everyone',           label: 'Everyone',           description: 'All contacts that message your WhatsApp', icon: '🌐' },
-  { value: 'new-contacts',       label: 'New Contacts',       description: 'Contacts messaging for the first time', icon: '✨' },
-  { value: 'existing-customers', label: 'Existing Customers', description: 'Contacts with prior conversation history', icon: '🔄' },
-  { value: 'tagged-contacts',    label: 'Tagged Contacts',   description: 'Contacts with specific tags', icon: '🏷️' },
-  { value: 'specific-contacts',  label: 'Specific Contacts', description: 'Manually selected contacts', icon: '👤' },
+const CONTACT_OPTIONS: { value: AudienceContactMode; label: string; description: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
+  { value: 'everyone',           label: 'Everyone',           description: 'All contacts that message your WhatsApp', icon: Globe },
+  { value: 'new-contacts',       label: 'New Contacts',       description: 'Contacts messaging for the first time', icon: Sparkles },
+  { value: 'existing-customers', label: 'Existing Customers', description: 'Contacts with prior conversation history', icon: RefreshCw },
+  { value: 'tagged-contacts',    label: 'Tagged Contacts',   description: 'Contacts with specific tags', icon: Tag },
+  { value: 'specific-contacts',  label: 'Specific Contacts', description: 'Manually selected contacts', icon: User },
 ];
 
 const GROUP_OPTIONS: { value: GroupMode; label: string; description: string }[] = [
@@ -56,7 +56,9 @@ export default function AudienceStep() {
                     : 'bg-[#0d0c0a] border-[#2d2813] hover:border-[#3d3823]'
                 }`}
               >
-                <span className="text-base">{opt.icon}</span>
+                <span className={isSelected ? 'text-yellow-400' : 'text-[#6e684a]'}>
+                  {(() => { const Icon = opt.icon; return <Icon size={16} />; })()}
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-[#a8a99e]'}`}>
                     {opt.label}

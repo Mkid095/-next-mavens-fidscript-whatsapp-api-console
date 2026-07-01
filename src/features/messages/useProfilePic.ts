@@ -24,15 +24,17 @@ function pump() {
     const key = queue.shift()!;
     if (inflight.has(key) || cache.has(key)) continue;
     inflight.add(key);
-    const [instanceName, number] = key.split('::');
-    messagesApi.getProfilePic(instanceName, number).then((res) => {
+    const [instanceName, lookupKey] = key.split('::');
+    messagesApi.getProfilePic(instanceName, lookupKey).then((res) => {
       notify(key, res.success && res.data ? res.data.url : null);
     }).catch(() => notify(key, null));
   }
 }
 
-export function useProfilePic(instanceName: string | null, number: string | null): CacheValue {
-  const key = instanceName && number ? `${instanceName}::${number}` : '';
+// lookupKey: full JID for groups (123456-789@g.us), phone digits for 1:1 (254712345678).
+// The key doubles as the API param — getProfilePic passes it directly to Evolution API.
+export function useProfilePic(instanceName: string | null, lookupKey: string | null): CacheValue {
+  const key = instanceName && lookupKey ? `${instanceName}::${lookupKey}` : '';
   const cached = key ? cache.get(key) : undefined;
   const [url, setUrl] = useState<CacheValue>(cached);
 
