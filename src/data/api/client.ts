@@ -58,6 +58,16 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
       return { success: false, status: response.status, error: `Unexpected response: ${response.status} ${text.substring(0, 100)}` };
     }
     const body = (await response.json()) as ApiResponse<T>;
+
+    // Improve developer-friendly 401 messages into user-friendly ones
+    if (response.status === 401 && body.error) {
+      if (body.error === 'Authorization header required') {
+        body.error = 'Please log in to use this feature';
+      } else if (body.error === 'Invalid or expired client token') {
+        body.error = 'Your session has expired — please log in again';
+      }
+    }
+
     return { ...body, status: response.status };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Network error' };
