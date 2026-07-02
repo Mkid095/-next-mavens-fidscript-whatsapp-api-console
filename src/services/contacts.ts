@@ -73,56 +73,62 @@ export const contactsApi = {
 };
 
 /**
- * Opens Google OAuth in a popup window and resolves when the callback completes.
- * The callback redirects to /client/contacts with google_linked=1 query param,
- * which this function detects via window.location polling.
+ * Opens Google OAuth. Tries popup first (desktop), falls back to redirect (mobile).
+ * Popup approach: polls popup.location for google_linked=1 or google_error=...
+ * Redirect approach: sets a session flag then navigates, callback lands on /client/contacts.
  */
 export function openGoogleOAuthPopup(): Promise<void> {
   return new Promise((resolve, reject) => {
-    contactsApi.googleAuthUrl().then(async (res) => {
+    contactsApi.googleAuthUrl().then((res) => {
+      console.debug('[GoogleOAuth] auth-url response:', res);
       if (!res.success) {
-        const msg = res.error || 'Failed to get Google auth URL';
-        // Surface the status code so we know what the server actually returned
-        reject(new Error(res.status ? `${msg} (${res.status})` : msg));
+        reject(new Error(res.error || 'Failed to get Google auth URL'));
         return;
       }
       if (!res.data?.url) {
-        reject(new Error('Google OAuth URL was empty — try again'));
-        return;
-      }
-      const popup = window.open(res.data.url, 'google_oauth', 'width=600,height=700,scrollbars=yes');
-      if (!popup) {
-        reject(new Error('Popup was blocked — allow popups for this site'));
+        reject(new Error('Server returned an empty auth URL — try again'));
         return;
       }
 
-      // Poll for success or failure via URL query params
-      const poll = setInterval(() => {
-        try {
-          const url = popup.location.href;
-          if (url.includes('google_linked=1')) {
-            clearInterval(poll);
-            popup.close();
-            resolve();
-          } else if (url.includes('google_error=')) {
-            clearInterval(poll);
-            const errMatch = url.match(/google_error=([^&]+)/);
-            popup.close();
-            reject(new Error(decodeURIComponent(errMatch?.[1] || 'Google OAuth failed')));
+      const authUrl = res.data.url;
+
+      // Try popup first
+      const popup = window.open(authUrl, 'google_oauth', 'width=600,height=700,scrollbars=yes');
+      if (popup) {
+        // Poll for OAuth callback result via popup URL
+        const poll = setInterval(() => {
+          try {
+            const url = popup.location.href;
+            if (url.includes('google_linked=1')) {
+              clearInterval(poll);
+              popup.close();
+              resolve();
+            } else if (url.includes('google_error=')) {
+              clearInterval(poll);
+              const errMatch = url.match(/google_error=([^&]+)/);
+              popup.close();
+              reject(new Error(decodeURIComponent(errMatch?.[1] || 'Google OAuth failed')));
+            }
+          } catch {
+            // Cross-origin — can't read URL yet, keep polling
           }
-        } catch {
-          // Cross-origin — can't read URL yet, keep polling
-        }
-      }, 500);
+        }, 500);
 
-      // Fallback: reject if popup is closed without resolution
-      const closeCheck = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(poll);
-          clearInterval(closeCheck);
-          reject(new Error('Popup closed without completing Google sign-in'));
-        }
-      }, 1000);
+        // Reject if popup is closed without completing sign-in
+        const closeCheck = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(poll);
+            clearInterval(closeCheck);
+            reject(new Error('Popup closed without completing Google sign-in'));
+          }
+        }, 1000);
+      } else {
+        // Popup blocked — fall back to redirect flow
+        console.warn('[GoogleOAuth] popup blocked, falling back to redirect');
+        // Store a flag so we know the redirect is from OAuth
+        sessionStorage.setItem('google_oauth_pending', '1');
+        window.location.href = authUrl;
+      }
     }).catch(reject);
   });
 }
