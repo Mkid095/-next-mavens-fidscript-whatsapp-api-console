@@ -80,8 +80,14 @@ export const contactsApi = {
 export function openGoogleOAuthPopup(): Promise<void> {
   return new Promise((resolve, reject) => {
     contactsApi.googleAuthUrl().then(async (res) => {
-      if (!res.success || !res.data?.url) {
-        reject(new Error(res.error || 'Failed to get Google auth URL'));
+      if (!res.success) {
+        const msg = res.error || 'Failed to get Google auth URL';
+        // Surface the status code so we know what the server actually returned
+        reject(new Error(res.status ? `${msg} (${res.status})` : msg));
+        return;
+      }
+      if (!res.data?.url) {
+        reject(new Error('Google OAuth URL was empty — try again'));
         return;
       }
       const popup = window.open(res.data.url, 'google_oauth', 'width=600,height=700,scrollbars=yes');

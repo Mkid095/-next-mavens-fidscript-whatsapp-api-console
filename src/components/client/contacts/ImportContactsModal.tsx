@@ -118,8 +118,10 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
   // Check Google link status on mount
   useEffect(() => {
     contactsApi.googleStatus().then(res => {
+      console.debug('[GoogleContacts] status response:', res);
       if (res.success) setGoogleStatus(res.data ?? { linked: false });
-    }).catch(() => {});
+      else console.warn('[GoogleContacts] status failed:', res.error, res.status);
+    }).catch(err => console.error('[GoogleContacts] status exception:', err));
   }, []);
 
   // Check URL for OAuth result
@@ -332,7 +334,7 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+        className="bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-4 max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-2 border-b border-[#2d2813]">
