@@ -285,7 +285,9 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
       const res = await contactsApi.googleStatus();
       if (res.success) setGoogleStatus(res.data ?? { linked: false });
     } catch (err) {
-      setGoogleError(err instanceof Error ? err.message : 'Failed to link Google account');
+      const msg = err instanceof Error ? err.message : 'Failed to link Google account';
+      console.error('[GoogleOAuth] link error:', msg);
+      setGoogleError(msg);
     } finally {
       setGoogleLoading(false);
     }

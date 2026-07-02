@@ -82,7 +82,9 @@ export function openGoogleOAuthPopup(): Promise<void> {
     contactsApi.googleAuthUrl().then((res) => {
       console.debug('[GoogleOAuth] auth-url response:', res);
       if (!res.success) {
-        reject(new Error(res.error || 'Failed to get Google auth URL'));
+        // Show both the API error AND status code so we can distinguish 401/503/etc.
+        const detail = res.status ? ` [HTTP ${res.status}: ${res.error}]` : `: ${res.error}`;
+        reject(new Error(`Google auth URL request failed${detail}`));
         return;
       }
       if (!res.data?.url) {
@@ -123,9 +125,8 @@ export function openGoogleOAuthPopup(): Promise<void> {
           }
         }, 1000);
       } else {
-        // Popup blocked — fall back to redirect flow
+        // Popup blocked — fall back to redirect flow (works on mobile)
         console.warn('[GoogleOAuth] popup blocked, falling back to redirect');
-        // Store a flag so we know the redirect is from OAuth
         sessionStorage.setItem('google_oauth_pending', '1');
         window.location.href = authUrl;
       }
