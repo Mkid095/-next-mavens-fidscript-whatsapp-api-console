@@ -78,7 +78,13 @@ We reserve the right to suspend or terminate accounts that violate these restric
               },
               {
                 title: '7. Third-Party Services',
-                content: `The Service integrates with M-Pesa (via Tuma API) for payments, and WhatsApp for message delivery. We are not responsible for the availability, accuracy, or reliability of third-party services.`
+                content: `The Service integrates with M-Pesa (via Tuma API) for payments, WhatsApp/Meta for message delivery, and Google APIs (Contacts API and OAuth 2.0) for the optional contact-import feature. We are not responsible for the availability, accuracy, or reliability of third-party services.
+
+By using the Google Contacts import feature, you acknowledge that:
+• You authorize FIDScript to access your Google account via Google OAuth 2.0
+• We only request read-only access to your contacts (scope: contacts.readonly)
+• Imported contact data is used solely within FIDScript and is not shared with third parties
+• You may revoke FIDScript's access at any time via your Google Account permissions page`
               },
               {
                 title: '8. Data & Privacy',

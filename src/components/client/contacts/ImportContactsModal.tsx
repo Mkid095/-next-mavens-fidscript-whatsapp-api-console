@@ -369,9 +369,9 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
               <path fill="#FBBC05" d="M11.4 28.6C11.1 28 10.9 27.3 10.9 26.5s.2-1.5.5-2.1V18.8H4.4C3.3 20.9 2.6 23.2 2.6 25.5s.7 4.6 1.8 6.3l7-.2z"/>
               <path fill="#EA4335" d="M24 12.2c3.2 0 6 1.1 8.2 3.3l6.1-6.1C34.7 5.1 29.8 3 24 3 15.2 3 7.2 7.2 4.4 12.8l6.9 5.4c1.8-5.3 6.8-9.2 12.7-9.2z"/>
             </svg>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-[#a8a99e]">Google Contacts</p>
-              <p className="text-[10px] text-[#6e684a]">Sync names from your Google address book</p>
+              <p className="text-[10px] text-[#6e684a]">Read-only access to your contacts. Used only inside FIDScript to populate recipient pickers.</p>
             </div>
           </div>
 
@@ -424,23 +424,30 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
               </button>
             </div>
           ) : (
-            <button
-              onClick={handleLinkGoogle}
-              disabled={googleLoading}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#4285F4] hover:bg-[#3367D6] text-white text-xs font-bold rounded-xl transition-all disabled:opacity-60"
-            >
-              {googleLoading ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white/50 border-t-white rounded-full animate-spin" />
-                  Connecting…
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" viewBox="0 0 48 48"><path fill="#fff" d="M24 9.5c3.5 0 6.4 1.2 8.3 3.6L38.4 7.6C35.6 4.2 30.2 2 24 2 15.2 2 7.2 6.2 4.4 11.8L10.4 17C12.6 11.3 18 9.5 24 9.5z"/><path fill="#4285F4" d="M44 24.5c0-1.4-.1-2.7-.4-4H24v7.6h11.3c-.5 2.7-2 5-4.2 6.5v5.4h6.8c4-3.7 6.3-9.2 6.3-15.5z"/><path fill="#34A853" d="M24 46c5.9 0 10.8-1.9 14.4-5.2l-6.8-5.4c-1.9 1.3-4.4 2.1-7.6 2.1-5.8 0-10.8-3.9-12.6-9.2H4.4v5.6C7.2 41.8 15.2 46 24 46z"/><path fill="#FBBC05" d="M11.4 28.6C11.1 28 10.9 27.3 10.9 26.5s.2-1.5.5-2.1V18.8H4.4C3.3 20.9 2.6 23.2 2.6 25.5s.7 4.6 1.8 6.3l7-.2z"/><path fill="#EA4335" d="M24 12.2c3.2 0 6 1.1 8.2 3.3l6.1-6.1C34.7 5.1 29.8 3 24 3 15.2 3 7.2 7.2 4.4 12.8l6.9 5.4c1.8-5.3 6.8-9.2 12.7-9.2z"/></svg>
-                  Link Google Account
-                </>
-              )}
-            </button>
+            <>
+              <button
+                onClick={handleLinkGoogle}
+                disabled={googleLoading}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-[#4285F4] hover:bg-[#3367D6] text-white text-xs font-bold rounded-xl transition-all disabled:opacity-60"
+              >
+                {googleLoading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                    Connecting…
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" viewBox="0 0 48 48"><path fill="#fff" d="M24 9.5c3.5 0 6.4 1.2 8.3 3.6L38.4 7.6C35.6 4.2 30.2 2 24 2 15.2 2 7.2 6.2 4.4 11.8L10.4 17C12.6 11.3 18 9.5 24 9.5z"/><path fill="#4285F4" d="M44 24.5c0-1.4-.1-2.7-.4-4H24v7.6h11.3c-.5 2.7-2 5-4.2 6.5v5.4h6.8c4-3.7 6.3-9.2 6.3-15.5z"/><path fill="#34A853" d="M24 46c5.9 0 10.8-1.9 14.4-5.2l-6.8-5.4c-1.9 1.3-4.4 2.1-7.6 2.1-5.8 0-10.8-3.9-12.6-9.2H4.4v5.6C7.2 41.8 15.2 46 24 46z"/><path fill="#FBBC05" d="M11.4 28.6C11.1 28 10.9 27.3 10.9 26.5s.2-1.5.5-2.1V18.8H4.4C3.3 20.9 2.6 23.2 2.6 25.5s.7 4.6 1.8 6.3l7-.2z"/><path fill="#EA4335" d="M24 12.2c3.2 0 6 1.1 8.2 3.3l6.1-6.1C34.7 5.1 29.8 3 24 3 15.2 3 7.2 7.2 4.4 12.8l6.9 5.4c1.8-5.3 6.8-9.2 12.7-9.2z"/></svg>
+                    Link Google Account
+                  </>
+                )}
+              </button>
+              <p className="text-[9px] text-[#5a554a] leading-relaxed text-center px-2">
+                By linking, you grant FIDScript read-only access to your Google Contacts.
+                Data is used only within FIDScript and never shared.
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[#eab308] hover:underline ml-1">Privacy Policy</a>
+              </p>
+            </>
           )}
         </div>
 
