@@ -137,8 +137,18 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
     const googleErr = params.get('google_error');
     if (googleErr) {
       window.history.replaceState({}, '', window.location.pathname + window.location.hash);
-      setGoogleError(decodeURIComponent(googleErr));
-      setTimeout(() => setGoogleError(''), 5000);
+      const raw = decodeURIComponent(googleErr);
+      // Translate common Google OAuth errors into actionable messages
+      let friendly = raw;
+      if (raw === 'access_denied') {
+        friendly = 'Permission denied — please grant Contacts access to import your address book.';
+      } else if (raw === 'redirect_uri_mismatch') {
+        friendly = 'OAuth configuration error: redirect URI mismatch. Contact support.';
+      } else if (raw === 'invalid_state' || raw === 'missing_params') {
+        friendly = 'OAuth session expired — please try again.';
+      }
+      setGoogleError(friendly);
+      setTimeout(() => setGoogleError(''), 8000);
     }
   }, []);
 
