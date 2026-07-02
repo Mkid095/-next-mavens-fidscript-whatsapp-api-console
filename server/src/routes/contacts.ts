@@ -56,7 +56,12 @@ router.delete('/:id', clientJwtAuth, async (req: Request, res: Response) => {
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-const GOOGLE_REDIRECT_URI = (process.env.GOOGLE_REDIRECT_URI || `${process.env.SERVER_URL || 'http://localhost:3099'}/api/contacts/google/callback`);
+// Prefer explicit GOOGLE_REDIRECT_URI (full URL), then PLATFORM_URL (canonical in docker-compose),
+// then SERVER_URL, then localhost dev fallback. Only append the callback path if the
+// base doesn't already include it (so explicit GOOGLE_REDIRECT_URI can be a full URL).
+const _explicitRedirect = process.env.GOOGLE_REDIRECT_URI;
+const GOOGLE_REDIRECT_URI = _explicitRedirect
+  || `${process.env.PLATFORM_URL || process.env.SERVER_URL || 'http://localhost:3099'}/api/contacts/google/callback`;
 const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/contacts.readonly',
   'https://www.googleapis.com/auth/userinfo.profile',
@@ -92,16 +97,16 @@ router.get('/google/auth-url', clientJwtAuth, async (req: Request, res: Response
 router.get('/google/callback', async (req: Request, res: Response) => {
   const { code, state, error } = req.query as Record<string, string>;
   if (error) {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/contacts?google_error=${encodeURIComponent(error)}`);
+    return res.redirect(`${process.env.FRONTEND_URL || process.env.PLATFORM_URL || 'http://localhost:5173'}/client/contacts?google_error=${encodeURIComponent(error)}`);
   }
   if (!code || !state) {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/contacts?google_error=missing_params`);
+    return res.redirect(`${process.env.FRONTEND_URL || process.env.PLATFORM_URL || 'http://localhost:5173'}/client/contacts?google_error=missing_params`);
   }
 
   // Find client by state (state was stored during auth-url generation)
   const client = db.prepare('SELECT id, google_oauth_state FROM clients WHERE google_oauth_state = ?').get(state) as { id: string; google_oauth_state: string } | undefined;
   if (!client) {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/contacts?google_error=invalid_state`);
+    return res.redirect(`${process.env.FRONTEND_URL || process.env.PLATFORM_URL || 'http://localhost:5173'}/client/contacts?google_error=invalid_state`);
   }
   // Clear state
   db.prepare('UPDATE clients SET google_oauth_state = NULL WHERE id = ?').run(client.id);
@@ -122,7 +127,7 @@ router.get('/google/callback', async (req: Request, res: Response) => {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text();
       console.error('Google token exchange error:', errText);
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/contacts?google_error=token_exchange_failed`);
+      return res.redirect(`${process.env.FRONTEND_URL || process.env.PLATFORM_URL || 'http://localhost:5173'}/client/contacts?google_error=token_exchange_failed`);
     }
     const tokens = await tokenRes.json() as {
       access_token: string;
@@ -145,10 +150,10 @@ router.get('/google/callback', async (req: Request, res: Response) => {
       client.id,
     );
 
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/contacts?google_linked=1`);
+    res.redirect(`${process.env.FRONTEND_URL || process.env.PLATFORM_URL || 'http://localhost:5173'}/client/contacts?google_linked=1`);
   } catch (err) {
-    console.error('Google OAuth callback error:', err);
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/contacts?google_error=server_error`);
+    console.error('[Google OAuth] callback error:', err);
+    res.redirect(`${process.env.FRONTEND_URL || process.env.PLATFORM_URL || 'http://localhost:5173'}/client/contacts?google_error=server_error`);
   }
 });
 
