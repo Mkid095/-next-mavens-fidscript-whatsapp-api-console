@@ -87,12 +87,12 @@ export function openGoogleOAuthPopup(): Promise<void> {
         reject(new Error(`Google auth URL request failed${detail}`));
         return;
       }
-      if (!res.data?.url) {
+      // /google/auth-url returns {success, url} at root, not wrapped in data
+      const authUrl = res.data?.url || (res as any).url;
+      if (!authUrl) {
         reject(new Error('Server returned an empty auth URL — try again'));
         return;
       }
-
-      const authUrl = res.data.url;
 
       // Try popup first
       const popup = window.open(authUrl, 'google_oauth', 'width=600,height=700,scrollbars=yes');
