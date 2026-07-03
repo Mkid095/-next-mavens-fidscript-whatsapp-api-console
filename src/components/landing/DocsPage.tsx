@@ -833,12 +833,12 @@ fidscript --json chatbot token-forecast <chatbot-id>`}
 
       <h2 className="text-lg font-bold text-white mb-4">1. Node.js / TypeScript SDK (recommended)</h2>
       <DocsCodeBlock
-        code="npm install @nextmavens/fidscript"
+        code="npm install @fidscript/sdk"
         lang="bash"
       />
       <p className="text-xs text-[#8a886a] mt-3 mb-3">Type-safe wrappers for every endpoint:</p>
       <DocsCodeBlock
-        code={`import { Fidscript, FidscriptError } from '@nextmavens/fidscript';
+        code={`import { Fidscript, FidscriptError } from '@fidscript/sdk';
 
 const fs = new Fidscript({ apiKey: process.env.FIDSCRIPT_API_KEY! });
 
