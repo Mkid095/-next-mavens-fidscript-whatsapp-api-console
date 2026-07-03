@@ -66,6 +66,53 @@ cli
     await login(opts);
   });
 
+// ── Setup + init onboarding ─────────────────────────────────────────────────
+
+cli
+  .command('setup')
+  .description('Onboarding summary: identity, API key, instance list, ready-to-paste commands')
+  .option('--reveal', 'Print the full API key (otherwise masked)', false)
+  .action(async (opts: { reveal: boolean }) => {
+    const { setup } = await import('./commands/setup.js');
+    await setup(opts);
+  });
+
+cli
+  .command('init')
+  .description('First-run onboarding: orchestrator for login + setup (headless with --email/--code)')
+  .option('--email <email>', 'Email for sign-in')
+  .option('--code <digits>', 'Magic code from email')
+  .action(async (opts: { email?: string; code?: string }) => {
+    const { init } = await import('./commands/init.js');
+    await init(opts);
+  });
+
+// ── Generic API escape hatch (covers every endpoint not yet wrapped as a
+//    first-class command: groups/*, chats/*, profile/*, settings/*, etc.) ───
+
+cli
+  .command('api <method> <path>')
+  .description('Hit any API endpoint. <path> is full e.g. /api/v1/messages/media/my-bot')
+  .option('-d, --data <json-or-@file>', 'Request body (JSON or @file.json)')
+  .option('--raw', 'Send body as raw text (no JSON parsing)', false)
+  .option('--auth <apikey|jwt>', 'Force auth mode (default: auto-detect from path)')
+  .option('--confirm', 'Confirm destructive methods (DELETE/PATCH). Auto-set in --json/--yaml.', false)
+  .action(async (method: string, path: string, opts: { data?: string; raw?: boolean; auth?: 'apikey' | 'jwt'; confirm?: boolean }) => {
+    const { apiCall } = await import('./commands/api.js');
+    await apiCall({ method, path, ...opts });
+  });
+
+// ── OpenAPI spec ─────────────────────────────────────────────────────────────
+
+cli
+  .command('openapi')
+  .description('Fetch the live OpenAPI spec (json or yaml). Pipe to a file for client codegen.')
+  .option('--format <json|yaml>', 'Output format (default: json)', 'json')
+  .action(async (opts: { format: 'json' | 'yaml' }) => {
+    const { openapi } = await import('./commands/openapi.js');
+    await openapi(opts);
+  });
+
 // ── Logout (clear stored JWT + API key) ────────────────────────────────────
 
 cli
@@ -170,22 +217,21 @@ instanceCmd
     await deleteInstance(name, opts);
   });
 
-// ── Message subcommands ───────────────────────────────────────────────────────
+// ── Message subcommands (all 10 send types: text, media, location, contact,
+//    reaction, poll, list, audio, sticker, status) ──────────────────────────────
 
 const msgCmd = cli.command('message').description('Send messages');
-const sendCmd = cli.command('send').description('Send a message (alias for message send)');
+const sendCmd = cli.command('send').description('Send a message (alias for `message`)');
 
 for (const cmd of [msgCmd, sendCmd]) {
-  cmd
-    .command('text <instance>')
-    .description('Send a plain text message')
-    .requiredOption('--to <number>', 'Recipient phone number (E.164 format)')
-    .requiredOption('--text <message>', 'Message text')
-    .action(async (instance: string, opts: { to: string; text: string }) => {
-      const { sendText } = await import('./commands/messages/send-text.js');
-      await sendText(instance, opts);
-    });
+  cmd.description('Send a message (alias for `message`)');
 }
+
+// Register the full send tree once on the primary `send` command (also exposed as `message`)
+const { registerSendCommands } = await import('./commands/messages/send.js');
+registerSendCommands(sendCmd);
+// Also expose all 10 subcommands under `fidscript message <type>`
+registerSendCommands(msgCmd);
 
 // ── Chatbot subcommands ───────────────────────────────────────────────────────
 

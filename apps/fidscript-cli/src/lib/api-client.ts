@@ -149,6 +149,11 @@ export class ApiClient {
     return this.request<T>('POST', path, body, 'apiKey');
   }
 
+  /** PUT using X-API-Key auth (for /api/v1/*) */
+  async put<T>(path: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>('PUT', path, body, 'apiKey');
+  }
+
   /** DELETE using X-API-Key auth (for /api/v1/*) */
   async delete<T>(path: string): Promise<ApiResponse<T>> {
     return this.request<T>('DELETE', path, undefined, 'apiKey');
