@@ -1,0 +1,44 @@
+{
+  "name": "@fidscript/sdk",
+  "version": "0.1.0",
+  "description": "Official Node.js / TypeScript SDK for the FIDScript WhatsApp Business API. Type-safe wrappers for every /api/v1 and /api/platform endpoint.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "fidscript",
+    "whatsapp",
+    "whatsapp-business-api",
+    "typescript",
+    "sdk",
+    "ai",
+    "chatbot"
+  ],
+  "author": "Next Mavens <hello@whatsapp.fidscript.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false
+}
