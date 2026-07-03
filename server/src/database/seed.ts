@@ -80,4 +80,51 @@ export async function seedData(db: Database): Promise<void> {
 		INSERT OR IGNORE INTO clients (id, name, email, phone, api_key, plan_id, token_balance, is_active)
 		VALUES ('cli_ian_001', 'Ian Iraya', 'ian@example.com', '+254700000004', 'cli_ian_api_key', 'plan_professional', 5000, 1)
 	`);
+
+	// ────────────────────────────────────────────────────────────────────
+	// E-commerce demo: data sources + tools (auto-seeded per workspace)
+	//
+	// This is DEMO data so users can try the platform immediately without
+	// connecting their own system. In production, the user creates a real
+	// integration_connection (e.g. Shopify, REST API, Postgres) and
+	// replaces these tools with ones that hit their actual API.
+	//
+	// The chatbot NEVER stores customer data in our DB. It calls TOOLS
+	// that call EXTERNAL systems. This demo just uses static_json so it
+	// works without an external API.
+	// ────────────────────────────────────────────────────────────────────
+	const wsRows = db.exec(`SELECT id FROM clients WHERE is_active = 1`);
+	if (wsRows.length > 0) {
+		for (const row of wsRows[0]!.values) {
+			const workspaceId = String(row);
+			// Idempotent
+			const exists = db.exec(`SELECT 1 FROM data_sources WHERE workspace_id = '${workspaceId}' AND name = 'acme-demo-catalog' LIMIT 1`);
+			if (exists.length > 0 && exists[0]!.values.length > 0) continue;
+
+			// Demo customers — phone is the key the chatbot looks up by
+			const customers = [
+				{ phone: '+254700000001', name: 'Ken Wanjiku', tier: 'gold', last_order: 'ORD-1024' },
+				{ phone: '+254700000002', name: 'Achieng Otieno', tier: 'silver', last_order: '' },
+				{ phone: '+254746269657', name: 'Joseph N', tier: 'platinum', last_order: 'ORD-1029' },
+				{ phone: '+254700000003', name: 'Kith K', tier: 'bronze', last_order: '' },
+				{ phone: '+254700000004', name: 'Ian Iraya', tier: 'gold', last_order: 'ORD-1031' },
+			];
+			// Demo products — searchable by name/category/stock
+			const products = [
+				{ sku: 'SPO-001', name: 'Stainless steel spoon', category: 'cutlery', price_kes: 250, in_stock: 120 },
+				{ sku: 'SPO-002', name: 'Wooden soup spoon', category: 'cutlery', price_kes: 380, in_stock: 45 },
+				{ sku: 'FORK-001', name: 'Salad fork set', category: 'cutlery', price_kes: 1200, in_stock: 30 },
+				{ sku: 'CUP-001', name: 'Ceramic coffee mug', category: 'kitchenware', price_kes: 850, in_stock: 200 },
+				{ sku: 'PAN-001', name: 'Non-stick frying pan', category: 'cookware', price_kes: 3200, in_stock: 18 },
+				{ sku: 'KNF-001', name: 'Chef knife', category: 'cookware', price_kes: 2800, in_stock: 22 },
+			];
+			const dsId = `ds_demo_${workspaceId}`;
+			db.run(`INSERT INTO data_sources (id, workspace_id, name, description, type, config_json, is_builtin) VALUES (?, ?, 'acme-demo-catalog', 'Demo data for testing tools. Replace with a real integration_connection in production.', 'demo', ?, 1)`, [dsId, workspaceId, JSON.stringify({ records: [...customers, ...products], keyField: 'phone' })]);
+			// Tools
+			db.run(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, 'lookup_customer_by_phone', 'Look up a customer by phone number. Returns name, tier, last_order. Use to greet the user by name.', 'lookup', '{"type":"object","properties":{"phone":{"type":"string","description":"E.164 phone"}},"required":["phone"]}', '{"keyField":"phone"}')`, [`tool_demo_lookup_${workspaceId}`, dsId]);
+			db.run(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, 'search_products', 'Search the product catalog. Returns up to 10 matches with name, sku, price, stock.', 'search', '{"type":"object","properties":{"query":{"type":"string","description":"Search term (e.g. spoon)"},"category":{"type":"string"},"in_stock_only":{"type":"boolean"}},"required":["query"]}', '{}')`, [`tool_demo_search_${workspaceId}`, dsId]);
+			db.run(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, 'add_to_cart', 'Add a product to the callers cart. Demo returns a mock cart ID.', 'action', '{"type":"object","properties":{"phone":{"type":"string"},"sku":{"type":"string"},"qty":{"type":"integer"}},"required":["phone","sku"]}', '{"demoData":{"cart_id":"CART-DEMO","status":"added"}}')`, [`tool_demo_cart_${workspaceId}`, dsId]);
+			db.run(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, 'place_order', 'Convert cart to order. Demo returns a mock order + payment link.', 'action', '{"type":"object","properties":{"phone":{"type":"string"}},"required":["phone"]}', '{"demoData":{"order_id":"ORD-DEMO","total_kes":1750,"payment_url":"https://pay.example.com/ORD-DEMO"}}')`, [`tool_demo_order_${workspaceId}`, dsId]);
+		}
+	}
 }

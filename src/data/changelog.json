@@ -1,5 +1,5 @@
 {
-  "latest": "v0.6.0",
+  "latest": "v0.7.0",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,33 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.7.0",
+      "date": "2026-07-03",
+      "bumpType": "minor",
+      "title": "AI Agent Tool Calling Platform — data sources, tools, workflows, execution",
+      "category": "feature",
+      "tags": [
+        "tools",
+        "ai-agent",
+        "integrations",
+        "ecommerce",
+        "workflows"
+      ],
+      "highlights": [
+        "New 6-layer tool platform: integration_connections (encrypted credentials for external systems) → data_sources (datasets/queries) → tools (lookup/search/query/action/workflow) → tool_workflows (multi-step chains) → chatbot_tools (attach + permissions) → tool_execution_logs (full audit)",
+        "Tool-calling engine (src/modules/ai/toolCallingEngine.ts): LLM → parse tool_call tags → execute → append result → re-call LLM → loop. Max 5 iterations. Works across ALL providers (gemini/openai/anthropic) via XML-tagged format.",
+        "E-commerce demo seeded per workspace: lookup_customer_by_phone + search_products + add_to_cart + place_order. Demo data source is clearly marked as replaceable — users connect their real API via integration_connections.",
+        "toolRunner supports 5 types: lookup (key-based fetch), search (free-text filter), query (HTTP GET), action (HTTP POST/PUT/DELETE), workflow (multi-step chain calling other tools)",
+        "New API routes: POST/GET/PUT/DELETE /api/platform/data-sources, POST /api/platform/data-sources/:id/tools/:toolId/exec (direct tool execution), GET/POST/DELETE /api/platform/chatbots/:id/tools (attach tools to chatbots)"
+      ],
+      "fixes": [
+        "Sandbox now gates /api/platform/* endpoints with JWT-required banner + disabled Execute"
+      ],
+      "commits": [
+        "629f0ee"
+      ]
+    },
     {
       "version": "v0.6.0",
       "date": "2026-07-03",

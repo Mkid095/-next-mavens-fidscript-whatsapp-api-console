@@ -770,4 +770,54 @@ router.get('/:id/traces', (req: Request, res: Response) => {
   }
 });
 
+// ─── Tools attached to this chatbot ────────────────────────────────────────
+
+router.get('/:id/tools', (req: Request, res: Response) => {
+  const bot = db.prepare('SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
+  if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+  const rows = db.prepare(`
+    SELECT t.id, t.name, t.description, t.implementation, t.parameters_json,
+           t.enabled AS tool_enabled, ct.enabled AS attached_enabled,
+           ds.id AS data_source_id, ds.name AS data_source_name
+    FROM chatbot_tools ct
+    JOIN tools t ON t.id = ct.tool_id
+    JOIN data_sources ds ON ds.id = t.data_source_id
+    WHERE ct.chatbot_id = ? AND ds.workspace_id = ?
+    ORDER BY t.name ASC
+  `).all(req.params.id, wsId(req));
+  res.json({ success: true, data: rows });
+});
+
+router.post('/:id/tools', (req: Request, res: Response) => {
+  const bot = db.prepare('SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
+  if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+  const ids = (req.body as { tool_ids?: string[] }).tool_ids;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ success: false, error: 'tool_ids[] is required' });
+  }
+  // Verify every tool belongs to this workspace
+  const placeholders = ids.map(() => '?').join(',');
+  const params: string[] = [...ids, wsId(req)];
+  const valid = db.prepare(
+    `SELECT id FROM tools WHERE id IN (${placeholders}) AND data_source_id IN (SELECT id FROM data_sources WHERE workspace_id = ?)`
+  ).all(...params);
+  if (valid.length !== ids.length) {
+    return res.status(400).json({ success: false, error: 'One or more tool_ids are not in this workspace' });
+  }
+  const stmt = db.prepare(`
+    INSERT OR IGNORE INTO chatbot_tools (chatbot_id, tool_id) VALUES (?, ?)
+  `);
+  for (const id of ids) stmt.run(req.params.id, id);
+  res.json({ success: true, message: `${ids.length} tool(s) attached` });
+});
+
+router.delete('/:id/tools/:toolId', (req: Request, res: Response) => {
+  const result = db.prepare(`
+    DELETE FROM chatbot_tools WHERE chatbot_id = ? AND tool_id = ?
+      AND chatbot_id IN (SELECT id FROM chatbot_configs WHERE workspace_id = ?)
+  `).run(req.params.id, req.params.toolId, wsId(req));
+  if (result.changes === 0) { res.status(404).json({ success: false, error: 'Tool not attached' }); return; }
+  res.json({ success: true, message: 'Tool detached' });
+});
+
 export default router;

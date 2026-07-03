@@ -23,6 +23,7 @@ import { logTokenUsage } from './billing.js';
 import { getRuntimeConfig } from './chatbotRuntimeCache.js';
 import { traceAsync, insertTrace, recordResponseMetadata } from './tracing.js';
 import { emitAiOverrideChanged } from '../utils/gateway.js';
+import { loadChatbotTools, callWithTools } from '../modules/ai/toolCallingEngine.js';
 
 const NATS_URL = process.env.NATS_URL ?? 'nats://localhost:4222';
 const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL ?? 'http://localhost:8080';
@@ -223,17 +224,60 @@ async function processMessage(msg: InboundMessage): Promise<void> {
     try {
       const gateway = LLMGateway.resolve(botId, workspaceId);
 
+      // Load attached tools — if any, use the tool-calling loop
+      const attachedTools = loadChatbotTools(botId, workspaceId);
+
       const response = await traceAsync(
         conversationId,
         botId,
         workspaceId,
         'llm_call',
-        () => gateway.call({
-          messages: llmMessages,
-          systemPrompt,
-          maxTokens: Number(aiConfig.max_tokens ?? 2048),
-          temperature: Number(aiConfig.temperature ?? 0.7),
-        }),
+        async () => {
+          if (attachedTools.length > 0) {
+            const result = await callWithTools(
+              gateway,
+              llmMessages,
+              attachedTools,
+              systemPrompt,
+              workspaceId,
+              {
+                maxTokens: Number(aiConfig.max_tokens ?? 2048),
+                temperature: Number(aiConfig.temperature ?? 0.7),
+              },
+            );
+            // Log each tool call for traceability
+            for (const tc of result.toolCalls) {
+              try {
+                logChatbotToolCall(
+                  {
+                    chatbotId: botId,
+                    conversationId,
+                    toolId: tc.name,
+                    toolName: tc.name,
+                    toolType: 'agent',
+                    config: {},
+                    input: tc.arguments,
+                  } as Parameters<typeof logChatbotToolCall>[0],
+                  { success: true, data: JSON.parse(tc.result) } as unknown as Parameters<typeof logChatbotToolCall>[1],
+                  0,
+                );
+              } catch { /* traceability only — don't break the loop */ }
+            }
+            return {
+              reply: result.reply,
+              confidence: result.confidence,
+              tokensUsed: { prompt: 0, completion: 0, total: 0 },
+              model: gateway.model,
+            };
+          }
+          // No tools — plain call
+          return gateway.call({
+            messages: llmMessages,
+            systemPrompt,
+            maxTokens: Number(aiConfig.max_tokens ?? 2048),
+            temperature: Number(aiConfig.temperature ?? 0.7),
+          });
+        },
         (r) => ({ tokenCount: r.tokensUsed.total })
       );
 
