@@ -1,0 +1,48 @@
+{
+  "name": "@fidscript/cli",
+  "version": "1.0.0",
+  "description": "FIDScript WhatsApp API CLI — manage instances, send messages, and more from your terminal",
+  "license": "MIT",
+  "author": "FIDScript <support@fidscript.com>",
+  "homepage": "https://whatsapp.fidscript.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fidscript/fidscript-whatsapp"
+  },
+  "type": "module",
+  "bin": {
+    "fidscript": "./dist/main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "qrcode": "^1.5.4",
+    "ora": "^8.1.0",
+    "yaml": "^2.6.1",
+    "ini": "^5.0.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/ini": "^4.1.1",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "whatsapp",
+    "api",
+    "cli",
+    "fidscript",
+    "chatbot",
+    "business"
+  ]
+}

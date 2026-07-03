@@ -30,10 +30,10 @@ export interface SandboxBodyProps {
 export default function SandboxBody(props: SandboxBodyProps) {
   if (!props.selectedEndpoint) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-white border border-[#eaebe4] rounded-3xl text-center p-8 text-stone-400 space-y-3 shadow-sm">
-        <Compass className="w-12 h-12 text-yellow-200" />
-        <p className="font-bold text-forest-deep text-sm">Select an endpoint to test</p>
-        <p className="text-xs text-graphite max-w-xs">Choose an endpoint from the left panel, fill in the parameters, and execute a live request.</p>
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#1a1915] border border-[#2d2813] rounded-3xl text-center p-8 text-[#5a554a] space-y-3 shadow-sm">
+        <Compass className="w-12 h-12 text-[#3d3a1e]" />
+        <p className="font-bold text-[#cbd3cf] text-sm">Select an endpoint to test</p>
+        <p className="text-xs text-[#a8a99e] max-w-xs">Choose an endpoint from the left panel, fill in the parameters, and execute a live request.</p>
       </div>
     );
   }

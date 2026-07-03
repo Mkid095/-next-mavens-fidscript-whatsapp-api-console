@@ -246,7 +246,7 @@ interface Condition {
   value: string;
 }
 
-function evaluateConditions(conditionsJson: string, ctx: EvaluationContext): boolean {
+export function evaluateConditions(conditionsJson: string, ctx: EvaluationContext): boolean {
   const conditions = safeJsonParse(conditionsJson) as Condition[] | null;
   if (!conditions || conditions.length === 0) return true; // No conditions = always match
 
@@ -320,8 +320,42 @@ function compareCondition(fieldValue: string | number | boolean, operator: strin
 // ─── Bot Lookup for Inbound Messages ──────────────────────────────────────────
 
 /**
+ * Resolves per-contact routing mode: 'ai' | 'manual' | 'disabled'.
+ * Returns null if no per-contact override is set.
+ */
+function getContactRoutingMode(contactId: string, botId: string): string | null {
+  const row = db.prepare(
+    `SELECT mode FROM chatbot_contact_assignments WHERE contact_id = ? AND chatbot_id = ?`
+  ).get(contactId, botId) as { mode: string } | undefined;
+  return row?.mode ?? null;
+}
+
+export type GroupRespondMode = 'mention_only' | 'keyword_trigger' | 'admin_only' | 'disabled' | 'allow_all';
+
+/**
+ * Resolves per-group respond mode for a bot: 'mention_only' | 'keyword_trigger' | 'admin_only' | 'disabled' | 'allow_all'.
+ * Returns 'allow_all' if no per-group setting exists.
+ */
+function getGroupRespondMode(botId: string, groupJid: string): GroupRespondMode {
+  const row = db.prepare(
+    `SELECT respond_mode FROM chatbot_group_settings WHERE chatbot_id = ? AND group_jid = ?`
+  ).get(botId, groupJid) as { respond_mode: string } | undefined;
+  return (row?.respond_mode as GroupRespondMode) ?? 'allow_all';
+}
+
+/**
  * findBotsForMessage — returns all bots (ordered by priority) that should
  * evaluate this incoming message. Used by the webhook/NATS pipeline.
+ *
+ * Routing rules:
+ * - Per-contact override: if a contact has 'manual' mode → skip bot entirely;
+ *   if 'disabled' → skip bot; if 'ai' → allow bot to evaluate.
+ * - For group messages: apply per-group respond mode before evaluating triggers.
+ *   - 'disabled'   → return empty (bot never responds in this group)
+ *   - 'mention_only' → only evaluate if message mentions @bot or @assistant
+ *   - 'admin_only'  → placeholder (requires bot to track admin list — future)
+ *   - 'keyword_trigger' → evaluate normally (keyword/regex triggers handle it)
+ *   - 'allow_all'  → evaluate normally
  */
 export function findBotsForMessage(
   workspaceId: string,
@@ -338,7 +372,55 @@ export function findBotsForMessage(
     ORDER BY priority DESC
   `).all(workspaceId, instanceId) as { id: string; priority: number }[];
 
-  return bots.map(b => b.id);
+  const lowerMessage = message.toLowerCase();
+
+  for (const bot of bots) {
+    // ── Per-contact routing ──────────────────────────────────────────────────
+    if (contactId) {
+      const mode = getContactRoutingMode(contactId, bot.id);
+      if (mode === 'manual' || mode === 'disabled') {
+        continue; // skip this bot — human-only or disabled for this contact
+      }
+      // mode === 'ai' or null → allow bot to evaluate normally
+    }
+
+    // ── Group routing ───────────────────────────────────────────────────────
+    if (groupJid) {
+      const respondMode = getGroupRespondMode(bot.id, groupJid);
+
+      if (respondMode === 'disabled') {
+        continue; // bot is disabled for this group
+      }
+
+      if (respondMode === 'mention_only') {
+        const mentioned = lowerMessage.includes('@bot') || lowerMessage.includes('@assistant');
+        if (!mentioned) {
+          continue; // skip — not mentioned
+        }
+      }
+
+      // 'admin_only': requires admin list from group metadata; placeholder for now
+      // 'keyword_trigger' and 'allow_all': evaluate normally below
+    }
+  }
+
+  return bots.filter(bot => {
+    // Re-check exclusions (above loop used `continue` on the outer bots array copy)
+    // We re-evaluate here for clarity since we can't continue inside forEach
+    if (contactId) {
+      const mode = getContactRoutingMode(contactId, bot.id);
+      if (mode === 'manual' || mode === 'disabled') return false;
+    }
+    if (groupJid) {
+      const respondMode = getGroupRespondMode(bot.id, groupJid);
+      if (respondMode === 'disabled') return false;
+      if (respondMode === 'mention_only') {
+        const mentioned = lowerMessage.includes('@bot') || lowerMessage.includes('@assistant');
+        if (!mentioned) return false;
+      }
+    }
+    return true;
+  }).map(b => b.id);
 }
 
 /**

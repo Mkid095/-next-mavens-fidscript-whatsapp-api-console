@@ -7,6 +7,8 @@ import {
   Zap, MessageSquare, Users, Bell, Settings, Shield, Globe, Bot
 } from 'lucide-react';
 import SeoHead from '../shared/SeoHead';
+import { CopyButton } from '../shared/CopyButton.js';
+import { DocsCodeBlock } from '../shared/DocsCodeBlock.js';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE } from '../../data/apiEndpoints/index.js';
 import type { ApiEndpoint, BodyField } from '../../data/apiEndpoints/index.js';
 
@@ -65,18 +67,6 @@ export function buildCodeSnippet(lang: Lang, method: string, path: string, param
   }
 }
 
-export function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#8a886a] hover:text-white bg-[#1e1c10] border border-[#262413] rounded-lg transition-colors cursor-pointer"
-    >
-      {copied ? <><Check size={12} className="text-green-400" /> Copied</> : <><Copy size={12} /> Copy</>}
-    </button>
-  );
-}
-
 /* ─────────────────────────────────────────────────────────
    DOC GROUPS from registry
    ───────────────────────────────────────────────────────── */
@@ -107,6 +97,9 @@ const DOC_GROUPS = API_CATEGORIES
 const GUIDES = [
   { id: 'quickstart',     label: 'Quick Start' },
   { id: 'authentication', label: 'Authentication' },
+  { id: 'cli',            label: 'CLI' },
+  { id: 'byo-llm',         label: 'Bring Your Own LLM' },
+  { id: 'meta-policy',      label: 'WhatsApp Meta Policy' },
   { id: 'webhooks',       label: 'Webhooks' },
   { id: 'rate-limits',    label: 'Rate Limits' },
   { id: 'ai-providers',   label: 'AI Providers' },
@@ -207,21 +200,6 @@ function MobileSidebar({
 }
 
 /* ─────────────────────────────────────────────────────────
-   CODE BLOCK
-   ───────────────────────────────────────────────────────── */
-function DocsCodeBlock({ code, lang }: { code: string; lang: string }) {
-  return (
-    <div className="rounded-xl overflow-hidden border border-[#262413]">
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[#1e1c10] border-b border-[#262413]">
-        <span className="text-xs font-mono text-[#8a886a]">{lang}</span>
-        <CopyButton text={code} />
-      </div>
-      <pre className="p-5 text-xs font-mono text-[#c9d1d9] overflow-x-auto leading-relaxed" style={{ background: '#13120d' }}>{code}</pre>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────
    PARAM TABLE
    ───────────────────────────────────────────────────────── */
 function ParamTable({ params }: { params: ParamRow[] }) {
@@ -277,6 +255,25 @@ function LangTabs({ active, onChange }: { active: Lang; onChange: (l: Lang) => v
 function Callout({ children, type = 'info' }: { children: React.ReactNode; type?: 'info' | 'warning' | 'success' }) {
   const colors = { info: 'border-blue-800 bg-blue-950/30 text-blue-300', warning: 'border-yellow-800 bg-yellow-950/30 text-yellow-200', success: 'border-green-800 bg-green-950/30 text-green-300' };
   return <div className={`rounded-xl border p-4 text-xs leading-relaxed ${colors[type]}`}>{children}</div>;
+}
+
+/* Side-by-side cURL ↔ fidscript comparison block */
+function CliComparison({ op, curl, cli }: { op: string; curl: string; cli: string }) {
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-bold text-white">{op}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <div className="text-[10px] font-mono text-[#6a6c5d] uppercase tracking-wider mb-1.5">cURL</div>
+          <DocsCodeBlock code={curl} lang="bash" />
+        </div>
+        <div>
+          <div className="text-[10px] font-mono text-yellow-500 uppercase tracking-wider mb-1.5">fidscript CLI</div>
+          <DocsCodeBlock code={cli} lang="bash" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -359,6 +356,383 @@ function GuideContent({ id }: { id: string }) {
     "timestamp": 1718123456
   }
 }`} lang="json" />
+    </motion.div>
+  );
+
+  if (id === 'cli') return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <h1 className="text-3xl font-bold text-white mb-2">Use the CLI</h1>
+      <p className="text-sm text-[#8a886a] mb-8">
+        Every <code className="font-mono text-[#eab308]">/api/v1</code> endpoint is wrapped by
+        a single binary called <code className="font-mono text-[#eab308]">fidscript</code>.
+        It&rsquo;s built for both humans and AI agents — every command supports
+        <code className="font-mono text-[#eab308]">--json</code> and
+        <code className="font-mono text-[#eab308]">--yaml</code> output, and
+        <code className="font-mono text-[#eab308]">--verbose</code> prints the underlying
+        curl request as it&rsquo;s sent.
+      </p>
+
+      <h2 className="text-lg font-bold text-white mb-4">Install</h2>
+      <DocsCodeBlock
+        code="curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh"
+        lang="bash"
+      />
+      <p className="text-xs text-[#6a6c5d] mt-3">
+        Requires Node.js 18+. The installer will bootstrap it for you.
+      </p>
+
+      <h2 className="text-lg font-bold text-white mt-8 mb-4">Side-by-side: cURL vs CLI</h2>
+      <div className="space-y-6">
+        <CliComparison
+          op="Send a text message"
+          curl={`curl -X POST ${PUBLIC_API_BASE}/messages/text/my-bot \\\n  -H "X-API-Key: $FIDSCRIPT_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"number":"+254700000000","text":"Hello!"}'`}
+          cli={`fidscript send text my-bot \\\n  --to +254700000000 \\\n  --text "Hello!"`}
+        />
+        <CliComparison
+          op="Check token balance"
+          curl={`curl ${PUBLIC_API_BASE}/usage \\\n  -H "X-API-Key: $FIDSCRIPT_API_KEY"`}
+          cli={`fidscript tokens`}
+        />
+        <CliComparison
+          op="List WhatsApp instances (from DB)"
+          curl={`curl ${PUBLIC_API_BASE}/instance/connection-state/my-bot \\\n  -H "X-API-Key: $FIDSCRIPT_API_KEY"`}
+          cli={`fidscript instance list          # JWT auth — DB-backed list\nfidscript instance watch my-bot    # SSE live state`}
+        />
+        <CliComparison
+          op="Create + publish a chatbot"
+          curl={`curl -X POST ${PUBLIC_API_BASE}/chatbots \\\n  -H "X-API-Key: $FIDSCRIPT_API_KEY" \\\n  -d '{"name":"my-bot","prompt":"..."}'`}
+          cli={`fidscript chatbot setup --instance my-bot   # interactive wizard\nfidscript chatbot publish <id> --watch          # stream live progress`}
+        />
+      </div>
+
+      <h2 className="text-lg font-bold text-white mt-10 mb-4">Auth for /api/instance, /api/platform, /api/sse</h2>
+      <p className="text-sm text-[#a8a594] mb-4">
+        Those routes use a Bearer JWT, not an API key. Run
+        <code className="font-mono text-[#eab308] mx-1">fidscript login</code>
+        once and your JWT is stored in <code className="font-mono text-[#eab308]">~/.fidscript/credentials</code>.
+        After login, the data-backed instance list and the chatbot CRUD commands just work.
+      </p>
+      <DocsCodeBlock
+        code={`# sign in (passwordless — 6-digit code via email)
+fidscript login --email you@example.com
+
+# verify
+fidscript whoami
+
+# now unlocked: DB-backed lists, SSE, chatbot CRUD
+fidscript instance list
+fidscript instance watch my-bot
+fidscript chatbot list
+fidscript chatbot setup --instance my-bot`}
+        lang="bash"
+      />
+    </motion.div>
+  );
+
+  if (id === 'byo-llm') return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <h1 className="text-3xl font-bold text-white mb-2">Bring Your Own LLM</h1>
+      <p className="text-sm text-[#8a886a] mb-8">
+        Wire any LLM provider into your chatbot — OpenAI, Anthropic, Google Gemini, OpenRouter,
+        Azure, or your own self-hosted endpoint. Your API key is encrypted at rest and never
+        leaves the FIDScript backend.
+      </p>
+
+      <h2 className="text-lg font-bold text-white mb-4">1. See what's available</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        List the providers your admin has registered (custom providers, free-tier OpenRouter, etc.):
+      </p>
+      <DocsCodeBlock
+        code={`curl -X GET ${PUBLIC_API_BASE.replace('/api/v1','')}/api/platform/llm-connections/available-providers \\
+  -H "Authorization: Bearer $FIDSCRIPT_JWT"
+# or
+fidscript --json llm providers`}
+        lang="bash"
+      />
+
+      <h2 className="text-lg font-bold text-white mt-8 mb-4">2. Create a connection (with your API key)</h2>
+      <CliComparison
+        op="Create a connection (BYO API key)"
+        curl={`curl -X POST ${PUBLIC_API_BASE.replace('/api/v1','')}/api/platform/llm-connections \\
+  -H "Authorization: Bearer $FIDSCRIPT_JWT" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "api_key": "sk-...",
+    "is_default": true
+  }'`}
+        cli={`fidscript llm create openai-prod \\
+  --provider openai \\
+  --model gpt-4o-mini \\
+  --api-key "$OPENAI_API_KEY" \\
+  --default`}
+      />
+
+      <p className="text-xs text-[#6a6c5d] mt-3">
+        The CLI also accepts <code className="font-mono text-[#eab308]">--api-key @key.txt</code> for files.
+        The key is encrypted with AES-GCM before being stored; only the last 4 characters are
+        ever shown back to you.
+      </p>
+
+      <h3 className="text-sm font-bold text-[#cbd3cf] mt-6 mb-3">Self-hosted / Ollama / custom endpoint</h3>
+      <DocsCodeBlock
+        code={`fidscript llm create ollama-llama3 \\
+  --provider custom \\
+  --model llama3.1 \\
+  --endpoint http://localhost:11434 \\
+  --default
+
+# Or a hosted proxy (vLLM, LM Studio, OpenRouter free, etc.):
+fidscript llm create openrouter-free \\
+  --provider openai \\
+  --model "meta-llama/llama-3.1-8b-instruct:free" \\
+  --endpoint https://openrouter.ai/api/v1 \\
+  --api-key "$OPENROUTER_API_KEY"`}
+        lang="bash"
+      />
+
+      <h2 className="text-lg font-bold text-white mt-8 mb-4">3. Verify it works</h2>
+      <DocsCodeBlock
+        code={`fidscript --json llm test llmc_abc123
+# → { "success": true, "message": "Connection verified successfully" }
+
+# Or get the full record (key masked):
+fidscript llm get llmc_abc123`}
+        lang="bash"
+      />
+
+      <h2 className="text-lg font-bold text-white mt-8 mb-4">4. Attach the connection to a chatbot</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        When creating a chatbot, set <code className="font-mono text-[#eab308]">llm_connection</code> in the
+        setup config. You can also swap it on an existing chatbot at any time.
+      </p>
+      <DocsCodeBlock
+        code={`# Headless create with a fully customized chatbot
+fidscript chatbot setup --config '{
+  "name": "support-bot",
+  "instance": "my-bot",
+  "system_prompt": "You are a polite, concise support agent. Never promise refunds without a manager.",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "llm_connection": "llmc_abc123",
+  "hallucination_policy": "strict",
+  "max_tokens": 400,
+  "temperature": 0.3,
+  "max_history_messages": 20,
+  "trigger": { "type": "keyword", "value": "help" },
+  "policies": {
+    "confidence_threshold": 0.7,
+    "fallback_reply": "Let me connect you with a human colleague."
+  },
+  "handoff": "auto",
+  "publish": true
+}'
+
+# Or update an existing chatbot in place
+fidscript chatbot ai-config bot_xyz789 \\
+  --llm-connection llmc_abc123 \\
+  --model gpt-4o-mini \\
+  --system-prompt "..." \\
+  --hallucination-policy strict`}
+        lang="bash"
+      />
+
+      <h2 className="text-lg font-bold text-white mt-8 mb-4">5. Tune generation</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        Every AI config field is exposed via the CLI. Combine them to shape the bot's behavior.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead className="bg-[#1a1910]">
+            <tr>{['Field', 'Type', 'Effect'].map(h => <th key={h} className="text-left px-4 py-2 font-bold text-[#8a886a]">{h}</th>)}</tr>
+          </thead>
+          <tbody className="divide-y divide-[#262413]">
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">system_prompt</td><td className="px-4 py-2 font-mono text-[#8a886a]">string</td><td className="px-4 py-2 text-[#a8a594]">Your custom instructions: tone, persona, hard rules.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">model</td><td className="px-4 py-2 font-mono text-[#8a886a]">string</td><td className="px-4 py-2 text-[#a8a594]">Model name passed to the provider.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">temperature</td><td className="px-4 py-2 font-mono text-[#8a886a]">0–2</td><td className="px-4 py-2 text-[#a8a594]">Lower = more deterministic, higher = more creative.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">top_p</td><td className="px-4 py-2 font-mono text-[#8a886a]">0–1</td><td className="px-4 py-2 text-[#a8a594]">Nucleus sampling. 1.0 = no filter.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">max_tokens</td><td className="px-4 py-2 font-mono text-[#8a886a]">int</td><td className="px-4 py-2 text-[#a8a594]">Hard cap on response length.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">max_history_messages</td><td className="px-4 py-2 font-mono text-[#8a886a]">int</td><td className="px-4 py-2 text-[#a8a594]">Past N messages included in context.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">hallucination_policy</td><td className="px-4 py-2 font-mono text-[#8a886a]">enum</td><td className="px-4 py-2 text-[#a8a594]">strict refuses on low confidence; balanced (default); creative allows; disabled passes through.</td></tr>
+            <tr><td className="px-4 py-2 font-mono text-yellow-500">llm_connection_id</td><td className="px-4 py-2 font-mono text-[#8a886a]">id</td><td className="px-4 py-2 text-[#a8a594]">Wires a workspace LLM connection (BYO key).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 className="text-lg font-bold text-white mt-8 mb-4">6. Failover chains</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        Register multiple connections, set priorities, and FIDScript will fall over if your
+        primary provider hits a rate limit or goes down.
+      </p>
+      <DocsCodeBlock
+        code={`# Set up primary + backup
+fidscript llm create openai-prod --provider openai --model gpt-4o-mini --api-key $OPENAI_KEY --priority 100
+fidscript llm create openrouter-fallback --provider openai --model "openai/gpt-4o-mini" --api-key $OR_KEY --priority 50
+fidscript llm create ollama-last --provider custom --model llama3.1 --endpoint http://localhost:11434 --priority 10
+
+# Higher priority is tried first; the next one takes over on failure.`}
+        lang="bash"
+      />
+    </motion.div>
+  );
+
+  if (id === 'meta-policy') return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <h1 className="text-3xl font-bold text-white mb-2">WhatsApp Meta Policy Compliance</h1>
+      <p className="text-sm text-[#8a886a] mb-8">
+        WhatsApp enforces two hard ceilings on every business account that uses the
+        Business API. FIDScript paces your traffic through multiple layers so you stay
+        well under both, but you should design your chatbot accordingly.
+      </p>
+
+      <h2 className="text-lg font-bold text-white mb-4">1. The two ceilings</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+        <div className="bg-[#1a1910] border border-[#262413] rounded-2xl p-4">
+          <p className="text-yellow-500 font-bold text-sm">Speed ceiling</p>
+          <p className="text-3xl font-black text-white mt-2">~80 MPS</p>
+          <p className="text-xs text-[#6a6c5d] mt-2">Max messages-per-second per phone number. Bulk senders are paced adaptively.</p>
+        </div>
+        <div className="bg-[#1a1910] border border-[#262413] rounded-2xl p-4">
+          <p className="text-yellow-500 font-bold text-sm">Volume ceiling</p>
+          <p className="text-3xl font-black text-white mt-2">250 / day → ∞</p>
+          <p className="text-xs text-[#6a6c5d] mt-2">Unique customers initiated in a rolling 24h, tiered by quality rating.</p>
+        </div>
+      </div>
+
+      <h2 className="text-lg font-bold text-white mb-4">2. Quality rating tiers</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        Your tier is set by Meta based on the quality of conversations you have — recipient
+        blocks, reports, and low engagement all drag it down. Higher tiers unlock higher volume.
+      </p>
+      <div className="space-y-2 mb-8">
+        {[
+          { tier: 'Tier 0', limit: '250', note: 'New accounts and accounts with quality issues' },
+          { tier: 'Tier 1', limit: '1,000', note: 'After sustained positive quality' },
+          { tier: 'Tier 2', limit: '10,000', note: 'Strong quality over rolling 7 days' },
+          { tier: 'Tier 3', limit: '100,000', note: 'Consistent high quality at scale' },
+          { tier: 'Tier 4', limit: 'Unlimited', note: 'Reserved for very large senders' },
+        ].map(({ tier, limit, note }) => (
+          <div key={tier} className="flex items-center justify-between bg-[#1a1910] border border-[#262413] rounded-xl px-4 py-3">
+            <div><div className="text-sm font-semibold text-white">{tier}</div><div className="text-xs text-[#6a6c5d] mt-0.5">{note}</div></div>
+            <div className="text-yellow-500 font-mono text-sm font-bold">{limit}</div>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="text-lg font-bold text-white mb-4">3. Prohibited content categories</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        WhatsApp explicitly bans the following. Your chatbot's <code className="font-mono text-[#eab308]">system_prompt</code> should refuse
+        or hand off on any of these — never try to comply:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
+        {[
+          'Adult / sexual content',
+          'Hate speech or threats',
+          'Weapons, explosives, ammunition',
+          'Drugs (recreational, prescription without verification)',
+          'Tobacco, vape, alcohol sales',
+          'Gambling, lotteries (without prior approval)',
+          'Medical, financial, legal advice (must disclaim)',
+          'Multi-level marketing / pyramid schemes',
+          'Crypto / forex / "get rich quick" schemes',
+          'Surveillance products',
+          'Adult dating services',
+          'Misleading health claims',
+        ].map((cat) => (
+          <div key={cat} className="flex items-center gap-2 bg-red-900/20 border border-red-900/40 rounded-lg px-3 py-2 text-xs text-red-200">
+            <span className="text-red-400">✗</span>{cat}
+          </div>
+        ))}
+      </div>
+
+      <h2 className="text-lg font-bold text-white mb-4">4. How FIDScript enforces compliance</h2>
+      <ul className="list-disc list-inside text-sm text-[#a8a594] space-y-2 mb-8">
+        <li>
+          <strong className="text-white">Tier-aware volume cap</strong> — daily unique-customer
+          initiations are tracked against your tier. Sends past the cap are queued for the
+          next 24h window, never dropped.
+        </li>
+        <li>
+          <strong className="text-white">Adaptive bulk pacing</strong> — 10 MPS at idle, ramps to
+          30 MPS when the queue hits 5,000+ (still well under Meta's 80 MPS cap).
+        </li>
+        <li>
+          <strong className="text-white">Per-instance rate limiter</strong> — 3 reads/sec/instance
+          and 2 mutations/sec/instance to prevent account-level blocks.
+        </li>
+        <li>
+          <strong className="text-white">Hallucination policy</strong> — set per-chatbot. <code className="font-mono text-[#eab308]">strict</code> refuses
+          on low confidence; <code className="font-mono text-[#eab308]">balanced</code> gives a hedged answer; <code className="font-mono text-[#eab308]">creative</code> lets the model
+          improvise; <code className="font-mono text-[#eab308]">disabled</code> passes through unchanged.
+        </li>
+        <li>
+          <strong className="text-white">Confidence threshold + handoff</strong> — below your
+          configured threshold (e.g. 0.6), the bot hands the conversation to a human
+          instead of risking a wrong answer that triggers a user block.
+        </li>
+        <li>
+          <strong className="text-white">24h session window</strong> — utility templates can only be
+          sent within 24h of the user's last message. Marketing templates require explicit
+          opt-in via template approval.
+        </li>
+      </ul>
+
+      <h2 className="text-lg font-bold text-white mb-4">5. Best practices for your system_prompt</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        Configure <code className="font-mono text-[#eab308]">system_prompt</code> defensively. Recommended clauses to include:
+      </p>
+      <DocsCodeBlock
+        code={`You are an assistant for ACME, a Kenyan e-commerce store.
+
+Tone: warm, concise, never pushy. Reply in the user's language when you can detect it.
+
+Hard rules:
+- Never promise a refund, return, or legal outcome. If the user asks for one,
+  respond: "I'll connect you with a manager who can help" and trigger a handoff.
+- Never give medical, legal, or financial advice. Respond: "I'm not qualified
+  to advise on that — please consult a professional."
+- Never discuss politics, religion, or competitor products.
+- Never claim to be a real person. You can say you're an AI assistant for ACME.
+- If you're not sure, say so. It's better to admit uncertainty than to guess
+  and risk the user being misled.
+
+Operational:
+- If you're confident in your answer, reply directly. If you have ANY doubt,
+  ask a clarifying question or hand off.
+- Keep replies under 80 words. Use line breaks for lists.
+- If a user asks something outside your scope, hand off with a friendly note.`}
+        lang="text"
+      />
+
+      <h2 className="text-lg font-bold text-white mb-4">6. When to hand off to a human</h2>
+      <p className="text-xs text-[#8a886a] mb-3">
+        Configure handoff conditions per chatbot. Examples of conditions that should always escalate:
+      </p>
+      <ul className="list-disc list-inside text-sm text-[#a8a594] space-y-1 mb-8">
+        <li>User asks for a human / manager / supervisor</li>
+        <li>User expresses frustration (sentiment below threshold)</li>
+        <li>User requests a refund, return, cancellation, or account closure</li>
+        <li>User reports a bug, abuse, or safety issue</li>
+        <li>User asks about anything in the prohibited content list above</li>
+        <li>Conversation has been going in circles (3+ ambiguous turns)</li>
+        <li>Bot's own confidence score is below the configured threshold</li>
+      </ul>
+
+      <h2 className="text-lg font-bold text-white mb-4">7. Monitoring your quality rating</h2>
+      <DocsCodeBlock
+        code={`# Check current tier + volume
+curl ${PUBLIC_API_BASE.replace('/api/v1','')}/api/auth/client/me \\
+  -H "Authorization: Bearer $FIDSCRIPT_JWT"
+
+# Token forecast for next 30 days
+fidscript --json chatbot token-forecast <chatbot-id>`}
+        lang="bash"
+      />
+      <p className="text-xs text-[#6a6c5d] mt-3">
+        If your quality rating drops, lower your tier limit, tighten the bot's
+        handoff conditions, and review recent conversations for blocks or reports.
+      </p>
     </motion.div>
   );
 

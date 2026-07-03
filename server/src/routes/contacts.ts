@@ -3,6 +3,7 @@ import { clientJwtAuth } from '../middleware/auth.js';
 import db from '../database.js';
 import { normalizePhone } from '../utils/phone.js';
 import { encryptApiKey, decryptApiKey } from '../utils/crypto.js';
+import { resolveContact, upsertContactIdentifier, insertContactSource, updateContactSourceSyncStatus } from '../services/contactResolver.js';
 import crypto from 'crypto';
 
 const router = Router();
@@ -28,12 +29,24 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
   try {
     let added = 0;
     for (const c of contacts) {
-      const id = `contact_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
       // Always normalize phone to international format so lookups are consistent
       const normalizedPhone = normalizePhone(c.phone) || c.phone;
-      db.prepare(
-        'INSERT INTO contacts (id, client_id, phone, name, tags) VALUES (?, ?, ?, ?, ?)'
-      ).run(id, req.client!.id, normalizedPhone, c.name || '', c.tags || '');
+      const result = resolveContact({
+        clientId: req.client!.id,
+        phone: normalizedPhone || undefined,
+        displayName: c.name || null,
+        source: 'csv',
+      });
+      // Upsert name if provided (preserve manual name if set)
+      if (c.name) {
+        db.prepare('UPDATE contacts SET name = COALESCE(NULLIF(name,\'\'), ?) WHERE id = ?')
+          .run(c.name, result.contactId);
+      }
+      // Upsert tags if provided
+      if (c.tags) {
+        db.prepare('UPDATE contacts SET tags = COALESCE(NULLIF(tags,\'\'), ?) WHERE id = ?')
+          .run(c.tags, result.contactId);
+      }
       added++;
     }
     res.json({ success: true, count: added });
@@ -247,11 +260,11 @@ router.post('/google/import', clientJwtAuth, async (req: Request, res: Response)
   }
 
   // Fetch all connections from Google People API
-  const allContacts: { name: string; phone: string }[] = [];
+  const allContacts: { name: string; phone: string; resourceName: string }[] = [];
   let nextPageToken: string | undefined;
 
   do {
-    const params = new URLSearchParams({ personFields: 'names,phoneNumbers', pageSize: '200' });
+    const params = new URLSearchParams({ personFields: 'names,phoneNumbers,resourceName', pageSize: '200' });
     if (nextPageToken) params.set('pageToken', nextPageToken);
 
     const peopleRes = await fetch(`https://people.googleapis.com/v1/people/me/connections?${params}`, {
@@ -262,40 +275,50 @@ router.post('/google/import', clientJwtAuth, async (req: Request, res: Response)
       return res.status(peopleRes.status).json({ success: false, error: `Google API error: ${err}` });
     }
     const data = await peopleRes.json() as {
-      connections?: { names?: { displayName: string }[]; phoneNumbers?: { value: string }[] }[];
+      connections?: { names?: { displayName: string }[]; phoneNumbers?: { value: string }[]; resourceName?: string }[];
       nextPageToken?: string;
     };
 
     for (const person of data.connections || []) {
       const name = person.names?.[0]?.displayName;
       const phone = person.phoneNumbers?.[0]?.value;
+      const resourceName = person.resourceName;
       if (name && phone) {
         // Normalize phone: strip non-digits, ensure +
         const normalized = '+' + phone.replace(/\D/g, '');
-        allContacts.push({ name, phone: normalized });
+        allContacts.push({ name, phone: normalized, resourceName: resourceName ?? '' });
       }
     }
     nextPageToken = data.nextPageToken;
   } while (nextPageToken);
 
-  // Upsert into contacts table: match by phone, update google_name
+  // Upsert via contactResolver — creates contact with google_name and tracks source
   let imported = 0;
   let errors = 0;
   for (const contact of allContacts) {
     try {
       const normalized = normalizePhone(contact.phone) || contact.phone;
-      const existing = db.prepare(
-        'SELECT id FROM contacts WHERE client_id = ? AND phone = ?'
-      ).get(req.client!.id, normalized) as { id: string } | undefined;
-
-      if (existing) {
-        db.prepare('UPDATE contacts SET google_name = ? WHERE id = ?').run(contact.name, existing.id);
+      const result = resolveContact({
+        clientId: req.client!.id,
+        phone: normalized,
+        googleId: contact.resourceName || undefined,
+        displayName: contact.name,
+        source: 'google',
+      });
+      if (result.isNew) {
+        // New contact created — update google_name separately since resolveContact uses displayName as name
+        db.prepare('UPDATE contacts SET google_name = ? WHERE id = ?').run(contact.name, result.contactId);
       } else {
-        const id = `gcontact_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-        db.prepare(
-          'INSERT INTO contacts (id, client_id, phone, name, google_name, tags) VALUES (?, ?, ?, ?, ?, ?)'
-        ).run(id, req.client!.id, normalized, '', contact.name, '');
+        // Existing contact — enrich with Google name if no name set
+        db.prepare('UPDATE contacts SET google_name = COALESCE(NULLIF(google_name,\'\'), ?) WHERE id = ?')
+          .run(contact.name, result.contactId);
       }
+      // Upsert Google identifier and source
+      if (contact.resourceName) {
+        upsertContactIdentifier({ contactId: result.contactId, type: 'google_resource', value: contact.resourceName, isPrimary: false });
+      }
+      // Ensure google source is tracked
+      insertContactSource({ contactId: result.contactId, sourceType: 'google', externalId: contact.resourceName || undefined });
       imported++;
     } catch {
       errors++;

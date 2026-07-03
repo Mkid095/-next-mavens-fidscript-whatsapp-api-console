@@ -12,6 +12,7 @@ import profileRouter from './profile.js';
 import settingsRouter from './settings.js';
 import instanceRouter from './instance.js';
 import providersRouter from './providers.js';
+import healthRouter from './health.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -36,6 +37,9 @@ const v1Limiter = rateLimit({
 
 // Public OpenAPI spec (no auth; IP-limited).
 router.use(v1Limiter, openapiRouter);
+
+// Public health check (no auth, no rate limit).
+router.use(healthRouter);
 
 // GET /api/v1/whoami — validate an API key with no side effects.
 router.get('/whoami', v1Limiter, clientApiKeyAuth, V1_READ, (req: Request, res: Response) => {

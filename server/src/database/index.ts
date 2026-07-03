@@ -27,6 +27,9 @@ import { runPhase19Migrations } from './phase19.js';
 import { runPhase20Migrations } from './phase20.js';
 import { runPhase21Migrations } from './phase21.js';
 import { runPhase22Migrations } from './phase22.js';
+import { runPhase23Migrations } from './phase23.js';
+import { runPhase24Migrations } from './phase24.js';
+import { runPhase25Migrations } from './phase25.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,6 +73,9 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase20Migrations(db);     // Production-grade handoff (expiry, resume policies, timeline)
   runPhase21Migrations(db);     // Override history (status/ended_at/ended_reason/source) + auto-takeover
   runPhase22Migrations(db);     // Conversation assignments table
+  runPhase23Migrations(db);     // Contact identity layer: identifiers + sources
+  runPhase24Migrations(db);     // chatbot_group_settings: respond_mode + group_jid
+  runPhase25Migrations(db);     // Chatbot handoff notification config
   await seedData(db);
   saveDatabase();
 

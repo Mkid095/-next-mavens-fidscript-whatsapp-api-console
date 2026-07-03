@@ -79,7 +79,7 @@ export default function PendingPoller({
 
   if (state === 'timeout') {
     return (
-      <div className="p-3 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-2">
+      <div className="p-3 rounded-xl text-xs font-semibold bg-amber-900/40 text-amber-400 border border-amber-900/50 flex items-center gap-2">
         <AlertCircle className="w-4 h-4 shrink-0" />
         Payment may have failed — check your M-Pesa app. Tokens will be added automatically once confirmed.
       </div>
@@ -89,7 +89,7 @@ export default function PendingPoller({
   if (state === 'done') return null;
 
   return (
-    <div className="p-3 rounded-xl text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2">
+    <div className="p-3 rounded-xl text-xs font-semibold bg-blue-900/40 text-blue-400 border border-blue-900/50 flex items-center gap-2">
       <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
       Waiting for M-Pesa confirmation... ({elapsed}s)
     </div>

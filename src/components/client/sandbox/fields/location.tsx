@@ -19,13 +19,13 @@ export function LocationField({
           value={bodyValues[fieldKey] || ''}
           onChange={e => onBodyValuesChange({ ...bodyValues, [fieldKey]: e.target.value })}
           placeholder={placeholder}
-          className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
+          className="flex-1 px-3 py-2 border border-[#2d2813] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 bg-[#181711] text-[#a8a99e]"
         />
-        <button onClick={() => setOpen(true)} className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl shrink-0">
+        <button onClick={() => setOpen(true)} className="flex items-center gap-1 px-2.5 py-2 text-[10px] font-bold text-green-400 bg-green-900/40 hover:bg-green-900/50 border border-green-900/50 rounded-xl shrink-0">
           <MapPin className="w-3.5 h-3.5" /> Pick on Map
         </button>
       </div>
-      <p className="text-[9px] text-stone-400">Format: latitude,longitude e.g. -1.286389,36.817223</p>
+      <p className="text-[9px] text-[#5a554a]">Format: latitude,longitude e.g. -1.286389,36.817223</p>
       <LocationPickerModal
         open={open}
         onClose={() => setOpen(false)}

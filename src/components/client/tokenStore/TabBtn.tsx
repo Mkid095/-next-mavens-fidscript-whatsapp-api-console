@@ -12,7 +12,9 @@ export default function TabBtn({ active, onClick, icon, label }: TabBtnProps) {
     <button
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-        active ? 'bg-white text-forest-deep shadow-sm' : 'text-stone-500 hover:text-forest-deep'
+        active
+          ? 'bg-yellow-500 text-[#181711] shadow-sm'
+          : 'text-[#6e684a] hover:text-[#a8a99e]'
       }`}
     >
       {icon}

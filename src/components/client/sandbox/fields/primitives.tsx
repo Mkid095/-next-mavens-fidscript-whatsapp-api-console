@@ -14,7 +14,7 @@ export function BooleanField({
         onChange={e => onBodyValuesChange({ ...bodyValues, [fieldKey]: String(e.target.checked) })}
         className="w-4 h-4 accent-yellow-600"
       />
-      <span className="text-xs text-stone-500">{placeholder || 'true / false'}</span>
+      <span className="text-xs text-[#6e684a]">{placeholder || 'true / false'}</span>
     </label>
   );
 }
@@ -33,7 +33,7 @@ export function TextareaField({
       onChange={e => onBodyValuesChange({ ...bodyValues, [fieldKey]: e.target.value })}
       placeholder={placeholder}
       rows={3}
-      className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 resize-none"
+      className="w-full px-3 py-2 border border-[#2d2813] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 resize-none bg-[#181711] text-[#a8a99e]"
     />
   );
 }

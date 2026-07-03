@@ -17,8 +17,8 @@ export function StatusTypeField({
           onClick={() => onBodyValuesChange({ ...bodyValues, [fieldKey]: opt })}
           className={`px-3 py-1.5 text-[10px] font-bold rounded-xl border transition-colors ${
             bodyValues[fieldKey] === opt
-              ? 'bg-forest-deep text-white border-forest-deep'
-              : 'border-[#eaebe4] text-stone-600 hover:border-yellow-300'
+              ? 'bg-yellow-500 text-[#181711] border-yellow-500'
+              : 'border-[#2d2813] text-[#a8a99e] hover:border-yellow-300'
           }`}
         >
           {opt.charAt(0).toUpperCase() + opt.slice(1)}
@@ -42,16 +42,16 @@ export function PollOptionsField({
             type="text" value={opt}
             onChange={e => { const u = [...pollOptions]; u[i] = e.target.value; onPollOptionsChange(u); }}
             placeholder={`Option ${i + 1}`}
-            className="flex-1 px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
+            className="flex-1 px-3 py-2 border border-[#2d2813] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 bg-[#181711] text-[#a8a99e]"
           />
           {pollOptions.length > 2 && (
-            <button onClick={() => onPollOptionsChange(pollOptions.filter((_, j) => j !== i))} className="p-2 text-red-400 hover:text-red-600">
+            <button onClick={() => onPollOptionsChange(pollOptions.filter((_, j) => j !== i))} className="p-2 text-red-400 hover:text-red-300">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       ))}
-      <button onClick={() => onPollOptionsChange([...pollOptions, ''])} className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800">
+      <button onClick={() => onPollOptionsChange([...pollOptions, ''])} className="flex items-center gap-1 text-[10px] font-bold text-blue-400 hover:text-blue-300">
         <Plus className="w-3 h-3" /> Add option
       </button>
     </div>
@@ -73,7 +73,7 @@ export function EmojiField({
             key={e}
             onClick={() => onBodyValuesChange({ ...bodyValues, [fieldKey]: e })}
             className={`w-8 h-8 rounded-lg text-sm flex items-center justify-center transition-colors ${
-              bodyValues[fieldKey] === e ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'bg-stone-100 hover:bg-yellow-50'
+              bodyValues[fieldKey] === e ? 'bg-yellow-900/40 ring-2 ring-yellow-500' : 'bg-[#181711] hover:bg-[#2d2813]'
             }`}
           >{e}</button>
         ))}
@@ -83,7 +83,7 @@ export function EmojiField({
         value={bodyValues[fieldKey] || ''}
         onChange={e => onBodyValuesChange({ ...bodyValues, [fieldKey]: e.target.value })}
         placeholder="Or type emoji"
-        className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
+        className="w-full px-3 py-2 border border-[#2d2813] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 bg-[#181711] text-[#a8a99e]"
       />
     </div>
   );
@@ -101,7 +101,7 @@ export function EnumField({
     <select
       value={bodyValues[fieldKey] || ''}
       onChange={e => onBodyValuesChange({ ...bodyValues, [fieldKey]: e.target.value })}
-      className="w-full px-3 py-2 border border-[#eaebe4] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500"
+      className="w-full px-3 py-2 border border-[#2d2813] rounded-xl text-xs font-mono focus:outline-none focus:border-yellow-500 bg-[#181711] text-[#a8a99e]"
     >
       <option value="">-- Select --</option>
       {enumVals.map(opt => <option key={opt} value={opt}>{opt}</option>)}

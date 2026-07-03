@@ -70,20 +70,20 @@ export default function TokenStoreSection({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-[#eaebe4] rounded-3xl p-6 shadow-sm">
+      <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-4 sm:p-6 shadow-sm">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#2d2813]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-yellow-500 flex items-center justify-center">
-              <Wallet className="w-4.5 h-4.5 text-stone-950" />
+            <div className="w-9 h-9 rounded-xl bg-yellow-500 flex items-center justify-center shrink-0">
+              <Wallet className="w-4.5 h-4.5 text-[#181711]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-forest-deep">Token Store</h3>
-              <p className="text-[11px] text-graphite">Buy tokens to send messages</p>
+              <h3 className="text-sm font-bold text-[#cbd3cf]">Token Store</h3>
+              <p className="text-[11px] text-[#6e684a]">Buy tokens to send messages</p>
             </div>
           </div>
           {/* Tab toggle */}
-          <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl">
+          <div className="flex items-center gap-1 p-1 bg-[#181711] border border-[#2d2813] rounded-xl w-fit">
             <TabBtn active={tab === 'buy'} onClick={() => setTab('buy')} icon={<Zap className="w-3.5 h-3.5" />} label="Buy" />
             <TabBtn active={tab === 'history'} onClick={() => setTab('history')} icon={<History className="w-3.5 h-3.5" />} label="History" />
           </div>

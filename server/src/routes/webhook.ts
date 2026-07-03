@@ -9,6 +9,7 @@ import { resolveConversation } from '../modules/customers/index.js';
 import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
 import { syncGroupsForInstance, getGroupParticipantName } from '../services/whatsapp/groupSync.js';
 import { publishChatbotInbound } from '../utils/natsPublisher.js';
+import { resolveContactByPhone } from '../services/contactResolver.js';
 import type { Instance } from '../types.js';
 import { cleanupPhonebookForInstance } from '../services/whatsapp/phonebook.js';
 import { mirrorChatList } from '../services/whatsapp/chatMirror.js';
@@ -220,8 +221,14 @@ router.post('/evolution', async (req: Request, res: Response) => {
         }).catch(err => console.error('[WEBHOOK] dispatchMessageReceived failed:', err));
       }
 
-      // Publish to NATS for async chatbot processing
+      // Publish to NATS for async chatbot processing — now with resolved contactId
+      let resolvedContactId: string | undefined;
       if (parsed.messageType === 'text' && parsed.content && customerId && conversationId) {
+        // Resolve canonical contact (creates if new, returns existing if matched)
+        if (phone) {
+          const resolved = resolveContactByPhone(instance.client_id, phone, resolvedSenderName ?? null, 'whatsapp');
+          resolvedContactId = resolved.contactId;
+        }
         publishChatbotInbound({
           conversationId,
           customerId,
@@ -235,6 +242,7 @@ router.post('/evolution', async (req: Request, res: Response) => {
           senderName: resolvedSenderName,
           senderPhone: phone ?? undefined,
           groupJid: isGroup ? remoteJid : undefined,
+          contactId: resolvedContactId,
         }).catch(err => console.error('[WEBHOOK] publishChatbotInbound failed:', err));
       }
 

@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
 import { PUBLIC_API_BASE } from '../../data/apiEndpoints/index';
 
 export type Lang = 'curl' | 'node' | 'python' | 'php' | 'go';
@@ -12,12 +10,13 @@ export const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'go', label: 'Go' },
 ];
 
+/** Dark-mode method pill palette — same visual language as ApiKeysSection.tsx. */
 export const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-blue-600 text-white',
-  POST: 'bg-yellow-600 text-stone-950',
-  DELETE: 'bg-red-600 text-white',
-  PATCH: 'bg-orange-500 text-white',
-  PUT: 'bg-purple-600 text-white',
+  GET:    'bg-blue-900/40 text-blue-300 border border-blue-900/50',
+  POST:   'bg-yellow-900/40 text-yellow-300 border border-yellow-900/50',
+  DELETE: 'bg-red-900/40 text-red-300 border border-red-900/50',
+  PATCH:  'bg-orange-900/40 text-orange-300 border border-orange-900/50',
+  PUT:    'bg-purple-900/40 text-purple-300 border border-purple-900/50',
 };
 
 interface ParamRow { name: string; type: string; required: boolean; desc: string; }
@@ -74,7 +73,7 @@ $data = ${buildBody().replace(/"/g, '"')};
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "X-API-Key: ${key}",
+    "X-API-Key": ${key}",
     "Content-Type: application/json"
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -94,7 +93,7 @@ import (
 
 func main() {
     payload := map[string]interface{}{
-${params.map(p => `        "${p.name}": "<${p.name}">`).join(',\n')}
+${params.map(p => `        "${p.name}": "<${p.name}>"`).join(',\n')}
     }
     body, _ := json.Marshal(payload)
 
@@ -114,16 +113,5 @@ ${params.map(p => `        "${p.name}": "<${p.name}">`).join(',\n')}
   }
 }
 
-export function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <button onClick={handleCopy} className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-stone-400 hover:text-yellow-400 transition-colors">
-      {copied ? <><Check className="w-3 h-3 text-green-500" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
-    </button>
-  );
-}
+// Local CopyButton removed — consumers should import { CopyButton } from '../shared/CopyButton.js'
+export { CopyButton } from '../shared/CopyButton.js';

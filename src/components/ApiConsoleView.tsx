@@ -97,10 +97,10 @@ export default function ApiConsoleView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-forest-deep">
+        <h1 className="text-xl font-bold tracking-tight text-[#cbd3cf]">
           FIDScript REST Sandbox
         </h1>
-        <p className="text-xs text-graphite mt-1">
+        <p className="text-xs text-[#a8a99e] mt-1">
           Dry-run secure POST / GET requests to check container payload parameters and Daraja callback events.
         </p>
       </div>

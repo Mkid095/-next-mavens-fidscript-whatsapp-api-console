@@ -17,6 +17,7 @@ import { initializeDatabase, saveDatabase } from '../database/index.js';
 import db from '../database.js';
 import { pickBestBot, evaluateTriggers } from '../modules/ai/chatbotEngine.js';
 import { LLMGateway } from '../modules/ai/llmGateway.js';
+import { requestHandoff } from '../modules/ai/handoffService.js';
 import { logChatbotToolCall } from './tools.js';
 import { logTokenUsage } from './billing.js';
 import { getRuntimeConfig } from './chatbotRuntimeCache.js';
@@ -241,11 +242,13 @@ async function processMessage(msg: InboundMessage): Promise<void> {
       // 4. Log token usage
       logTokenUsage(botId, conversationId, String(aiConfig.model ?? 'gemini'), tokensUsed.prompt, tokensUsed.completion, tokensUsed.total);
 
-      // 5. Check confidence threshold
+      // 5. Check confidence threshold — escalate to human if too uncertain
       const threshold = Number(policies?.confidence_threshold ?? 0.6);
       if (confidence < threshold) {
-        console.log(`[worker] Low confidence ${confidence} < ${threshold} — escalate`);
-        // TODO: escalate to human
+        console.log(`[worker] Low confidence ${confidence} < ${threshold} — escalating to human`);
+        // Don't send a low-confidence AI reply; instead escalate to a human agent
+        requestHandoff(conversationId, '', String(bot.name ?? 'Bot'));
+        return;
       }
 
       // 6. Send reply via WhatsApp

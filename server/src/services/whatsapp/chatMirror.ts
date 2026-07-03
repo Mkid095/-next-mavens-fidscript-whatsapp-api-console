@@ -14,6 +14,7 @@ import { parseIncomingMessage } from '../../utils/messageParser.js';
 import { findChats, findMessagesAll, profilePicUrl } from './chats.js';
 import { getCachedGroupInfo, getGroupParticipantName } from './groupSync.js';
 import { paceWhatsAppCall } from './whatsappCallLimiter.js';
+import { getContactDisplayName } from '../contactResolver.js';
 import type { SendContext, SendResult } from './shared.js';
 
 type Rec = Record<string, unknown>;
@@ -80,13 +81,11 @@ export interface MirrorMessage {
 
 /**
  * Resolve a display name for a JID. Priority:
- *  1:1   → CRM name (user-defined) → raw phone number from JID (no formatting)
- *  group → cached group subject → pushName (group subject from Evolution API) → JID
+ *  1:1   → CRM name (user-defined) → WhatsApp profile name → raw phone number
+ *  group → cached group subject → pushName (Evolution API group subject) → JID
  *
- * For 1:1: pushName (WhatsApp profile name) is never used — only saved CRM name
- * or the raw phone number exactly as it appears in the JID.
- *
- * For groups: pushName carries the group subject from Evolution API's findChats.
+ * Uses the canonical contactResolver for 1:1 lookups, so name resolution is
+ * consistent everywhere: manual name → whatsapp_name → google_name → phone.
  */
 function resolveDisplayName(workspaceId: string, jid: string, pushName?: string): string {
   if (jid.includes('@g.us')) {
@@ -96,16 +95,23 @@ function resolveDisplayName(workspaceId: string, jid: string, pushName?: string)
     if (pushName) return pushName;
     return jid;
   }
-  // 1:1: show raw phone digits from JID, no normalization, no + stripping
+  // 1:1: resolve via canonical contact identity layer
   const rawPhone = jid.split('@')[0];
-  // Only look up CRM name if the raw phone is purely numeric
   if (/^\d+$/.test(rawPhone)) {
-    // Normalize the JID phone to match how contacts are stored (international + format)
     const normalizedForDb = normalizePhone(rawPhone);
-    const contact = db.prepare(
-      'SELECT COALESCE(NULLIF(name, ""), whatsapp_name, google_name) AS name FROM contacts WHERE client_id = ? AND phone = ?'
-    ).get(workspaceId, normalizedForDb) as { name: string | null } | undefined;
-    if (contact?.name) return contact.name;
+    if (normalizedForDb) {
+      // Use contactResolver to find the contact by phone, then get canonical display name
+      const contact = db.prepare(`
+        SELECT ci.contact_id FROM contact_identifiers ci
+        JOIN contacts c ON c.id = ci.contact_id
+        WHERE ci.type = 'phone' AND ci.value = ? AND c.client_id = ?
+        LIMIT 1
+      `).get(normalizedForDb, workspaceId) as { contact_id: string } | undefined;
+      if (contact) {
+        const resolvedName = getContactDisplayName(contact.contact_id);
+        if (resolvedName) return resolvedName;
+      }
+    }
   }
   // Fall back to raw phone digits — exactly as the JID stores them
   return rawPhone;

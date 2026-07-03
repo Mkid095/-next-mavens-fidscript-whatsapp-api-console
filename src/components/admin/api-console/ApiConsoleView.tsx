@@ -47,14 +47,14 @@ function FieldInput({ field, value, onChange }: { field: BodyField; value: strin
   if (field.type === 'text' || field.type === 'string') {
     return (
       <div key={field.key}>
-        <label className="block text-[9px] font-bold text-[#657a6e] uppercase tracking-wider mb-1">
+        <label className="block text-[9px] font-bold text-[#6e684a] uppercase tracking-wider mb-1">
           {field.label} {field.required ? '*' : ''}
         </label>
         {field.enum ? (
           <select
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-2.5 py-2 border border-[#dee9e4] text-[#0f241d] bg-white rounded-lg text-xs focus:outline-none"
+            className="w-full px-2.5 py-2 border border-[#2d2813] text-[#a8a99e] bg-[#181711] rounded-lg text-xs focus:outline-none"
           >
             <option value="">Select…</option>
             {field.enum.map((opt) => (
@@ -67,17 +67,17 @@ function FieldInput({ field, value, onChange }: { field: BodyField; value: strin
             onChange={(e) => onChange(e.target.value)}
             rows={field.type === 'text' ? 3 : 1}
             placeholder={field.placeholder}
-            className="w-full px-2.5 py-2 border border-[#dee9e4] text-[#0f241d] bg-white rounded-lg text-xs font-mono focus:outline-none resize-none"
+            className="w-full px-2.5 py-2 border border-[#2d2813] text-[#a8a99e] bg-[#181711] rounded-lg text-xs font-mono focus:outline-none resize-none"
           />
         )}
-        {field.desc && <p className="mt-0.5 text-[9px] text-stone-400">{field.desc}</p>}
+        {field.desc && <p className="mt-0.5 text-[9px] text-[#5a554a]">{field.desc}</p>}
       </div>
     );
   }
   if (field.type === 'number') {
     return (
       <div key={field.key}>
-        <label className="block text-[9px] font-bold text-[#657a6e] uppercase tracking-wider mb-1">
+        <label className="block text-[9px] font-bold text-[#6e684a] uppercase tracking-wider mb-1">
           {field.label} {field.required ? '*' : ''}
         </label>
         <input
@@ -85,7 +85,7 @@ function FieldInput({ field, value, onChange }: { field: BodyField; value: strin
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder}
-          className="w-full px-2.5 py-2 border border-[#dee9e4] text-[#0f241d] bg-white rounded-lg text-xs font-mono focus:outline-none"
+          className="w-full px-2.5 py-2 border border-[#2d2813] text-[#a8a99e] bg-[#181711] rounded-lg text-xs font-mono focus:outline-none"
         />
       </div>
     );
@@ -98,9 +98,9 @@ function FieldInput({ field, value, onChange }: { field: BodyField; value: strin
           id={field.key}
           checked={value === 'true'}
           onChange={(e) => onChange(String(e.target.checked))}
-          className="w-3.5 h-3.5 rounded border-stone-300 text-forest-deep focus:ring-forest-deep"
+          className="w-3.5 h-3.5 rounded border-[#2d2813] text-yellow-500 focus:ring-yellow-500"
         />
-        <label htmlFor={field.key} className="text-xs text-stone-600">{field.label}</label>
+        <label htmlFor={field.key} className="text-xs text-[#a8a99e]">{field.label}</label>
       </div>
     );
   }
@@ -205,17 +205,17 @@ export default function ApiConsoleView() {
   };
 
   const methodColor = (m: string) => {
-    if (m === 'GET') return 'text-blue-500 bg-blue-50 border-blue-200';
-    if (m === 'POST') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-    if (m === 'PATCH') return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    return 'text-stone-500 bg-stone-50 border-stone-200';
+    if (m === 'GET') return 'text-blue-400 bg-blue-900/40 border-blue-900/50';
+    if (m === 'POST') return 'text-emerald-400 bg-emerald-900/40 border-emerald-900/50';
+    if (m === 'PATCH') return 'text-yellow-400 bg-yellow-900/40 border-yellow-900/50';
+    return 'text-[#6e684a] bg-[#181711] border-[#2d2813]';
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-forest-deep">FIDScript REST Sandbox</h1>
-        <p className="text-xs text-graphite mt-1">
+        <h1 className="text-xl font-bold tracking-tight text-[#cbd3cf]">FIDScript REST Sandbox</h1>
+        <p className="text-xs text-[#a8a99e] mt-1">
           Execute live requests against the FIDScript WhatsApp API. All requests use your admin session.
         </p>
       </div>
@@ -229,8 +229,8 @@ export default function ApiConsoleView() {
               onClick={() => { setActiveCategory(cat.name); setSelectedId(''); }}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                 activeCategory === cat.name
-                  ? 'bg-forest-deep text-white'
-                  : 'text-stone-500 hover:bg-stone-100'
+                  ? 'bg-yellow-500 text-[#181711]'
+                  : 'text-[#6e684a] hover:bg-[#2d2813]'
               }`}
             >
               {CATEGORY_ICONS[cat.name]}
@@ -247,8 +247,8 @@ export default function ApiConsoleView() {
               onClick={() => setSelectedId(ep.id)}
               className={`w-full text-left p-2.5 rounded-xl border text-xs flex flex-col gap-0.5 transition-all ${
                 selectedId === ep.id
-                  ? 'bg-emerald-50 text-emerald-950 border-emerald-300'
-                  : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                  ? 'bg-emerald-900/40 text-emerald-300 border-emerald-900/50'
+                  : 'bg-[#1a1915] text-[#a8a99e] border-[#2d2813] hover:bg-[#2d2813]'
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -257,7 +257,7 @@ export default function ApiConsoleView() {
                 </span>
                 <span className="font-mono font-semibold truncate">{ep.path}</span>
               </span>
-              <span className="text-[10px] text-stone-400 pl-[52px] truncate">{ep.desc}</span>
+              <span className="text-[10px] text-[#5a554a] pl-[52px] truncate">{ep.desc}</span>
             </button>
           ))}
         </div>
@@ -265,31 +265,31 @@ export default function ApiConsoleView() {
         {/* Request builder + response */}
         <div className="flex-1 min-w-0">
           {!selectedEndpoint ? (
-            <div className="flex items-center justify-center h-48 text-stone-400 text-xs">
+            <div className="flex items-center justify-center h-48 text-[#5a554a] text-xs">
               Select an endpoint from the list to build a request
             </div>
           ) : (
             <div className="space-y-4">
               {/* Path + instance */}
-              <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-3">
+              <div className="rounded-xl border border-[#2d2813] bg-[#1a1915] p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${methodColor(selectedEndpoint.method)}`}>
                     {selectedEndpoint.method}
                   </span>
-                  <code className="font-mono text-xs text-stone-700 bg-stone-100 px-2 py-1 rounded">
+                  <code className="font-mono text-xs text-[#a8a99e] bg-[#181711] px-2 py-1 rounded">
                     {getResolvedPath() || selectedEndpoint.path}
                   </code>
                 </div>
 
                 {selectedEndpoint.path.includes(':instance') && (
                   <div>
-                    <label className="block text-[9px] font-bold text-[#657a6e] uppercase tracking-wider mb-1">
+                    <label className="block text-[9px] font-bold text-[#6e684a] uppercase tracking-wider mb-1">
                       Container *
                     </label>
                     <select
                       value={instanceName}
                       onChange={(e) => setInstanceName(e.target.value)}
-                      className="w-full px-2.5 py-2 border border-stone-200 bg-white rounded-lg text-xs text-stone-700 focus:outline-none"
+                      className="w-full px-2.5 py-2 border border-[#2d2813] bg-[#181711] rounded-lg text-xs text-[#a8a99e] focus:outline-none"
                     >
                       <option value="">Select container…</option>
                       {instances.map((i) => (
@@ -314,13 +314,13 @@ export default function ApiConsoleView() {
                 )}
 
                 {selectedEndpoint.bodyFields.length === 0 && (
-                  <p className="text-[10px] text-stone-400 italic">No request body</p>
+                  <p className="text-[10px] text-[#5a554a] italic">No request body</p>
                 )}
 
                 <button
                   onClick={handleRunRequest}
                   disabled={isRunning || (selectedEndpoint.path.includes(':instance') && !instanceName)}
-                  className="flex items-center gap-2 px-4 py-2 bg-forest-deep text-white rounded-xl text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-[#181711] rounded-xl text-xs font-bold disabled:opacity-50 transition-opacity"
                 >
                   {isRunning ? <><RefreshCw size={13} className="animate-spin" /> Running…</> : <><Play size={13} /> Run Request</>}
                 </button>

@@ -9,6 +9,7 @@ import PricingSection from './PricingSection';
 import TestimonialsSection from './TestimonialsSection';
 import FAQSection from './FAQSection';
 import CTASection from './CTASection';
+import CliInstallSection from './CliInstallSection';
 import SeoHead from '../shared/SeoHead';
 
 interface Stats {
@@ -134,6 +135,7 @@ export default function LandingPage() {
       <FeaturesSection />
       <FAQSection />
       <PricingSection />
+      <CliInstallSection />
       <CTASection />
     </div>
   );

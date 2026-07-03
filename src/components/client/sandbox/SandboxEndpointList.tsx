@@ -38,15 +38,15 @@ export default function SandboxEndpointList({
   const groups = filterGroups(search);
 
   return (
-    <div className="bg-white border border-[#eaebe4] rounded-3xl overflow-hidden shadow-sm flex flex-col min-w-0" style={{ maxHeight: '100%' }}>
-      <div className="p-3 border-b border-[#eaebe4] bg-[#f9f9f2] shrink-0">
+    <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl overflow-hidden shadow-sm flex flex-col min-w-0" style={{ maxHeight: '100%' }}>
+      <div className="p-3 border-b border-[#2d2813] bg-[#181711] shrink-0">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#5a554a] pointer-events-none" />
           <input
             value={search}
             onChange={e => onSearch(e.target.value)}
             placeholder="Search endpoints…"
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#eaebe4] rounded-xl focus:outline-none focus:border-yellow-500 bg-white"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#2d2813] rounded-xl focus:outline-none focus:border-yellow-500 bg-[#181711] text-[#a8a99e]"
           />
         </div>
       </div>
@@ -55,11 +55,11 @@ export default function SandboxEndpointList({
           <div key={group.name}>
             <button
               onClick={() => onToggleCategory(group.name)}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-forest-deep bg-[#f9f9f2] border-b border-[#eaebe4] hover:bg-stone-100 transition-colors"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-[#cbd3cf] bg-[#181711] border-b border-[#2d2813] hover:bg-[#2d2813] transition-colors"
             >
-              <span className="text-stone-600">{ICON_MAP[group.icon]}</span>
+              <span className="text-[#a8a99e]">{ICON_MAP[group.icon]}</span>
               <span>{group.name}</span>
-              <span className="ml-auto text-stone-400">{group.endpoints.length}</span>
+              <span className="ml-auto text-[#5a554a]">{group.endpoints.length}</span>
               {expandedCategories.has(group.name) ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
             </button>
             <AnimatePresence>
@@ -72,18 +72,18 @@ export default function SandboxEndpointList({
                     <button
                       key={ep.path + ep.method}
                       onClick={() => onSelectEndpoint(ep)}
-                      className={`w-full flex items-center gap-2 px-4 py-2 text-[11px] hover:bg-stone-50 transition-colors text-left border-b border-[#eaebe4]/50 ${
+                      className={`w-full flex items-center gap-2 px-4 py-2 text-[11px] hover:bg-[#2d2813] transition-colors text-left border-b border-[#2d2813] ${
                         selectedEndpoint?.path === ep.path && selectedEndpoint?.method === ep.method
-                          ? 'bg-yellow-50 border-l-2 border-l-yellow-500'
+                          ? 'bg-yellow-900/30 border-l-2 border-l-yellow-500'
                           : ''
                       }`}
                     >
                       <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[ep.method]}`}>{ep.method}</span>
                       <div className="min-w-0">
-                        <p className="font-bold text-forest-deep truncate">{ep.name}</p>
-                        <p className="text-[9px] text-stone-400 font-mono truncate">{ep.path.replace(':instanceName', instanceName || ':instance')}</p>
+                        <p className="font-bold text-[#cbd3cf] truncate">{ep.name}</p>
+                        <p className="text-[9px] text-[#5a554a] font-mono truncate">{ep.path.replace(':instanceName', instanceName || ':instance')}</p>
                       </div>
-                      {ep.cost !== undefined && ep.cost > 0 && <span className="ml-auto text-[9px] font-bold text-yellow-700 shrink-0">{ep.cost}t</span>}
+                      {ep.cost !== undefined && ep.cost > 0 && <span className="ml-auto text-[9px] font-bold text-yellow-500 shrink-0">{ep.cost}t</span>}
                     </button>
                   ))}
                 </motion.div>
