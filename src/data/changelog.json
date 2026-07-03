@@ -1,5 +1,5 @@
 {
-  "latest": "v0.7.0",
+  "latest": "v0.7.1",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,28 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.7.1",
+      "date": "2026-07-03",
+      "bumpType": "patch",
+      "title": "CLI tool/data-source commands + Tools & Integrations docs + npm v1.0.7",
+      "category": "release",
+      "tags": [
+        "cli",
+        "tools",
+        "docs",
+        "npm"
+      ],
+      "highlights": [
+        "New CLI commands: fidscript data-source list/create/delete, fidscript tool list/exec, fidscript chatbot tools attach/detach — all headless",
+        "New docs guide: Tools & Integrations — 6-layer architecture, tool-calling engine, e-commerce demo walkthrough, connecting real systems, agent-driven setup",
+        "Published @fidscript/cli v1.0.7 + @fidscript/sdk v0.1.4 on npm with the new tool commands"
+      ],
+      "fixes": [],
+      "commits": [
+        "4222805"
+      ]
+    },
     {
       "version": "v0.7.0",
       "date": "2026-07-03",

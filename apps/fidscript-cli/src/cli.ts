@@ -346,6 +346,16 @@ chatbotCmd
     await setAiConfig(id, opts);
   });
 
+chatbotCmd
+  .command('tools <chatbot-id>')
+  .description('List, attach, or detach tools on a chatbot')
+  .argument('[action]', 'list | attach | detach (default: list)')
+  .argument('[tool-id]', 'Tool ID (required for attach/detach)')
+  .action(async (chatbotId: string, action: string | undefined, toolId: string | undefined) => {
+    const { chatbotTools } = await import('./commands/chatbot/tools.js');
+    await chatbotTools(chatbotId, action, { toolId });
+  });
+
 // ── LLM subcommands (Bring Your Own API key) ─────────────────────────────────
 
 const llmCmd = cli.command('llm').description('Manage LLM connections (BYO API key)');
@@ -438,4 +448,58 @@ llmCmd
   .action(async (id: string) => {
     const { testConnection } = await import('./commands/llm/test.js');
     await testConnection(id);
+  });
+
+// ── Data source subcommands (external datasets for tools) ──────────────────────
+
+const dsCmd = cli.command('data-source').alias('datasource').description('Manage data sources (external datasets for tools)');
+
+dsCmd
+  .command('list')
+  .description('List data sources in this workspace')
+  .action(async () => {
+    const { listDataSources } = await import('./commands/data-source/list.js');
+    await listDataSources();
+  });
+
+dsCmd
+  .command('create <name>')
+  .description('Create a data source')
+  .requiredOption('--type <type>', 'Type: api_endpoint | sql_table | sql_query | static_json | demo')
+  .option('--description <text>', 'Short description')
+  .option('--config <json-or-@file>', 'Config JSON (inline or @file.json)')
+  .action(async (name: string, opts: { type: string; description?: string; config?: string }) => {
+    const { createDataSource } = await import('./commands/data-source/create.js');
+    await createDataSource(name, opts);
+  });
+
+dsCmd
+  .command('delete <id>')
+  .description('Delete a data source (cascades to its tools)')
+  .option('--confirm', 'Confirm deletion', false)
+  .action(async (id: string, opts: { confirm: boolean }) => {
+    const { deleteDataSource } = await import('./commands/data-source/delete.js');
+    await deleteDataSource(id, opts);
+  });
+
+// ── Tool subcommands ───────────────────────────────────────────────────────────
+
+const toolCmd = cli.command('tool').description('Manage and execute tools');
+
+toolCmd
+  .command('list')
+  .description('List tools (optionally scoped to one data source)')
+  .option('--data-source <id>', 'Restrict to a single data source')
+  .action(async (opts: { dataSource?: string }) => {
+    const { listTools } = await import('./commands/tool/list.js');
+    await listTools(opts);
+  });
+
+toolCmd
+  .command('exec <data-source-id> <tool-id>')
+  .description('Execute a tool against its data source')
+  .option('--args <json-or-@file>', 'Arguments JSON (inline or @file.json)')
+  .action(async (dataSourceId: string, toolId: string, opts: { args?: string }) => {
+    const { execTool } = await import('./commands/tool/exec.js');
+    await execTool(dataSourceId, toolId, opts);
   });
