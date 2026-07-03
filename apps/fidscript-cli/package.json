@@ -1,6 +1,6 @@
 {
   "name": "@fidscript/cli",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "FIDScript WhatsApp API CLI — manage instances, send messages, and more from your terminal",
   "license": "MIT",
   "author": "FIDScript <support@fidscript.com>",

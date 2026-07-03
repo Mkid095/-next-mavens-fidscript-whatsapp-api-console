@@ -5,6 +5,7 @@
  *   [default]
  *   api_key = fidscript_live_xxx
  *   jwt = eyJhbGc... (Bearer token for /api/instance / /api/platform routes)
+ *   email = user@example.com (last login email, used by fidscript refresh)
  *   base_url = https://whatsapp.fidscript.com
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
@@ -18,6 +19,7 @@ const CREDENTIALS_FILE = path.join(CREDENTIALS_DIR, 'credentials');
 export interface Credentials {
   apiKey: string;
   jwt?: string;
+  email?: string;
   baseUrl: string;
 }
 
@@ -34,6 +36,7 @@ export function loadCredentials(): Credentials | null {
     return {
       apiKey: section.api_key,
       jwt: section.jwt || undefined,
+      email: section.email || undefined,
       baseUrl: section.base_url || DEFAULT_BASE_URL,
     };
   } catch {
@@ -47,6 +50,7 @@ export function saveCredentials(creds: Credentials): void {
     default: {
       api_key: creds.apiKey,
       ...(creds.jwt ? { jwt: creds.jwt } : {}),
+      ...(creds.email ? { email: creds.email } : {}),
       base_url: creds.baseUrl,
     },
   });

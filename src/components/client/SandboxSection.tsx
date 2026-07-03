@@ -114,6 +114,7 @@ export default function SandboxSection({ clientToken, instances, tokenBalance, o
             copied={copied}
             response={response}
             responseStatus={responseStatus}
+            clientToken={clientToken}
             onExecute={handleExecute}
             onCopyCurl={handleCopyCurl}
             onMediaUpload={uploadMedia}

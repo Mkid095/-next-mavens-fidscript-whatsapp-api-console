@@ -84,7 +84,11 @@ export async function publishChatbot(id: string, opts: { watch?: boolean; draft?
   const url = `${client.configuredBaseUrl}/api/sse/publish-jobs/${encodeURIComponent(resp.jobId)}?token=${encodeURIComponent(stored.jwt)}`;
 
   let aborted = false;
+  /** Set true once we receive a jobUpdate with terminal status. */
+  let reachedTerminal = false;
+
   process.on('SIGINT', () => { aborted = true; });
+  process.on('SIGTERM', () => { aborted = true; });
 
   const sse = await openSse({
     url,
@@ -109,7 +113,6 @@ export async function publishChatbot(id: string, opts: { watch?: boolean; draft?
   });
 
   const startedAt = Date.now();
-  let reachedTerminal = false;
   const waiter = setInterval(() => {
     if (aborted) {
       sse.abort();
@@ -118,6 +121,7 @@ export async function publishChatbot(id: string, opts: { watch?: boolean; draft?
     }
     if (opts.timeout && (Date.now() - startedAt) >= opts.timeout * 1000) {
       console.error(pc.dim(`\nTimeout (${opts.timeout}s) reached. Exiting watch.`));
+      reachedTerminal = false; // explicit: exit code 2 below
       sse.abort();
       clearInterval(waiter);
     }
@@ -126,6 +130,16 @@ export async function publishChatbot(id: string, opts: { watch?: boolean; draft?
   await sse.promise;
   clearInterval(waiter);
   process.off('SIGINT', () => { aborted = true; });
+  process.off('SIGTERM', () => { aborted = true; });
 
-  if (!reachedTerminal && opts.timeout) process.exit(2);
+  /**
+   * Exit codes:
+   *   0 — job reached a terminal status (completed/failed/cancelled)
+   *   2 — --timeout fired before terminal status (or user pressed Ctrl+C)
+   * Note: a successful publish also leaves the pipeline running on the server;
+   * we don't tear it down — the worker will mark it completed eventually.
+   */
+  if (opts.timeout || aborted) {
+    if (!reachedTerminal) process.exit(2);
+  }
 }

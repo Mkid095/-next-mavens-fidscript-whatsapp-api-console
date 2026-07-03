@@ -37,6 +37,7 @@ export class ApiClient {
   private apiKey: string;
   private baseUrl: string;
   private jwt: string;
+  private email: string;
   private verbose: boolean;
 
   constructor(
@@ -52,6 +53,7 @@ export class ApiClient {
 
     this.apiKey = apiKeyOverride || envKey || stored?.apiKey || '';
     this.jwt = jwtOverride || envJwt || stored?.jwt || '';
+    this.email = stored?.email || '';
     this.baseUrl = baseUrlOverride || process.env.FIDSCRIPT_BASE_URL || stored?.baseUrl || DEFAULT_BASE_URL;
     this.verbose = verbose;
 
@@ -67,6 +69,7 @@ export class ApiClient {
     saveCredentials({
       apiKey: this.apiKey,
       jwt: this.jwt || undefined,
+      email: this.email || undefined,
       baseUrl: this.baseUrl,
     } satisfies Credentials);
   }
@@ -81,6 +84,15 @@ export class ApiClient {
   setApiKey(apiKey: string): void {
     this.apiKey = apiKey;
     this.persistCredentials();
+  }
+
+  /** Set the email used for refresh (no-op for persisted state, just in-memory) */
+  setEmail(email: string): void {
+    this.email = email;
+  }
+
+  getEmail(): string {
+    return this.email;
   }
 
   /** Headers for /api/v1/* routes (X-API-Key) */

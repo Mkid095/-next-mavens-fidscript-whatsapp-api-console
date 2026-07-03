@@ -124,6 +124,16 @@ cli
     await logout();
   });
 
+cli
+  .command('refresh')
+  .description('Re-issue the JWT (magic-code flow) using the stored email. Use when JWT expires after 24h.')
+  .option('--email <email>', 'Override the stored email')
+  .option('--code <digits>', 'Submit the code without prompting (headless)')
+  .action(async (opts: { email?: string; code?: string }) => {
+    const { refresh } = await import('./commands/refresh.js');
+    await refresh(opts);
+  });
+
 // ── Whoami ─────────────────────────────────────────────────────────────────
 
 cli
@@ -142,6 +152,15 @@ cli
   .action(async () => {
     const { tokens } = await import('./commands/tokens.js');
     await tokens();
+  });
+
+cli
+  .command('tier')
+  .alias('quota')
+  .description('Show WhatsApp tier, daily limits, current usage, and token balance')
+  .action(async () => {
+    const { tier } = await import('./commands/tier.js');
+    await tier();
   });
 
 // ── Instance subcommands ───────────────────────────────────────────────────────

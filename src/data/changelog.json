@@ -1,5 +1,5 @@
 {
-  "latest": "v0.5.0",
+  "latest": "v0.6.0",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,32 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.6.0",
+      "date": "2026-07-03",
+      "bumpType": "minor",
+      "title": "Tier command + refresh + sandbox auth gating + WhatsApp compliance audit",
+      "category": "infra",
+      "tags": [
+        "cli",
+        "tier",
+        "whatsapp",
+        "compliance"
+      ],
+      "highlights": [
+        "New fidscript tier (alias quota) command — shows WhatsApp tier (0-4), current plan, daily unique-customer cap, this-month usage, token balance, and the speed/pacing limits; works in --json and --yaml for agent use",
+        "New fidscript refresh command — re-issues the JWT using the stored email (now saved to ~/.fidscript/credentials), interactive or headless with --code; no need to re-type your email daily",
+        "Sandbox now gates /api/platform/* endpoints with a yellow JWT-required banner + disabled Execute button when clientToken is missing — users can't accidentally fire unauthenticated chatbot calls",
+        "docs/WHATSAPP_COMPLIANCE.md — full audit of every Meta rule that applies to our system (speed ceiling 80 MPS, volume tiers, prohibited content, hallucination policy, 24h session window, idempotency), with code references + verification tests",
+        "Chatbot publish --timeout hardened: SIGTERM now handled, exit-code logic explicit (0=terminal, 2=timeout), all comments documenting the new semantics"
+      ],
+      "fixes": [
+        "CLI bin script now reads version from package.json via createRequire(import.meta.url) so the require() under ESM is no longer triggered"
+      ],
+      "commits": [
+        "51523a3"
+      ]
+    },
     {
       "version": "v0.5.0",
       "date": "2026-07-03",

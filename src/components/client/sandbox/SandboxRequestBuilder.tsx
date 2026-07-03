@@ -18,6 +18,9 @@ export interface SandboxRequestBuilderProps {
   recordingAudio: boolean;
   loading: boolean;
   copied: boolean;
+  /** When true, Execute is disabled until JWT is set. */
+  requireJwt?: boolean;
+  hasJwt?: boolean;
   onExecute: () => void;
   onCopyCurl: () => void;
   onMediaUpload: (fieldKey: string) => void;
@@ -39,6 +42,8 @@ export default function SandboxRequestBuilder({
   recordingAudio,
   loading,
   copied,
+  requireJwt = false,
+  hasJwt = false,
   onExecute,
   onCopyCurl,
   onMediaUpload,
@@ -46,7 +51,7 @@ export default function SandboxRequestBuilder({
   onAddContact,
 }: SandboxRequestBuilderProps) {
   const path = endpoint.path.replace(':instanceName', instanceName || ':instance');
-  const canExecute = Boolean(instanceName) && !loading;
+  const canExecute = Boolean(instanceName) && !loading && (!requireJwt || hasJwt);
 
   return (
     <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-4 sm:p-5 shadow-sm space-y-4">
@@ -107,7 +112,7 @@ export default function SandboxRequestBuilder({
           className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed text-[#181711] text-xs font-bold rounded-xl transition-colors"
         >
           <Play className="w-4 h-4" />
-          {loading ? 'Executing…' : 'Execute Request'}
+          {loading ? 'Executing…' : (requireJwt && !hasJwt ? 'JWT required — run fidscript login' : 'Execute Request')}
         </button>
         <button
           onClick={onCopyCurl}

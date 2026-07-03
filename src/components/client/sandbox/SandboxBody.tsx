@@ -1,4 +1,4 @@
-import { Compass } from 'lucide-react';
+import { Compass, Lock } from 'lucide-react';
 import type { EndpointDef, SandboxContact, SandboxContactItem } from './types.js';
 import SandboxRequestBuilder from './SandboxRequestBuilder.js';
 import SandboxResponse from './SandboxResponse.js';
@@ -19,12 +19,19 @@ export interface SandboxBodyProps {
   copied: boolean;
   response: string | null;
   responseStatus: number | null;
+  /** Client JWT — required to run /api/platform/* endpoints. */
+  clientToken?: string;
   onExecute: () => void;
   onCopyCurl: () => void;
   onMediaUpload: (fieldKey: string) => void;
   onRecordAudio: () => void;
   onAddContact: () => void;
   onCloseResponse: () => void;
+}
+
+/** True when the endpoint path starts with /api/platform/ — those need JWT. */
+function requiresJwt(ep: EndpointDef | null): boolean {
+  return !!ep && ep.path.startsWith('/api/platform');
 }
 
 export default function SandboxBody(props: SandboxBodyProps) {
@@ -38,8 +45,22 @@ export default function SandboxBody(props: SandboxBodyProps) {
     );
   }
 
+  const needsJwt = requiresJwt(props.selectedEndpoint);
+  const hasJwt = Boolean(props.clientToken);
+
   return (
     <>
+      {needsJwt && !hasJwt && (
+        <div className="flex items-start gap-2 p-3 bg-amber-900/30 border border-amber-900/50 rounded-xl text-[11px] text-amber-200">
+          <Lock className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <strong>JWT auth required.</strong> This <code className="font-mono">/api/platform/</code> endpoint
+            needs the Bearer JWT from <code className="font-mono">fidscript login</code>. The Copy cURL button
+            still works for pasting into a shell where you've already authenticated.
+          </div>
+        </div>
+      )}
+
       <SandboxRequestBuilder
         endpoint={props.selectedEndpoint}
         instanceName={props.instanceName}
@@ -54,6 +75,9 @@ export default function SandboxBody(props: SandboxBodyProps) {
         recordingAudio={props.recordingAudio}
         loading={props.loading}
         copied={props.copied}
+        /** Disable Execute when JWT is required but missing. */
+        requireJwt={needsJwt}
+        hasJwt={hasJwt}
         onExecute={props.onExecute}
         onCopyCurl={props.onCopyCurl}
         onMediaUpload={props.onMediaUpload}
