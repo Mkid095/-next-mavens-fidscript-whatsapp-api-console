@@ -1,0 +1,73 @@
+{
+  "latest": "v0.4.0",
+  "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
+  "entries": [
+    {
+      "version": "v0.4.0",
+      "date": "2026-07-03",
+      "title": "BYO LLM, chatbot admin, sandbox tests, CLI 1.0, published SDK",
+      "highlights": [
+        "Published `@fidscript/sdk` to npm — TypeScript SDK with typed wrappers for all 10 message types, chatbots, LLM connections, and an escape hatch for every other endpoint.",
+        "Comprehensive `@fidscript/cli` — 24 typed subcommands covering auth, instance lifecycle, all 10 message types, full chatbot CRUD + AI config, BYO LLM management, SSE event streaming, and a generic `api` escape hatch. Headless by design (`--json`/`--yaml`/`--quiet`/`--code`).",
+        "Sandbox now exposes a Chatbot category alongside Messaging/Instance/Groups/Chats/Profile/Settings so developers can experiment with `POST /api/platform/chatbots`, AI config, and publish pipeline.",
+        "Admin dashboard: new LLM Connections view + Chatbots view for workspace admins — see all configured providers, model inventories, response-type breakdowns, and trigger configurations across every workspace.",
+        "API reference: chatbot endpoints surfaced in the public `/docs` page and the in-app Docs panel. 28 `/api/platform/chatbots/*` and 6 `/api/platform/llm-connections/*` endpoints now documented.",
+        "Bring-Your-Own-LLM guide on `/docs` — full 6-step walkthrough (list providers → create connection → test → wire to chatbot → tune generation → failover chains).",
+        "WhatsApp Meta Policy compliance guide on `/docs` — speed + volume ceilings, tier limits (250→∞), prohibited content list, FIDScript enforcement, system-prompt best practices, handoff triggers.",
+        "CLI comprehensive docs (`docs/CLI.md`) — 1500+ line scenario-driven guide covering sign-up, automation, CI integration, agent orchestration, troubleshooting, and full env-var / exit-code references.",
+        "Changelog system — every deploy now appends a timestamped, version-tagged entry to `src/data/changelog.json`. Public `/changelog` page renders it with categorized sections, dates, and links to commits.",
+        "Removed the (nonexistent) `pip install fidscript-api` lines from public docs — Python is no longer a claimed integration path; use `@fidscript/sdk` or direct HTTP."
+      ],
+      "fixes": [
+        "Dark-mode conversion applied to 4 client pages (Settings, TokenStore + 7 subfiles, EndpointSidebar, EndpointDetail, ApiConsoleView, AdminApiConsole) and the 13 sandbox subfiles — same canonical palette (`#1a1915` / `#2d2813` / `#eab308`).",
+        "CLI `--timeout` flag wired for `instance watch` and `chatbot publish --watch` — exits 2 on timeout-without-terminal-state.",
+        "CLI `--confirm` flag auto-set in `--json`/`--yaml` mode for destructive commands (`instance delete`, `instance restart`, `chatbot delete`) — agents don't need to remember the flag.",
+        "CLI errors print JSON envelope on stdout (`{success:false, error:{code, message, status_code?}}`) whenever `--json` is set, making `fidscript … | jq` reliable."
+      ],
+      "commits": ["42133ea"]
+    },
+    {
+      "version": "v0.3.0",
+      "date": "2026-06-20",
+      "title": "Stable /api/v1 public API + 48 endpoints documented",
+      "highlights": [
+        "Public `/api/v1` namespace finalized — 48 endpoints across messaging, groups, chats, profile, settings, instance, providers, usage, health.",
+        "OpenAPI 3.1 spec auto-generated from `src/data/apiEndpoints/index.ts`. Published at `GET /api/v1/openapi.json` and `.yaml`.",
+        "Per-client send-tier rate limiter with idempotency-key support (`Idempotency-Key` header).",
+        "WhatsApp quality-rating volume tiers (250 → 1k → 10k → 100k → ∞)."
+      ],
+      "fixes": [],
+      "commits": ["4cbc81a"]
+    },
+    {
+      "version": "v0.2.0",
+      "date": "2026-06-05",
+      "title": "Chatbot engine + contact identity layer",
+      "highlights": [
+        "Chatbot engine with trigger / response-rule / handoff-rule pipelines.",
+        "Canonical contact identity layer (`contact_identifiers` + `contact_sources`).",
+        "Per-group chatbot routing via `chatbot_group_settings.respond_mode`.",
+        "Handoff conditions evaluator wired (was a long-standing TODO)."
+      ],
+      "fixes": [
+        "Group bot routing no longer drops `group_jid`.",
+        "chatbot-worker container added to docker-compose (was missing from prod).",
+        "JWT_SECRET consistency across 4 backend files (no divergent fallbacks)."
+      ],
+      "commits": ["90c7b9b"]
+    },
+    {
+      "version": "v0.1.0",
+      "date": "2026-05-12",
+      "title": "Initial release — WhatsApp Business API + WhatsApp-instance + client portal",
+      "highlights": [
+        "WhatsApp Business API via Evolution API gateway: 10 message types, groups, chats, profile, settings, instance lifecycle.",
+        "Client portal: token balance, WhatsApp instances, API keys, sandbox, chatbots.",
+        "Admin portal: clients, plans, instances, messages, logs, analytics.",
+        "Magic-code sign-in for clients and admins. Bcrypt-hashed API keys."
+      ],
+      "fixes": [],
+      "commits": ["98015cf"]
+    }
+  ]
+}

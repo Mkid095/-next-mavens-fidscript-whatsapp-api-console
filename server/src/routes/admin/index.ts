@@ -5,3 +5,4 @@ export { default as messagesRouter } from './messages.js';
 export { default as maintenanceRouter } from './maintenance.js';
 export { default as webhookTestRouter } from './webhookTest.js';
 export { default as llmProvidersRouter } from './llmProviders.js';
+export { default as chatbotAnalyticsRouter } from './chatbotAnalytics.js';

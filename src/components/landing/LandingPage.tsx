@@ -119,8 +119,8 @@ export default function LandingPage() {
                 <div className="text-xs md:text-sm text-[#85826f]">Messages Sent</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-yellow-500 mb-1">{stats.deliveryRate}%</div>
-                <div className="text-xs md:text-sm text-[#85826f]">Delivery Rate</div>
+                <div className="text-2xl md:text-3xl font-bold text-yellow-500 mb-1">10</div>
+                <div className="text-xs md:text-sm text-[#85826f]">Message Types</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stats.uptime}</div>

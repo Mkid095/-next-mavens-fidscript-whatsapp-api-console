@@ -84,14 +84,23 @@ export function toSandboxEndpoint(ep: ApiEndpoint): EndpointDef {
   };
 }
 
-/** Derive category groups from the live registry, filtered to /api/v1. */
+/** Derive category groups from the live registry.
+ *  Includes /api/v1/* (API key auth) AND /api/platform/{chatbots,llm-connections}/* (JWT auth).
+ */
 export const ENDPOINT_GROUPS: CategoryGroup[] = API_CATEGORIES
   .filter(cat => cat.name !== 'Receiving')
   .map(cat => ({
     name: cat.name,
     icon: cat.icon,
     endpoints: API_ENDPOINTS
-      .filter((ep: ApiEndpoint) => ep.category === cat.name && ep.path.startsWith('/api/v1'))
+      .filter((ep: ApiEndpoint) => {
+        if (cat.name === 'Chatbots' || cat.name === 'AI Providers') {
+          // Platform endpoints (JWT auth)
+          return ep.category === cat.name && ep.path.startsWith('/api/platform');
+        }
+        // Public v1 endpoints (API key auth)
+        return ep.category === cat.name && ep.path.startsWith('/api/v1');
+      })
       .map((ep: ApiEndpoint) => toSandboxEndpoint(ep)),
   }))
   .filter(g => g.endpoints.length > 0);

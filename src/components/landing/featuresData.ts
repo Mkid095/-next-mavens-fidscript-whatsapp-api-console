@@ -1,4 +1,4 @@
-import { Zap, QrCode, Webhook, BarChart3, Users, Bot } from 'lucide-react';
+import { Zap, QrCode, Webhook, BarChart3, Users, Bot, Terminal, Key, Cpu, ShieldCheck } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 export interface Feature {
@@ -74,25 +74,102 @@ GET /api/instance/connect/my-instance
 GET /api/v1/usage
 // Returns message counts, delivery rates, and daily breakdowns`,
   },
+  {
+    icon: Terminal,
+    title: 'One-line CLI',
+    description: 'Install with one curl. Manage instances, send all 10 message types, build and publish chatbots, and stream live events — from any shell, cron job, or AI agent.',
+    code: `# Install
+curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh
+
+# Sign in (magic-code email)
+fidscript login --email you@example.com
+
+# Create instance + scan QR
+fidscript instance create my-bot
+fidscript instance qr my-bot
+
+# Send any of the 10 message types
+fidscript send text my-bot --to +254700000000 --text "Hello!"
+
+# Watch live state via SSE
+fidscript instance watch my-bot`,
+  },
+  {
+    icon: Key,
+    title: 'Open npm SDK',
+    description: 'Official TypeScript SDK on npm. Type-safe wrappers for every endpoint, retry logic, and a clean DX — for Node 18+ services and AI agents.',
+    code: `npm install @fidscript/sdk
+
+import { Fidscript } from '@fidscript/sdk';
+
+const fs = new Fidscript({ apiKey: process.env.FIDSCRIPT_API_KEY });
+await fs.sends.text('my-bot', {
+  number: '+254700000000',
+  message: 'Hello from the SDK!',
+});
+
+// Logged-in flow (chatbots, BYO LLM):
+await fs.auth.requestCode('me@example.com');
+await fs.auth.verifyCode('me@example.com', '123456');
+await fs.chatbots.list();`,
+  },
+  {
+    icon: Cpu,
+    title: 'Bring Your Own LLM',
+    description: 'Connect any OpenAI-compatible endpoint — OpenAI, Anthropic, Gemini, OpenRouter, Ollama, vLLM, Azure — with your API key. Encrypted at rest, failover chains supported.',
+    code: `# Register your own connection
+fidscript llm create openai-prod \\
+  --provider openai \\
+  --model gpt-4o-mini \\
+  --api-key "$OPENAI_API_KEY" \\
+  --default
+
+# Self-hosted Ollama
+fidscript llm create ollama \\
+  --provider custom \\
+  --model llama3.1 \\
+  --endpoint http://localhost:11434
+
+# Attach to a chatbot
+fidscript chatbot ai-config <bot-id> \\
+  --llm-connection llmc_abc \\
+  --hallucination-policy strict`,
+  },
+  {
+    icon: ShieldCheck,
+    title: 'WhatsApp Meta-Compliant',
+    description: 'Paced through tier limits (250→∞ unique customers/day), hallucination policy modes, confidence-threshold handoff, and 24h session windows. Your account stays in good standing.',
+    code: `// Bot auto-hands-off when confidence is low
+{
+  "policies": {
+    "confidence_threshold": 0.7,
+    "fallback_reply": "Let me connect you with a human."
+  },
+  "hallucination_policy": "strict"
+}
+
+// Tier-aware send pacing handled server-side
+// Daily unique-customer cap enforced per workspace`,
+  },
 ];
 
 export const howItWorksSteps: HowItWorksStep[] = [
   {
     step: '01',
-    title: 'Create an Account',
-    description: 'Sign up and choose a plan that fits your business needs. Start with a free trial.',
+    title: 'Sign up + sign in',
+    description: 'Free account, no credit card. Magic-code email sign-in, or use the CLI for headless onboarding.',
     icon: Users,
   },
   {
     step: '02',
-    title: 'Connect via QR Code',
-    description: 'Link your WhatsApp number by scanning a QR code. No technical knowledge required.',
+    title: 'Connect your number',
+    description: 'Run fidscript instance create + scan a QR with WhatsApp. Or link multiple numbers for multi-region operations.',
     icon: QrCode,
   },
   {
     step: '03',
-    title: 'Build AI Chatbots or Send Messages',
-    description: 'Create AI-powered chatbots or send messages via our REST API. Full documentation and SDK support.',
+    title: 'Build, send, automate',
+    description: 'Use the CLI, SDK, REST API, or sandbox. Build BYO-LLM chatbots, send any of 10 message types, stream live events into your CRM.',
     icon: Bot,
   },
 ];
