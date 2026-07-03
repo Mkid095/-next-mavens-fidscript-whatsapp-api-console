@@ -1091,4 +1091,44 @@ node --version
 
 ---
 
+## 20. Semver + changelog discipline
+
+Every change visible to a user lands in `src/data/changelog.json` and bumps the version. The discipline:
+
+| Bump type | When | CLI flag |
+|---|---|---|
+| **PATCH** (`v0.4.0 → v0.4.1`) | Bug fixes, small UI tweaks, perf improvements, dark-mode fixes, copy edits | `BUMP_TYPE=patch bash scripts/update-changelog.sh` |
+| **MINOR** (`v0.4.x → v0.5.0`) | New features, new endpoints, new CLI subcommands, new guides — anything that doesn't break the API contract | `BUMP_TYPE=minor bash scripts/update-changelog.sh` |
+| **MAJOR** (`v0.x.y → v1.0.0`) | Breaking API changes, auth-model changes, schema redesigns | `BUMP_TYPE=major bash scripts/update-changelog.sh` |
+
+If a commit changes user-facing files (`src/`, `server/`, `apps/`, `sdks/`) without bumping the changelog, **`bash scripts/check-version-bump.sh` exits 1** and `bash deploy.sh` aborts.
+
+### Auto-bump workflow
+
+```bash
+# Made some user-facing changes? Bump first, then commit:
+BUMP_TYPE=minor  bash scripts/update-changelog.sh
+# Opens the new entry in your $EDITOR with HIGHLIGHTS/FIXES/TAGS env vars
+# already pre-filled from your commit message.
+
+# Then:
+git add src/data/changelog.json
+git commit -m "feat: your feature here"
+git push origin main
+bash deploy.sh
+```
+
+### For AI agents
+
+Every time you (an AI agent) make a change the user can see, you **must** append to `src/data/changelog.json` before committing. Run:
+
+```bash
+# after editing code, before git commit:
+bash scripts/check-version-bump.sh HEAD
+```
+
+If it exits non-zero, your commit would be rejected by CI. Run `BUMP_TYPE=... bash scripts/update-changelog.sh` first.
+
+---
+
 *This document lives at `docs/CLI.md` in the repo. If you spot something wrong, edit and PR — it's the single source of truth for the CLI's behavior.*

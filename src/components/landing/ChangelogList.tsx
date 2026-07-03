@@ -9,8 +9,9 @@
  * commits, version badges, and the latest-marker dot.
  */
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Sparkles, Wrench, GitCommit, Github } from 'lucide-react';
+import { Sparkles, Wrench, GitCommit, Github, ArrowRight } from 'lucide-react';
 import changelogData from '../../data/changelog.json';
 
 interface ChangelogEntry {
@@ -97,6 +98,19 @@ export function ChangelogList({ limit }: ChangelogListProps) {
                     <span className="text-[10px] uppercase font-bold tracking-wider text-[#6a6c5d] bg-[#1a1910] border border-[#262413] px-2 py-0.5 rounded-full">
                       {formatLongDate(entry.date)}
                     </span>
+                    {entry.bumpType && (
+                      <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-mono ${
+                        entry.bumpType === 'major' ? 'bg-red-900/40 text-red-300 border border-red-900/50'
+                        : entry.bumpType === 'minor' ? 'bg-yellow-900/40 text-yellow-300 border border-yellow-900/50'
+                        : 'bg-green-900/40 text-green-300 border border-green-900/50'
+                      }`}>{entry.bumpType}</span>
+                    )}
+                    <Link
+                      to={`/changelog/${encodeURIComponent(entry.version)}`}
+                      className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#8a886a] hover:text-yellow-500 transition-colors"
+                    >
+                      details <ArrowRight className="w-3 h-3" />
+                    </Link>
                   </div>
                   <span className="text-[10px] text-[#5a554a] shrink-0" title={entry.date}>
                     {timeAgo(entry.date)}

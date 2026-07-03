@@ -100,6 +100,28 @@ check_prerequisites() {
 }
 
 # =============================================================================
+# Changelog discipline — fail early if a commit landed without a bump
+# =============================================================================
+
+check_changelog_bump() {
+    if [ -f "scripts/check-version-bump.sh" ]; then
+        local last_commit
+        last_commit=$(get_last_deploy_commit 2>/dev/null || echo "")
+        local range="HEAD~1..HEAD"
+        if [ -n "${last_commit}" ]; then
+            range="${last_commit}..HEAD"
+        fi
+        if ! bash scripts/check-version-bump.sh "${range}" 2>&1; then
+            log_error "Changelog bump missing for this deploy."
+            log_error "Fix with:  bash scripts/update-changelog.sh"
+            log_error "(or set BUMP_TYPE=minor|major for non-patch releases)"
+            exit 1
+        fi
+        log_info "Changelog discipline OK for ${range}."
+    fi
+}
+
+# =============================================================================
 # Git Operations
 # =============================================================================
 
@@ -517,6 +539,7 @@ main() {
 
     check_prerequisites
     git_pull
+    check_changelog_bump
     ensure_versions_table
 
     local change_type

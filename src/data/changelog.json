@@ -1,11 +1,51 @@
 {
-  "latest": "v0.4.0",
+  "latest": "v0.4.1",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
+  "notes": {
+    "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
+    "how_to_update": "Run `scripts/update-changelog.sh` from the repo root after committing your changes. The script reads your last commit message and stamps the new entry into this file. Set BUMP_TYPE=major|minor|patch to control the version (default: patch).",
+    "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
+  },
   "entries": [
+    {
+      "version": "v0.4.1",
+      "date": "2026-07-03",
+      "bumpType": "patch",
+      "title": "Per-version pages + semver discipline + agent reminder",
+      "category": "release",
+      "tags": [
+        "changelog",
+        "docs"
+      ],
+      "highlights": [
+        "New /changelog/:version route — each release gets its own URL (e.g. /changelog/v0.4.0) with prev/next navigation",
+        "Sticky version sidebar on the main /changelog page shows the full release list with bump-type badges (major/minor/patch)",
+        "Semver discipline in scripts/update-changelog.sh — defaults to patch bump (v0.4.0 → v0.4.1), accepts BUMP_TYPE=major|minor|patch env var, computes the next version automatically",
+        "New scripts/check-version-bump.sh — fails CI when a commit changes user-facing files (src/, server/, apps/, sdks/) without updating src/data/changelog.json",
+        "Changelog schema enriched with bumpType + tags + category fields for every entry"
+      ],
+      "fixes": [
+        "DocsPage 'Changelog' tab no longer shows stale June-2026 placeholder — routes through the shared ChangelogList component"
+      ],
+      "commits": [
+        "0c63834"
+      ]
+    },
     {
       "version": "v0.4.0",
       "date": "2026-07-03",
+      "bumpType": "minor",
       "title": "BYO LLM, chatbot admin, sandbox tests, CLI 1.0, published SDK",
+      "category": "release",
+      "tags": [
+        "cli",
+        "sdk",
+        "byo-llm",
+        "admin",
+        "sandbox",
+        "landing",
+        "docs"
+      ],
       "highlights": [
         "Published `@fidscript/sdk` to npm — TypeScript SDK with typed wrappers for all 10 message types, chatbots, LLM connections, and an escape hatch for every other endpoint.",
         "Comprehensive `@fidscript/cli` — 24 typed subcommands covering auth, instance lifecycle, all 10 message types, full chatbot CRUD + AI config, BYO LLM management, SSE event streaming, and a generic `api` escape hatch. Headless by design (`--json`/`--yaml`/`--quiet`/`--code`).",
@@ -16,6 +56,7 @@
         "WhatsApp Meta Policy compliance guide on `/docs` — speed + volume ceilings, tier limits (250→∞), prohibited content list, FIDScript enforcement, system-prompt best practices, handoff triggers.",
         "CLI comprehensive docs (`docs/CLI.md`) — 1500+ line scenario-driven guide covering sign-up, automation, CI integration, agent orchestration, troubleshooting, and full env-var / exit-code references.",
         "Changelog system — every deploy now appends a timestamped, version-tagged entry to `src/data/changelog.json`. Public `/changelog` page renders it with categorized sections, dates, and links to commits.",
+        "Per-version pages — `/changelog/:version` (e.g. `/changelog/v0.4.0`) shows one release in full detail. Sidebar with version list filters the timeline.",
         "Removed the (nonexistent) `pip install fidscript-api` lines from public docs — Python is no longer a claimed integration path; use `@fidscript/sdk` or direct HTTP."
       ],
       "fixes": [
@@ -24,12 +65,24 @@
         "CLI `--confirm` flag auto-set in `--json`/`--yaml` mode for destructive commands (`instance delete`, `instance restart`, `chatbot delete`) — agents don't need to remember the flag.",
         "CLI errors print JSON envelope on stdout (`{success:false, error:{code, message, status_code?}}`) whenever `--json` is set, making `fidscript … | jq` reliable."
       ],
-      "commits": ["42133ea"]
+      "commits": [
+        "42133ea",
+        "2fdfbd7",
+        "0c63834"
+      ]
     },
     {
       "version": "v0.3.0",
       "date": "2026-06-20",
+      "bumpType": "minor",
       "title": "Stable /api/v1 public API + 48 endpoints documented",
+      "category": "release",
+      "tags": [
+        "api",
+        "openapi",
+        "rate-limiting",
+        "idempotency"
+      ],
       "highlights": [
         "Public `/api/v1` namespace finalized — 48 endpoints across messaging, groups, chats, profile, settings, instance, providers, usage, health.",
         "OpenAPI 3.1 spec auto-generated from `src/data/apiEndpoints/index.ts`. Published at `GET /api/v1/openapi.json` and `.yaml`.",
@@ -37,12 +90,22 @@
         "WhatsApp quality-rating volume tiers (250 → 1k → 10k → 100k → ∞)."
       ],
       "fixes": [],
-      "commits": ["4cbc81a"]
+      "commits": [
+        "4cbc81a"
+      ]
     },
     {
       "version": "v0.2.0",
       "date": "2026-06-05",
+      "bumpType": "minor",
       "title": "Chatbot engine + contact identity layer",
+      "category": "release",
+      "tags": [
+        "chatbot",
+        "contacts",
+        "groups",
+        "handoff"
+      ],
       "highlights": [
         "Chatbot engine with trigger / response-rule / handoff-rule pipelines.",
         "Canonical contact identity layer (`contact_identifiers` + `contact_sources`).",
@@ -54,12 +117,22 @@
         "chatbot-worker container added to docker-compose (was missing from prod).",
         "JWT_SECRET consistency across 4 backend files (no divergent fallbacks)."
       ],
-      "commits": ["90c7b9b"]
+      "commits": [
+        "90c7b9b"
+      ]
     },
     {
       "version": "v0.1.0",
       "date": "2026-05-12",
+      "bumpType": "minor",
       "title": "Initial release — WhatsApp Business API + WhatsApp-instance + client portal",
+      "category": "release",
+      "tags": [
+        "api",
+        "client-portal",
+        "admin",
+        "auth"
+      ],
       "highlights": [
         "WhatsApp Business API via Evolution API gateway: 10 message types, groups, chats, profile, settings, instance lifecycle.",
         "Client portal: token balance, WhatsApp instances, API keys, sandbox, chatbots.",
@@ -67,7 +140,9 @@
         "Magic-code sign-in for clients and admins. Bcrypt-hashed API keys."
       ],
       "fixes": [],
-      "commits": ["98015cf"]
+      "commits": [
+        "98015cf"
+      ]
     }
   ]
 }

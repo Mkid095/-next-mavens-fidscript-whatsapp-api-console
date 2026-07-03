@@ -16,6 +16,7 @@ import FeaturesPage from './components/landing/FeaturesPage';
 import PricingPage from './components/landing/PricingPage';
 import DocsPage from './components/landing/DocsPage';
 import ChangelogPage from './components/landing/ChangelogPage';
+import ChangelogVersionPage from './components/landing/ChangelogVersionPage';
 import ContactPage from './components/landing/ContactPage';
 import { AdminRoutes } from './components/admin/adminRoutes';
 import { ClientRoutes } from './components/client/clientRoutes';
@@ -228,6 +229,7 @@ function AppContent() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/changelog" element={<ChangelogPage />} />
+        <Route path="/changelog/:version" element={<ChangelogVersionPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} />} />
         <Route path="/register" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} initialMode="register" />} />
