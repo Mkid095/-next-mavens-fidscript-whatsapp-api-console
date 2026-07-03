@@ -58,13 +58,16 @@ if [ "$EXISTING_LATEST" = "$NEXT" ]; then
   exit 0
 fi
 
-# Confirm with the caller (skip when run non-interactively with --yes)
+# Confirm with the caller (skip when run non-interactively with --yes / YES=1)
 if [ -t 0 ] && [ "${YES:-}" != "1" ]; then
   echo ""
   echo "  Current:  $EXISTING_LATEST"
   echo "  Bump:     $BUMP_TYPE"
   echo "  Next:     $NEXT"
   echo "  Title:    $TITLE"
+  echo "  Highlights: ${HIGHLIGHTS:-<none>}"
+  echo "  Fixes:      ${FIXES:-<none>}"
+  echo "  Tags:        ${TAGS:-<none>}"
   echo ""
   read -p "  Append $NEXT to changelog.json? [y/N] " ans
   case "$ans" in y|Y|yes|YES) ;; *) echo "Aborted."; exit 1 ;; esac
@@ -75,11 +78,26 @@ node - <<EOF
 const fs = require('fs');
 const path = '$CHANGELOG';
 const data = JSON.parse(fs.readFileSync(path, 'utf8'));
-const title = process.env.TITLE || '$NEXT release';
+const title = process.env.TITLE || '';
 const highlights = (process.env.HIGHLIGHTS || '').split(';;').map(s => s.trim()).filter(Boolean);
 const fixes = (process.env.FIXES || '').split(';;').map(s => s.trim()).filter(Boolean);
 const tags = (process.env.TAGS || '').split(',').map(s => s.trim()).filter(Boolean);
 const commits = (process.env.COMMIT_HASH || '$COMMIT').split(';;').map(s => s.trim()).filter(Boolean);
+
+// Validate — refuse to write a near-empty entry
+const errors = [];
+if (!title) errors.push('TITLE env var is required (e.g. TITLE="New feature X").');
+if (!highlights.length && !fixes.length) errors.push('At least one of HIGHLIGHTS or FIXES must be provided (use ;;; as separator).');
+if (errors.length) {
+  for (const e of errors) console.error('  •', e);
+  console.error('\\nExample:');
+  console.error('  TITLE="New endpoint" \\\\');
+  console.error('    HIGHLIGHTS="Added POST /api/v1/groups/create;;Fixed pagination" \\\\');
+  console.error('    FIXES="" \\\\');
+  console.error('    TAGS="groups,api" \\\\');
+  console.error('    BUMP_TYPE=minor bash scripts/update-changelog.sh');
+  process.exit(1);
+}
 
 const entry = {
   version: '$NEXT',
@@ -88,7 +106,7 @@ const entry = {
   title,
   category: process.env.CATEGORY || 'release',
   tags,
-  highlights: highlights.length ? highlights : ['Auto-generated entry — add highlights via HIGHLIGHTS=…'],
+  highlights,
   fixes,
   commits,
 };
