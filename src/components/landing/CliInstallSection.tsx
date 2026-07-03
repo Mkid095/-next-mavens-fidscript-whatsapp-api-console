@@ -43,7 +43,7 @@ const QUICKSTART: QuickstartItem[] = [
 ];
 
 export function CliInstallSection(): React.ReactElement {
-  const installCmd = 'curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh';
+  const installCmd = '# Recommended (Node 18+, picks the latest stable):\nnpm install -g @fidscript/cli\nfidscript --version\n\n# Or the SDK — the CLI is bundled as a dependency:\nnpm install @fidscript/sdk\n# → ./node_modules/.bin/fidscript is ready to use\n\n# Or the one-liner bootstrap (auto-installs Node if missing):\ncurl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh';
 
   return (
     <section className="bg-[#0c0b06] py-16 md:py-24 px-4 sm:px-6 lg:px-8">

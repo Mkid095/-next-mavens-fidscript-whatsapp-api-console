@@ -53,6 +53,12 @@ if command -v fidscript >/dev/null 2>&1; then
     echo "Get started:"
     echo "  FIDSCRIPT_API_KEY=fidscript_live_xxx fidscript whoami"
     echo "  fidscript --help"
+    echo ""
+    echo "Or skip the env var and use the official SDK (bundles the CLI):"
+    echo "  npm install @fidscript/sdk"
+    echo "  ls node_modules/.bin/fidscript"
+    echo ""
+    echo "For the full TypeScript SDK, see https://www.npmjs.com/package/@fidscript/sdk"
 else
     echo "Installation complete but 'fidscript' command not found."
     echo "You may need to reload your PATH, or run: source ~/.bashrc"

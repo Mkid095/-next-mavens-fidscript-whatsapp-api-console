@@ -5,6 +5,7 @@ import { Command } from 'commander';
 import pc from 'picocolors';
 import { DEFAULT_BASE_URL } from './lib/credentials.js';
 import { flags } from './lib/api-client.js';
+import { CLI_VERSION } from './version.js';
 
 function applyColor(s: string): string {
   return flags.noColor ? s : s;
@@ -27,7 +28,7 @@ cli
       `  ${pc.dim('Install:')} ${pc.cyan('curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh')}`
     )
   )
-  .version('1.0.0', '-v, --version', 'Show CLI version')
+  .version(CLI_VERSION, '-v, --version', 'Show CLI version')
   .helpOption('-h, --help', 'Show this help message')
   .option('--api-key <key>', 'FIDScript API key (or set FIDSCRIPT_API_KEY env var)')
   .option('--base-url <url>', 'FIDScript API base URL', DEFAULT_BASE_URL)

@@ -1,7 +1,7 @@
 {
   "name": "@fidscript/sdk",
-  "version": "0.1.0",
-  "description": "Official Node.js / TypeScript SDK for the FIDScript WhatsApp Business API. Type-safe wrappers for every /api/v1 and /api/platform endpoint.",
+  "version": "0.1.2",
+  "description": "Official Node.js / TypeScript SDK for the FIDScript WhatsApp Business API. Type-safe wrappers for every /api/v1 and /api/platform endpoint. Bundles the fidscript CLI as a peer dependency for agent / shell use.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -11,6 +11,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "bin": {
+    "fidscript": "./node_modules/@fidscript/cli/dist/main.js"
   },
   "files": [
     "dist",
@@ -40,5 +43,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "dependencies": {
+    "@fidscript/cli": "^1.0.4"
+  }
 }

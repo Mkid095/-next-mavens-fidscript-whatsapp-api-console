@@ -47,20 +47,34 @@ There is also a published npm SDK at `@fidscript/sdk` for Node.js / TypeScript. 
 
 ## 2. Install
 
-### One-liner (macOS / Linux)
+There are three install paths — pick whichever fits your workflow.
+
+### A. npm (recommended)
+
+```bash
+npm install -g @fidscript/cli
+fidscript --version
+```
+
+The CLI is published as `@fidscript/cli` on npm. `npm install -g` puts the `fidscript` binary on your PATH.
+
+### B. Through the SDK
+
+```bash
+npm install @fidscript/sdk
+# The CLI is bundled as a regular dependency. The fidscript binary is at:
+./node_modules/.bin/fidscript
+```
+
+Use this when you're already using the SDK in a Node project and want a single `npm install` to set up both the programmatic API and the shell command.
+
+### C. One-liner bootstrap
 
 ```bash
 curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh
 ```
 
-The installer auto-installs Node.js 18+ if you don't have it, then runs `npm install -g @fidscript/cli`. After it finishes, `fidscript --version` should print something like `1.0.0`.
-
-### Manual install
-
-```bash
-# Requires Node 18+
-npm install -g @fidscript/cli
-```
+Auto-installs Node.js 18+ if you don't have it, then runs `npm install -g @fidscript/cli`. Use this if you have nothing installed yet.
 
 ### Verify
 

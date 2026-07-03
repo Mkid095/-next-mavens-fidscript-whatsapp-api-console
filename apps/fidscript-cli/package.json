@@ -1,6 +1,6 @@
 {
   "name": "@fidscript/cli",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "FIDScript WhatsApp API CLI — manage instances, send messages, and more from your terminal",
   "license": "MIT",
   "author": "FIDScript <support@fidscript.com>",
@@ -17,7 +17,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/main.js",
     "dev": "tsc --watch"
   },
   "dependencies": {

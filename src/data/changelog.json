@@ -1,5 +1,5 @@
 {
-  "latest": "v0.4.1",
+  "latest": "v0.5.0",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,30 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.5.0",
+      "date": "2026-07-03",
+      "bumpType": "minor",
+      "title": "@fidscript/cli on npm — SDK bundles the CLI; new npm install paths",
+      "category": "infra",
+      "tags": [
+        "cli",
+        "sdk",
+        "npm",
+        "install"
+      ],
+      "highlights": [
+        "Published @fidscript/cli to npm (v1.0.4) — install with: npm install -g @fidscript/cli",
+        "@fidscript/sdk now depends on @fidscript/cli — npm install @fidscript/sdk auto-pulls the fidscript binary to node_modules/.bin/",
+        "New install path docs in landing/CliInstallSection + docs/CLI.md covering npm (recommended), SDK-bundled, and the existing curl one-liner"
+      ],
+      "fixes": [
+        "CLI was crashing at startup under ESM because require() isn't allowed in module scope — replaced with createRequire(import.meta.url) in src/version.ts so version() works when installed as a dependency"
+      ],
+      "commits": [
+        "9c4c841"
+      ]
+    },
     {
       "version": "v0.4.1",
       "date": "2026-07-03",
