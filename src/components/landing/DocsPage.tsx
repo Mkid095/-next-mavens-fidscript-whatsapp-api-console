@@ -9,6 +9,7 @@ import {
 import SeoHead from '../shared/SeoHead';
 import { CopyButton } from '../shared/CopyButton.js';
 import { DocsCodeBlock } from '../shared/DocsCodeBlock.js';
+import { ChangelogList } from './ChangelogList.js';
 import { API_ENDPOINTS, API_CATEGORIES, PUBLIC_API_BASE } from '../../data/apiEndpoints/index.js';
 import type { ApiEndpoint, BodyField } from '../../data/apiEndpoints/index.js';
 
@@ -1473,8 +1474,11 @@ export default function DocsPage() {
           {activeTab === 'changelog' && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
               <h1 className="text-3xl font-bold text-white mb-2">Changelog</h1>
-              <p className="text-sm text-[#8a6c5d] mb-8">What's new in FIDScript.</p>
-              <Callout type="info"><p><strong className="text-white">June 2026</strong> — Initial public launch. WhatsApp API gateway, token billing via M-Pesa, and full REST API reference.</p></Callout>
+              <p className="text-sm text-[#8a886a] mb-8">
+                Every update shipped to FIDScript — new endpoints, BYO-LLM guides, CLI subcommands,
+                dark-mode fixes. One entry per release.
+              </p>
+              <ChangelogList />
             </motion.div>
           )}
         </main>
