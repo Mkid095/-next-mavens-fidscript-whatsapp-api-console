@@ -18,6 +18,7 @@ import type { LLMMessage } from './adapters/types.js';
 import { LLMGateway } from './llmGateway.js';
 import db from '../../database.js';
 import { executeTool } from './toolRunner.js';
+import { rankTools } from './toolRanker.js';
 
 const MAX_TOOL_ITERATIONS = 5;
 
@@ -81,18 +82,35 @@ export function buildToolSystemPrompt(tools: ChatbotTool[]): string {
   }).join('\n\n');
 
   return `
+## CRITICAL: Data-First Rule
+
+You have access to real-time business tools. When a user asks about ANYTHING that could
+exist in their system — products, inventory, pricing, customer details, orders, payments,
+appointments, stock levels, account status — you MUST call the relevant tool FIRST.
+
+NEVER guess or fabricate:
+- Product prices, stock levels, or availability
+- Customer names, tiers, or account details
+- Order status, tracking, or history
+- Payment status or amounts
+- Any data that comes from the business's database
+
+If a tool returns null, empty, or "not found", tell the user honestly:
+"I couldn't find that in our system" — do NOT make up an answer.
+
+Only use your own knowledge for general questions (greetings, how-to, policies, opinions)
+that don't depend on real-time business data.
+
 ## Tools Available
 
-You have access to the following tools. Use them when the user asks for data you don't know
-(e.g. product details, customer info, order status). Call a tool by emitting a tool_call tag
-with the tool name and JSON arguments. The system will execute the tool and give you the
-result. You may call multiple tools in a single response.
+Call a tool by emitting a tool_call tag with the tool name and JSON arguments.
+The system will execute the tool and return the result. You may call multiple tools.
 
 Tool call format:
 <tool_call name="tool_name">{"arg1":"value1","arg2":"value2"}</tool_call>
 
-After receiving tool results, use them to answer the user's question. Do NOT fabricate data
-— always call the tool first. If a tool returns null or no results, tell the user honestly.
+After receiving tool results, use them verbatim to answer. Quote prices, stock counts,
+and customer names exactly as the tool returned them.
 
 ${toolDescriptions}
 `.trim();
@@ -178,7 +196,14 @@ export async function callWithTools(
   options: { maxTokens?: number; temperature?: number } = {},
 ): Promise<{ reply: string; confidence: number; toolCalls: Array<{ name: string; arguments: Record<string, unknown>; result: string }> }> {
   const toolCalls: Array<{ name: string; arguments: Record<string, unknown>; result: string }> = [];
-  const toolSystemPrompt = buildToolSystemPrompt(tools);
+
+  // Rank tools by relevance to the latest user message.
+  // Only sends the top-N most relevant tools to the LLM — reduces tokens,
+  // hallucinations, and latency. For small tool sets (≤8), returns all.
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+  const rankedTools = lastUserMsg ? rankTools(tools, lastUserMsg.content) : tools;
+
+  const toolSystemPrompt = buildToolSystemPrompt(rankedTools);
   const fullSystemPrompt = toolSystemPrompt
     ? `${baseSystemPrompt}\n\n${toolSystemPrompt}`
     : baseSystemPrompt;

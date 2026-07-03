@@ -503,3 +503,14 @@ toolCmd
     const { execTool } = await import('./commands/tool/exec.js');
     await execTool(dataSourceId, toolId, opts);
   });
+
+toolCmd
+  .command('generate')
+  .description('Auto-generate tools from an OpenAPI spec or database schema')
+  .requiredOption('--data-source <id>', 'The data source to attach generated tools to')
+  .option('--from-openapi <json-or-@file>', 'OpenAPI 3.x spec (JSON or @file.json)')
+  .option('--from-schema <json-or-@file>', 'Table schema definition (JSON or @file.json)')
+  .action(async (opts: { dataSource: string; fromOpenapi?: string; fromSchema?: string }) => {
+    const { generateTools } = await import('./commands/tool/generate.js');
+    await generateTools(opts);
+  });

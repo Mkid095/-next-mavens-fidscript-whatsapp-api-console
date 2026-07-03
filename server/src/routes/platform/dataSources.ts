@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import db from '../../database.js';
 import { executeTool } from '../../modules/ai/toolRunner.js';
+import { generateFromOpenApi, generateFromSchema } from '../../modules/ai/toolGenerator.js';
 
 const router = Router();
 router.use(clientJwtAuth);
@@ -147,6 +148,57 @@ router.post('/:id/tools/:toolId/exec', async (req: Request, res: Response) => {
     res.json({ success: true, data: result });
   } catch (err) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Tool generation: auto-create tools from OpenAPI or schema ──────────────
+
+router.post('/:id/generate-from-openapi', (req: Request, res: Response) => {
+  const ds = db.prepare('SELECT id FROM data_sources WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
+  if (!ds) { res.status(404).json({ success: false, error: 'Data source not found' }); return; }
+
+  const { spec, base_url } = req.body as { spec: string; base_url?: string };
+  if (!spec) { res.status(400).json({ success: false, error: 'spec (OpenAPI JSON string) is required' }); return; }
+
+  try {
+    const { tools, serverUrl } = generateFromOpenApi(spec, base_url);
+    const created: string[] = [];
+    for (const tool of tools.slice(0, 50)) { // cap at 50 tools to prevent abuse
+      const id = `tool_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      db.prepare(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+        .run(id, req.params.id, tool.name, tool.description, tool.type, tool.parameters_json, tool.executor_json);
+      created.push(id);
+    }
+    // Update data source config with server URL if detected
+    if (serverUrl) {
+      db.prepare('UPDATE data_sources SET config_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .run(JSON.stringify({ endpoint: serverUrl }), req.params.id);
+    }
+    res.json({ success: true, data: { tools_generated: created.length, tool_ids: created, server_url: serverUrl } });
+  } catch (err) {
+    res.status(400).json({ success: false, error: `Failed to parse OpenAPI spec: ${(err as Error).message}` });
+  }
+});
+
+router.post('/:id/generate-from-schema', (req: Request, res: Response) => {
+  const ds = db.prepare('SELECT id FROM data_sources WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
+  if (!ds) { res.status(404).json({ success: false, error: 'Data source not found' }); return; }
+
+  const { schema } = req.body as { schema: string };
+  if (!schema) { res.status(400).json({ success: false, error: 'schema (JSON string) is required' }); return; }
+
+  try {
+    const tools = generateFromSchema(schema);
+    const created: string[] = [];
+    for (const tool of tools.slice(0, 50)) {
+      const id = `tool_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      db.prepare(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+        .run(id, req.params.id, tool.name, tool.description, tool.type, tool.parameters_json, tool.executor_json);
+      created.push(id);
+    }
+    res.json({ success: true, data: { tools_generated: created.length, tool_ids: created } });
+  } catch (err) {
+    res.status(400).json({ success: false, error: `Failed to parse schema: ${(err as Error).message}` });
   }
 });
 
