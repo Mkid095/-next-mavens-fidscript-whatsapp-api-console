@@ -29,7 +29,7 @@ import {
   restoreDraft,
   clearDraft,
 } from './store/chatbotBuilderStore';
-import { BUILDER_STEPS, type BuilderStepId, type PublishJob } from './types';
+import { BUILDER_STEPS, type BuilderStepId, type PublishJob, type AudienceContactMode, type GroupMode, type AIProvider, type ToolDefinition, type GroupSetting, type HandoffTrigger } from './types';
 import PublishProgressScreen from './components/PublishProgressScreen';
 import GeneralStep from './steps/GeneralStep';
 import AudienceStep from './steps/AudienceStep';
@@ -138,15 +138,15 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
                 enabled: Boolean(apiData.enabled),
               },
               audience: {
-                contactMode: (apiData.contact_mode as string) ?? 'everyone',
+                contactMode: ((apiData.contact_mode as string) ?? 'everyone') as AudienceContactMode,
                 tags: (apiData.tags as string[]) ?? [],
                 contactIds: (apiData.contact_ids as string[]) ?? [],
                 priority: (apiData.priority as number) ?? 50,
-                groupMode: (apiData.group_mode as string) ?? 'disabled',
+                groupMode: ((apiData.group_mode as string) ?? 'disabled') as GroupMode,
                 groupIds: (apiData.group_ids as string[]) ?? [],
               },
               aiBrain: {
-                provider: (aiConfig.provider as string) ?? 'fidscript',
+                provider: ((aiConfig.provider as string) ?? 'fidscript') as AIProvider,
                 providerName: (aiConfig.provider_name as string) ?? '',
                 baseUrl: (aiConfig.base_url as string) ?? '',
                 apiKey: (aiConfig.api_key as string) ?? '',
@@ -163,7 +163,7 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
                   { enabled: false, label: 'Custom attributes',   description: 'Remember custom contact fields' },
                 ],
                 systemPrompt: (aiConfig.system_prompt as string) ?? '',
-                hallucinationPolicy: (aiConfig.hallucination_policy as string) ?? 'balanced',
+                hallucinationPolicy: ((aiConfig.hallucination_policy as string) ?? 'balanced') as 'strict' | 'balanced' | 'creative',
               },
               knowledge: { sources: (apiData.knowledge_sources as Array<never>) ?? [] },
               dataConnections: { connections: (apiData.data_connections as Array<never>) ?? [] },
@@ -174,25 +174,23 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
                   description: r.condition,
                   type: 'webhook' as const,
                   enabled: true,
+                  requireConfirmation: false,
+                  costUnits: 0,
                   config: { url: '', method: 'POST', headers: {}, body: r.response },
-                })),
+                })) as ToolDefinition[],
               },
               groups: {
                 settings: Object.entries(groupSettings).map(([id, conf]) => ({
-                  id: String(id),
-                  name: (conf as { name: string }).name ?? '',
-                  action: (conf as { action: string }).action ?? 'allow',
-                  enabled: Boolean((conf as { enabled: boolean }).enabled),
-                })),
+                  groupJid: String(id),
+                  groupName: (conf as { name: string }).name ?? '',
+                  respondWhenMentioned: (conf as { respondWhenMentioned?: boolean }).respondWhenMentioned ?? false,
+                  respondToAll: (conf as { respondToAll?: boolean }).respondToAll ?? false,
+                  silenceOnBotReply: (conf as { silenceOnBotReply?: boolean }).silenceOnBotReply ?? false,
+                  cooldownSeconds: (conf as { cooldownSeconds?: number }).cooldownSeconds ?? 0,
+                })) as GroupSetting[],
               },
               handoff: {
-                triggers: triggers.map(t => ({
-                  id: t.id,
-                  type: 'keyword' as const,
-                  value: t.keyword,
-                  description: t.description ?? '',
-                  enabled: true,
-                })),
+                triggers: triggers.map(t => (t.keyword as HandoffTrigger)),
                 targetTeamId: (apiData.handoff_team_id as string) ?? '',
                 targetTeamName: (apiData.handoff_team_name as string) ?? '',
                 maxRetries: (apiData.max_handoff_retries as number) ?? 3,

@@ -3,10 +3,12 @@ import { Play, RefreshCw, ChevronRight, Compass, Send, Users, MessageSquare, Use
 import ResponseViewer from './ResponseViewer';
 import {
   API_CATEGORIES,
+  API_ENDPOINTS,
   type ApiEndpoint,
   type BodyField,
 } from '../../../data/apiEndpoints/index';
-import { instancesApi } from '../../../services/api';
+import { fetchApi } from '../../../data/api/client';
+import type { Instance } from '../../../services/types';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   Platform:  <Compass size={13} />,
@@ -20,27 +22,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 function getAllEndpoints(): ApiEndpoint[] {
-  // Lazy import to avoid circular issues — registry is pure data
-  const mod = require('../../../data/apiEndpoints/index') as {
-    messagingEndpoints: ApiEndpoint[];
-    platformEndpoints: ApiEndpoint[];
-    receivingEndpoints: ApiEndpoint[];
-    groupEndpoints: ApiEndpoint[];
-    chatEndpoints: ApiEndpoint[];
-    profileEndpoints: ApiEndpoint[];
-    settingsEndpoints: ApiEndpoint[];
-    instanceEndpoints: ApiEndpoint[];
-  };
-  return [
-    ...mod.platformEndpoints,
-    ...mod.messagingEndpoints,
-    ...mod.groupEndpoints,
-    ...mod.chatEndpoints,
-    ...mod.profileEndpoints,
-    ...mod.settingsEndpoints,
-    ...mod.instanceEndpoints,
-    ...mod.receivingEndpoints,
-  ];
+  return API_ENDPOINTS;
 }
 
 function FieldInput({ field, value, onChange }: { field: BodyField; value: string; onChange: (v: string) => void }) {
@@ -142,8 +124,8 @@ export default function ApiConsoleView() {
     const token = localStorage.getItem('fidscript_admin_token') || '';
     setAdminToken(token);
     // Fetch all instances across all clients for the dropdown
-    instancesApi.getAll().then((r) => {
-      if (r.success && r.data) setInstances(r.data.map((i: any) => ({ name: i.name })));
+    fetchApi<Instance[]>('/api/admin/instances').then((r) => {
+      if (r.success && r.data) setInstances(r.data.map((i) => ({ name: i.name })));
     });
   }, []);
 

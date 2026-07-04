@@ -177,7 +177,6 @@ export default function ClientDashboard({
             tokenBalance={tokenBalance}
             tokenPackages={tokenPackages}
             dailyUsage={dailyUsage}
-            recentMessages={recentMessages}
             messagesToday={messagesToday}
             previousBalance={previousBalance}
             onInstancesChange={onInstancesChange}

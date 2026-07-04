@@ -1,5 +1,5 @@
 {
-  "latest": "v0.8.3",
+  "latest": "v0.8.4",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,27 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.8.4",
+      "date": "2026-07-04",
+      "bumpType": "patch",
+      "title": "Fix all 51 TypeScript errors + ToolsStep connected to real tool platform",
+      "category": "fix",
+      "tags": [
+        "typescript",
+        "chatbot-builder",
+        "tools"
+      ],
+      "highlights": [
+        "ToolsStep in chatbot builder now reads from GET /api/platform/chatbots/:id/tools — single source of truth with the runtime engine"
+      ],
+      "fixes": [
+        "Fixed all 51 TypeScript compilation errors across 14 files: ChangelogEntry missing bumpType/category/tags fields; ApiEndpoint auth union missing 'jwt'; Instance type missing message_count; ApiConsoleView require() + getAll() errors; ChatbotsAdminView setState type; ClientDashboard prop mismatch; App.tsx async handler; DocsPage activeTab missing 'changelog'; ChatbotBuilderShell type casts; MessagesPage/NewChatModal/useChatMessages missing ChatListItem fields"
+      ],
+      "commits": [
+        "20e6e0c"
+      ]
+    },
     {
       "version": "v0.8.3",
       "date": "2026-07-04",

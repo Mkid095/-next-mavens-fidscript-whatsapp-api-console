@@ -142,7 +142,7 @@ function MobileSidebar({
   onSelectGuide, onSelectEndpoint,
 }: {
   open: boolean; onClose: () => void;
-  activeTab: string; setActiveTab: (t: string) => void;
+  activeTab: 'guides' | 'api-reference' | 'changelog'; setActiveTab: (t: 'guides' | 'api-reference' | 'changelog') => void;
   activeSection: string; setActiveSection: (s: string) => void;
   onSelectGuide: (id: string) => void; onSelectEndpoint: (ep: typeof DOC_GROUPS[0]['endpoints'][0]) => void;
 }) {
@@ -164,7 +164,7 @@ function MobileSidebar({
               {/* Tab switcher */}
               <div className="px-3 mb-2">
                 <div className="flex bg-[#1a1910] rounded-xl p-1">
-                  {['guides', 'api-reference'].map(tab => (
+                  {(['guides', 'api-reference'] as const).map(tab => (
                     <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${activeTab === tab ? 'bg-yellow-500 text-stone-950' : 'text-[#8a886a]'}`}>
                       {tab === 'guides' ? 'Guides' : 'API Ref'}
                     </button>
@@ -1563,7 +1563,7 @@ function ApiRefContent({ endpoint, lang, setLang }: { endpoint: typeof DOC_GROUP
    MAIN PAGE
    ───────────────────────────────────────────────────────── */
 export default function DocsPage() {
-  const [activeTab, setActiveTab] = useState<'guides' | 'api-reference'>('guides');
+  const [activeTab, setActiveTab] = useState<'guides' | 'api-reference' | 'changelog'>('guides');
   const [activeSection, setActiveSection] = useState(''); // open group in sidebar
   const [selectedGuide, setSelectedGuide] = useState('quickstart');
   const [selectedEndpoint, setSelectedEndpoint] = useState<typeof DOC_GROUPS[0]['endpoints'][0] | null>(null);

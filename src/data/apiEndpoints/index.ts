@@ -59,7 +59,7 @@ export interface ApiEndpoint {
   bodyFields: BodyField[];
   /** Example success response. */
   response?: Record<string, unknown>;
-  auth?: 'apikey' | 'none';
+  auth?: 'apikey' | 'none' | 'jwt';
   /** Internal Evolution path — NEVER rendered publicly; reference only. */
   evolutionPath?: string;
 }

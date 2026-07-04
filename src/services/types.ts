@@ -20,6 +20,7 @@ export interface Instance {
   last_active: string | null;
   created_at: string;
   client_name?: string;
+  message_count?: number;
 }
 
 export interface ApiLog {

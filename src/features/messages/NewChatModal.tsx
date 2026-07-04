@@ -82,6 +82,9 @@ export default function NewChatModal({ open, onClose, onPick }: NewChatModalProp
                     lastMessageAt: null,
                     unread: 0,
                     profilePic: null,
+                    aiMode: null,
+                    isRestricted: false,
+                    isAdmin: false,
                   });
                   onClose();
                 }}

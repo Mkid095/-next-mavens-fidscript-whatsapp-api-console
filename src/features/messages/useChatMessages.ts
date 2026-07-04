@@ -152,6 +152,7 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
         mediaUrl: payload.mediaUrl || null,
         mediaMimetype: null,
         senderName: payload.fromName || null,
+        senderJid: payload.fromNumber || null,
         timestamp: payload.timestamp ? new Date(payload.timestamp).getTime() : Date.now(),
       };
       const ck = cacheKey;

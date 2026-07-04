@@ -59,7 +59,7 @@ export default function MessagesPage({ instances, clientToken }: MessagesPagePro
     if (!selectedJid) return null;
     return chats.find((c) => c.jid === selectedJid) ?? {
       jid: selectedJid, name: selectedJid, isGroup: selectedJid.includes('@g.us'),
-      lastMessage: '', lastMessageAt: null, unread: 0, profilePic: null, aiMode: null,
+      lastMessage: '', lastMessageAt: null, unread: 0, profilePic: null, aiMode: null, isRestricted: false, isAdmin: false,
     };
   }, [chats, selectedJid]);
 

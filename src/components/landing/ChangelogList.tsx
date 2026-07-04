@@ -21,6 +21,9 @@ interface ChangelogEntry {
   highlights: string[];
   fixes: string[];
   commits: string[];
+  bumpType?: string;
+  category?: string;
+  tags?: string[];
 }
 
 interface ChangelogShape {

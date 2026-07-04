@@ -74,7 +74,7 @@ export default function ChatbotsAdminView() {
     setLoading(true);
     const token = getAdminToken();
     if (!token) { setErr('Admin token missing.'); setLoading(false); return; }
-    fetchApi<{ success: boolean; data?: AnalyticsPayload; error?: string }>(
+    fetchApi<AnalyticsPayload>(
       '/api/admin/chatbot-analytics',
       { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
     ).then((res) => {
