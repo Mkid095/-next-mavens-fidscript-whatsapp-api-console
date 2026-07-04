@@ -155,6 +155,10 @@ async function processMessage(msg: InboundMessage): Promise<void> {
     }
 
     const evalResult = evaluateTriggers(botId, message, { workspaceId, contactId, conversationId });
+
+    // Generate messageId upfront — used for all traces and the response metadata
+    const responseMessageId = `ai_${Date.now()}`;
+
     insertTrace(conversationId, botId, workspaceId, 'trigger_eval', 0, {
       triggered: evalResult.shouldRespond,
       triggerId: evalResult.trigger.triggerId,
@@ -162,9 +166,6 @@ async function processMessage(msg: InboundMessage): Promise<void> {
       ruleAction: evalResult.rule.action,
       ruleName: evalResult.rule.ruleName,
     }, responseMessageId);
-
-    // Generate messageId upfront — used for all traces and the response metadata
-    const responseMessageId = `ai_${Date.now()}`;
 
     if (!evalResult.shouldRespond) {
       // Record why the bot didn't respond for the inspector
