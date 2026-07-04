@@ -1,8 +1,9 @@
 /**
  * Runtime Tracing — step-level observability for chatbot message processing.
  *
- * Each span records: step name, duration_ms, optional metadata, and
- * (for non-trigger_eval steps) the message_id of the bot's outgoing response.
+ * Each span records: step name, duration_ms, optional metadata,
+ * the bot's outgoing message_id (when a response was generated),
+ * and the customer's inbound message_id (always, so skipped paths are traceable).
  */
 import db from '../database.js';
 
@@ -27,7 +28,7 @@ interface TraceMeta {
   toolSuccess?: boolean;
 }
 
-const newId = () => `trace_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+export const newId = () => `trace_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 // ─── Trace Insertion ──────────────────────────────────────────────────────────
 
@@ -38,12 +39,14 @@ export function insertTrace(
   step: TraceStep,
   durationMs: number,
   meta?: TraceMeta,
-  messageId?: string, // the bot's outgoing message_id (null for trigger_eval)
+  messageId?: string | null,           // bot's outgoing message_id (null for skipped paths)
+  customerMessageId?: string | null,    // inbound customer message that triggered evaluation
 ): void {
   try {
     db.prepare(`INSERT INTO chatbot_traces
-      (id, conversation_id, chatbot_id, workspace_id, step, duration_ms, metadata, created_at, message_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)`
+      (id, conversation_id, chatbot_id, workspace_id, step, duration_ms,
+       metadata, created_at, message_id, customer_message_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)`
     ).run(
       newId(),
       conversationId,
@@ -53,6 +56,7 @@ export function insertTrace(
       durationMs,
       meta ? JSON.stringify(meta) : null,
       messageId ?? null,
+      customerMessageId ?? null,
     );
   } catch (_) { /* non-fatal */ }
 }
@@ -67,13 +71,14 @@ export function trace<T>(
   step: TraceStep,
   fn: () => T,
   metaFn?: (result: T) => TraceMeta,
-  messageId?: string,
+  messageId?: string | null,
+  customerMessageId?: string | null,
 ): T {
   const start = Date.now();
   const result = fn();
   const durationMs = Date.now() - start;
   const meta = metaFn ? metaFn(result) : undefined;
-  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta, messageId);
+  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta, messageId, customerMessageId);
   return result;
 }
 
@@ -87,13 +92,14 @@ export async function traceAsync<T>(
   step: TraceStep,
   fn: () => Promise<T>,
   metaFn?: (result: T) => TraceMeta,
-  messageId?: string,
+  messageId?: string | null,
+  customerMessageId?: string | null,
 ): Promise<T> {
   const start = Date.now();
   const result = await fn();
   const durationMs = Date.now() - start;
   const meta = metaFn ? metaFn(result) : undefined;
-  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta, messageId);
+  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta, messageId, customerMessageId);
   return result;
 }
 

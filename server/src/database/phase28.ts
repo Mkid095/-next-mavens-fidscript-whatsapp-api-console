@@ -4,19 +4,12 @@
  * 1. chatbot_response_metadata: add prompt_version, bot_version,
  *    matched_trigger, matched_rule, skip_reason
  *
- * 2. chatbot_traces: add message_id — hard link to the bot's
- *    outgoing inbox_messages row (null for trigger_eval which fires
- *    before the response messageId is known; non-null for llm_call /
- *    tool_call / response_send)
+ * 2. chatbot_traces: add message_id + customer_message_id.
+ *    message_id = bot's outgoing inbox_messages row (null for skipped responses).
+ *    customer_message_id = the inbound customer message that triggered evaluation.
+ *    This lets the inspector show traces even for skipped/no-response cases.
  *
- * 3. Conversation scope: backfill message_id for existing trace rows
- *    by matching conversation_id + chatbot_id + timestamp proximity to
- *    the nearest outgoing inbox_messages row written during the same
- *    chatbot-worker run.
- *
- * Going forward, chatbot-worker writes message_id when inserting trace
- * rows for llm_call / tool_call / response_send.  trigger_eval is left
- * null (no response message exists at that point).
+ * 3. Backfill message_id for existing trace rows using timestamp proximity.
  */
 import type { Database as SqlJsDatabase } from 'sql.js';
 
@@ -36,8 +29,9 @@ export function runPhase28Migrations(db: SqlJsDatabase): void {
   addColumnIfMissing('chatbot_response_metadata', 'matched_rule',    'TEXT');
   addColumnIfMissing('chatbot_response_metadata', 'skip_reason',     'TEXT');
 
-  // ── 2. Add message_id to chatbot_traces ─────────────────────────────────────
-  addColumnIfMissing('chatbot_traces', 'message_id', 'TEXT');
+  // ── 2. Add message_id + customer_message_id to chatbot_traces ───────────────
+  addColumnIfMissing('chatbot_traces', 'message_id',            'TEXT');
+  addColumnIfMissing('chatbot_traces', 'customer_message_id',  'TEXT');
 
   // ── 3. Backfill message_id on existing trace rows ────────────────────────────
   //

@@ -21,7 +21,7 @@ import { requestHandoff } from '../modules/ai/handoffService.js';
 import { logChatbotToolCall } from './tools.js';
 import { logTokenUsage } from './billing.js';
 import { getRuntimeConfig } from './chatbotRuntimeCache.js';
-import { traceAsync, insertTrace, recordResponseMetadata } from './tracing.js';
+import { traceAsync, insertTrace, recordResponseMetadata, newId } from './tracing.js';
 import { emitAiOverrideChanged } from '../utils/gateway.js';
 import { loadChatbotTools, callWithTools } from '../modules/ai/toolCallingEngine.js';
 
@@ -30,6 +30,10 @@ const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL ?? 'http://localhost:808
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY ?? '';
 
 interface InboundMessage {
+  // id of the inbox_messages row for this inbound message (set by Evolution webhook before publishing to NATS)
+  id?: string;
+  // simulation mode: when true, skip all write operations (no DB writes, no WhatsApp sends, no token logging)
+  simulation?: boolean;
   conversationId: string;
   customerId: string;
   contactId?: string;
@@ -90,18 +94,23 @@ function insertTimelineMessage(conversationId: string, content: string, workspac
 
 async function processMessage(msg: InboundMessage): Promise<void> {
   const { conversationId, workspaceId, instanceId, instanceName, message, messageType, chatId, isGroup, contactId, groupJid } = msg;
+  const sim = msg.simulation === true;
 
-  console.log(`[worker] Processing message in conv=${conversationId} instance=${instanceId}`);
+  if (sim) console.log(`[worker] SIMULATION — processing message in conv=${conversationId} instance=${instanceId}`);
 
   if (messageType !== 'text') return;
 
   // 1. Conversation lock — prevent duplicate processing when user spams "hi"
-  const workerId = `worker_${process.pid}_${Date.now()}`;
-  const acquired = db.prepare(
-    'INSERT OR IGNORE INTO chatbot_conversation_locks (conversation_id, chatbot_id, locked_at, worker_id) VALUES (?, ?, ?, ?)'
-  ).run(conversationId, 'pending', new Date().toISOString(), workerId);
+  let lockAcquired = true;
+  if (!sim) {
+    const workerId = `worker_${process.pid}_${Date.now()}`;
+    const result = db.prepare(
+      'INSERT OR IGNORE INTO chatbot_conversation_locks (conversation_id, chatbot_id, locked_at, worker_id) VALUES (?, ?, ?, ?)'
+    ).run(conversationId, 'pending', new Date().toISOString(), workerId);
+    lockAcquired = result.changes > 0;
+  }
 
-  if (!acquired) {
+  if (!lockAcquired) {
     console.log(`[worker] Conversation ${conversationId} is locked — another worker is processing`);
     return;
   }
@@ -122,11 +131,15 @@ async function processMessage(msg: InboundMessage): Promise<void> {
       }
       if (!isOverrideActive(override)) {
         // Expired — transition to expired, insert timeline, emit SSE, resume AI
-        db.prepare(
-          `UPDATE chatbot_conversation_overrides SET status='expired', ended_at=?, ended_reason='timeout_expired' WHERE id=?`
-        ).run(new Date().toISOString(), override.id);
-        insertTimelineMessage(conversationId, 'AI resumed automatically (override expired)', workspaceId);
-        if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
+        if (!sim) {
+          db.prepare(
+            `UPDATE chatbot_conversation_overrides SET status='expired', ended_at=?, ended_reason='timeout_expired' WHERE id=?`
+          ).run(new Date().toISOString(), override.id);
+          insertTimelineMessage(conversationId, 'AI resumed automatically (override expired)', workspaceId);
+          if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
+        } else {
+          console.log(`[worker] SIMULATION — skipped expired override state update`);
+        }
         console.log(`[worker] Override expired for ${conversationId} — AI resumed`);
       } else {
         console.log(`[worker] Conversation ${conversationId} has manual override — skipping AI`);
@@ -157,27 +170,34 @@ async function processMessage(msg: InboundMessage): Promise<void> {
     const evalResult = evaluateTriggers(botId, message, { workspaceId, contactId, conversationId });
 
     // Generate messageId upfront — used for all traces and the response metadata
-    const responseMessageId = `ai_${Date.now()}`;
+    // Use newId() from tracing to avoid millisecond collisions under concurrent load
+    const responseMessageId = newId();
 
-    insertTrace(conversationId, botId, workspaceId, 'trigger_eval', 0, {
-      triggered: evalResult.shouldRespond,
-      triggerId: evalResult.trigger.triggerId,
-      matchedKeyword: evalResult.trigger.matchedKeyword,
-      ruleAction: evalResult.rule.action,
-      ruleName: evalResult.rule.ruleName,
-    }, responseMessageId);
+    if (!sim) {
+      insertTrace(conversationId, botId, workspaceId, 'trigger_eval', 0, {
+        triggered: evalResult.shouldRespond,
+        triggerId: evalResult.trigger.triggerId,
+        matchedKeyword: evalResult.trigger.matchedKeyword,
+        ruleAction: evalResult.rule.action,
+        ruleName: evalResult.rule.ruleName,
+      }, responseMessageId, msg.id ?? null);
+    }
 
     if (!evalResult.shouldRespond) {
       // Record why the bot didn't respond for the inspector
-      recordResponseMetadata({
-        messageId: responseMessageId,
-        chatbotId: botId,
-        confidence: 0,
-        model: '',
-        matchedTrigger: evalResult.trigger.triggerId,
-        matchedRule: evalResult.rule.ruleId,
-        skipReason: evalResult.skipReason ?? 'no_trigger_matched',
-      });
+      if (!sim) {
+        recordResponseMetadata({
+          messageId: responseMessageId,
+          chatbotId: botId,
+          confidence: 0,
+          model: '',
+          matchedTrigger: evalResult.trigger.triggerId,
+          matchedRule: evalResult.rule.ruleId,
+          skipReason: evalResult.skipReason ?? 'no_trigger_matched',
+        });
+      } else {
+        console.log(`[worker] SIMULATION — skipped trace + metadata for skipped response`);
+      }
       console.log(`[worker] Bot ${botId} did not trigger response: ${evalResult.skipReason}`);
       return;
     }
@@ -186,7 +206,7 @@ async function processMessage(msg: InboundMessage): Promise<void> {
 
     // 2b. Handle non-AI actions
     if (rule.action === 'skip') {
-      recordResponseMetadata({
+      if (!sim) recordResponseMetadata({
         messageId: responseMessageId,
         chatbotId: botId,
         confidence: 0,
@@ -201,7 +221,7 @@ async function processMessage(msg: InboundMessage): Promise<void> {
 
     if (rule.action === 'manual') {
       // Flag for human agent — update conversation state
-      recordResponseMetadata({
+      if (!sim) recordResponseMetadata({
         messageId: responseMessageId,
         chatbotId: botId,
         confidence: 0,
@@ -210,16 +230,20 @@ async function processMessage(msg: InboundMessage): Promise<void> {
         matchedRule: evalResult.rule.ruleId,
         skipReason: 'handoff_active',
       });
+      if (!sim) {
+        db.prepare(`INSERT OR REPLACE INTO conversation_states (conversation_id, state, updated_at)
+          VALUES (?, 'WAITING_AGENT', CURRENT_TIMESTAMP)`
+        ).run(conversationId);
+        saveDatabase();
+      } else {
+        console.log(`[worker] SIMULATION — skipped handoff state write`);
+      }
       console.log(`[worker] Rule matched: manual handoff`);
-      db.prepare(`INSERT OR REPLACE INTO conversation_states (conversation_id, state, updated_at)
-        VALUES (?, 'WAITING_AGENT', CURRENT_TIMESTAMP)`
-      ).run(conversationId);
-      saveDatabase();
       return;
     }
 
     if (rule.action === 'workflow') {
-      recordResponseMetadata({
+      if (!sim) recordResponseMetadata({
         messageId: responseMessageId,
         chatbotId: botId,
         confidence: 0,
@@ -324,6 +348,7 @@ async function processMessage(msg: InboundMessage): Promise<void> {
         },
         (r) => ({ tokenCount: r.tokensUsed.total }),
         responseMessageId,
+        msg.id ?? null,
       );
 
       const { reply, confidence, tokensUsed } = response;
@@ -339,12 +364,12 @@ async function processMessage(msg: InboundMessage): Promise<void> {
       const promptVersion = promptVersionRow?.v != null ? String(promptVersionRow.v) : undefined;
 
       // 4. Log token usage
-      logTokenUsage(botId, conversationId, String(aiConfig.model ?? 'gemini'), tokensUsed.prompt, tokensUsed.completion, tokensUsed.total);
+      if (!sim) logTokenUsage(botId, conversationId, String(aiConfig.model ?? 'gemini'), tokensUsed.prompt, tokensUsed.completion, tokensUsed.total);
 
       // 5. Check confidence threshold — escalate to human if too uncertain
       const threshold = Number(policies?.confidence_threshold ?? 0.6);
       if (confidence < threshold) {
-        recordResponseMetadata({
+        if (!sim) recordResponseMetadata({
           messageId: responseMessageId,
           chatbotId: botId,
           confidence,
@@ -354,30 +379,40 @@ async function processMessage(msg: InboundMessage): Promise<void> {
           skipReason: 'confidence_threshold',
         });
         console.log(`[worker] Low confidence ${confidence} < ${threshold} — escalating to human`);
-        // Don't send a low-confidence AI reply; instead escalate to a human agent
-        requestHandoff(conversationId, '', String(bot.name ?? 'Bot'));
+        if (!sim) {
+          requestHandoff(conversationId, '', String(bot.name ?? 'Bot'));
+        } else {
+          console.log(`[worker] SIMULATION — skipped handoff request`);
+        }
         return;
       }
 
       // 6. Send reply via WhatsApp
       if (reply && instanceName) {
-        await traceAsync(
-          conversationId, botId, workspaceId, 'response_send',
-          () => sendWhatsAppText(instanceName, chatId, reply),
-          () => ({ triggered: true }),
-          responseMessageId,
-        );
+        if (!sim) {
+          await traceAsync(
+            conversationId, botId, workspaceId, 'response_send',
+            () => sendWhatsAppText(instanceName, chatId, reply),
+            () => ({ triggered: true }),
+            responseMessageId,
+            msg.id ?? null,
+          );
+        } else {
+          console.log(`[worker] SIMULATION — skipped WhatsApp send`);
+        }
         console.log(`[worker] Sent reply to ${chatId}: "${reply.slice(0, 50)}..."`);
       }
 
       // 7. Insert AI reply into inbox
-      db.prepare(`INSERT INTO inbox_messages
-        (id, workspace_id, customer_id, conversation_id, from_number, from_name, message_type, content, media_url, is_read, timestamp, direction)
-        VALUES (?, ?, ?, ?, ?, ?, 'text', ?, '', 1, datetime('now'), 'outgoing')`
-      ).run(responseMessageId, workspaceId, msg.customerId, conversationId, chatId, String(bot.name ?? 'Bot'), reply);
+      if (!sim) {
+        db.prepare(`INSERT INTO inbox_messages
+          (id, workspace_id, customer_id, conversation_id, from_number, from_name, message_type, content, media_url, is_read, timestamp, direction)
+          VALUES (?, ?, ?, ?, ?, ?, 'text', ?, '', 1, datetime('now'), 'outgoing')`
+        ).run(responseMessageId, workspaceId, msg.customerId, conversationId, chatId, String(bot.name ?? 'Bot'), reply);
+      }
 
       // 8. Record AI response explainability metadata
-      recordResponseMetadata({
+      if (!sim) recordResponseMetadata({
         messageId: responseMessageId,
         chatbotId: botId,
         confidence,
@@ -390,20 +425,28 @@ async function processMessage(msg: InboundMessage): Promise<void> {
 
       // next_message policy: after AI responds, transition override to completed
       if (willResumeNextMessage && override) {
-        db.prepare(
-          `UPDATE chatbot_conversation_overrides SET status='completed', ended_at=?, ended_reason='next_message_completed' WHERE id=?`
-        ).run(new Date().toISOString(), override.id);
-        insertTimelineMessage(conversationId, 'AI resumed automatically (one-shot manual)', workspaceId);
-        if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
+        if (!sim) {
+          db.prepare(
+            `UPDATE chatbot_conversation_overrides SET status='completed', ended_at=?, ended_reason='next_message_completed' WHERE id=?`
+          ).run(new Date().toISOString(), override.id);
+          insertTimelineMessage(conversationId, 'AI resumed automatically (one-shot manual)', workspaceId);
+          if (instanceName) emitAiOverrideChanged(instanceName, { chatId: conversationId, mode: 'ai' });
+        } else {
+          console.log(`[worker] SIMULATION — skipped next_message override transition`);
+        }
         console.log(`[worker] next_message policy — override transitioned to completed after AI response`);
       }
 
-      saveDatabase();
+      if (!sim) saveDatabase();
     } catch (err) {
       console.error(`[worker] LLM call failed:`, err);
       // Send fallback
-      const fallback = String(policies?.fallback_reply ?? 'Sorry, I could not process your request.');
-      if (instanceName) await sendWhatsAppText(instanceName, chatId, fallback);
+      if (!sim && instanceName) {
+        const fallback = String(policies?.fallback_reply ?? 'Sorry, I could not process your request.');
+        await sendWhatsAppText(instanceName, chatId, fallback);
+      } else {
+        console.log(`[worker] SIMULATION — skipped fallback WhatsApp send`);
+      }
     } finally {
       // Always release the conversation lock
       if (lockedBotId) {
