@@ -165,8 +165,8 @@ router.post('/:id/generate-from-openapi', (req: Request, res: Response) => {
     const created: string[] = [];
     for (const tool of tools.slice(0, 50)) { // cap at 50 tools to prevent abuse
       const id = `tool_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      db.prepare(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-        .run(id, req.params.id, tool.name, tool.description, tool.type, tool.parameters_json, tool.executor_json);
+      db.prepare(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json, approved, requires_confirmation) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`)
+        .run(id, req.params.id, tool.name, tool.description, tool.type, tool.parameters_json, tool.executor_json, tool.requires_confirmation ? 1 : 0);
       created.push(id);
     }
     // Update data source config with server URL if detected
@@ -192,7 +192,7 @@ router.post('/:id/generate-from-schema', (req: Request, res: Response) => {
     const created: string[] = [];
     for (const tool of tools.slice(0, 50)) {
       const id = `tool_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      db.prepare(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+      db.prepare(`INSERT INTO tools (id, data_source_id, name, description, type, parameters_json, executor_json, approved) VALUES (?, ?, ?, ?, ?, ?, ?, 0)`)
         .run(id, req.params.id, tool.name, tool.description, tool.type, tool.parameters_json, tool.executor_json);
       created.push(id);
     }
@@ -200,6 +200,28 @@ router.post('/:id/generate-from-schema', (req: Request, res: Response) => {
   } catch (err) {
     res.status(400).json({ success: false, error: `Failed to parse schema: ${(err as Error).message}` });
   }
+});
+
+// ─── Tool approval (generated tools need explicit approval before use) ──────
+
+router.post('/:id/tools/:toolId/approve', (req: Request, res: Response) => {
+  const result = db.prepare(`
+    UPDATE tools SET approved = 1
+    WHERE id = ? AND data_source_id = ?
+      AND data_source_id IN (SELECT id FROM data_sources WHERE workspace_id = ?)
+  `).run(req.params.toolId, req.params.id, wsId(req));
+  if (result.changes === 0) { res.status(404).json({ success: false, error: 'Tool not found' }); return; }
+  res.json({ success: true, message: 'Tool approved — now usable by chatbots' });
+});
+
+router.post('/:id/tools/:toolId/reject', (req: Request, res: Response) => {
+  // Reject = delete (the tool was generated but shouldn't be used)
+  const result = db.prepare(`
+    DELETE FROM tools WHERE id = ? AND data_source_id = ?
+      AND data_source_id IN (SELECT id FROM data_sources WHERE workspace_id = ?)
+  `).run(req.params.toolId, req.params.id, wsId(req));
+  if (result.changes === 0) { res.status(404).json({ success: false, error: 'Tool not found' }); return; }
+  res.json({ success: true, message: 'Tool rejected and removed' });
 });
 
 export default router;

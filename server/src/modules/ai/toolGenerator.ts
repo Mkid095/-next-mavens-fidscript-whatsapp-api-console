@@ -15,6 +15,8 @@ export interface GeneratedTool {
   type: 'lookup' | 'search' | 'query' | 'action';
   parameters_json: string;
   executor_json: string;
+  /** True for DELETE/refund/cancel — requires user confirmation before the LLM calls it */
+  requires_confirmation?: boolean;
 }
 
 // ── OpenAPI import ──────────────────────────────────────────────────────────
@@ -114,12 +116,18 @@ export function generateFromOpenApi(specJson: string, baseUrl?: string): { tools
         executor.endpoint = undefined; // use pathTemplate instead
       }
 
+      // Mark dangerous tools (DELETE, refund, cancel) as requiring confirmation
+      const isDangerous = upperMethod === 'DELETE' || /delete|refund|cancel|archive|remove/i.test(name);
+
       tools.push({
         name,
-        description: desc.slice(0, 500),
+        description: isDangerous
+          ? `${desc.slice(0, 400)} ⚠️ This action modifies or deletes data. Always confirm with the user before calling this tool.`
+          : desc.slice(0, 500),
         type,
         parameters_json: JSON.stringify(parameters),
         executor_json: JSON.stringify(executor),
+        requires_confirmation: isDangerous || undefined,
       });
     }
   }
@@ -135,7 +143,17 @@ interface SchemaInput {
     columns: Array<{ name: string; type: string; primary_key?: boolean }>;
     searchable?: string[]; // column names to include in free-text search
   }>;
+  /** Tables to exclude from tool generation entirely */
+  exclude_tables?: string[];
+  /** Only generate tools for these tables (whitelist) */
+  include_tables?: string[];
 }
+
+/** Tables that should NEVER be exposed as tools — security-sensitive. */
+const BLOCKED_TABLE_PATTERNS = [
+  'session', 'password', 'api_key', 'secret', 'token', 'audit_log',
+  'migration', 'schema', '__', 'knex', 'sequelize',
+];
 
 function singularize(word: string): string {
   if (word.endsWith('ies')) return word.slice(0, -3) + 'y';
@@ -150,6 +168,12 @@ export function generateFromSchema(schemaJson: string): GeneratedTool[] {
   const tools: GeneratedTool[] = [];
 
   for (const table of schema.tables) {
+    // Security: skip blocked tables
+    const tableNameLower = table.name.toLowerCase();
+    if (schema.exclude_tables?.some((t) => t.toLowerCase() === tableNameLower)) continue;
+    if (schema.include_tables && !schema.include_tables.some((t) => t.toLowerCase() === tableNameLower)) continue;
+    if (BLOCKED_TABLE_PATTERNS.some((p) => tableNameLower.includes(p))) continue;
+
     const singular = singularize(table.name);
     const pk = table.columns.find((c) => c.primary_key) ?? table.columns[0];
     const pkName = pk?.name ?? 'id';

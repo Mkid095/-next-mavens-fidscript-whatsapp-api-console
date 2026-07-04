@@ -50,7 +50,9 @@ export function loadChatbotTools(chatbotId: string, workspaceId: string): Chatbo
     FROM chatbot_tools ct
     JOIN tools t ON t.id = ct.tool_id
     JOIN data_sources ds ON ds.id = t.data_source_id
-    WHERE ct.chatbot_id = ? AND ct.enabled = 1 AND t.enabled = 1 AND ds.workspace_id = ?
+    WHERE ct.chatbot_id = ? AND ct.enabled = 1 AND t.enabled = 1
+      AND (t.approved = 1 OR t.approved IS NULL)
+      AND ds.workspace_id = ?
   `).all(chatbotId, workspaceId) as unknown as ChatbotTool[];
 
   return rows;
@@ -97,6 +99,10 @@ NEVER guess or fabricate:
 
 If a tool returns null, empty, or "not found", tell the user honestly:
 "I couldn't find that in our system" — do NOT make up an answer.
+
+If a tool FAILS or errors, tell the user:
+"That information is currently unavailable" — NEVER answer from your own knowledge
+after a tool failure. The tool is the source of truth; if it fails, the data is unknown.
 
 Only use your own knowledge for general questions (greetings, how-to, policies, opinions)
 that don't depend on real-time business data.

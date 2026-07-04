@@ -1,5 +1,5 @@
 {
-  "latest": "v0.8.0",
+  "latest": "v0.8.1",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,28 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.8.1",
+      "date": "2026-07-04",
+      "bumpType": "patch",
+      "title": "Tool security: approval workflow, dangerous-action flag, table exclusion, tool-failure rule",
+      "category": "security",
+      "tags": [
+        "tools",
+        "security",
+        "approval"
+      ],
+      "highlights": [
+        "Generated tools now start as unapproved (approved=0) — chatbot engine skips them until explicitly approved via POST /tools/:toolId/approve",
+        "Dangerous tools (DELETE/refund/cancel) auto-tagged with requires_confirmation=1 + warning in description",
+        "Schema generation now excludes security-sensitive tables (sessions, api_keys, password_resets, audit_logs, tokens, secrets)",
+        "Data-first prompt hardened: 'If a tool FAILS, tell the user the info is unavailable — NEVER answer from memory after a tool failure'"
+      ],
+      "fixes": [],
+      "commits": [
+        "1e52c9a"
+      ]
+    },
     {
       "version": "v0.8.0",
       "date": "2026-07-03",
