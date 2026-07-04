@@ -32,6 +32,7 @@ import { runPhase24Migrations } from './phase24.js';
 import { runPhase25Migrations } from './phase25.js';
 import { runPhase26Migrations } from './phase26.js';
 import { runPhase27Migrations } from './phase27.js';
+import { runPhase28Migrations } from './phase28.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,6 +81,7 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase25Migrations(db);     // Chatbot handoff notification config
   runPhase26Migrations(db);     // data_sources + tools + chatbot_tools
   runPhase27Migrations(db);     // tool security: approved + requires_confirmation
+  runPhase28Migrations(db);     // inspector: message_id on traces + metadata versions + skip_reason
   await seedData(db);
   saveDatabase();
 

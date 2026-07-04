@@ -106,13 +106,126 @@ router.get('/:id/messages', (req: Request, res: Response) => {
       'SELECT 1 FROM conversations WHERE id = ? AND workspace_id = ?'
     ).get(req.params.id, wsId(req));
     if (!owned) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
     const messages = db.prepare(`
-      SELECT id, from_number, from_name, message_type, content, media_url,
-             is_read, timestamp, direction, customer_id
-      FROM inbox_messages WHERE conversation_id = ?
-      ORDER BY timestamp ASC LIMIT 500
-    `).all(req.params.id);
-    res.json({ success: true, data: messages });
+      SELECT
+        im.id,
+        im.from_number,
+        im.from_name,
+        im.message_type,
+        im.content,
+        im.media_url,
+        im.is_read,
+        im.timestamp,
+        im.direction,
+        im.customer_id,
+        im.conversation_id,
+        crm.confidence       AS ai_confidence,
+        crm.model           AS ai_model,
+        crm.prompt_version  AS ai_prompt_version,
+        crm.bot_version     AS ai_bot_version,
+        crm.sources         AS ai_sources,
+        crm.tools           AS ai_tools,
+        crm.matched_trigger AS ai_matched_trigger,
+        crm.matched_rule    AS ai_matched_rule,
+        crm.skip_reason     AS ai_skip_reason
+      FROM inbox_messages im
+      LEFT JOIN chatbot_response_metadata crm ON crm.message_id = im.id
+      WHERE im.conversation_id = ?
+      ORDER BY im.timestamp ASC LIMIT 500
+    `).all(req.params.id) as Record<string, unknown>[];
+
+    const formatted = messages.map(m => ({
+      id: m.id,
+      fromNumber: m.from_number,
+      fromName: m.from_name,
+      messageType: m.message_type,
+      content: m.content,
+      mediaUrl: m.media_url,
+      isRead: m.is_read,
+      timestamp: m.timestamp,
+      direction: m.direction,
+      customerId: m.customer_id,
+      conversationId: m.conversation_id,
+      aiMetadata: m.ai_confidence != null ? {
+        confidence: m.ai_confidence,
+        model: m.ai_model ?? '',
+        promptVersion: m.ai_prompt_version ?? null,
+        botVersion: m.ai_bot_version ?? null,
+        sources: m.ai_sources ? JSON.parse(m.ai_sources as string) : null,
+        tools: m.ai_tools ? JSON.parse(m.ai_tools as string) : null,
+        matchedTrigger: m.ai_matched_trigger ?? null,
+        matchedRule: m.ai_matched_rule ?? null,
+        skipReason: m.ai_skip_reason ?? null,
+      } : null,
+    }));
+
+    res.json({ success: true, data: formatted });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// GET /:id/traces — all trace spans for a conversation
+router.get('/:id/traces', (req: Request, res: Response) => {
+  try {
+    const owned = db.prepare(
+      'SELECT 1 FROM conversations WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, wsId(req));
+    if (!owned) { res.status(404).json({ success: false, error: 'Conversation not found' }); return; }
+
+    const traces = db.prepare(`
+      SELECT message_id, step, duration_ms, metadata, created_at
+      FROM chatbot_traces
+      WHERE conversation_id = ?
+      ORDER BY created_at ASC
+    `).all(req.params.id) as Record<string, unknown>[];
+
+    res.json({
+      success: true,
+      data: traces.map(t => ({
+        messageId: t.message_id,
+        step: t.step,
+        durationMs: t.duration_ms,
+        metadata: t.metadata ? JSON.parse(t.metadata as string) : null,
+        createdAt: t.created_at,
+      })),
+    });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// GET /messages/:id/prompt-snapshot — full prompt snapshot for one response message
+router.get('/messages/:id/prompt-snapshot', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    // Verify ownership via the message's workspace
+    const msg = db.prepare(
+      'SELECT id, conversation_id FROM inbox_messages WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!msg) { res.status(404).json({ success: false, error: 'Message not found' }); return; }
+
+    // Get prompt snapshot from the message's metadata row
+    const meta = db.prepare(`
+      SELECT sources, tools, model, prompt_version, bot_version
+      FROM chatbot_response_metadata WHERE message_id = ?
+    `).get(req.params.id) as Record<string, unknown> | undefined;
+
+    if (!meta) {
+      res.status(404).json({ success: false, error: 'No prompt snapshot for this message' }); return;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        sources: meta.sources ? JSON.parse(meta.sources as string) : null,
+        tools: meta.tools ? JSON.parse(meta.tools as string) : null,
+        model: meta.model,
+        promptVersion: meta.prompt_version ?? null,
+        botVersion: meta.bot_version ?? null,
+      },
+    });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
   }

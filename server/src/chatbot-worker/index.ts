@@ -158,9 +158,26 @@ async function processMessage(msg: InboundMessage): Promise<void> {
     insertTrace(conversationId, botId, workspaceId, 'trigger_eval', 0, {
       triggered: evalResult.shouldRespond,
       triggerId: evalResult.trigger.triggerId,
-    });
+      matchedKeyword: evalResult.trigger.matchedKeyword,
+      ruleAction: evalResult.rule.action,
+      ruleName: evalResult.rule.ruleName,
+    }, responseMessageId);
+
+    // Generate messageId upfront — used for all traces and the response metadata
+    const responseMessageId = `ai_${Date.now()}`;
+
     if (!evalResult.shouldRespond) {
-      console.log(`[worker] Bot ${botId} did not trigger response`);
+      // Record why the bot didn't respond for the inspector
+      recordResponseMetadata({
+        messageId: responseMessageId,
+        chatbotId: botId,
+        confidence: 0,
+        model: '',
+        matchedTrigger: evalResult.trigger.triggerId,
+        matchedRule: evalResult.rule.ruleId,
+        skipReason: evalResult.skipReason ?? 'no_trigger_matched',
+      });
+      console.log(`[worker] Bot ${botId} did not trigger response: ${evalResult.skipReason}`);
       return;
     }
 
@@ -168,12 +185,30 @@ async function processMessage(msg: InboundMessage): Promise<void> {
 
     // 2b. Handle non-AI actions
     if (rule.action === 'skip') {
+      recordResponseMetadata({
+        messageId: responseMessageId,
+        chatbotId: botId,
+        confidence: 0,
+        model: '',
+        matchedTrigger: evalResult.trigger.triggerId,
+        matchedRule: evalResult.rule.ruleId,
+        skipReason: 'rule_skip',
+      });
       console.log(`[worker] Rule matched: skip (no response)`);
       return;
     }
 
     if (rule.action === 'manual') {
       // Flag for human agent — update conversation state
+      recordResponseMetadata({
+        messageId: responseMessageId,
+        chatbotId: botId,
+        confidence: 0,
+        model: '',
+        matchedTrigger: evalResult.trigger.triggerId,
+        matchedRule: evalResult.rule.ruleId,
+        skipReason: 'handoff_active',
+      });
       console.log(`[worker] Rule matched: manual handoff`);
       db.prepare(`INSERT OR REPLACE INTO conversation_states (conversation_id, state, updated_at)
         VALUES (?, 'WAITING_AGENT', CURRENT_TIMESTAMP)`
@@ -183,7 +218,15 @@ async function processMessage(msg: InboundMessage): Promise<void> {
     }
 
     if (rule.action === 'workflow') {
-      // TODO: execute workflow nodes
+      recordResponseMetadata({
+        messageId: responseMessageId,
+        chatbotId: botId,
+        confidence: 0,
+        model: '',
+        matchedTrigger: evalResult.trigger.triggerId,
+        matchedRule: evalResult.rule.ruleId,
+        skipReason: 'workflow_stop',
+      });
       console.log(`[worker] Rule matched: workflow (not yet implemented)`);
       return;
     }
@@ -278,10 +321,21 @@ async function processMessage(msg: InboundMessage): Promise<void> {
             temperature: Number(aiConfig.temperature ?? 0.7),
           });
         },
-        (r) => ({ tokenCount: r.tokensUsed.total })
+        (r) => ({ tokenCount: r.tokensUsed.total }),
+        responseMessageId,
       );
 
       const { reply, confidence, tokensUsed } = response;
+
+      // Look up the current published versions for the inspector
+      const botVersionRow = db.prepare(
+        'SELECT MAX(version) as v FROM chatbot_versions WHERE chatbot_id = ? AND is_published = 1'
+      ).get(botId) as { v: number | null } | undefined;
+      const promptVersionRow = db.prepare(
+        'SELECT MAX(version) as v FROM chatbot_prompt_versions WHERE chatbot_id = ?'
+      ).get(botId) as { v: number | null } | undefined;
+      const botVersion = botVersionRow?.v != null ? String(botVersionRow.v) : undefined;
+      const promptVersion = promptVersionRow?.v != null ? String(promptVersionRow.v) : undefined;
 
       // 4. Log token usage
       logTokenUsage(botId, conversationId, String(aiConfig.model ?? 'gemini'), tokensUsed.prompt, tokensUsed.completion, tokensUsed.total);
@@ -289,6 +343,15 @@ async function processMessage(msg: InboundMessage): Promise<void> {
       // 5. Check confidence threshold — escalate to human if too uncertain
       const threshold = Number(policies?.confidence_threshold ?? 0.6);
       if (confidence < threshold) {
+        recordResponseMetadata({
+          messageId: responseMessageId,
+          chatbotId: botId,
+          confidence,
+          model: String(aiConfig.model ?? 'gemini'),
+          matchedTrigger: evalResult.trigger.triggerId,
+          matchedRule: evalResult.rule.ruleId,
+          skipReason: 'confidence_threshold',
+        });
         console.log(`[worker] Low confidence ${confidence} < ${threshold} — escalating to human`);
         // Don't send a low-confidence AI reply; instead escalate to a human agent
         requestHandoff(conversationId, '', String(bot.name ?? 'Bot'));
@@ -300,24 +363,28 @@ async function processMessage(msg: InboundMessage): Promise<void> {
         await traceAsync(
           conversationId, botId, workspaceId, 'response_send',
           () => sendWhatsAppText(instanceName, chatId, reply),
-          () => ({ triggered: true })
+          () => ({ triggered: true }),
+          responseMessageId,
         );
         console.log(`[worker] Sent reply to ${chatId}: "${reply.slice(0, 50)}..."`);
       }
 
       // 7. Insert AI reply into inbox
-      const messageId = `ai_${Date.now()}`;
       db.prepare(`INSERT INTO inbox_messages
         (id, workspace_id, customer_id, conversation_id, from_number, from_name, message_type, content, media_url, is_read, timestamp, direction)
         VALUES (?, ?, ?, ?, ?, ?, 'text', ?, '', 1, datetime('now'), 'outgoing')`
-      ).run(messageId, workspaceId, msg.customerId, conversationId, chatId, String(bot.name ?? 'Bot'), reply);
+      ).run(responseMessageId, workspaceId, msg.customerId, conversationId, chatId, String(bot.name ?? 'Bot'), reply);
 
       // 8. Record AI response explainability metadata
       recordResponseMetadata({
-        messageId,
+        messageId: responseMessageId,
         chatbotId: botId,
         confidence,
         model: String(aiConfig.model ?? 'gemini'),
+        promptVersion,
+        botVersion,
+        matchedTrigger: evalResult.trigger.triggerId,
+        matchedRule: evalResult.rule.ruleId,
       });
 
       // next_message policy: after AI responds, transition override to completed

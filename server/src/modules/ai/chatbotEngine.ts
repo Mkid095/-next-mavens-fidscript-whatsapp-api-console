@@ -32,10 +32,13 @@ export interface RuleResult {
   conditionsJson?: string;
 }
 
+export type ExecutionMode = 'production' | 'simulation';
+
 export interface EvaluationContext {
   workspaceId: string;
   contactId?: string;
   conversationId?: string;
+  mode?: ExecutionMode; // default 'production'
 }
 
 export interface EvaluationResult {
@@ -45,6 +48,7 @@ export interface EvaluationResult {
   conversationState: string;
   isHandoff: boolean;
   shouldRespond: boolean;
+  skipReason?: string; // why shouldRespond=false (for storage in metadata)
   replyText?: string;
 }
 
@@ -59,7 +63,7 @@ export function evaluateTriggers(
     'SELECT * FROM chatbot_configs WHERE id = ? AND workspace_id = ? AND enabled = 1'
   ).get(botId, ctx.workspaceId) as Record<string, unknown> | undefined;
   if (!bot) {
-    return { botId, trigger: { triggered: false, confidence: 0, requiresPreviousBotReply: false, satisfied: true }, rule: { matched: false, action: 'skip', actionConfig: {}, conditionsJson: '[]' }, conversationState: 'CLOSED', isHandoff: false, shouldRespond: false };
+    return { botId, trigger: { triggered: false, confidence: 0, requiresPreviousBotReply: false, satisfied: true }, rule: { matched: false, action: 'skip', actionConfig: {}, conditionsJson: '[]' }, conversationState: 'CLOSED', isHandoff: false, shouldRespond: false, skipReason: 'bot_disabled' };
   }
 
   // Load triggers ordered by priority
@@ -82,7 +86,7 @@ export function evaluateTriggers(
 
   // If conversation is closed/agent, don't respond
   if (['CLOSED', 'AGENT'].includes(conversationState) && triggerResult.triggerType !== 'always') {
-    return { botId, trigger: triggerResult, rule: { matched: false, action: 'skip', actionConfig: {} }, conversationState, isHandoff: false, shouldRespond: false };
+    return { botId, trigger: triggerResult, rule: { matched: false, action: 'skip', actionConfig: {} }, conversationState, isHandoff: true, shouldRespond: false, skipReason: conversationState === 'AGENT' ? 'handoff_active' : 'manual_override' };
   }
 
   // Apply response rules
@@ -102,6 +106,11 @@ export function evaluateTriggers(
     conversationState,
     isHandoff,
     shouldRespond,
+    skipReason: shouldRespond ? undefined
+      : !triggerResult.triggered ? 'no_trigger_matched'
+      : !triggerResult.satisfied  ? 'trigger_not_satisfied'
+      : ruleResult.action === 'skip' ? 'rule_skip'
+      : undefined,
   };
 }
 

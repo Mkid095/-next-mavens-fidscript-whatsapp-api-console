@@ -1,10 +1,10 @@
 /**
  * Runtime Tracing — step-level observability for chatbot message processing.
  *
- * Each span records: step name, duration_ms, and optional metadata JSON.
- * Useful for debugging, performance tuning, and understanding bot behaviour.
+ * Each span records: step name, duration_ms, optional metadata, and
+ * (for non-trigger_eval steps) the message_id of the bot's outgoing response.
  */
-import db, { saveDatabase } from '../database.js';
+import db from '../database.js';
 
 export type TraceStep =
   | 'trigger_eval'
@@ -16,6 +16,9 @@ export type TraceStep =
 interface TraceMeta {
   triggered?: boolean;
   triggerId?: string;
+  matchedKeyword?: string;
+  ruleAction?: string;
+  ruleName?: string;
   knowledgeSourceCount?: number;
   knowledgeSources?: string[];
   tokenCount?: number;
@@ -26,18 +29,21 @@ interface TraceMeta {
 
 const newId = () => `trace_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+// ─── Trace Insertion ──────────────────────────────────────────────────────────
+
 export function insertTrace(
   conversationId: string,
   chatbotId: string,
   workspaceId: string,
   step: TraceStep,
   durationMs: number,
-  meta?: TraceMeta
+  meta?: TraceMeta,
+  messageId?: string, // the bot's outgoing message_id (null for trigger_eval)
 ): void {
   try {
     db.prepare(`INSERT INTO chatbot_traces
-      (id, conversation_id, chatbot_id, workspace_id, step, duration_ms, metadata, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+      (id, conversation_id, chatbot_id, workspace_id, step, duration_ms, metadata, created_at, message_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)`
     ).run(
       newId(),
       conversationId,
@@ -45,9 +51,9 @@ export function insertTrace(
       workspaceId,
       step,
       durationMs,
-      meta ? JSON.stringify(meta) : null
+      meta ? JSON.stringify(meta) : null,
+      messageId ?? null,
     );
-    // Don't saveDatabase() here — tracing is fire-and-forget to avoid adding latency
   } catch (_) { /* non-fatal */ }
 }
 
@@ -60,13 +66,14 @@ export function trace<T>(
   workspaceId: string,
   step: TraceStep,
   fn: () => T,
-  metaFn?: (result: T) => TraceMeta
+  metaFn?: (result: T) => TraceMeta,
+  messageId?: string,
 ): T {
   const start = Date.now();
   const result = fn();
   const durationMs = Date.now() - start;
   const meta = metaFn ? metaFn(result) : undefined;
-  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta);
+  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta, messageId);
   return result;
 }
 
@@ -79,13 +86,14 @@ export async function traceAsync<T>(
   workspaceId: string,
   step: TraceStep,
   fn: () => Promise<T>,
-  metaFn?: (result: T) => TraceMeta
+  metaFn?: (result: T) => TraceMeta,
+  messageId?: string,
 ): Promise<T> {
   const start = Date.now();
   const result = await fn();
   const durationMs = Date.now() - start;
   const meta = metaFn ? metaFn(result) : undefined;
-  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta);
+  insertTrace(conversationId, chatbotId, workspaceId, step, durationMs, meta, messageId);
   return result;
 }
 
@@ -95,14 +103,20 @@ export function recordResponseMetadata(params: {
   messageId: string;
   chatbotId: string;
   sources?: Array<{ sourceId: string; sourceName: string; sourceType: string; relevanceScore?: number }>;
-  tools?: Array<{ toolId: string; toolName: string; resultSummary?: string }>;
+  tools?: Array<{ toolId: string; toolName: string; resultSummary?: string; input?: unknown; output?: unknown; durationMs?: number }>;
   confidence: number;
   model: string;
+  promptVersion?: string;
+  botVersion?: string;
+  matchedTrigger?: string; // trigger name/keyword that fired
+  matchedRule?: string;    // rule name that fired
+  skipReason?: string;    // why no response was generated
 }): void {
   try {
     db.prepare(`INSERT INTO chatbot_response_metadata
-      (id, message_id, chatbot_id, sources, tools, confidence, model, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+      (id, message_id, chatbot_id, sources, tools, confidence, model,
+       prompt_version, bot_version, matched_trigger, matched_rule, skip_reason, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
     ).run(
       newId(),
       params.messageId,
@@ -110,7 +124,12 @@ export function recordResponseMetadata(params: {
       params.sources ? JSON.stringify(params.sources) : null,
       params.tools ? JSON.stringify(params.tools) : null,
       params.confidence,
-      params.model
+      params.model,
+      params.promptVersion ?? null,
+      params.botVersion ?? null,
+      params.matchedTrigger ?? null,
+      params.matchedRule ?? null,
+      params.skipReason ?? null,
     );
   } catch (_) { /* non-fatal */ }
 }

@@ -820,4 +820,123 @@ router.delete('/:id/tools/:toolId', (req: Request, res: Response) => {
   res.json({ success: true, message: 'Tool detached' });
 });
 
+// ─── Inspector: list conversations for a chatbot ─────────────────────────────────
+
+router.get('/:id/conversations', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const { q, lowConfidence, escalated } = req.query as Record<string, string>;
+
+    // Conversations for this chatbot = distinct conversation_ids from
+    // chatbot_response_metadata rows that belong to this chatbot
+    let sql = `
+      SELECT
+        im.conversation_id,
+        c.display_name  AS customer_name,
+        c.phone         AS customer_number,
+        im.content      AS last_message,
+        im.timestamp    AS last_message_at,
+        COUNT(*)        AS message_count,
+        SUM(CASE WHEN im.is_read = 0 AND im.direction = 'incoming' THEN 1 ELSE 0 END) AS unread_count,
+        MAX(crm.confidence) AS max_confidence,
+        MAX(CASE WHEN crm.skip_reason IS NOT NULL THEN 1 ELSE 0 END) AS has_skip_reason
+      FROM chatbot_response_metadata crm
+      JOIN inbox_messages im ON im.id = crm.message_id
+      LEFT JOIN customers c ON c.id = im.customer_id
+      WHERE crm.chatbot_id = ?
+    `;
+    const params: unknown[] = [req.params.id];
+
+    if (q) {
+      sql += ' AND (c.display_name LIKE ? OR c.phone LIKE ?)';
+      params.push(`%${q}%`, `%${q}%`);
+    }
+
+    sql += ' GROUP BY im.conversation_id ORDER BY im.timestamp DESC LIMIT 100';
+
+    const rows = db.prepare(sql).all(...params) as Record<string, unknown>[];
+
+    const conversations = rows.map(r => ({
+      conversationId: r.conversation_id,
+      customerName: r.customer_name ?? 'Unknown',
+      customerNumber: r.customer_number ?? '',
+      lastMessage: r.last_message ?? '',
+      lastMessageAt: r.last_message_at,
+      messageCount: r.message_count,
+      unreadCount: r.unread_count,
+      lowConfidence: Number(r.max_confidence) < 0.5,
+      wasEscalated: r.has_skip_reason === 1,
+    }));
+
+    // Apply filters that need post-processing
+    let filtered = conversations;
+    if (lowConfidence === '1') filtered = filtered.filter(c => c.lowConfidence);
+    if (escalated === '1')    filtered = filtered.filter(c => c.wasEscalated);
+
+    res.json({ success: true, data: filtered });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── Inspector: replay a customer message in simulation mode ─────────────────────
+
+router.post('/:id/replay', (req: Request, res: Response) => {
+  try {
+    const workspaceId = wsId(req);
+    const bot = db.prepare(
+      'SELECT id FROM chatbot_configs WHERE id = ? AND workspace_id = ?'
+    ).get(req.params.id, workspaceId);
+    if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
+
+    const { messageId } = req.body as { messageId?: string };
+    if (!messageId) { res.status(400).json({ success: false, error: 'messageId is required' }); return; }
+
+    // Load the customer message to replay
+    const msg = db.prepare(
+      'SELECT content FROM inbox_messages WHERE id = ? AND workspace_id = ?'
+    ).get(messageId, workspaceId) as { content: string } | undefined;
+    if (!msg) { res.status(404).json({ success: false, error: 'Message not found' }); return; }
+
+    // Load prior conversation context (last 20 messages)
+    const conversationId = db.prepare(
+      'SELECT conversation_id FROM inbox_messages WHERE id = ?'
+    ).get(messageId) as { conversation_id: string } | undefined;
+    const historyMessages = conversationId
+      ? (db.prepare(`
+          SELECT content, direction FROM inbox_messages
+          WHERE conversation_id = ? AND id != ?
+          ORDER BY timestamp DESC LIMIT 20
+        `).all(conversationId.conversation_id, messageId) as { content: string; direction: string }[])
+      : [];
+
+    // Run trigger evaluation in simulation mode
+    const evalResult = evaluateTriggers(req.params.id, msg.content, {
+      workspaceId,
+      conversationId: conversationId?.conversation_id,
+      mode: 'simulation',
+    });
+
+    // Return what would happen — no actual LLM call in V1
+    res.json({
+      success: true,
+      data: {
+        matchedTrigger: evalResult.trigger.triggerId ?? null,
+        matchedRule: evalResult.rule.ruleName ?? null,
+        confidence: evalResult.trigger.confidence,
+        shouldRespond: evalResult.shouldRespond,
+        skipReason: evalResult.skipReason ?? null,
+        // historyMessages available for future LLM simulation
+      },
+    });
+  } catch (err: unknown) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 export default router;

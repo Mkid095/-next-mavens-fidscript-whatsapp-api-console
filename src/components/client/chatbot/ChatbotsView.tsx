@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApi } from '../../../services/api';
 import type { Instance } from '../../../services/api';
-import { Bot, Plus, Trash2, ToggleLeft, ToggleRight, ChevronRight, Loader2 } from 'lucide-react';
+import { Bot, Plus, Trash2, ToggleLeft, ToggleRight, ChevronRight, Loader2, Search } from 'lucide-react';
 
 interface Chatbot {
   id: string;
@@ -161,6 +161,15 @@ export default function ChatbotsView({ clientToken, instances }: ChatbotsViewPro
                   {bot.enabled
                     ? <ToggleRight className="w-5 h-5 text-green-400" />
                     : <ToggleLeft className="w-5 h-5" />}
+                </button>
+
+                {/* Inspect conversations */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/client/chatbots/${bot.id}/inspector`); }}
+                  className="p-1.5 text-[#6e684a] hover:text-yellow-400 transition opacity-0 group-hover:opacity-100"
+                  title="Inspect conversations"
+                >
+                  <Search className="w-4 h-4" />
                 </button>
 
                 {/* Delete */}
