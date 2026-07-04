@@ -68,7 +68,11 @@ interface ReplayResult {
   skipReason: string | null;
 }
 
-// ─── Skip reason labels ────────────────────────────────────────────────────────
+// ─── Version ─────────────────────────────────────────────────────────────────
+
+const ENGINE_VERSION = '0.9.0'; // must match package.json or backend version
+
+// ─── Skip reason labels ──────────────────────────────────────────────────────
 
 const SKIP_LABELS: Record<string, string> = {
   confidence_threshold: 'AI confidence below threshold',
@@ -500,13 +504,13 @@ export default function ConversationInspector({ clientToken }: { clientToken: st
                 <div>
                   <p className="text-[10px] uppercase tracking-wide text-[#6e684a] mb-1.5">Model</p>
                   <p className="text-xs text-white">{selectedMsg.aiMetadata.model}</p>
-                  {(selectedMsg.aiMetadata.botVersion || selectedMsg.aiMetadata.promptVersion) && (
-                    <p className="text-[10px] text-[#6e684a] mt-0.5">
-                      {selectedMsg.aiMetadata.botVersion && `Bot v${selectedMsg.aiMetadata.botVersion}`}
-                      {selectedMsg.aiMetadata.botVersion && selectedMsg.aiMetadata.promptVersion && ' · '}
-                      {selectedMsg.aiMetadata.promptVersion && `Prompt v${selectedMsg.aiMetadata.promptVersion}`}
-                    </p>
-                  )}
+                  <p className="text-[10px] text-[#6e684a] mt-0.5">
+                    {selectedMsg.aiMetadata.botVersion && `Bot v${selectedMsg.aiMetadata.botVersion}`}
+                    {selectedMsg.aiMetadata.botVersion && selectedMsg.aiMetadata.promptVersion && ' · '}
+                    {selectedMsg.aiMetadata.promptVersion && `Prompt v${selectedMsg.aiMetadata.promptVersion}`}
+                    {' · '}
+                    Engine {ENGINE_VERSION}
+                  </p>
                 </div>
               )}
 
