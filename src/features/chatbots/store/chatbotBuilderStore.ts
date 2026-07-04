@@ -28,6 +28,8 @@ interface ChatbotBuilderStore {
   // ── State ────────────────────────────────────────────────────────────────
   draft: ChatbotDraft;
   isEditMode: boolean;
+  botId: string | null;
+  clientToken: string | null;
 
   // ── Step Navigation ───────────────────────────────────────────────────────
   goToStep: (step: BuilderStepId) => void;
@@ -67,9 +69,11 @@ interface ChatbotBuilderStore {
 
 // ─── Initial State ─────────────────────────────────────────────────────────────
 
-const makeInitialState = (): Pick<ChatbotBuilderStore, 'draft' | 'isEditMode'> => ({
+const makeInitialState = (): Pick<ChatbotBuilderStore, 'draft' | 'isEditMode' | 'botId' | 'clientToken'> => ({
   draft: createDefaultDraft(),
   isEditMode: false,
+  botId: null,
+  clientToken: null,
 });
 
 // ─── Store Implementation ─────────────────────────────────────────────────────

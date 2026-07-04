@@ -67,6 +67,11 @@ export default function ChatbotBuilderShell({ clientToken, instances }: ChatbotB
   const isEditMode = Boolean(botId);
   const hasLoadedRef = useRef(false);
 
+  // Expose botId + clientToken to all step components via the store
+  useEffect(() => {
+    useChatbotBuilderStore.setState({ botId: botId ?? null, clientToken });
+  }, [botId, clientToken]);
+
   const {
     draft,
     isEditMode: storeIsEditMode,

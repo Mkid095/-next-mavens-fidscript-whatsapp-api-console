@@ -1,5 +1,5 @@
 {
-  "latest": "v0.8.2",
+  "latest": "v0.8.3",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,25 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.8.3",
+      "date": "2026-07-04",
+      "bumpType": "patch",
+      "title": "Fix ToolsStep disconnect — builder now uses real tool platform",
+      "category": "fix",
+      "tags": [
+        "chatbot-builder",
+        "tools",
+        "critical"
+      ],
+      "highlights": [],
+      "fixes": [
+        "ToolsStep in the chatbot builder was storing inline tool definitions in draft JSON (draft.tools.tools) that the runtime engine never read. Rewrote ToolsStep to fetch from GET /api/platform/chatbots/:id/tools + GET /api/platform/data-sources/:id/tools — single source of truth. Builder now shows attached tools with approval/confirmation badges, available tools to attach, approve/reject for pending tools, attach/detach via real API calls."
+      ],
+      "commits": [
+        "3dff0c2"
+      ]
+    },
     {
       "version": "v0.8.2",
       "date": "2026-07-04",
