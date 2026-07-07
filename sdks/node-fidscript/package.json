@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
     }
   },
   "bin": {
@@ -45,6 +49,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@fidscript/cli": "^1.0.8"
+    "@fidscript/cli": "^1.0.8",
+    "@fidscript/types": "file:../../packages/types"
   }
 }

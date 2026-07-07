@@ -10,6 +10,7 @@ import {
   Key,
   Bot,
   Sparkles,
+  Coins,
 } from 'lucide-react';
 
 export interface AdminNavItem {
@@ -30,6 +31,7 @@ export const adminNavItems: AdminNavItem[] = [
   { name: 'Inbox', icon: Mail, path: '/admin/inbox' },
   { name: 'Audit Logs', icon: History, path: '/admin/audit-logs' },
   { name: 'Security & Keys', icon: Key, path: '/admin/keys' },
+  { name: 'Billing', icon: Coins, path: '/admin/billing' },
 ];
 
 export function getActiveAdminTab(path: string): string {

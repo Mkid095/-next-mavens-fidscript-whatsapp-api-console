@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Segment } from '../../data/api/platform.js';
-import { useSegmentPreview } from '../../data/hooks/useSegments.js';
+import { useSegmentPreview } from '../../data/hooks/segments/useSegments.js';
 import { SegmentList } from '../segments/index.js';
 
 interface SegmentAudiencePickerProps {

@@ -1,7 +1,7 @@
-import { bus } from '../events/bus.js';
+import { bus } from '../events/index.js';
 import db from '../../../database.js';
 import { signPayload } from './hmac.js';
-import type { DomainEventType, DomainEventPayload } from '../events/catalog.js';
+import type { DomainEventType, DomainEventPayload } from '../events/index.js';
 
 // =============================================================================
 // Webhook fan-out — bus().subscribe('*', deliverToWebhooks).

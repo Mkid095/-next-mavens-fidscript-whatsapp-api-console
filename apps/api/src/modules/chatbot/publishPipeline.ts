@@ -11,7 +11,7 @@ import { validatePublish } from './validation/index.js';
 import type { ChatbotDraft, PublishJob } from '../../types/chatbotDraft.js';
 import { saveDatabase } from '../../database.js';
 import { publishJobEmitter } from '../../utils/publishJobEmitter.js';
-import { setRuntimeConfig } from '../../chatbot-worker/chatbotRuntimeCache.js';
+import { setRuntimeConfig } from './chatbotRuntimeCache.js';
 
 type JobStatus = PublishJob['status'];
 

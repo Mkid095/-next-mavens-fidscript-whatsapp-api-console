@@ -14,6 +14,7 @@ import { register as registerLlm } from './llmCommands.js';
 import { register as registerTool } from './toolCommands.js';
 import { register as registerDataSource } from './dataSourceCommands.js';
 import { register as registerMessages } from './messagesCommands.js';
+import { register as registerPlatform } from './platformCommands.js';
 
 export function registerCommands(cli: Command): void {
   registerAuth(cli);
@@ -25,4 +26,5 @@ export function registerCommands(cli: Command): void {
   registerTool(cli);
   registerDataSource(cli);
   registerMessages(cli); // async — resolves send/list sub-commands dynamically
+  registerPlatform(cli);
 }

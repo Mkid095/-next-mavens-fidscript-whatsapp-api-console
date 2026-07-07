@@ -1,18 +1,5 @@
 /**
- * chatbotEngine/ — trigger evaluation + rule engine.
- *
- * Exported from chatbotEngineImpl.ts (the main engine):
- *   evaluateTriggers()
- *   evaluateConditions()
- *   findBotsForMessage()
- *   pickBestBot()
- *   type TriggerResult, RuleResult, EvaluationContext, EvaluationResult
- *
- * triggerEvaluator.ts (trigger matching helpers):
- *   matchKeyword()
- *
- * responseFormatter.ts (response formatting):
- *   formatBotResponse()
+ * chatbotEngine/ — forwarding re-export from kernel/automation/chatbotEngine/.
  */
 export type {
   TriggerResult,
@@ -21,11 +8,12 @@ export type {
   EvaluationResult,
   ExecutionMode,
   GroupRespondMode,
-} from './chatbotEngineImpl.js';
+} from '../../../kernel/automation/chatbotEngine/index.js';
 
 export {
   evaluateTriggers,
   evaluateConditions,
   findBotsForMessage,
   pickBestBot,
-} from './chatbotEngineImpl.js';
+  matchKeyword,
+} from '../../../kernel/automation/chatbotEngine/index.js';

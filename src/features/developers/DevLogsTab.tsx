@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Activity } from 'lucide-react';
-import { useDeveloperLogs } from '../../data/hooks/useWebhooks';
+import { useDeveloperLogs } from '../../data/hooks/developers/useWebhooks.js';
 
 const METHOD_OPTIONS = ['', 'GET', 'POST', 'PATCH', 'DELETE', 'PUT'];
 

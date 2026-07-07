@@ -3,7 +3,7 @@
  * publish to NATS, emit SSE events.
  */
 import { Request } from 'express';
-import { resolveConversation } from '../modules/customers/index.js';
+import { resolveConversation } from '../kernel/entities/index.js';
 import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
 import { resolveContactByPhone } from '../services/contactResolver.js';
 import { publishChatbotInbound } from '../utils/natsPublisher.js';

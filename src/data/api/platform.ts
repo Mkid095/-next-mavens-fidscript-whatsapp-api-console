@@ -326,6 +326,13 @@ export const platformApi = {
     return apiGet<SearchHit[]>(`/api/platform/search?${params.toString()}`);
   },
   analyticsOverview: () => apiGet<Record<string, number>>(`/api/platform/analytics/overview`),
+  analyticsQuery: (params?: { period?: string; metric?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.period) qs.set('period', params.period);
+    if (params?.metric) qs.set('metric', params.metric);
+    const tail = qs.size ? `?${qs}` : '';
+    return apiGet<Array<{ metric_type: string; entity_type: string | null; period: string; period_start: string; value: number; extra: string | null }>>(`/api/platform/analytics${tail}`);
+  },
 
   // Group metadata
   getGroupInfo: (chatId: string) =>

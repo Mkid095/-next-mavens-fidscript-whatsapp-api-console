@@ -117,6 +117,39 @@ export async function resolveConversation(
         (id, workspace_id, customer_id, channel, instance_id, chat_id, last_message_at, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(conversationId, ctx.workspaceId, customerId, channel, instanceId ?? null, chatId, now, now);
+
+    // ── Stamp SLA deadlines if a matching policy exists ─────────────────────
+    const policy = db.prepare(`
+      SELECT first_response_minutes, resolution_minutes
+        FROM sla_policies
+       WHERE workspace_id = ?
+         AND (channel = ? OR channel IS NULL)
+       ORDER BY channel DESC, priority ASC
+       LIMIT 1
+    `).get(ctx.workspaceId, channel) as {
+      first_response_minutes: number;
+      resolution_minutes: number;
+    } | undefined;
+
+    if (policy) {
+      const createdAt = new Date(now);
+      const responseDue = new Date(createdAt.getTime() + policy.first_response_minutes * 60 * 1000);
+      const resolutionDue = new Date(createdAt.getTime() + policy.resolution_minutes * 60 * 1000);
+      db.prepare(`
+        UPDATE conversations
+           SET response_due_at = ?,
+               resolution_due_at = ?,
+               sla_policy_id = (
+                 SELECT id FROM sla_policies
+                  WHERE workspace_id = ?
+                    AND (channel = ? OR channel IS NULL)
+                  ORDER BY channel DESC, priority ASC
+                  LIMIT 1
+               )
+         WHERE id = ?
+      `).run(responseDue.toISOString(), resolutionDue.toISOString(), ctx.workspaceId, channel, conversationId);
+    }
+
     isNewConversation = true;
 
     // Emit conversation.created event

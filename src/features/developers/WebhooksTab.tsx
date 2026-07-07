@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Trash2, Webhook as WebhookIcon, Copy, Check } from 'lucide-react';
 import { platformApi } from '../../data/api';
-import { useWebhooks, useWebhookDeliveries } from '../../data/hooks/useWebhooks';
+import { useWebhooks, useWebhookDeliveries } from '../../data/hooks/developers/useWebhooks.js';
 import type { Webhook } from '../../data/api';
 
 const EVENT_OPTIONS = [

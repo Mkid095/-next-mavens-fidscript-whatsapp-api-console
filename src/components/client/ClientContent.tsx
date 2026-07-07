@@ -123,7 +123,7 @@ export default function ClientContent({
         clientToken && <ChatbotListPage clientToken={clientToken} instances={instances} />
       )}
       {activeSection === 'settings' && (
-        <SettingsSection client={client} onLogout={onLogout} />
+        <SettingsSection client={client} clientToken={clientToken} onLogout={onLogout} />
       )}
     </div>
   );

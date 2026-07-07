@@ -21,6 +21,7 @@ import developerLogsRoutes from './developerLogs.js';
 import chatMirrorRoutes from './chatMirror.js';
 import phonebookRoutes from './phonebook.js';
 import dataSourcesRoutes from './dataSources.js';
+import connectorsRoutes from './connectors.js';
 import { workspaceAuth } from '../../modules/platform/workspace/index.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 
@@ -48,6 +49,7 @@ router.use('/chatbots', chatbotsRoutes);
 router.use('/chatbot-drafts', chatbotDraftsRoutes);
 router.use('/llm-connections', llmConnectionsRoutes);
 router.use('/data-sources', dataSourcesRoutes);
+router.use('/connectors', connectorsRoutes);
 router.use('/media', mediaRoutes);
 router.use('/segments', segmentsRoutes);
 router.use('/webhooks', webhooksRoutes);

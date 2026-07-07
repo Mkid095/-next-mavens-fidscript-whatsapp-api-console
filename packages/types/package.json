@@ -1,0 +1,48 @@
+{
+  "name": "@fidscript/types",
+  "version": "0.0.0",
+  "description": "Shared TypeScript types for the FIDScript monorepo — SDK, CLI, and frontend.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./whatsapp": {
+      "types": "./dist/whatsapp.d.ts",
+      "import": "./dist/whatsapp.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./chatbot": {
+      "types": "./dist/chatbot.d.ts",
+      "import": "./dist/chatbot.js"
+    },
+    "./entities": {
+      "types": "./dist/entities.d.ts",
+      "import": "./dist/entities.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "fidscript",
+    "typescript",
+    "types"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

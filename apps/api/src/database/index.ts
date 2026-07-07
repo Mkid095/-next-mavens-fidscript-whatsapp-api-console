@@ -33,6 +33,14 @@ import { runPhase25Migrations } from './phase25.js';
 import { runPhase26Migrations } from './phase26.js';
 import { runPhase27Migrations } from './phase27.js';
 import { runPhase28Migrations } from './phase28.js';
+import { runPhase29Migrations } from './phase29.js';
+import { runPhase31Migrations } from './phase31.js';
+import { runPhase32Migrations } from './phase32.js';
+import { runPhase33Migrations } from './phase33.js';
+import { runPhase34Migrations } from './phase34.js';
+import { runPhase35Migrations } from './phase35.js';
+import { runPhase36Migrations } from './phase36.js';
+import { runPhase37Migrations } from './phase37.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,6 +90,14 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase26Migrations(db);     // data_sources + tools + chatbot_tools
   runPhase27Migrations(db);     // tool security: approved + requires_confirmation
   runPhase28Migrations(db);     // inspector: message_id on traces + metadata versions + skip_reason
+  runPhase29Migrations(db);     // Relax LLM provider CHECK constraints
+  runPhase31Migrations(db);     // Seed FIDScript customer-care agent
+  runPhase32Migrations(db);     // Billing control plane: token_action_costs table
+  runPhase33Migrations(db);     // Connector credentials table
+  runPhase34Migrations(db);     // Connector tool type + auto-seeded tools
+  runPhase35Migrations(db);    // Connector events table
+  runPhase36Migrations(db);    // Connector event retry metadata
+  runPhase37Migrations(db);    // Webhook delivery ID dedup table
   await seedData(db);
   saveDatabase();
 

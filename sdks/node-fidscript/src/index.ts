@@ -19,6 +19,12 @@ import { SendsResource } from './sends.js';
 import { InstancesResource } from './instances.js';
 import { ChatbotsResource } from './chatbots.js';
 import { LlmResource } from './llm.js';
+import { CustomersResource } from './customers.js';
+import { ConversationsResource } from './conversations.js';
+import { CampaignsResource } from './campaigns.js';
+import { WebhooksResource } from './webhooks.js';
+import { AnalyticsResource } from './analytics.js';
+import { BillingResource, AdminBillingResource } from './billing.js';
 
 export class Fidscript {
   public readonly client: FidscriptClient;
@@ -27,6 +33,14 @@ export class Fidscript {
   public readonly instances: InstancesResource;
   public readonly chatbots: ChatbotsResource;
   public readonly llm: LlmResource;
+  public readonly customers: CustomersResource;
+  public readonly conversations: ConversationsResource;
+  public readonly campaigns: CampaignsResource;
+  public readonly webhooks: WebhooksResource;
+  public readonly analytics: AnalyticsResource;
+  public readonly billing: BillingResource;
+  /** Admin-only billing management (requires JWT login) */
+  public readonly adminBilling: AdminBillingResource;
 
   constructor(opts: FidscriptClientOptions = {}) {
     this.client = new FidscriptClient(opts);
@@ -35,6 +49,13 @@ export class Fidscript {
     this.instances = new InstancesResource(this.client);
     this.chatbots = new ChatbotsResource(this.client);
     this.llm = new LlmResource(this.client);
+    this.customers = new CustomersResource(this.client);
+    this.conversations = new ConversationsResource(this.client);
+    this.campaigns = new CampaignsResource(this.client);
+    this.webhooks = new WebhooksResource(this.client);
+    this.analytics = new AnalyticsResource(this.client);
+    this.billing = new BillingResource(this.client);
+    this.adminBilling = new AdminBillingResource(this.client);
   }
 
   /** Quick check: returns the authenticated client. */
@@ -69,9 +90,19 @@ export type {
   ContactCard, MessageKey, ListSection, ListRow,
   Chatbot, ChatbotAiConfig, ChatbotHealth,
   LlmConnection, CreateLlmConnection,
+  Customer, CustomerTimelineEvent,
+  Conversation, ConversationMessage, ConversationStatus, ConversationPriority,
+  Campaign, Webhook,
+  MetricRollup, AnalyticsOverview, AnalyticsPeriod,
 } from './types.js';
 export { AuthResource } from './auth.js';
 export { SendsResource } from './sends.js';
 export { InstancesResource } from './instances.js';
 export { ChatbotsResource, type CreateChatbot } from './chatbots.js';
 export { LlmResource } from './llm.js';
+export { CustomersResource } from './customers.js';
+export { ConversationsResource } from './conversations.js';
+export { CampaignsResource } from './campaigns.js';
+export { WebhooksResource, verifySignature, WebhookDeliveryTracker, type VerifiedWebhook } from './webhooks.js';
+export { AnalyticsResource } from './analytics.js';
+export { BillingResource, AdminBillingResource } from './billing.js';

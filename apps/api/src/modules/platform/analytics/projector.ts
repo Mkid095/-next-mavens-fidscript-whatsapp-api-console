@@ -1,6 +1,6 @@
-import { bus } from '../events/bus.js';
+import { bus } from '../events/index.js';
 import { upsertMetric, ensureMetricRollupsTable, type MetricType, type Period } from './rollups.js';
-import type { DomainEventPayload } from '../events/catalog.js';
+import type { DomainEventPayload } from '../events/index.js';
 
 // =============================================================================
 // AnalyticsProjector — one per domain, registered at boot.

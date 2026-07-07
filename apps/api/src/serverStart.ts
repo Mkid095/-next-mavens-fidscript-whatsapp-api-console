@@ -8,12 +8,18 @@ import { registerAnalyticsProjectors } from './modules/platform/analytics/index.
 import { registerInboundPipeline } from './modules/ai/index.js';
 import { registerAutomations } from './modules/automation/index.js';
 import { registerWebhookFanout } from './modules/platform/webhooks/index.js';
-import { registerAuditTrail } from './modules/platform/audit/trail.js';
+import { registerAuditTrail } from './kernel/audit/index.js';
 import { registerTriggers } from './modules/campaigns/triggers.js';
 import { startDripScheduler } from './modules/campaigns/drip.js';
 import { startStatusScheduler } from './modules/campaigns/statusScheduler.js';
+import { startSlaScheduler } from './modules/automation/slaScheduler.js';
+// Self-registering connectors — must import before any runtime resolution
+import './modules/connectors/shopify/index.js';
+import './modules/connectors/woocommerce/index.js';
 import { setupMiddleware } from './middlewareSetup.js';
 import { registerInlineRoutes } from './routesRegister.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const PORT = process.env.PORT || 3001;
 
@@ -42,7 +48,8 @@ export async function startServer(): Promise<void> {
     registerAuditTrail();
     startDripScheduler();
     startStatusScheduler();
-    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations, triggers, webhooks, audit) + drip + status schedulers started');
+    startSlaScheduler();
+    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations, triggers, webhooks, audit) + drip + status + SLA schedulers started');
 
     // Prune expired idempotency keys on every startup (7-day TTL)
     try {
@@ -57,6 +64,52 @@ export async function startServer(): Promise<void> {
     // Setup middleware and inline routes
     setupMiddleware(app);
     registerInlineRoutes(app);
+
+    // ── API reference (Scalar docs) — served before static middleware ──────
+    // GET /api/openapi.json → raw OpenAPI spec JSON
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const openApiPath = path.resolve(__dirname, '..', '..', 'docs', 'openapi.json');
+
+    app.get('/api/openapi.json', (_req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.sendFile(openApiPath, (err) => {
+        if (err) res.status(404).json({ error: 'openapi.json not found. Run from project root.' });
+      });
+    });
+
+    // GET /api/reference → embedded Scalar API reference UI
+    app.get('/api/reference', (_req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      res.send(`<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>FIDScript API Reference</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #fff; }
+    #scalar-container { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="scalar-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@latest/dist/browser/standalone.js"></script>
+  <script>
+    Scalar.create({
+      container: '#scalar-container',
+      spec: { url: '/api/openapi.json' },
+      pageTitle: 'FIDScript API Reference',
+      showSidebar: true,
+      defaultOpenAllTags: false,
+      theme: 'light',
+    });
+  </script>
+</body>
+</html>`);
+    });
 
     // Start server
     app.listen(PORT, () => {

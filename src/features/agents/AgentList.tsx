@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bot, Plus, Trash2 } from 'lucide-react';
-import { useAgents } from '../../data/hooks/useAgents.js';
+import { useAgents } from '../../data/hooks/agents/useAgents.js';
 import AgentEditor from './AgentEditor.js';
 
 // Phase 4 — agent registry list (§10.4). One component = list + create

@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
-import { bus } from '../platform/events/bus.js';
+import { bus } from '../platform/events/index.js';
 import type {
   CustomerCreatedPayload,
   CustomerTaggedPayload,
   ConversationCreatedPayload,
   OrderCreatedPayload,
   DomainEventPayload,
-} from '../platform/events/catalog.js';
+} from '../platform/events/index.js';
 import { enrollCustomer } from './drip.js';
 
 // =============================================================================

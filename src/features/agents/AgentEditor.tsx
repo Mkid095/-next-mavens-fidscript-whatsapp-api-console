@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { platformApi } from '../../data/api/platform.js';
-import { useAgentPermissions } from '../../data/hooks/useAgents.js';
+import { useAgentPermissions } from '../../data/hooks/agents/useAgents.js';
 import type { Agent } from '../../data/api/platform.js';
 
 // Phase 4 — single-agent editor inline within the agent list. Shows description,

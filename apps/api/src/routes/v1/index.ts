@@ -13,6 +13,11 @@ import settingsRouter from './settings.js';
 import instanceRouter from './instance.js';
 import providersRouter from './providers.js';
 import healthRouter from './health.js';
+import customersRouter from './customers.js';
+import conversationsRouter from './conversations.js';
+import campaignsRouter from './campaigns.js';
+import webhooksRouter from './webhooks.js';
+import analyticsRouter from './analytics.js';
 
 /**
  * Public API namespace — /api/v1.
@@ -67,5 +72,12 @@ router.use('/settings', v1Limiter, settingsRouter);
 // Instance lifecycle — connection-state, connect/QR, restart (confirm-guarded), logout, set-presence.
 router.use('/instance', v1Limiter, instanceRouter);
 router.use('/providers', v1Limiter, clientApiKeyAuth, V1_READ, providersRouter);
+
+// Developer platform — read-heavy APIs for external integrators
+router.use('/customers', v1Limiter, clientApiKeyAuth, V1_READ, customersRouter);
+router.use('/conversations', v1Limiter, clientApiKeyAuth, V1_READ, conversationsRouter);
+router.use('/campaigns', v1Limiter, clientApiKeyAuth, V1_READ, campaignsRouter);
+router.use('/webhooks', v1Limiter, webhooksRouter);
+router.use('/analytics', v1Limiter, clientApiKeyAuth, V1_READ, analyticsRouter);
 
 export default router;

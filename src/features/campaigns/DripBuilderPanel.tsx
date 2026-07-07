@@ -1,6 +1,6 @@
 import type { Instance } from '../../services/api';
 import { DripFlowEditor, TriggerBuilder } from '../flows/index.js';
-import { useDripEnrollments } from '../../data/hooks/useDripCampaigns.js';
+import { useDripEnrollments } from '../../data/hooks/automation/useDripCampaigns.js';
 
 interface DripBuilderPanelProps {
   campaignId: string | null;

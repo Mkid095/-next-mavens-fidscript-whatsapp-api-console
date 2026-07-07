@@ -6,3 +6,6 @@ export { default as maintenanceRouter } from './maintenance.js';
 export { default as webhookTestRouter } from './webhookTest.js';
 export { default as llmProvidersRouter } from './llmProviders.js';
 export { default as chatbotAnalyticsRouter } from './chatbotAnalytics.js';
+export { default as billingRouter } from './billing.js';
+export { default as systemHealthRouter } from './systemHealth.js';
+export { default as connectorEventsRouter } from './connectorEvents.js';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Save, RefreshCw } from 'lucide-react';
 import type { CampaignStep, StepActionType } from '../../data/api/platform.js';
-import { useCampaignSteps } from '../../data/hooks/useDripCampaigns.js';
+import { useCampaignSteps } from '../../data/hooks/automation/useDripCampaigns.js';
 import StepRow from './StepRow.js';
 
 interface DripFlowEditorProps {

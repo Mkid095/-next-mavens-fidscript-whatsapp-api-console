@@ -4,9 +4,12 @@ import type { Client } from '../../services/api';
 import { TeamsPanel } from '../../features/workspace/index.js';
 import { SLAPolicyEditor, AutomationList } from '../../features/automation/index.js';
 import { AgentList, KeywordRuleEditor } from '../../features/agents/index.js';
+import DataSourcesPanel from '../../features/settings/DataSourcesPanel';
+import ConnectorsPanel from '../../features/settings/ConnectorsPanel';
 
 interface SettingsSectionProps {
   client: Client;
+  clientToken?: string;
   onLogout: () => void;
 }
 
@@ -14,7 +17,7 @@ interface SettingsSectionProps {
  * SettingsSection — account info + workspace + AI/automation panels.
  * Dark-mode consistent with the rest of the client dashboard.
  */
-export default function SettingsSection({ client, onLogout }: SettingsSectionProps) {
+export default function SettingsSection({ client, clientToken, onLogout }: SettingsSectionProps) {
   return (
     <div className="space-y-6">
       {/* Account card */}
@@ -73,6 +76,24 @@ export default function SettingsSection({ client, onLogout }: SettingsSectionPro
           <div className="rounded-2xl border border-[#2d2813] bg-[#181711] p-4 lg:col-span-2"><AutomationList /></div>
         </div>
       </div>
+
+      {/* Data Sources */}
+      {clientToken && (
+        <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-4 sm:p-6 shadow-sm">
+          <DataSourcesPanel clientToken={clientToken} />
+        </div>
+      )}
+
+      {/* Connectors */}
+      {clientToken && (
+        <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-4 sm:p-6 shadow-sm">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-[#cbd3cf]">Integrations</h3>
+            <p className="text-xs text-[#6e684a] mt-0.5">Connect external services for AI tools and automations.</p>
+          </div>
+          <ConnectorsPanel clientToken={clientToken} />
+        </div>
+      )}
     </div>
   );
 }

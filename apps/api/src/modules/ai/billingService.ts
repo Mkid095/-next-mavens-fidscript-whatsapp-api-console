@@ -12,6 +12,7 @@
  *   Knowledge search = 1 unit
  */
 import db, { saveDatabase } from '../../database.js';
+import { getCost } from '../../services/pricingService.js';
 
 const PLAN_LIMITS: Record<string, number> = {
   starter:    5_000,
@@ -96,15 +97,17 @@ export function deductUnits(
   return { success: true, totalUnits, remaining: getRemainingUnits(workspaceId) };
 }
 
-function computeUnits(action: string, tokensUsed?: number): number {
-  switch (action) {
-    case 'ai_reply':        return 10;
-    case 'dataset_search':  return 2;
-    case 'tool_call':       return 2;
-    case 'memory_save':      return 1;
-    case 'knowledge_search': return 1;
-    default:                return 1;
-  }
+function computeUnits(action: string, _tokensUsed?: number): number {
+  // Map billingService action names to token_action_costs action keys
+  const actionMap: Record<string, string> = {
+    ai_reply:          'ai.reply',
+    dataset_search:    'ai.dataset_search',
+    tool_call:         'ai.tool_call',
+    memory_save:       'ai.memory_save',
+    knowledge_search:  'ai.knowledge_search',
+  };
+  const costAction = actionMap[action] ?? action;
+  return getCost(costAction);
 }
 
 /**

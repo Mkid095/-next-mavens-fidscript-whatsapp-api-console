@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="FIDScript WAAP Runtime Architecture">
+    <mxGraphModel dx="2400" dy="1800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4800" pageHeight="2400">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="T1" value="FIDScript WAAP — Runtime Architecture" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="10" width="1600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- EXTERNAL SYSTEMS LAYER -->
+        <mxCell id="EXT_LBL" value="EXTERNAL SYSTEMS" style="text;html=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="20" y="60" width="160" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- WhatsApp -->
+        <mxCell id="WHATSAPP" value="WhatsApp&#xa;(User Channel)" style="shape=mxgraph.whatsapp;whatsApp;whiteSpace=wrap;html=1;fillColor=#25D366;strokeColor=#128C7E;fontColor=#FFFFFF;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Evolution API -->
+        <mxCell id="EVOL" value="Evolution API&#xa;(WhatsApp Gateway)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B35;strokeColor=#E85A24;fontColor=#FFFFFF;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="100" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- AI Providers -->
+        <mxCell id="AI_PROV" value="AI Providers" style="text;html=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="380" y="60" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ANTHROPIC" value="Anthropic&#xa;(Claude)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B35;strokeColor=#E85A24;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="100" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OPENROUTER" value="OpenRouter&#xa;(Multi-LLM)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B35;strokeColor=#E85A24;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="155" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="GEMINI" value="Gemini&#xa;(Google)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B35;strokeColor=#E85A24;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="210" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="BYOLLM" value="BYO-LLM&#xa;(Custom)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B35;strokeColor=#E85A24;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="265" width="80" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- DEVELOPER LAYER -->
+        <mxCell id="DEV_LBL" value="DEVELOPER LAYER" style="text;html=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="20" y="340" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="CLI" value="fidscript CLI&#xa;(Developer Tool)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6B5B95;strokeColor=#4B3F72;fontColor=#FFFFFF;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="SDK" value="@fidscript/sdk&#xa;(Node.js Transport)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6B5B95;strokeColor=#4B3F72;fontColor=#FFFFFF;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="455" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- API GATEWAY LAYER -->
+        <mxCell id="GW_BOX" style="swimlane;startSize=30;fillColor=#1a1a2e;strokeColor=#1a1a2e;fontColor=#FFFFFF;fontSize=13;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="50" width="900" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="GW_LBL" value="API GATEWAY LAYER  (apps/api)" style="text;html=1;fontSize=12;fontStyle=1;align=left;verticalAlign=middle;fontColor=#FFFFFF;fillColor=none;strokeColor=none;spacingLeft=10;" vertex="1" parent="GW_BOX">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Webhook Handler -->
+        <mxCell id="WEBHOOK" value="Webhook Handler&#xa;(Evolution → NATS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="520" y="100" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- REST API Surface -->
+        <mxCell id="REST_LBL" value="REST API Surface" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="REST_ADM" value="/api/admin/*&#xa;(Admin JWT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="100" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="REST_PLAT" value="/api/platform/*&#xa;(Client JWT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="155" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="REST_V1" value="/api/v1/*&#xa;(API Key)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="850" y="100" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="REST_INST" value="/api/instance/*&#xa;(Token + Key)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="850" y="155" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Auth Middleware -->
+        <mxCell id="AUTH_LBL" value="Auth Middleware" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="80" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="AUTH_JWT" value="Admin JWT&#xa;Client JWT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="100" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="AUTH_APIKEY" value="API Key&#xa;Rate Limit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="155" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="AUTH_V1" value="v1 Version&#xa;Header" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="100" width="90" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="AUTH_RL" value="Rate&#xa;Limiter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="155" width="90" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend -->
+        <mxCell id="FE_BOX" style="swimlane;startSize=30;fillColor=#1a1a2e;strokeColor=#1a1a2e;fontColor=#FFFFFF;fontSize=13;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="240" width="900" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="FE_LBL" value="FRONTEND CONTROL PLANE  (src/)" style="text;html=1;fontSize=12;fontStyle=1;align=left;verticalAlign=middle;fontColor=#FFFFFF;fillColor=none;strokeColor=none;spacingLeft=10;" vertex="1" parent="FE_BOX">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="FE_ADMIN" value="Admin Dashboard&#xa;(Client Mgmt, Instances)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="520" y="290" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FE_CLIENT" value="Client Portal&#xa;(Workspace Dashboard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="700" y="290" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FE_BUILDER" value="Chatbot Builder&#xa;(Multi-step Wizard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="880" y="290" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FE_INBOX" value="Inbox +&#xa;Messaging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="290" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FE_SANDBOX" value="API Sandbox&#xa;(Developer Console)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="290" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- NATS MESSAGE BUS -->
+        <mxCell id="NATS_BOX" style="swimlane;startSize=30;fillColor=#0D3B66;strokeColor=#0D3B66;fontColor=#FFFFFF;fontSize=13;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="50" width="280" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="NATS_LBL" value="NATS MESSAGE BUS" style="text;html=1;fontSize=12;fontStyle=1;align=left;verticalAlign=middle;fontColor=#FFFFFF;fillColor=none;strokeColor=none;spacingLeft=10;" vertex="1" parent="NATS_BOX">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="NATS_IN" value="chatbot.inbound.&lt;workspace&gt;" style="shape=mxgraph.mscaffeine.queue;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="100" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="NATS_OUT" value="chatbot.outbound.&lt;workspace&gt;" style="shape=mxgraph.mscaffeine.queue;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="160" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="NATS_BILL" value="billing.ledger" style="shape=mxgraph.mscaffeine.queue;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="220" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="NATS_EVT" value="events.&lt;workspace&gt;" style="shape=mxgraph.mscaffeine.queue;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="270" width="240" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- WORKER LAYER -->
+        <mxCell id="WRK_BOX" style="swimlane;startSize=30;fillColor=#1a1a2e;strokeColor=#1a1a2e;fontColor=#FFFFFF;fontSize=13;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="1720" y="50" width="1080" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WRK_LBL" value="WORKER RUNTIME LAYER  (apps/worker)" style="text;html=1;fontSize=12;fontStyle=1;align=left;verticalAlign=middle;fontColor=#FFFFFF;fillColor=none;strokeColor=none;spacingLeft=10;" vertex="1" parent="WRK_BOX">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NATS Subscriber -->
+        <mxCell id="SUB" value="NATS Subscriber&#xa;(Inbound Consumer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="100" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Pipeline stages -->
+        <mxCell id="PIPE_LBL" value="Pipeline" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1920" y="80" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="PIPE_ROUTE" value="Route&#xa;(Workspace)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1920" y="100" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="PIPE_CLASS" value="Classify&#xa;(Intent)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1920" y="155" width="80" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- AI Engine -->
+        <mxCell id="AI_GATE" value="AI Gateway&#xa;(Multi-Adapter)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2020" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Tool Executor -->
+        <mxCell id="TOOL" value="Tool Executor&#xa;(Function Calling)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="100" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Memory -->
+        <mxCell id="MEM" value="Context Manager&#xa;(Memory/M)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2310" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Handoff -->
+        <mxCell id="HANDOFF" value="Handoff Service&#xa;(AI → Human)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2450" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Billing -->
+        <mxCell id="BILL_REC" value="Billing Recorder&#xa;(Token + Memory)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2590" y="100" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Response Formatter -->
+        <mxCell id="RESP_FMT" value="Response&#xa;Formatter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2740" y="100" width="80" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Storage -->
+        <mxCell id="DB" value="SQLite (sql.js)&#xa;Bot configs, Contacts,&#xa;Conversations, Campaigns" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="220" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="CACHE" value="In-Memory Cache&#xa;Instance State,&#xa;Billing Ledger" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1960" y="220" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- PLATFORM KERNEL BOUNDARY (dashed) -->
+        <mxCell id="KERNEL_BOX" value="PLATFORM KERNEL (Proposed)&#xa;— Identity · Entities · Ledger · Audit · Events" style="swimlane;startSize=40;fillColor=none;strokeColor=#1a1a2e;strokeWidth=3;dashed=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="340" width="1080" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="K_ID" value="Identity&#xa;Workspace&#xa;Client&#xa;User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1760" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_ENT" value="Entities&#xa;Chatbot&#xa;Instance&#xa;Contact&#xa;Campaign" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1880" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_LED" value="Ledger&#xa;Conversation&#xa;Message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2000" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_AUD" value="Audit&#xa;Immutable&#xa;Trail" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_EVT" value="Events&#xa;Domain&#xa;Registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2240" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_AUTOM" value="Automation&#xa;Rules +&#xa;Conditions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2360" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_CAMP" value="Campaigns&#xa;Drip +&#xa;Triggers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2480" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_MEM" value="Memory&#xa;Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2600" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="K_HAND" value="Handoff&#xa;State +&#xa;Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2720" y="380" width="100" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ===== FLOW ARROWS ===== -->
+
+        <!-- WhatsApp → Evolution -->
+        <mxCell id="F1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WHATSAPP" target="EVOL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Evolution → Webhook -->
+        <mxCell id="F2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E85A24;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="EVOL" target="WEBHOOK">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Webhook → NATS inbound -->
+        <mxCell id="F3" value="1. Inbound" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WEBHOOK" target="NATS_IN">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NATS inbound → Subscriber -->
+        <mxCell id="F4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="NATS_IN" target="SUB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Subscriber → Pipeline Route -->
+        <mxCell id="F5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="SUB" target="PIPE_ROUTE">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Route → Classify -->
+        <mxCell id="F6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="PIPE_ROUTE" target="PIPE_CLASS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Classify → AI Gateway -->
+        <mxCell id="F7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="PIPE_CLASS" target="AI_GATE">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- AI Gateway → Tool Executor -->
+        <mxCell id="F8" value="2. Tool Call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="AI_GATE" target="TOOL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Tool Executor → Memory -->
+        <mxCell id="F9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="TOOL" target="MEM">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Memory → AI Gateway (loopback context) -->
+        <mxCell id="F10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="MEM" target="AI_GATE">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2370" y="190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- AI Gateway → Handoff -->
+        <mxCell id="F11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="AI_GATE" target="HANDOFF">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- AI Gateway → AI Providers -->
+        <mxCell id="F12" value="3. LLM" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E85A24;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="AI_GATE" target="ANTHROPIC">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2080" y="80" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Billing → NATS billing ledger -->
+        <mxCell id="F13" value="4. Billing" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="BILL_REC" target="NATS_BILL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Response Formatter → NATS outbound -->
+        <mxCell id="F14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="RESP_FMT" target="NATS_OUT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NATS outbound → Evolution -->
+        <mxCell id="F15" value="5. Outbound" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E85A24;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="NATS_OUT" target="EVOL">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1720" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Evolution → WhatsApp -->
+        <mxCell id="F16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#25D366;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="EVOL" target="WHATSAPP">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="170" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DB → all kernel entities (dashed lines) -->
+        <mxCell id="F17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="DB" target="K_ENT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Cache → Billing recorder -->
+        <mxCell id="F18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=1.5;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="CACHE" target="BILL_REC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CLI → REST API (developer flow) -->
+        <mxCell id="F19" value="CLI → REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B5B95;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="CLI" target="REST_V1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SDK → REST API -->
+        <mxCell id="F20" value="SDK → REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B5B95;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="SDK" target="REST_V1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="485" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Frontend → REST API -->
+        <mxCell id="F21" value="Browser → REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="FE_ADMIN" target="REST_PLAT">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Tool Executor → DB (tool results persist) -->
+        <mxCell id="F22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1;dashed=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="TOOL" target="DB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NATS events → kernel events -->
+        <mxCell id="F23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=1.5;dashed=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="NATS_EVT" target="K_EVT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Handoff → kernel handoff state -->
+        <mxCell id="F24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;strokeWidth=1.5;dashed=1;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="HANDOFF" target="K_HAND">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- LEGEND -->
+        <mxCell id="LEG" value="LEGEND" style="text;html=1;fontSize=11;fontStyle=1;align=left;verticalAlign=middle;fontColor=#1a1a2e;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG1" value="WhatsApp Channel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#25D366;strokeColor=#128C7E;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="565" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG2" value="Gateway / Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B35;strokeColor=#E85A24;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="140" y="565" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG3" value="REST API Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="240" y="565" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG4" value="AI / Runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="565" width="80" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG5" value="Platform Kernel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="430" y="565" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG6" value="Storage / Queue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="530" y="565" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG7" value="NATS Queue" style="shape=mxgraph.mscaffeine.queue;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="630" y="565" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="LEG8" value="Dashed = Kernel Boundary" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=3;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="730" y="565" width="140" height="25" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

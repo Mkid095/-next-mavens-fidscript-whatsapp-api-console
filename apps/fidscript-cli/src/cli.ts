@@ -88,6 +88,28 @@ cli
     await init(opts);
   });
 
+cli
+  .command('new <project-name>')
+  .description('Scaffold a new FIDScript project (agent | workflow | shopify-order template)')
+  .option('--template <name>', 'Project template: agent | workflow | shopify-order', 'agent')
+  .option('-o, --output <path>', 'Output directory (default: ./<project-name>)')
+  .option('-y, --yes', 'Non-interactive: scaffold into non-empty directory', false)
+  .option('--workspace <id>', 'Target workspace ID')
+  .action(async (projectName: string, opts: {
+    template?: string;
+    output?: string;
+    yes?: boolean;
+    workspace?: string;
+  }) => {
+    const { newCommand } = await import('./commands/new.js');
+    await newCommand({
+      projectName,
+      template: (opts.template ?? 'agent') as 'agent' | 'workflow' | 'shopify-order',
+      outputDir: opts.output ?? projectName,
+      yes: opts.yes,
+    });
+  });
+
 // ── Generic API escape hatch (covers every endpoint not yet wrapped as a
 //    first-class command: groups/*, chats/*, profile/*, settings/*, etc.) ───
 

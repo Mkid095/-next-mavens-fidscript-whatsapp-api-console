@@ -6,7 +6,7 @@ import db from '../../database.js';
 import { validatePublish } from './validation/index.js';
 import type { ChatbotDraft } from '../../types/chatbotDraft.js';
 import { publishJobEmitter } from '../../utils/publishJobEmitter.js';
-import { setRuntimeConfig } from '../../chatbot-worker/chatbotRuntimeCache.js';
+import { setRuntimeConfig } from './chatbotRuntimeCache.js';
 import { PIPELINE_STEPS, updateJob, failJob } from './publishPipelineStages.js';
 
 export async function runPublishPipelineImpl(

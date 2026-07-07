@@ -11,6 +11,8 @@ import LLMProvidersView from './providers/LLMProvidersView';
 import ChatbotsAdminView from './chatbot/ChatbotsAdminView';
 import AnalyticsView from './AnalyticsView';
 import AuditLogView from './audit/AuditLogView';
+import BillingView from './billing/BillingView';
+import AnalyticsDashboard from '../../features/analytics/AnalyticsDashboard.js';
 import type { Instance, Client, ApiLog, AnalyticsData } from '../../services/api';
 
 interface AdminContentProps {
@@ -120,7 +122,7 @@ export function AdminContent({
       return <AuditLogView />;
     }
     if (path === '/admin/analytics') {
-      return <AnalyticsView analytics={analytics} />;
+      return <AnalyticsDashboard />;
     }
     if (path === '/admin/inbox') {
       return <InboxView messages={messages} onMarkRead={handleMarkMessageRead} />;
@@ -133,6 +135,9 @@ export function AdminContent({
     }
     if (path === '/admin/chatbots') {
       return <ChatbotsAdminView />;
+    }
+    if (path === '/admin/billing') {
+      return <BillingView />;
     }
     return (
       <DashboardOverview

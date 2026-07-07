@@ -3,6 +3,34 @@ import { fetchApi } from './api';
 import type { Instance, ApiLog, AnalyticsData } from './types';
 import type { InboxMessage } from '../types';
 
+// ---------------------------------------------------------------------------
+// Billing types
+// ---------------------------------------------------------------------------
+
+export interface TokenCost {
+  id: string;
+  action: string;
+  displayName: string;
+  tokenCost: number;
+  category: 'whatsapp' | 'ai';
+  description: string;
+  isActive: number;
+}
+
+export interface TokenPackage {
+  id: string;
+  name: string;
+  tokens: number;
+  price_kes: number;
+  bonus_tokens: number;
+  is_active: number;
+  created_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Audit types
+// ---------------------------------------------------------------------------
+
 export interface AuditEvent {
   id: string;
   type: string;
@@ -42,6 +70,46 @@ export interface AuditEventsFilters {
 }
 
 export const adminApi = {
+  // Billing
+  getTokenCosts: () => fetchApi<TokenCost[]>('/api/admin/token-costs'),
+  updateTokenCost: (id: string, tokenCost: number) =>
+    fetchApi<void>(`/api/admin/token-costs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ tokenCost }),
+    }),
+  setTokenCostActive: (id: string, isActive: boolean) =>
+    fetchApi<void>(`/api/admin/token-costs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ isActive }),
+    }),
+  getTokenPackages: (includeInactive = false) =>
+    fetchApi<TokenPackage[]>(`/api/admin/token-packages?includeInactive=${includeInactive}`),
+  getTokenPackage: (id: string) =>
+    fetchApi<TokenPackage>(`/api/admin/token-packages/${id}`),
+  createTokenPackage: (pkg: { name: string; tokens: number; priceKsh: number; bonusTokens?: number }) =>
+    fetchApi<{ id: string }>('/api/admin/token-packages', {
+      method: 'POST',
+      body: JSON.stringify(pkg),
+    }),
+  updateTokenPackage: (id: string, pkg: { name?: string; tokens?: number; priceKsh?: number; bonusTokens?: number; isActive?: boolean }) =>
+    fetchApi<void>(`/api/admin/token-packages/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(pkg),
+    }),
+  deleteTokenPackage: (id: string) =>
+    fetchApi<void>(`/api/admin/token-packages/${id}`, { method: 'DELETE' }),
+  awardTokens: (clientId: string, amount: number, reason: string) =>
+    fetchApi<{ transactionId: string }>('/api/admin/token-award', {
+      method: 'POST',
+      body: JSON.stringify({ clientId, amount, reason }),
+    }),
+  refundTokens: (clientId: string, paymentId: string, amount: number, reason: string) =>
+    fetchApi<{ transactionId: string }>('/api/admin/token-refund', {
+      method: 'POST',
+      body: JSON.stringify({ clientId, paymentId, amount, reason }),
+    }),
+
+  // Instances
   getInstances: () => fetchApi<Instance[]>('/api/admin/instances'),
 
   getAnalytics: () => fetchApi<AnalyticsData>('/api/admin/analytics'),

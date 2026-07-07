@@ -18,12 +18,12 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "server", "server/**/*", "**/static/**"]
+  "exclude": ["node_modules", "dist", "server", "server/**/*", "apps/api", "apps/api/**/*", "**/static/**"]
 }

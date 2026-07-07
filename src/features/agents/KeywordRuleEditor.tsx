@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2, Zap } from 'lucide-react';
-import { useAIRules } from '../../data/hooks/useAIRules.js';
+import { useAIRules } from '../../data/hooks/agents/useAIRules.js';
 
 const STATES = ['ai_active', 'ai_paused', 'human_active', 'escalated'] as const;
 

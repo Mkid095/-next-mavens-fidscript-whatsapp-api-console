@@ -3,7 +3,7 @@
  */
 
 import { upsertMetric, type MetricType, type Period } from './rollups.js';
-import type { DomainEventPayload } from '../events/catalog.js';
+import type { DomainEventPayload } from '../events/index.js';
 
 export interface AnalyticsProjector {
   handles: string[];

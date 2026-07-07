@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2, Workflow } from 'lucide-react';
-import { useFlows } from '../../data/hooks/useFlows.js';
+import { useFlows } from '../../data/hooks/automation/useFlows.js';
 import AutomationEditor from './AutomationEditor.js';
 
 // Phase 4 — flow list (§11). A flow is a graph of trigger/condition/action

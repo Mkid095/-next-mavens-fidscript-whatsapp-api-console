@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NotebookPen, Trash2 } from 'lucide-react';
-import { useNotes } from '../../data/hooks/useNotes.js';
+import { useNotes } from '../../data/hooks/customers/useNotes.js';
 
 // Phase 3 — internal-only customer notes (§6.1 customer_notes).
 // Author + created_at come from the server. Optimistic prepend.

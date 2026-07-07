@@ -1,16 +1,29 @@
+// Campaigns module barrel
+// Event helpers + dispatch (delivery mechanics) live here.
+// Campaign entity types live in kernel/campaigns/.
+
 import {
   dispatchCampaignStarted,
   dispatchCampaignCompleted,
   type DispatchContext,
-} from '../platform/events/dispatch.js';
+} from '../platform/events/index.js';
 import type {
   CampaignStartedPayload,
   CampaignCompletedPayload,
-} from '../platform/events/catalog.js';
+} from '../platform/events/index.js';
+
+// Campaign entity types — canonical source
+export type {
+  Campaign,
+  CampaignRecipient,
+  CampaignTrigger,
+  CampaignStep,
+  CampaignStatus,
+  CampaignType,
+} from '../../kernel/campaigns/index.js';
 
 // =============================================================================
-// Campaign event helpers — thin wrappers so routes don't import dispatch.ts
-// directly. Keeps the bus-typing surface small.
+// Campaign event helpers
 // =============================================================================
 
 export async function emitCampaignStarted(

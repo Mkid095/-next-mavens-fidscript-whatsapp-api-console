@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Shield } from 'lucide-react';
-import { useAuditLog } from '../../data/hooks/useWebhooks';
+import { useAuditLog } from '../../data/hooks/developers/useWebhooks.js';
 
 const RESOURCE_OPTIONS = ['', 'conversation', 'customer', 'ai_handoff', 'integration', 'campaign'];
 

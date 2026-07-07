@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, RefreshCw, Trash2, Zap } from 'lucide-react';
 import type { TriggerEvent } from '../../data/api/platform.js';
-import { useCampaignTriggers } from '../../data/hooks/useDripCampaigns.js';
+import { useCampaignTriggers } from '../../data/hooks/automation/useDripCampaigns.js';
 
 const EVENTS: { value: TriggerEvent; label: string; description: string; filterKey?: string }[] = [
   { value: 'customer.created', label: 'Customer created', description: 'A new customer first appears (e.g. first message received)' },

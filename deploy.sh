@@ -43,9 +43,9 @@ log_success() {
 # Pre-deployment Checks
 # =============================================================================
 
-# Guard: refuse to run from inside server/ directory
-if basename "$(pwd)" | grep -q "server"; then
-    echo "[ERROR] Do not run deploy.sh from inside the server/ directory." >&2
+# Guard: refuse to run from inside server/ or apps/api/ directory
+if basename "$(pwd)" | grep -qE "^(server|apps)$"; then
+    echo "[ERROR] Do not run deploy.sh from inside the server/ or apps/api/ directory." >&2
     echo "[ERROR] Run it from the project root: bash deploy.sh" >&2
     exit 1
 fi
@@ -181,7 +181,7 @@ detect_changes() {
             src/*|package.json)
                 frontend_changed=true
                 ;;
-            server/*)
+            apps/api/*)
                 backend_changed=true
                 ;;
         esac
@@ -205,9 +205,9 @@ detect_changes() {
 ensure_versions_table() {
     log_info "Ensuring deploy_versions table exists..."
 
-    # Create table if not exists using sql.js (from server/node_modules)
+    # Create table if not exists using sql.js (from apps/api/node_modules)
     node -e "
-const initSqlJs = require('${SCRIPT_DIR}/server/node_modules/sql.js');
+const initSqlJs = require('${SCRIPT_DIR}/apps/api/node_modules/sql.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -247,7 +247,7 @@ initSqlJs().then(SQL => {
 }
 
 get_current_version() {
-    # Use git tag as source of truth, fallback to server/package.json version
+    # Use git tag as source of truth, fallback to apps/api/package.json version
     local git_version
     git_version=$(git describe --tags 2>/dev/null | sed 's/^v//' || echo "")
     if [ -n "${git_version}" ]; then
@@ -255,7 +255,7 @@ get_current_version() {
         return
     fi
     local pkg_version
-    pkg_version=$(node -e "console.log(require('${SCRIPT_DIR}/server/package.json').version)")
+    pkg_version=$(node -e "console.log(require('${SCRIPT_DIR}/apps/api/package.json').version)")
     echo "${pkg_version}"
 }
 
@@ -289,7 +289,7 @@ get_last_deployed_version() {
     local service="$1"
 
     node -e "
-const initSqlJs = require('${SCRIPT_DIR}/server/node_modules/sql.js');
+const initSqlJs = require('${SCRIPT_DIR}/apps/api/node_modules/sql.js');
 const fs = require('fs');
 
 const dbPath = '${DB_PATH}';
@@ -353,7 +353,7 @@ record_deployment() {
         log_warn "API recording failed, trying direct DB write..."
         # Fallback to direct DB write
         node -e "
-const initSqlJs = require('${SCRIPT_DIR}/server/node_modules/sql.js');
+const initSqlJs = require('${SCRIPT_DIR}/apps/api/node_modules/sql.js');
 const fs = require('fs');
 
 const dbPath = '${DB_PATH}';
@@ -412,8 +412,8 @@ build_frontend() {
 
 build_backend() {
     log_info "Building backend..."
-    rm -rf "${SCRIPT_DIR}/server/dist"
-    cd "${SCRIPT_DIR}/server" && npm run build 2>&1 | tee -a "${LOG_FILE}"
+    rm -rf "${SCRIPT_DIR}/apps/api/dist"
+    cd "${SCRIPT_DIR}/apps/api" && npm run build 2>&1 | tee -a "${LOG_FILE}"
     log_success "Backend build completed."
 }
 
@@ -429,7 +429,7 @@ restart_backend() {
     fi
 
     log_info "Copying new dist into ${container}..."
-    docker cp "${SCRIPT_DIR}/server/dist/." "${container}:/app/dist/" 2>&1 | tee -a "${LOG_FILE}"
+    docker cp "${SCRIPT_DIR}/apps/api/dist/." "${container}:/app/dist/" 2>&1 | tee -a "${LOG_FILE}"
 
     log_info "Restarting ${container}..."
     docker restart "${container}" 2>&1 | tee -a "${LOG_FILE}"

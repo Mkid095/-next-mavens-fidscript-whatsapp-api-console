@@ -1,7 +1,7 @@
-import { bus } from '../platform/events/bus.js';
+import { bus } from '../platform/events/index.js';
 import db from '../../database.js';
 import type { WorkspaceContext } from '../platform/workspace/index.js';
-import type { DomainEventPayload, MessageReceivedPayload } from '../platform/events/catalog.js';
+import type { DomainEventPayload, MessageReceivedPayload } from '../platform/events/index.js';
 
 // =============================================================================
 // runInboundPipeline — subscribes to message.received on the bus.

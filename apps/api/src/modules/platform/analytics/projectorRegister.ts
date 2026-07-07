@@ -4,10 +4,10 @@
  * @see projector.ts for the barrel
  */
 
-import { bus } from '../events/bus.js';
+import { bus } from '../events/index.js';
 import { ensureMetricRollupsTable } from './rollups.js';
 import { ALL_PROJECTORS } from './projectorImpl.js';
-import type { DomainEventPayload } from '../events/catalog.js';
+import type { DomainEventPayload } from '../events/index.js';
 
 export function registerAnalyticsProjectors(): void {
   ensureMetricRollupsTable();

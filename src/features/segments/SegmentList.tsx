@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Users, Clock, Search, Trash2 } from 'lucide-react';
 import type { Segment } from '../../data/api/platform.js';
-import { useSegments } from '../../data/hooks/useSegments.js';
+import { useSegments } from '../../data/hooks/segments/useSegments.js';
 
 interface SegmentListProps {
   onCreate: () => void;

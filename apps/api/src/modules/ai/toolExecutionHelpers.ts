@@ -1,7 +1,9 @@
 /**
  * Tool execution helpers — shared utilities for tool execution.
  * Loads data sources, resolves connections, builds auth headers, substitutes path templates.
+ * Also handles connector-based (Shopify, WooCommerce) credential resolution.
  */
+import crypto from 'crypto';
 import db from '../../database.js';
 
 interface DataSourceRow {
@@ -99,4 +101,104 @@ export function substitutePath(template: string, args: Record<string, unknown>):
     const v = args[key];
     return v === undefined || v === null ? '' : encodeURIComponent(String(v));
   });
+}
+
+// ─── Connector credential resolution ─────────────────────────────────────────────
+
+export interface ResolvedConnector {
+  accessToken: string;
+  extra: Record<string, unknown>;
+}
+
+/** Decrypt and return the active (non-revoked) access token for a connector in a workspace. */
+export function resolveConnectorCredentials(
+  connectorId: string,
+  workspaceId: string,
+): ResolvedConnector | null {
+  const row = db.prepare(`
+    SELECT encrypted_token, iv, auth_tag, extra_json
+    FROM connector_credentials
+    WHERE connector_id = ? AND workspace_id = ? AND revoked_at IS NULL
+  `).get(connectorId, workspaceId) as
+    { encrypted_token: string; iv: string; auth_tag: string; extra_json: string | null } | undefined;
+
+  if (!row) return null;
+
+  try {
+    const key = process.env.CONNECTOR_SECRET
+      || process.env.ENCRYPTION_KEY
+      || 'dev-secret-32-chars-long-herexxxx';
+    const iv = Buffer.from(row.iv, 'hex');
+    const authTag = Buffer.from(row.auth_tag, 'hex');
+    // encrypted_token is iv + ciphertext base64
+    const encryptedBuf = Buffer.from(row.encrypted_token, 'base64');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(key.slice(0, 32)), iv);
+    decipher.setAuthTag(authTag);
+    const decrypted = Buffer.concat([decipher.update(encryptedBuf), decipher.final()]);
+    const extra: Record<string, unknown> = row.extra_json ? JSON.parse(row.extra_json) : {};
+    return { accessToken: decrypted.toString('utf8'), extra };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Call a connector's REST API (Shopify / WooCommerce) with the resolved access token.
+ * connectorSlug is used to look up credentials; action defines the endpoint + method.
+ */
+export async function callConnectorApi(
+  connectorSlug: string,
+  action: string,
+  args: Record<string, unknown>,
+): Promise<unknown> {
+  // Look up the connector definition
+  const { ConnectorRegistry } = await import('./connectors/registry.js');
+  const cfg = ConnectorRegistry.get(connectorSlug);
+  if (!cfg) throw new Error(`Connector "${connectorSlug}" not registered`);
+
+  const creds = resolveConnectorCredentials(cfg.id, args._workspaceId as string);
+  if (!creds) throw new Error(`No active credentials for connector "${connectorSlug}" in this workspace`);
+
+  // Find the action definition
+  const actionDef = cfg.actions.find(a => a.name === action);
+  if (!actionDef) throw new Error(`Connector "${connectorSlug}" has no action "${action}"`);
+
+  // Parse the action's endpoint + method from executor_json in the tool row
+  // (the tool row carries the executor config for this action)
+  let endpoint = '';
+  let method = 'GET';
+  try {
+    const params = JSON.parse(actionDef.parametersSchema);
+    endpoint = params.endpoint as string || '';
+    method = (params.method as string || 'GET').toUpperCase();
+  } catch { /* use defaults */ }
+
+  // Substitute path params from args
+  const url = substitutePath(endpoint, args);
+
+  // Build auth headers based on connector auth type
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (cfg.authType === 'oauth2') {
+    headers['X-Shopify-Access-Token'] = creds.accessToken;
+  } else if (cfg.authType === 'api_key') {
+    headers['Authorization'] = `Bearer ${creds.accessToken}`;
+  }
+
+  const init: RequestInit = { method, headers };
+  if (method !== 'GET' && method !== 'DELETE') {
+    init.body = JSON.stringify(args);
+  }
+
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Connector API error ${res.status}: ${text.slice(0, 200)}`);
+  }
+
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text };
+  }
 }

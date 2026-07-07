@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
-import { useMediaAssets } from '../../data/hooks/useMediaAssets.js';
+import { useMediaAssets } from '../../data/hooks/media/useMediaAssets.js';
 import MediaCard from './MediaCard.js';
 import MediaUploadBar from './MediaUploadBar.js';
 

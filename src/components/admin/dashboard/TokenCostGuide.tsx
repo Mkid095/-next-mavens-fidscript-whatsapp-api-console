@@ -1,34 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Calculator } from 'lucide-react';
-
-const whatsappTokens = [
-  { action: 'Text message', cost: '1 token' },
-  { action: 'Media — image / video / document', cost: '2 tokens' },
-  { action: 'Audio', cost: '2 tokens' },
-  { action: 'Sticker', cost: '2 tokens' },
-  { action: 'Location', cost: '1 token' },
-  { action: 'Contact card', cost: '1 token' },
-  { action: 'Reaction / emoji', cost: '1 token' },
-  { action: 'Poll / list', cost: '1 token' },
-];
-
-const aiUnits = [
-  { action: 'AI reply generated', cost: '10 units' },
-  { action: 'Dataset search', cost: '2 units' },
-  { action: 'Tool call', cost: '2 units' },
-  { action: 'Knowledge / memory search', cost: '1 unit' },
-  { action: 'Memory save', cost: '1 unit' },
-];
+import { adminApi, type TokenCost } from '../../../services/admin';
 
 export default function TokenCostGuide() {
   const [expanded, setExpanded] = useState(false);
+  const [costs, setCosts] = useState<TokenCost[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (expanded && costs.length === 0) {
+      setLoading(true);
+      adminApi.getTokenCosts().then(res => {
+        if (res.success && res.data) setCosts(res.data);
+      }).finally(() => setLoading(false));
+    }
+  }, [expanded]);
+
+  const whatsappRows = [
+    { action: 'Text message', cost: costs.find(c => c.action === 'whatsapp.text')?.tokenCost ?? 1 },
+    { action: 'Media — image / video / document', cost: costs.find(c => c.action === 'whatsapp.media')?.tokenCost ?? 2 },
+    { action: 'Audio', cost: costs.find(c => c.action === 'whatsapp.audio')?.tokenCost ?? 2 },
+    { action: 'Sticker', cost: costs.find(c => c.action === 'whatsapp.sticker')?.tokenCost ?? 2 },
+    { action: 'Location', cost: costs.find(c => c.action === 'whatsapp.location')?.tokenCost ?? 1 },
+    { action: 'Contact card', cost: costs.find(c => c.action === 'whatsapp.contact')?.tokenCost ?? 1 },
+    { action: 'Reaction / emoji', cost: costs.find(c => c.action === 'whatsapp.reaction')?.tokenCost ?? 1 },
+    { action: 'Poll / list', cost: costs.find(c => c.action === 'whatsapp.poll')?.tokenCost ?? 1 },
+  ];
+
+  const aiRows = [
+    { action: 'AI reply generated', cost: costs.find(c => c.action === 'ai.reply')?.tokenCost ?? 10 },
+    { action: 'Dataset search', cost: costs.find(c => c.action === 'ai.dataset_search')?.tokenCost ?? 2 },
+    { action: 'Tool call', cost: costs.find(c => c.action === 'ai.tool_call')?.tokenCost ?? 2 },
+    { action: 'Knowledge / memory search', cost: costs.find(c => c.action === 'ai.knowledge_search')?.tokenCost ?? 1 },
+    { action: 'Memory save', cost: costs.find(c => c.action === 'ai.memory_save')?.tokenCost ?? 1 },
+  ];
+
+  const formatCost = (n: number) => n === 1 ? '1 token' : `${n} tokens`;
 
   return (
     <div className="bg-[#181711] border border-[#2d2813] p-5 rounded-2xl flex flex-col justify-between">
       <div>
-        {/* Header — always visible, toggles expand */}
         <button
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => setExpanded(v => !v)}
           className="w-full flex items-center justify-between mb-4"
         >
           <div className="flex items-center gap-2">
@@ -40,16 +53,13 @@ export default function TokenCostGuide() {
               <p className="text-[10px] text-[#6e684a]">WhatsApp &amp; AI chatbot billing</p>
             </div>
           </div>
-          {expanded ? (
-            <ChevronUp size={16} className="text-[#6e684a]" />
-          ) : (
-            <ChevronDown size={16} className="text-[#6e684a]" />
-          )}
+          {expanded
+            ? <ChevronUp size={16} className="text-[#6e684a]" />
+            : <ChevronDown size={16} className="text-[#6e684a]" />}
         </button>
 
         {expanded && (
           <>
-            {/* Plan limits banner */}
             <div className="mb-4 p-2.5 bg-[#2d2813] rounded-xl border border-[#3d3a1e] flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#eab308] shrink-0" />
               <p className="text-[10px] text-[#a8a99e]">
@@ -58,56 +68,51 @@ export default function TokenCostGuide() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* WhatsApp tokens */}
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e684a] mb-2">
-                  WhatsApp Messages
-                </p>
-                <div className="space-y-1">
-                  {whatsappTokens.map((row) => (
-                    <div
-                      key={row.action}
-                      className="flex items-center justify-between text-[11px] py-1 border-b border-[#2d2813] last:border-0"
-                    >
-                      <span className="text-[#a8a99e]">{row.action}</span>
-                      <span className="font-mono font-bold text-[#eab308]">{row.cost}</span>
-                    </div>
-                  ))}
-                </div>
+            {loading ? (
+              <div className="flex justify-center py-6">
+                <div className="w-4 h-4 border border-yellow-500 border-t-transparent rounded-full animate-spin" />
               </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e684a] mb-2">WhatsApp Messages</p>
+                  <div className="space-y-1">
+                    {whatsappRows.map(row => (
+                      <div key={row.action} className="flex items-center justify-between text-[11px] py-1 border-b border-[#2d2813] last:border-0">
+                        <span className="text-[#a8a99e]">{row.action}</span>
+                        <span className="font-mono font-bold text-[#eab308]">{formatCost(row.cost)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-              {/* AI chatbot units */}
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e684a] mb-2">
-                  AI Chatbot Units
-                </p>
-                <div className="space-y-1">
-                  {aiUnits.map((row) => (
-                    <div
-                      key={row.action}
-                      className="flex items-center justify-between text-[11px] py-1 border-b border-[#2d2813] last:border-0"
-                    >
-                      <span className="text-[#a8a99e]">{row.action}</span>
-                      <span className="font-mono font-bold text-[#eab308]">{row.cost}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 pt-2 border-t border-[#3d3a1e]">
-                  <p className="text-[10px] text-[#6e684a]">
-                    Token purchase rate:{' '}
-                    <span className="text-white font-semibold">KSh 0.11 / token</span>
-                  </p>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e684a] mb-2">AI Chatbot Units</p>
+                  <div className="space-y-1">
+                    {aiRows.map(row => (
+                      <div key={row.action} className="flex items-center justify-between text-[11px] py-1 border-b border-[#2d2813] last:border-0">
+                        <span className="text-[#a8a99e]">{row.action}</span>
+                        <span className="font-mono font-bold text-[#eab308]">{formatCost(row.cost)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-[#3d3a1e]">
+                    <p className="text-[10px] text-[#6e684a]">
+                      Token purchase rate:{' '}
+                      <span className="text-white font-semibold">KSh 0.11 / token</span>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </>
         )}
 
         {!expanded && (
           <p className="text-[11px] text-[#6e684a]">
             WhatsApp messages from 1 token · AI chatbot replies from 10 units ·{' '}
-            <button onClick={(e) => { e.stopPropagation(); setExpanded(true); }} className="text-[#eab308] hover:underline font-semibold">
+            <button onClick={e => { e.stopPropagation(); setExpanded(true); }}
+              className="text-[#eab308] hover:underline font-semibold">
               View full cost guide →
             </button>
           </p>

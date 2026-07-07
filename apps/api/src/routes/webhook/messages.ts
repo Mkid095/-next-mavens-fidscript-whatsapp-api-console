@@ -4,7 +4,7 @@ import { emitInstanceStateChange, emitNewMessage } from '../../utils/gateway.js'
 import { parseIncomingMessage } from '../../utils/messageParser.js';
 import { logAuditAction } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
-import { resolveConversation } from '../../modules/customers/index.js';
+import { resolveConversation } from '../../kernel/entities/index.js';
 import { dispatchMessageReceived } from '../../modules/platform/events/index.js';
 import { warmGroupCache } from '../../services/whatsapp/groupMetadata.js';
 import { resolveContactByPhone } from '../../services/contactResolver.js';

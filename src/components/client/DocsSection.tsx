@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { ExternalLink } from 'lucide-react';
 import { API_ENDPOINTS, API_CATEGORIES, type ApiEndpoint, type BodyField } from '../../data/apiEndpoints/index';
 import EndpointSidebar, { type DocGroup, type DocEndpoint } from './EndpointSidebar.js';
 import EndpointDetail from './EndpointDetail.js';
@@ -47,6 +48,22 @@ export default function DocsSection({ client }: { client?: { api_key?: string } 
   const [showSdkModal, setShowSdkModal] = useState(false);
 
   return (
+    <div>
+      {/* Section header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">API Reference</h2>
+        <a
+          href="/api/reference"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <ExternalLink size={14} />
+          Open full API Reference
+        </a>
+      </div>
+
+      {/* Main content */}
     <div className="flex gap-6" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
       <EndpointSidebar
         groups={DOC_GROUPS}
@@ -66,6 +83,7 @@ export default function DocsSection({ client }: { client?: { api_key?: string } 
       <AnimatePresence>
         {showSdkModal && <SdkModal onClose={() => setShowSdkModal(false)} />}
       </AnimatePresence>
+    </div>
     </div>
   );
 }

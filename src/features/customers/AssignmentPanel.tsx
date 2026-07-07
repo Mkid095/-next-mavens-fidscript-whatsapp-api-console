@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { UserCog } from 'lucide-react';
-import { useAssignment } from '../../data/hooks/useAssignment.js';
-import { useTeams } from '../../data/hooks/useTeams.js';
+import { useAssignment } from '../../data/hooks/customers/useAssignment.js';
+import { useTeams } from '../../data/hooks/customers/useTeams.js';
 
 // Phase 3 — long-term customer owner (§6.1 customer_assignments + §9).
 // Distinct from the conversation-level assignee: a customer may be owned by

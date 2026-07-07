@@ -5,7 +5,6 @@
 import { Request } from 'express';
 import { parseIncomingMessage } from '../utils/messageParser.js';
 import { normalizePhone } from '../utils/phone.js';
-import { learnLid } from '../services/whatsapp/lidResolver/index.js';
 import { getGroupParticipantName } from '../services/whatsapp/groupSync.js';
 
 export function extractPhoneFromJid(sender: string): string | null {
@@ -77,11 +76,6 @@ export function parseIncomingWebhookMessage(
 
   const msgId = (data?.key as { id?: string })?.id || `msg_${Date.now()}`;
   const pushName = data?.pushName as string | undefined;
-
-  // Learn LID -> phone mapping for outbound routing
-  if (!isGroup && remoteJid.endsWith('@lid') && phone) {
-    learnLid('', remoteJid, remoteJidAlt || `${phone}@s.whatsapp.net`);
-  }
 
   // Resolve sender name for group messages from cached contacts
   let resolvedSenderName: string | undefined = pushName;

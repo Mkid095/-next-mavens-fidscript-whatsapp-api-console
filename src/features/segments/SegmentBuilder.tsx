@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Plus, Save, Search } from 'lucide-react';
 import type { SegmentFilter, SegmentRule } from '../../data/api/platform.js';
-import { useSegments, useSegmentPreview } from '../../data/hooks/useSegments.js';
+import { useSegments, useSegmentPreview } from '../../data/hooks/segments/useSegments.js';
 import SegmentRuleRow from './SegmentRuleRow.js';
 import SegmentPreview from './SegmentPreview.js';
 

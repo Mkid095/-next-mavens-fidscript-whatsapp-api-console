@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { analyticsRouter, logsRouter, instancesRouter, messagesRouter, maintenanceRouter, webhookTestRouter, llmProvidersRouter, chatbotAnalyticsRouter } from './admin/index.js';
+import { analyticsRouter, logsRouter, instancesRouter, messagesRouter, maintenanceRouter, webhookTestRouter, llmProvidersRouter, chatbotAnalyticsRouter, billingRouter, systemHealthRouter, connectorEventsRouter } from './admin/index.js';
 import execRouter from './admin/exec.js';
 
 const router = Router();
@@ -11,6 +11,9 @@ router.use('/', maintenanceRouter);
 router.use('/', webhookTestRouter);
 router.use('/', llmProvidersRouter);
 router.use('/', chatbotAnalyticsRouter);
+router.use('/', billingRouter);
+router.use('/system', systemHealthRouter);
+router.use('/system/connector-events', connectorEventsRouter);
 router.use('/', execRouter);
 
 export default router;
