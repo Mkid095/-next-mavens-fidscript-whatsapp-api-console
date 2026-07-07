@@ -84,7 +84,26 @@ The magic-code system is designed so the client is never trusted with anything s
 
 ```
 fidscript-whatsapp/
-├── src/                         # Frontend (React + Vite)
+├── apps/
+│   ├── whatsapp-api/           # WhatsApp Business API Service (Evolution API)
+│   │   ├── src/
+│   │   │   ├── api/            # Controllers, Services, Routes
+│   │   │   ├── config/         # Environment configuration
+│   │   │   └── prisma/         # Database schemas
+│   │   ├── docs/               # Service documentation
+│   │   └── package.json
+│   ├── frontend/               # React frontend
+│   ├── api/                    # Backend API
+│   ├── worker/                 # Background workers
+│   ├── cli/                    # CLI tools
+│   └── fidscript-cli/          # Fidscript CLI
+├── docs/
+│   └── whatsapp/               # WhatsApp documentation
+│       ├── WHATSAPP_INTEGRATION.md
+│       ├── WHATSAPP_DEPLOYMENT.md
+│       ├── WHATSAPP_API_REFERENCE.md
+│       └── WHATSAPP_WEBHOOK_GUIDE.md
+├── src/                         # Legacy frontend (React + Vite)
 │   ├── App.tsx                  # Root: routing + session restore
 │   ├── components/
 │   │   ├── auth/                # Magic-code login & register forms
