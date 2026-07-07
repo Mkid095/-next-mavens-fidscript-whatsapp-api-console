@@ -29,9 +29,14 @@ export interface MessageKey { remoteJid: string; fromMe: boolean; id: string; }
 export interface ListSectionRow { title: string; description?: string; rowId: string; }
 export interface ListSection { title: string; rows: ListSectionRow[]; }
 
-/** Resolve the the gateway instance name from an instance record. */
-export const gatewayNameOf = (instance: { evolution_name?: string; client_id: string; name: string }): string =>
-  instance.evolution_name || `${instance.client_id}_${instance.name}`;
+/** Resolve the the gateway instance name from an instance record.
+ *
+ * The WhatsApp API instance name is always instance.name — the evolution_name column
+ * in our DB is legacy and does NOT match the actual WhatsApp API instance name.
+ * Using evolution_name here caused /chat/findChats to 404 because the WhatsApp API
+ * has no instance named "cli_kennedy_001_soostori". */
+export const gatewayNameOf = (instance: { name: string }): string =>
+  instance.name;
 
 /** Resolve the the gateway instance name for a request context. */
 export const gatewayName = (ctx: SendContext): string => gatewayNameOf(ctx.instance);

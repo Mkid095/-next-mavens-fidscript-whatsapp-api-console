@@ -12,30 +12,27 @@
  */
 import type { Database } from 'sql.js';
 
+// Helper: add a column only if it doesn't already exist (idempotent)
+function addColumnIfNotExists(db: Database, table: string, colDef: string): void {
+  try {
+    db.run(`ALTER TABLE ${table} ADD COLUMN ${colDef}`);
+  } catch (e: unknown) {
+    // Already exists — skip silently
+  }
+}
+
 export function runPhase36Migrations(db: Database): void {
   // Status: tracks event lifecycle
-  db.run(`
-    ALTER TABLE connector_events
-      ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'
-  `);
+  addColumnIfNotExists(db, 'connector_events', "status TEXT NOT NULL DEFAULT 'pending'");
 
   // How many times we've tried and failed
-  db.run(`
-    ALTER TABLE connector_events
-      ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0
-  `);
+  addColumnIfNotExists(db, 'connector_events', 'retry_count INTEGER NOT NULL DEFAULT 0');
 
   // Human-readable error from last failure
-  db.run(`
-    ALTER TABLE connector_events
-      ADD COLUMN last_error TEXT
-  `);
+  addColumnIfNotExists(db, 'connector_events', 'last_error TEXT');
 
   // When to next retry (NULL = not scheduled / permanent failure)
-  db.run(`
-    ALTER TABLE connector_events
-      ADD COLUMN next_retry_at TEXT
-  `);
+  addColumnIfNotExists(db, 'connector_events', 'next_retry_at TEXT');
 
   // Backfill existing rows as 'completed' (they already have processed_at set)
   db.run(`
