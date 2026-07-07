@@ -9,7 +9,7 @@
  *   - On message: check cache first → cache miss → load from chatbot_versions
  *   - No TTL needed: invalidated on next publish (upsert)
  */
-import db from '../database.js';
+import db from '../../database.js';
 
 interface RuntimeConfig {
   compiledPrompt: string;
