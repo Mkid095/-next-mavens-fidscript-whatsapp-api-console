@@ -20,12 +20,17 @@ function timeLabel(ts: number): string {
   return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// Extract phone digits for avatar lookup from a participant JID
-function participantToAvatarKey(jid: string | null): string | null {
+// Extract a stable avatar-lookup key from a participant JID.
+// Disambiguate individual vs group-participant JIDs by prefix so the same
+// phone digits don't collide (254700000000@s.whatsapp.net vs a group member
+// with the same phone must not share a cached profile pic lookup).
+function participantToAvatarKey(jid: string | null, isGroup: boolean): string | null {
   if (!jid) return null;
-  if (jid.includes('@g.us')) return jid; // group JID
+  if (isGroup) return `g:${jid}`; // group participant — full JID is unique
+  // Individual JID: strip @s.whatsapp.net, prefix to avoid collision with
+  // group participant keys that happen to share the same phone digits
   const user = jid.split('@')[0];
-  return /^\d+$/.test(user) ? user : null;
+  return /^\d+$/.test(user) ? `i:${user}` : null;
 }
 
 // Fallback avatar initials from sender name
@@ -38,7 +43,7 @@ export default function MessageBubbleMain({ message, isContinuation = false, isG
   const showSender = isGroup && !outgoing && !isContinuation && message.senderName;
 
   // Fetch sender avatar for group incoming messages
-  const avatarKey = showSender ? participantToAvatarKey(message.senderJid) : null;
+  const avatarKey = showSender ? participantToAvatarKey(message.senderJid, !!isGroup) : null;
   const avatarPic = useProfilePic(instanceName ?? null, avatarKey);
   const senderInitialsStr = senderInitials(message.senderName);
 

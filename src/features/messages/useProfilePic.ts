@@ -25,7 +25,9 @@ function pump() {
     if (inflight.has(key) || cache.has(key)) continue;
     inflight.add(key);
     const [instanceName, lookupKey] = key.split('::');
-    messagesApi.getProfilePic(instanceName, lookupKey).then((res) => {
+    // Strip the i:/g: prefix before passing to the API (they're only for cache disambiguation)
+    const apiNumber = lookupKey.replace(/^(i:|g:)/, '');
+    messagesApi.getProfilePic(instanceName, apiNumber).then((res) => {
       notify(key, res.success && res.data ? res.data.url : null);
     }).catch(() => notify(key, null));
   }

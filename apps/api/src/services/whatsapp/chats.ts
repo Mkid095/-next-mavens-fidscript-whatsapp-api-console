@@ -42,7 +42,7 @@ export const sendPresence = (ctx: SendContext, a: { number: string; options?: { 
   run(ctx, 'sendPresence', 'POST', a);
 export const deleteForEveryone = (ctx: SendContext, a: { id: string; remoteJid: string; fromMe: boolean; participant?: string }) =>
   run(ctx, 'deleteMessageForEveryone', 'DELETE', a);
-export const updateMessage = (ctx: SendContext, a: { number: number; text: string; key: { remoteJid: string; fromMe: boolean; id: string } }) =>
+export const updateMessage = (ctx: SendContext, a: { number: string; text: string; key: { remoteJid: string; fromMe: boolean; id: string } }) =>
   run(ctx, 'updateMessage', 'POST', a);
 
 // Read ops (V1_READ)
@@ -82,7 +82,11 @@ export async function findMessagesAll(ctx: SendContext): Promise<SendResult> {
 
   for (let p = 2; p <= totalToFetch + 1; p++) {
     const r = await run(ctx, 'findMessages', 'POST', { page: p });
-    if (r.ok && r.data && typeof r.data === 'object') {
+    if (!r.ok) {
+      console.warn(`[findMessagesAll] page ${p} failed for instance ${ctx.instance.name}:`, r.error);
+      continue;
+    }
+    if (r.data && typeof r.data === 'object') {
       const mo = (r.data as Record<string, unknown>).messages as Record<string, unknown> | undefined;
       if (Array.isArray(mo?.records)) {
         records.push(...(mo.records as unknown[]));

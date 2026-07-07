@@ -92,11 +92,20 @@ export function saveSentMessage(
 ) {
   const normalized = normalizePhone(to);
   const chat = chatId || normalized || null;
+  // Use ON CONFLICT DO UPDATE so that when the webhook echo arrives with the
+  // same msgId (after finalize already inserted), the existing row is updated
+  // rather than silently dropped by INSERT OR IGNORE. This ensures the
+  // conversation_id resolved by finalize is preserved and duplicates converge
+  // to a single correct row regardless of which path inserts first.
   db.prepare(`
     INSERT INTO inbox_messages
       (id, instance_id, client_id, workspace_id, from_number, from_name, message_type,
        content, media_url, is_read, direction, chat_id, is_group, conversation_id, customer_id, sender_type)
     VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, 1, 'outgoing', ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      conversation_id = COALESCE(excluded.conversation_id, conversation_id),
+      customer_id     = COALESCE(excluded.customer_id, customer_id),
+      direction       = 'outgoing'
   `).run(
     msgId, instanceId, clientId, workspaceId,
     normalized || to, messageType, content, mediaUrl || null,

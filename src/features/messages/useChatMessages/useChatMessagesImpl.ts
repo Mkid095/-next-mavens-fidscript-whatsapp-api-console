@@ -13,6 +13,7 @@ import { scheduleRefresh } from '../useSharedRefreshGate';
  */
 const MAX_LOCALSTORAGE_CHATS = 50;
 const MAX_MESSAGES_PER_CHAT = 200;
+const DISK_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 const LS_KEY = 'wap_chat_cache_v1';
 
@@ -24,13 +25,21 @@ function loadDiskCache(): Map<string, CacheEntry> {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return new Map();
     const parsed = JSON.parse(raw) as DiskCache;
-    return new Map(Object.entries(parsed));
+    const now = Date.now();
+    const map = new Map<string, CacheEntry>();
+    for (const [k, v] of Object.entries(parsed)) {
+      // Skip entries older than 7 days
+      if (now - v.ts < DISK_CACHE_MAX_AGE_MS) map.set(k, v);
+    }
+    return map;
   } catch { return new Map; }
 }
 
 function saveDiskCache(cache: Map<string, CacheEntry>) {
   try {
-    const entries = Array.from(cache.entries());
+    const now = Date.now();
+    const entries = Array.from(cache.entries())
+      .filter(([, v]) => now - v.ts < DISK_CACHE_MAX_AGE_MS);
     const trimmed = entries.length > MAX_LOCALSTORAGE_CHATS
       ? entries.slice(-MAX_LOCALSTORAGE_CHATS)
       : entries;
@@ -143,7 +152,7 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
       // Silently ignore events for chats we're not currently viewing
       if (activeJidRef.current !== jid) return;
       const payload = event.payload as { chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
-      if (payload.chatId !== jid && payload.chatId !== ` ${jid}`) return;
+      if (payload.chatId !== jid) return;
       const msg: MirrorMessage = {
         id: `sse_${Date.now()}`,
         direction: 'incoming',

@@ -62,11 +62,19 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
     });
   }
 
+  // Deduplicate by JID — last-write-wins so the most-recent entry wins
+  const seen = new Set<string>();
+  const deduped = items.filter((item) => {
+    if (seen.has(item.jid)) return false;
+    seen.add(item.jid);
+    return true;
+  });
+
   // Compute unread from inbox_messages table
-  if (items.length > 0) {
+  if (deduped.length > 0) {
     const phoneToIndex: Record<string, number> = {};
-    for (let i = 0; i < items.length; i++) {
-      const jid = items[i].jid;
+    for (let i = 0; i < deduped.length; i++) {
+      const jid = deduped[i].jid;
       const phone = jid.includes('@')
         ? jid.replace('@s.whatsapp.net', '').replace(/^\+/, '')
         : jid.replace(/^\+/, '');
@@ -81,17 +89,17 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
         AND REPLACE(REPLACE(chat_id, '+', ''), '@s.whatsapp.net', '') IN (${placeholders})
       GROUP BY chat_id
     `).all(ctx.instance.id, ...normalizedJids) as { chat_id: string; cnt: number }[];
-    for (const item of items) item.unread = 0;
+    for (const item of deduped) item.unread = 0;
     for (const r of unreadRows) {
       const phone = r.chat_id.replace('@s.whatsapp.net', '').replace(/^\+/, '');
       const idx = phoneToIndex[phone];
-      if (idx !== undefined) items[idx].unread = r.cnt;
+      if (idx !== undefined) deduped[idx].unread = r.cnt;
     }
   }
 
   // Batch-load group restrict/admin flags
-  if (items.length > 0) {
-    const groupItems = items.filter((i) => i.isGroup);
+  if (deduped.length > 0) {
+    const groupItems = deduped.filter((i) => i.isGroup);
     if (groupItems.length > 0) {
       const groupJids = groupItems.map((i) => i.jid);
       const placeholders = groupJids.map(() => '?').join(',');
@@ -110,20 +118,20 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
   }
 
   // Batch-load AI override modes
-  if (items.length > 0) {
-    const jids = items.map((i) => i.jid);
+  if (deduped.length > 0) {
+    const jids = deduped.map((i) => i.jid);
     const placeholders = jids.map(() => '?').join(',');
     const rows = db.prepare(
       `SELECT conversation_id, mode FROM chatbot_conversation_overrides WHERE conversation_id IN (${placeholders})`
     ).all(...jids) as { conversation_id: string; mode: string }[];
     const overrideMap = new Map(rows.map((r) => [r.conversation_id, r.mode as 'ai' | 'manual']));
-    for (const item of items) {
+    for (const item of deduped) {
       item.aiMode = overrideMap.get(item.jid) ?? null;
     }
   }
 
-  items.sort((a, b) => (b.lastMessageAt ?? 0) - (a.lastMessageAt ?? 0));
-  return { ok: true, data: { chats: items } };
+  deduped.sort((a, b) => (b.lastMessageAt ?? 0) - (a.lastMessageAt ?? 0));
+  return { ok: true, data: { chats: deduped } };
 }
 
 export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendResult> {
