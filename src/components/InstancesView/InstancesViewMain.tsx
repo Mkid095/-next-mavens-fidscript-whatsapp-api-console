@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Instance, Client } from '../../services/api';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Smartphone } from 'lucide-react';
 import InstanceTable from '../admin/instances/InstanceTable';
 import CreateInstanceModal from '../admin/instances/CreateInstanceModal';
 import QRPairingModal from '../client/whatsapp/QRPairingModal';
@@ -22,8 +22,8 @@ export default function InstancesView({
   onDeleteInstance,
 }: InstancesViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [clientFilter, setClientFilter] = useState<string>('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const {
     pairingInstance,
@@ -36,10 +36,7 @@ export default function InstancesView({
     handleSimulateSuccessfulScan,
     handleDisconnect,
     handleClosePairingModal,
-  } = useInstanceConnection({ instances, onInstancesChange: (updated) => {
-    // Sync updated instances back to parent — admin instances list refreshes
-    updated; // handled via onUpdateStatus callbacks for now
-  }});
+  } = useInstanceConnection({ instances, onInstancesChange: (updated) => { updated; } });
 
   const handleQrConnect = useCallback((name: string) => {
     const inst = instances.find(i => i.name === name);
@@ -62,32 +59,33 @@ export default function InstancesView({
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#272c30]">
-            Containers
-          </h1>
-          <p className="text-xs text-[#60737a] mt-1">
-            Manage messaging containers across all clients.
-          </p>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+            <Smartphone className="w-5 h-5 text-yellow-500" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-[#a8a99e]">Containers</h1>
+            <p className="text-xs text-[#6e684a] mt-0.5">Manage messaging containers across all clients.</p>
+          </div>
         </div>
-
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-[#272c30] hover:bg-[#33301a] text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm border border-[#3d3a1e] transition-colors"
+          onClick={() => setShowCreateModal(true)}
+          className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-[#181711] font-bold text-xs px-4 py-2.5 rounded-xl transition-all shrink-0"
         >
-          <Plus className="w-4 h-4 text-yellow-400" />
-          <span>Create Instance</span>
+          <Plus className="w-3.5 h-3.5" />
+          <span>New Container</span>
         </button>
       </div>
 
+      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Client filter dropdown */}
         <select
           value={clientFilter}
           onChange={(e) => setClientFilter(e.target.value)}
-          className="px-3 py-2 border border-[#eaebe4] bg-white rounded-xl text-xs text-[#181711] focus:outline-none focus:border-yellow-600 min-w-[180px]"
+          className="px-3 py-2.5 bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] text-xs rounded-xl focus:outline-none focus:border-yellow-500/50 min-w-[160px]"
         >
           <option value="">All clients</option>
           {clients.map((c) => (
@@ -95,43 +93,51 @@ export default function InstancesView({
           ))}
         </select>
 
-        {/* Search bar */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8a8c80] pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6e684a] pointer-events-none" />
           <input
             type="text"
-            placeholder="Search instances by name, client, or phone..."
+            placeholder="Search containers by name, client, or phone…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-[#eaebe4] text-[#181711] placeholder-[#8a8c80] text-xs rounded-xl focus:outline-none focus:border-yellow-600 focus:ring-1 focus:ring-yellow-600 transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] placeholder-[#6e684a] text-xs rounded-xl focus:outline-none focus:border-yellow-500/50 transition-colors"
           />
         </div>
       </div>
 
-      <div className="bg-white border border-[#eaebe4]/80 rounded-2xl shadow-sm overflow-hidden">
-        <InstanceTable
-          instances={filteredInstances}
-          onQrConnect={handleQrConnect}
-          onDisconnect={handleDisconnectAndRefresh}
-          onDelete={onDeleteInstance}
-        />
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-[#1a1915] border border-[#2d2813] rounded-2xl p-4 text-center">
+          <p className="text-xl font-bold text-[#a8a99e]">{instances.length}</p>
+          <p className="text-[10px] text-[#6e684a] mt-0.5">Total</p>
+        </div>
+        <div className="bg-[#1a1915] border border-[#2d2813] rounded-2xl p-4 text-center">
+          <p className="text-xl font-bold text-green-400">{instances.filter(i => i.status === 'connected').length}</p>
+          <p className="text-[10px] text-[#6e684a] mt-0.5">Connected</p>
+        </div>
+        <div className="bg-[#1a1915] border border-[#2d2813] rounded-2xl p-4 text-center">
+          <p className="text-xl font-bold text-red-400">{instances.filter(i => i.status === 'disconnected').length}</p>
+          <p className="text-[10px] text-[#6e684a] mt-0.5">Disconnected</p>
+        </div>
       </div>
 
-      <CreateInstanceModal
-        isOpen={isModalOpen}
-        clients={instances
-          .map(i => i.client_name)
-          .filter(Boolean)
-          .filter((v, idx, arr) => arr.indexOf(v) === idx)
-          .map(name => ({ name: name ?? '', client_id: instances.find(i => i.client_name === name)?.client_id || '' }))
-        }
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={(data) => {
-          onAddInstance(data);
-          setIsModalOpen(false);
-        }}
+      {/* Table */}
+      <InstanceTable
+        instances={filteredInstances}
+        onQrConnect={handleQrConnect}
+        onDisconnect={handleDisconnectAndRefresh}
+        onDelete={onDeleteInstance}
       />
 
+      {/* Create Modal */}
+      <CreateInstanceModal
+        isOpen={showCreateModal}
+        clients={clients.map(c => ({ name: c.name || c.email || '', client_id: c.id }))}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={(data) => { onAddInstance(data); setShowCreateModal(false); }}
+      />
+
+      {/* QR Modal */}
       {pairingInstance && (
         <QRPairingModal
           instance={pairingInstance}

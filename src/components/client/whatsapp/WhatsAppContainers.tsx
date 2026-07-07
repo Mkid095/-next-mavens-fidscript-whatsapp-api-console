@@ -82,13 +82,18 @@ export default function WhatsAppContainers({
     <div className="space-y-6">
       <div className="bg-[#1a1915] border border-[#2d2813] rounded-3xl p-5 shadow-sm">
         <div className="flex items-center justify-between pb-4 border-b border-[#2d2813]">
-          <div>
-            <h3 className="text-sm font-bold text-[#a8a99e]">My containers</h3>
-            <p className="text-xs text-[#6e684a] mt-0.5">Create containers and connect via QR code.</p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+              <Smartphone className="w-4 h-4 text-yellow-500" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#a8a99e]">My containers</h3>
+              <p className="text-xs text-[#6e684a]">Create containers and connect via QR code.</p>
+            </div>
           </div>
           <button
             onClick={() => setShowNewInstanceModal(true)}
-            className="px-3.5 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-[#181711] text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+            className="px-3.5 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-[#181711] text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Container</span>
