@@ -15,8 +15,10 @@ function authClient(req: Request, res: Response): Client | null {
   const token = req.query.token as string;
   if (!token) { res.status(401).json({ success: false, error: 'Token required' }); return null; }
   const decoded = verifyToken(token);
-  if (!decoded || decoded.type !== 'client') { res.status(401).json({ success: false, error: 'Invalid or expired token' }); return null; }
-  const client = db.prepare('SELECT * FROM clients WHERE id = ? AND is_active = 1').get(decoded.id) as Client | undefined;
+  if (!decoded || !decoded.email) { res.status(401).json({ success: false, error: 'Invalid or expired token' }); return null; }
+  // Look up client by email — works for both 'client' and 'admin' JWTs since
+  // admins can also access client SSE endpoints (e.g. Connect QR from admin view)
+  const client = db.prepare('SELECT * FROM clients WHERE email = ? AND is_active = 1').get(decoded.email) as Client | undefined;
   if (!client) { res.status(401).json({ success: false, error: 'Client not found or inactive' }); return null; }
   return client;
 }

@@ -11,9 +11,10 @@ export function authSseToken(req: Request): { decoded: ReturnType<typeof verifyT
   if (!token) return null;
 
   const decoded = verifyToken(token);
-  if (!decoded || decoded.type !== 'client') return null;
+  if (!decoded || !decoded.email) return null;
 
-  const client = db.prepare('SELECT * FROM clients WHERE id = ? AND is_active = 1').get(decoded.id) as Client | undefined;
+  // Look up by email so admins accessing client SSE endpoints are also accepted
+  const client = db.prepare('SELECT * FROM clients WHERE email = ? AND is_active = 1').get(decoded.email) as Client | undefined;
   if (!client) return null;
 
   return { decoded, client };
