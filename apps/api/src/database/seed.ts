@@ -47,13 +47,15 @@ export async function seedData(db: Database): Promise<void> {
 		VALUES ('cli_kennedy_001', 'Kennedy Mwangi', 'kennedygithinjioffice@gmail.com', '+254746269657', 'kennedy_api_key', 'plan_starter', 207394, 1)
 	`);
 	db.run(`
-		INSERT OR IGNORE INTO instances (id, name, display_name, client_id, instance_token, status, phone_number)
-		VALUES ('inst_7754cd12', 'soostori', 'soostori', 'cli_kennedy_001', 'inst_8ab061483be4e0a9c10faaf918ab3cc2', 'disconnected', '+254732203353')
+		INSERT OR IGNORE INTO instances (id, name, display_name, client_id, instance_token, status, phone_number, evolution_name)
+		VALUES ('inst_7754cd12', 'soostori', 'soostori', 'cli_kennedy_001', 'inst_8ab061483be4e0a9c10faaf918ab3cc2', 'disconnected', '+254732203353', 'soostori')
 	`);
 	db.run(`
-		INSERT OR IGNORE INTO instances (id, name, display_name, client_id, instance_token, status)
-		VALUES ('inst_8a97129e', 'test', 'test', 'cli_kennedy_001', 'inst_test123', 'disconnected')
+		INSERT OR IGNORE INTO instances (id, name, display_name, client_id, instance_token, status, evolution_name)
+		VALUES ('inst_8a97129e', 'test', 'test', 'cli_kennedy_001', 'inst_test123', 'disconnected', 'test')
 	`);
+	// Ensure all instances have evolution_name = name (fixes legacy rows created before this column existed)
+	db.run(`UPDATE instances SET evolution_name = name WHERE evolution_name IS NULL OR evolution_name = ''`);
 	db.run(`
 		INSERT OR IGNORE INTO client_api_keys (id, client_id, name, api_key, status)
 		VALUES ('key_1781528486016_l49mms', 'cli_kennedy_001', 'test', 'fidscript_live_e15f501870ed01861896de5db1c338d7', 'Active')
