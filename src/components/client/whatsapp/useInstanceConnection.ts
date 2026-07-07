@@ -54,20 +54,21 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
       try {
         const data = JSON.parse(event.data) as { state: string; phoneNumber: string | null };
         if (data.state === 'connected') {
-          // Use the passed inst, not pairingInstance — at call time setState hasn't flushed yet.
           onInstancesChange(instances.map(i =>
             i.id === inst.id
               ? { ...i, status: 'connected' as const, phone_number: data.phoneNumber || i.phone_number }
               : i
           ));
           resolvePairing();
-        } else if (data.state === 'disconnected') {
+        }
+        // disconnected — update badge but keep modal open (QR flow: user is scanning)
+        else if (data.state === 'disconnected') {
           onInstancesChange(instances.map(i =>
             i.id === inst.id
               ? { ...i, status: 'disconnected' as const, phone_number: null }
               : i
           ));
-          resolvePairing();
+          // Do NOT resolvePairing() — keep the QR modal open until user scans or closes
         }
       } catch {
         // Ignore malformed messages

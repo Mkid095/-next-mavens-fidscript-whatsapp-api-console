@@ -25,7 +25,7 @@ export function useConnectionPolling(
     }
   }, []);
 
-  const startPolling = useCallback((pairingInstance: Instance, onComplete: () => void) => {
+  const startPolling = useCallback((pairingInstance: Instance, onConnected: () => void) => {
     clear();
     const interval = setInterval(async () => {
       try {
@@ -40,10 +40,9 @@ export function useConnectionPolling(
               : i
           );
           onChangeRef.current(updated);
-          onComplete();
-        } else if (data.status === 'disconnected' || data.status === 'error') {
-          clear();
+          onConnected(); // only close modal on successful connection
         }
+        // disconnected/error → keep polling, keep modal open
       } catch {
         // keep polling
       }
