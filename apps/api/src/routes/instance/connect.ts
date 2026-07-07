@@ -8,7 +8,8 @@ import { logAuditAction } from '../../utils/audit.js';
 const router = Router();
 
 // the gateway is inside Docker and can't reach public URLs — use internal hostname for webhooks
-const API_BASE_URL = process.env.API_INTERNAL_URL || 'http://fidscript-whatsapp-api:3099';
+// Docker Compose normalizes service names to underscores in container names (whatsapp-api → fidscript_whatsapp_api)
+const API_BASE_URL = process.env.API_INTERNAL_URL || 'http://fidscript_whatsapp_api:8080';
 
 // GET /api/instance/connect/:name - Generate QR code from the gateway API
 router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) => {
