@@ -13,8 +13,12 @@ services:
     volumes:
       - fidscript_instances:/fidscript/instances
     networks:
-      - fidscript-net
-      - dokploy-network
+      fidscript-net:
+        aliases:
+          - fidscript-whatsapp-api
+      dokploy-network:
+        aliases:
+          - fidscript-whatsapp-api
     env_file:
       - .env
     expose:

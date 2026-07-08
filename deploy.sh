@@ -418,10 +418,17 @@ build_backend() {
 }
 
 restart_backend() {
-    # Backend runs in Docker (container fidscript-whatsapp-api). /app/dist is baked
+    # Backend runs in Docker (container fidscript_whatsapp_api). /app/dist is baked
     # into the image, so we copy the freshly built dist into the running container,
     # then restart it to load the new code. The DB is bind-mounted separately.
-    local container="fidscript-whatsapp-api"
+    #
+    # The container also needs the network alias "fidscript-whatsapp-api" so that
+    # Evolution API (which resolves webhooks to http://fidscript-whatsapp-api:3099)
+    # can reach it. This alias is applied on every restart so it survives across
+    # container recreations.
+    local container="fidscript_whatsapp_api"
+    local network="fidscript"
+    local alias="fidscript-whatsapp-api"
 
     if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
         log_error "Backend container '${container}' is not running. Aborting backend restart."
@@ -431,12 +438,20 @@ restart_backend() {
     log_info "Copying new dist into ${container}..."
     docker cp "${SCRIPT_DIR}/apps/api/dist/." "${container}:/app/dist/" 2>&1 | tee -a "${LOG_FILE}"
 
+    # Ensure the hyphenated network alias exists so Evolution API's webhook URL
+    # (http://fidscript-whatsapp-api:3099) resolves correctly inside the Docker network.
+    # The alias is a no-op if it already exists; we re-apply it on every restart
+    # so any post-restart disconnect is self-healed.
+    log_info "Ensuring network alias '${alias}' on '${network}'..."
+    docker network disconnect "${network}" "${container}" 2>/dev/null || true
+    docker network connect --alias "${alias}" "${network}" "${container}" 2>&1 | tee -a "${LOG_FILE}"
+
     log_info "Restarting ${container}..."
     docker restart "${container}" 2>&1 | tee -a "${LOG_FILE}"
-    sleep 2
+    sleep 3
 
     if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-        log_success "Backend container restarted."
+        log_success "Backend container restarted with alias '${alias}'."
     else
         log_error "Backend container failed to start after restart."
         return 1
