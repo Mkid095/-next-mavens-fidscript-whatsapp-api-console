@@ -418,7 +418,7 @@ build_backend() {
 }
 
 restart_backend() {
-    # Backend runs in Docker (container fidscript_whatsapp_api). /app/dist is baked
+    # Backend runs in Docker (container fidscript_api). /app/dist is baked
     # into the image, so we copy the freshly built dist into the running container,
     # then restart it to load the new code. The DB is bind-mounted separately.
     #
@@ -426,8 +426,8 @@ restart_backend() {
     # Evolution API (which resolves webhooks to http://fidscript-whatsapp-api:3099)
     # can reach it. This alias is applied on every restart so it survives across
     # container recreations.
-    local container="fidscript_whatsapp_api"
-    local network="fidscript"
+    local container="fidscript_api"
+    local network="fidscript-app"
     local alias="fidscript-whatsapp-api"
 
     if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
