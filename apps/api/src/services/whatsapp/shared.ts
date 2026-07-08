@@ -95,7 +95,15 @@ export function saveSentMessage(
   customerId?: string,
   senderType = 'agent',
 ) {
-  const normalized = normalizePhone(to);
+  // Normalize outgoing JID to the same form that the webhook stores for incoming:
+  // incoming messages: extractPhoneFromJid(remoteJid) → normalizePhone → "+254..."
+  // outgoing must use the same chat_id format so both appear in the same thread.
+  // For individual JIDs (…@s.whatsapp.net) strip the suffix; group JIDs pass through.
+  const isJid = to.includes('@');
+  const phoneOrJid = isJid && !to.includes('@g.us')
+    ? to.replace('@s.whatsapp.net', '')
+    : to;
+  const normalized = normalizePhone(phoneOrJid);
   const chat = chatId || normalized || null;
   // Use ON CONFLICT DO UPDATE so that when the webhook echo arrives with the
   // same msgId (after finalize already inserted), the existing row is updated

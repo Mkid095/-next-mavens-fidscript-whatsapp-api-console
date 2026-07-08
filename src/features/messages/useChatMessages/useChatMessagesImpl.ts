@@ -154,7 +154,7 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
       const payload = event.payload as { chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
       if (payload.chatId !== jid) return;
       const msg: MirrorMessage = {
-        id: `sse_${Date.now()}`,
+        id: payload.id || `sse_${Date.now()}`,
         direction: 'incoming',
         type: payload.messageType || 'text',
         content: payload.content || '',

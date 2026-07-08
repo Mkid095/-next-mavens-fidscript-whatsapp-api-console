@@ -34,5 +34,10 @@ export function resolveDisplayName(workspaceId: string, jid: string, pushName?: 
       }
     }
   }
+  // Format bare E.164 Kenyan numbers as local format for display
+  if (/^\+254[79]\d{8}$/.test(rawPhone)) {
+    const num = rawPhone.slice(1); // 2547… or 2541…
+    return `${num.slice(0, 3)} ${num.slice(3, 6)} ${num.slice(6)}`;
+  }
   return rawPhone;
 }

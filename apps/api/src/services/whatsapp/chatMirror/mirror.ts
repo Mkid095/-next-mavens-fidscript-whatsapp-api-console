@@ -62,38 +62,45 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
     });
   }
 
-  // Deduplicate by JID — last-write-wins so the most-recent entry wins
-  const seen = new Set<string>();
-  const deduped = items.filter((item) => {
-    if (seen.has(item.jid)) return false;
-    seen.add(item.jid);
-    return true;
-  });
+  // Deduplicate by JID — keep the LAST occurrence so the most-recent
+  // lastMessage and timestamp win (chats can appear on multiple pages; the
+  // last page has the freshest data).
+  const lastByJid = new Map<string, ChatListItem>();
+  for (const item of items) lastByJid.set(item.jid, item);
+  const deduped = [...lastByJid.values()];
 
-  // Compute unread from inbox_messages table
+  // Compute unread from inbox_messages table.
+  // One phone number can have multiple JID variants (e.g. 254…@s.whatsapp.net and
+  // 254…:22@s.whatsapp.net). We group all variants per phone so any variant's
+  // unread count is attributed to the correct contact.
   if (deduped.length > 0) {
-    const phoneToIndex: Record<string, number> = {};
+    const phoneToIndices: Record<string, number[]> = {};
     for (let i = 0; i < deduped.length; i++) {
       const jid = deduped[i].jid;
       const phone = jid.includes('@')
         ? jid.replace('@s.whatsapp.net', '').replace(/^\+/, '')
         : jid.replace(/^\+/, '');
-      phoneToIndex[phone] = i;
+      if (!phoneToIndices[phone]) phoneToIndices[phone] = [];
+      phoneToIndices[phone].push(i);
     }
-    const normalizedJids = Object.keys(phoneToIndex);
-    const placeholders = normalizedJids.map(() => '?').join(',');
-    const unreadRows = db.prepare(`
-      SELECT chat_id, COUNT(*) as cnt
-      FROM inbox_messages
-      WHERE instance_id = ? AND is_read = 0 AND direction = 'incoming'
-        AND REPLACE(REPLACE(chat_id, '+', ''), '@s.whatsapp.net', '') IN (${placeholders})
-      GROUP BY chat_id
-    `).all(ctx.instance.id, ...normalizedJids) as { chat_id: string; cnt: number }[];
-    for (const item of deduped) item.unread = 0;
-    for (const r of unreadRows) {
-      const phone = r.chat_id.replace('@s.whatsapp.net', '').replace(/^\+/, '');
-      const idx = phoneToIndex[phone];
-      if (idx !== undefined) deduped[idx].unread = r.cnt;
+    const phones = Object.keys(phoneToIndices);
+    if (phones.length > 0) {
+      const placeholders = phones.map(() => '?').join(',');
+      const unreadRows = db.prepare(`
+        SELECT chat_id, COUNT(*) as cnt
+        FROM inbox_messages
+        WHERE instance_id = ? AND is_read = 0 AND direction = 'incoming'
+          AND REPLACE(REPLACE(chat_id, '+', ''), '@s.whatsapp.net', '') IN (${placeholders})
+        GROUP BY chat_id
+      `).all(ctx.instance.id, ...phones) as { chat_id: string; cnt: number }[];
+      // Reset all to 0 first
+      for (const item of deduped) item.unread = 0;
+      // Attribute unread to ALL deduped entries that share this phone
+      for (const r of unreadRows) {
+        const phone = r.chat_id.replace('@s.whatsapp.net', '').replace(/^\+/, '');
+        const indices = phoneToIndices[phone];
+        if (indices) for (const idx of indices) deduped[idx].unread += r.cnt;
+      }
     }
   }
 
@@ -136,7 +143,10 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
 
 export async function mirrorThread(ctx: SendContext, jid: string): Promise<SendResult> {
   await paceWhatsAppCall(ctx.instance.id);
-  const result = await findMessagesAll(ctx);
+  // Pass jid so Evolution API filters to only this chat's messages on every page.
+  // Without this, findMessagesAll returns all messages from all chats and we discard
+  // everything except the target jid — wasteful and a source of wrong dedup data.
+  const result = await findMessagesAll(ctx, jid);
   if (!result.ok) return result;
 
   const isGroup = jid.includes('@g.us');

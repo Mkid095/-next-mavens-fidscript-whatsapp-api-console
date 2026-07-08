@@ -57,14 +57,20 @@ export const getBase64 = (ctx: SendContext, a: { message: Record<string, unknown
 export const profilePicUrl = (ctx: SendContext, number: string) => run(ctx, 'fetchProfilePictureUrl', 'POST', { number });
 
 /**
- * Fetch ALL pages of findMessages results. Evolution API paginates at 50 records/page
- * and the `where.remoteJid` filter is unreliable, so we fetch all pages and return
- * every record merged into a single array. We cap at 20 pages (1000 records) to avoid
- * hammering the gateway on very active accounts.
+ * Fetch ALL pages of findMessages results. Evolution API paginates at 50 records/page.
+ * When jid is provided, we pass a remoteJid filter on every page request so
+ * Evolution API does the filtering server-side — we only get messages for that chat,
+ * not noise from all chats. We cap at 20 pages (1000 records) to avoid hammering
+ * the gateway on very active accounts.
  */
-export async function findMessagesAll(ctx: SendContext): Promise<SendResult> {
+export async function findMessagesAll(ctx: SendContext, jid?: string): Promise<SendResult> {
+  // Pass remoteJid filter on every page so Evolution API scopes the results
+  const pageBody = (page: number) => jid
+    ? { page, where: { remoteJid: jid } }
+    : { page };
+
   // Fetch page 1 to get total page count
-  const first = await run(ctx, 'findMessages', 'POST', { page: 1 });
+  const first = await run(ctx, 'findMessages', 'POST', pageBody(1));
   if (!first.ok) return first;
 
   const msgsObj = first.data && typeof first.data === 'object'
@@ -81,7 +87,7 @@ export async function findMessagesAll(ctx: SendContext): Promise<SendResult> {
   const totalToFetch = Math.min(pages, MAX_PAGES) - 1;
 
   for (let p = 2; p <= totalToFetch + 1; p++) {
-    const r = await run(ctx, 'findMessages', 'POST', { page: p });
+    const r = await run(ctx, 'findMessages', 'POST', pageBody(p));
     if (!r.ok) {
       console.warn(`[findMessagesAll] page ${p} failed for instance ${ctx.instance.name}:`, r.error);
       continue;
