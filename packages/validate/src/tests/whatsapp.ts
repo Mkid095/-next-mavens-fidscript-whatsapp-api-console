@@ -1,8 +1,25 @@
-import type { HttpClient } from '../client/http.js';
-import type { TestCollection } from '../types.js';
+import type { HttpClient, ApiResponse } from '../client/http.js';
+import type { TestCollection, Severity } from '../types.js';
 
 interface WhatsAppContext {
   instanceName?: string;
+}
+
+function mkResult(
+  name: string,
+  res: ApiResponse<unknown>,
+  severity: Severity = 'high',
+) {
+  const isOk = res.error === undefined && (res.status ?? 200) < 400;
+  return {
+    name,
+    status: (isOk ? 'pass' : 'fail') as 'pass' | 'fail',
+    severity: isOk ? undefined : severity,
+    category: 'whatsapp',
+    latency: res.latency,
+    error: res.error,
+    detail: res.errorBody !== undefined ? JSON.stringify(res.errorBody) : undefined,
+  };
 }
 
 export async function whatsAppTests(
@@ -10,135 +27,49 @@ export async function whatsAppTests(
   authKey: string,
   ctx: WhatsAppContext,
 ): Promise<TestCollection> {
-  const headers = { apikey: authKey };
-  const results = [];
+  const h = { apikey: authKey };
+  const name = `e2e-${Date.now()}`;
+  ctx.instanceName = name;
 
-  // --- Instance creation ---
-  const instanceName = `e2e-${Date.now()}`;
-  ctx.instanceName = instanceName;
+  const [
+    create,
+    connect,
+    state,
+    qrResult,
+    logout,
+    del,
+  ] = await Promise.all([
+    whatsapp.request({ method: 'POST', path: `/instance/create?instanceName=${encodeURIComponent(name)}`, headers: h }),
+    whatsapp.request({ method: 'POST', path: `/instance/connect/${encodeURIComponent(name)}`, headers: h }),
+    whatsapp.request({ method: 'GET', path: `/instance/connectionState/${encodeURIComponent(name)}`, headers: h }),
+    whatsapp.request({ method: 'GET', path: `/instance/qrcode/${encodeURIComponent(name)}`, headers: h }),
+    whatsapp.request({ method: 'DELETE', path: `/instance/logout/${encodeURIComponent(name)}`, headers: h }),
+    whatsapp.request({ method: 'DELETE', path: `/instance/delete/${encodeURIComponent(name)}`, headers: h }),
+  ]);
 
-  try {
-    const start = Date.now();
-    const res = await whatsapp.request({
-      method: 'POST',
-      path: `/instance/create?instanceName=${encodeURIComponent(instanceName)}`,
-      headers,
-    });
-    const ok = !String(res.data).includes('error');
-    results.push({
-      name: 'instance create',
-      status: ok ? ('pass' as const) : ('fail' as const),
-      latency: res.latency,
-      data: String(res.data).slice(0, 80),
-    });
-  } catch (err) {
-    results.push({ name: 'instance create', status: 'fail' as const, error: String(err), latency: 0 });
-  }
+  ctx.instanceName = undefined;
 
-  // --- Connect (initiate pairing) ---
-  if (ctx.instanceName) {
-    try {
-      const start = Date.now();
-      const res = await whatsapp.request({
-        method: 'POST',
-        path: `/instance/connect/${encodeURIComponent(ctx.instanceName)}`,
-        headers,
-      });
-      results.push({
-        name: 'instance connect (pairing)',
-        status: res.latency > 0 ? ('pass' as const) : ('fail' as const),
-        latency: res.latency,
-        data: String(res.data).slice(0, 80),
-      });
-    } catch (err) {
-      results.push({ name: 'instance connect (pairing)', status: 'fail' as const, error: String(err), latency: 0 });
-    }
-  } else {
-    results.push({ name: 'instance connect (pairing)', status: 'skip' as const });
-  }
-
-  // --- Connection state ---
-  if (ctx.instanceName) {
-    try {
-      const start = Date.now();
-      const res = await whatsapp.request({
-        method: 'GET',
-        path: `/instance/connectionState/${encodeURIComponent(ctx.instanceName)}`,
-        headers,
-      });
-      results.push({
-        name: 'connection state',
-        status: res.latency > 0 ? ('pass' as const) : ('fail' as const),
-        latency: res.latency,
-        data: String(res.data).slice(0, 80),
-      });
-    } catch (err) {
-      results.push({ name: 'connection state', status: 'fail' as const, error: String(err), latency: 0 });
-    }
-  }
-
-  // --- QR Code generation ---
-  if (ctx.instanceName) {
-    try {
-      const start = Date.now();
-      const res = await whatsapp.request({
-        method: 'GET',
-        path: `/instance/qrcode/${encodeURIComponent(ctx.instanceName)}`,
-        headers,
-      });
-      // QR endpoint returns base64 image or QR data
-      const dataStr = String(res.data);
-      const hasQR = dataStr.includes('base64') || dataStr.includes('qr') || dataStr.includes('code');
-      results.push({
+  const tests = [
+    mkResult('instance create', create, 'critical'),
+    mkResult('instance connect (pairing)', connect),
+    mkResult('connection state', state),
+    (() => {
+      const dataStr = String(qrResult.data ?? '');
+      const hasQR = dataStr.includes('base64') || dataStr.includes('qrcode') || dataStr.includes('code');
+      const isOk = hasQR && qrResult.error === undefined;
+      return {
         name: 'qr code generation',
-        status: hasQR ? ('pass' as const) : ('fail' as const),
-        latency: res.latency,
-        data: dataStr.slice(0, 80),
-      });
-    } catch (err) {
-      results.push({ name: 'qr code generation', status: 'fail' as const, error: String(err), latency: 0 });
-    }
-  }
+        status: (isOk ? 'pass' : 'fail') as 'pass' | 'fail',
+        severity: isOk ? undefined : 'high' as Severity,
+        category: 'whatsapp',
+        latency: qrResult.latency,
+        error: qrResult.error,
+        detail: qrResult.errorBody !== undefined ? JSON.stringify(qrResult.errorBody) : undefined,
+      };
+    })(),
+    mkResult('instance logout', logout),
+    mkResult('instance delete', del, 'high'),
+  ];
 
-  // --- Logout ---
-  if (ctx.instanceName) {
-    try {
-      const start = Date.now();
-      const res = await whatsapp.request({
-        method: 'DELETE',
-        path: `/instance/logout/${encodeURIComponent(ctx.instanceName)}`,
-        headers,
-      });
-      results.push({
-        name: 'instance logout',
-        status: res.latency > 0 ? ('pass' as const) : ('fail' as const),
-        latency: res.latency,
-      });
-    } catch (err) {
-      results.push({ name: 'instance logout', status: 'fail' as const, error: String(err), latency: 0 });
-    }
-  }
-
-  // --- Delete instance ---
-  if (ctx.instanceName) {
-    const savedName = ctx.instanceName;
-    try {
-      const start = Date.now();
-      const res = await whatsapp.request({
-        method: 'DELETE',
-        path: `/instance/delete/${encodeURIComponent(savedName)}`,
-        headers,
-      });
-      results.push({
-        name: 'instance delete',
-        status: res.latency > 0 ? ('pass' as const) : ('fail' as const),
-        latency: res.latency,
-      });
-      ctx.instanceName = undefined; // clear after use
-    } catch (err) {
-      results.push({ name: 'instance delete', status: 'fail' as const, error: String(err), latency: 0 });
-    }
-  }
-
-  return { title: 'WhatsApp', tests: results };
+  return { title: 'WhatsApp', tests };
 }

@@ -1,5 +1,24 @@
-import type { HttpClient } from '../client/http.js';
-import type { TestCollection } from '../types.js';
+import type { HttpClient, ApiResponse } from '../client/http.js';
+import type { TestCollection, Severity } from '../types.js';
+
+function result(
+  name: string,
+  res: ApiResponse<unknown>,
+  severity: Severity = 'high',
+  category = 'infrastructure',
+) {
+  const ok = res.error === undefined && (res.status ?? 200) < 400;
+  return {
+    name,
+    status: ok ? 'pass' as const : 'fail' as const,
+    severity: ok ? undefined : severity,
+    category,
+    latency: res.latency,
+    error: res.error,
+    detail: res.errorBody !== undefined ? JSON.stringify(res.errorBody) : undefined,
+    data: res.status,
+  };
+}
 
 export async function infraTests(
   platform: HttpClient,
@@ -8,59 +27,14 @@ export async function infraTests(
   return {
     title: 'Infrastructure',
     tests: [
-      await testEndpoint(platform, 'GET', '/api/v1/health', 'platform — /api/v1/health'),
-      await testJson(whatsapp, 'GET', '/health', 'whatsapp-api — /health'),
-      await testJson(whatsapp, 'GET', '/', 'whatsapp-api — /'),
-      await testJson(whatsapp, 'GET', '/instance/instanceList', 'whatsapp-api — instanceList'),
-      await testJson(whatsapp, 'GET', '/webhook/load', 'whatsapp-api — webhook/load'),
+      result('platform health', await platform.request({ method: 'GET', path: '/api/v1/health' })),
+      result('whatsapp-api /health', await whatsapp.request({ method: 'GET', path: '/health' })),
+      result('whatsapp-api /', await whatsapp.request({ method: 'GET', path: '/' })),
+      result('whatsapp-api instanceList', await whatsapp.request({ method: 'GET', path: '/instance/instanceList' })),
+      result('whatsapp-api webhook/load', await whatsapp.request({ method: 'GET', path: '/webhook/load' })),
       await testFrontend('https://whatsapp.fidscript.com'),
     ],
   };
-}
-
-async function testEndpoint(
-  client: HttpClient,
-  method: string,
-  path: string,
-  name: string,
-) {
-  const start = Date.now();
-  try {
-    await client.request({ method, path });
-    return { name, status: 'pass' as const, latency: Date.now() - start };
-  } catch (err) {
-    return {
-      name,
-      status: 'fail' as const,
-      latency: Date.now() - start,
-      error: String(err),
-    };
-  }
-}
-
-async function testJson(
-  client: HttpClient,
-  method: string,
-  path: string,
-  name: string,
-) {
-  const start = Date.now();
-  try {
-    const result = await client.request({ method, path });
-    const isObject = result.data !== null && typeof result.data === 'object';
-    return {
-      name,
-      status: isObject ? ('pass' as const) : ('fail' as const),
-      latency: result.latency,
-    };
-  } catch (err) {
-    return {
-      name,
-      status: 'fail' as const,
-      latency: Date.now() - start,
-      error: String(err),
-    };
-  }
 }
 
 async function testFrontend(url: string) {
@@ -70,7 +44,9 @@ async function testFrontend(url: string) {
     const ok = res.status >= 200 && res.status < 400;
     return {
       name: `frontend — ${url}`,
-      status: ok ? ('pass' as const) : ('fail' as const),
+      status: ok ? 'pass' as const : 'fail' as const,
+      severity: ok ? undefined : ('high' as Severity),
+      category: 'infrastructure' as string,
       latency: Date.now() - start,
       data: `${res.status} ${res.statusText}`,
     };
@@ -78,8 +54,10 @@ async function testFrontend(url: string) {
     return {
       name: `frontend — ${url}`,
       status: 'fail' as const,
+      severity: 'high' as Severity,
+      category: 'infrastructure',
       latency: Date.now() - start,
-      error: String(err),
+      error: err instanceof Error ? err.message : String(err),
     };
   }
 }
