@@ -2,7 +2,10 @@ const dotenv = require('dotenv');
 const { execSync } = require('child_process');
 const { existsSync } = require('fs');
 
-dotenv.config();
+// Load .env but DO NOT override vars already set by Docker -e flags or env_file.
+// Docker sets env BEFORE Node.js starts, so process.env is already correct;
+// dotenv must only fill in MISSING vars (override: false).
+dotenv.config({ override: false });
 
 const { DATABASE_PROVIDER } = process.env;
 const databaseProviderDefault = DATABASE_PROVIDER ?? 'postgresql';

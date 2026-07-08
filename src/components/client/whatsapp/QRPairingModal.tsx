@@ -73,7 +73,7 @@ export default function QRPairingModal({
               <Smartphone className="w-4 h-4 text-yellow-500" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#a8a99e]">Pair container</h3>
+              <h3 className="text-sm font-bold text-[#a8a99e]">Scan QR Code</h3>
               <code className="text-[10px] text-[#6e684a] font-mono">{instance.name}</code>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function QRPairingModal({
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {connectionError}
               </p>
-              <p className="text-[10px] text-red-400/70">Try regenerating or check your container status.</p>
+              <p className="text-[10px] text-red-400/70">Try regenerating or check your WhatsApp number.</p>
             </div>
           )}
 

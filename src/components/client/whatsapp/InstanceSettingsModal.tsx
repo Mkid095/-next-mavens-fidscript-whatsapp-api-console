@@ -33,7 +33,7 @@ const SETTINGS: {
   {
     key: 'always_online',
     label: 'Always Online',
-    description: 'Keep this container connected at all times, even when the app is closed.',
+    description: 'Keep this number connected at all times, even when the app is closed.',
     icon: <Clock className="w-4 h-4 text-[#6e684a]" />,
     default: true,
   },
@@ -105,7 +105,7 @@ export default function InstanceSettingsModal({ inst, onClose }: InstanceSetting
               <Settings2 className="w-4 h-4 text-[#a8a99e]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#a8a99e]">Container Settings</h3>
+              <h3 className="text-sm font-bold text-[#a8a99e]">Number Settings</h3>
               <p className="text-[10px] text-[#6e684a] font-mono">{inst.name}</p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function InstanceSettingsModal({ inst, onClose }: InstanceSetting
         {/* Body */}
         <div className="p-5 space-y-3">
           <p className="text-[11px] text-[#6e684a]">
-            Configure how this container behaves. Changes apply immediately when saved.
+            Configure how this WhatsApp number behaves. Changes apply immediately when saved.
           </p>
 
           {loading ? (

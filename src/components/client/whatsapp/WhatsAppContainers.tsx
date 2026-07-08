@@ -74,7 +74,7 @@ export default function WhatsAppContainers({
       onInstancesChange([res.data, ...instances]);
       setShowNewInstanceModal(false);
     } else {
-      throw new Error(res.error || 'Failed to create container');
+      throw new Error(res.error || 'Failed to create WhatsApp number');
     }
   };
 
@@ -87,8 +87,8 @@ export default function WhatsAppContainers({
               <Smartphone className="w-4 h-4 text-yellow-500" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#a8a99e]">My containers</h3>
-              <p className="text-xs text-[#6e684a]">Create containers and connect via QR code.</p>
+              <h3 className="text-sm font-bold text-[#a8a99e]">My WhatsApp Numbers</h3>
+              <p className="text-xs text-[#6e684a]">Connect your WhatsApp numbers via QR code.</p>
             </div>
           </div>
           <button
@@ -96,7 +96,7 @@ export default function WhatsAppContainers({
             className="px-3.5 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-[#181711] text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Container</span>
+            <span>New Number</span>
           </button>
         </div>
 
@@ -117,9 +117,9 @@ export default function WhatsAppContainers({
         ) : (
           <div className="py-12 text-center space-y-3">
             <Smartphone className="w-12 h-12 text-yellow-500 mx-auto" />
-            <p className="font-bold text-[#a8a99e]">No containers provisioned yet.</p>
+            <p className="font-bold text-[#a8a99e]">No WhatsApp numbers yet.</p>
             <button onClick={() => setShowNewInstanceModal(true)} className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-[#181711] font-bold text-xs rounded-xl transition-all">
-              Create your first container
+              Add your first number
             </button>
           </div>
         )}

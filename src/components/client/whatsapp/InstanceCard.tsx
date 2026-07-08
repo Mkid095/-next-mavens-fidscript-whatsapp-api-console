@@ -50,7 +50,7 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete, 
     <div className="bg-[#1a1915] border border-[#2d2813] rounded-2xl p-4 flex flex-col justify-between min-h-[140px]">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <span className="font-mono text-[9px] uppercase tracking-wider text-yellow-500 font-bold">Container</span>
+          <span className="font-mono text-[9px] uppercase tracking-wider text-yellow-500 font-bold">WhatsApp</span>
           <h4 className="text-base font-bold text-[#a8a99e] font-mono">{inst.name}</h4>
           <div className="text-[11px] text-[#6e684a] flex items-center gap-1.5">
             {isConnected ? <Wifi className="w-3 h-3 text-green-400" /> : <WifiOff className="w-3 h-3 text-[#5a554a]" />}
