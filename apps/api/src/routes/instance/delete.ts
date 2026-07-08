@@ -22,7 +22,7 @@ router.delete('/delete/:name', clientJwtAuth, async (req: Request, res: Response
       console.error('Failed to delete from the gateway API:', evoErr);
     }
 
-    db.prepare('DELETE FROM instances WHERE name = ?').run(req.params.name);
+    db.prepare('DELETE FROM instances WHERE name = ? AND client_id = ?').run(req.params.name, req.client?.id);
     logAuditAction(req, 'DELETE', 'instance', instance.id, `Deleted instance ${req.params.name}`);
 
     res.json({ success: true, message: 'Instance deleted successfully' });

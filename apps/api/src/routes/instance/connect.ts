@@ -23,10 +23,10 @@ router.get('/connect/:name', clientJwtAuth, async (req: Request, res: Response) 
     db.prepare("UPDATE instances SET status = 'connecting' WHERE name = ?").run(req.params.name);
     emitInstanceStateChange(req.params.name, 'connecting', null);
 
-    // The WhatsApp API instance name is always req.params.name — evolution_name was the
-    // old mapping that doesn't match what was actually created in the WhatsApp API.
-    // Use req.params.name directly so we talk to the instance that exists in WhatsApp API.
-    const evolutionInstanceName = req.params.name;
+    // Use the stored evolution_name (which is what was actually created in the WhatsApp API).
+    // For client-created instances, evolution_name = `${client_id}_${name}` to ensure global
+    // uniqueness. Falling back to req.params.name keeps compatibility with old instances.
+    const evolutionInstanceName = (instance as any).evolution_name || req.params.name;
 
     // Set webhook for this instance so CONNECTION_UPDATE events are forwarded to us
     const webhookUrl = `${API_BASE_URL}/api/webhook/evolution`;

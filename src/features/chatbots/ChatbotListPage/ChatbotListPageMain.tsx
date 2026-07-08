@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Plus, Search, BarChart3, MessageSquare, Zap } from 'lucide-react';
+import { Bot, Plus, Search, BarChart3, MessageSquare, Zap, AlertCircle } from 'lucide-react';
 import { fetchApi } from '../../../services/api';
 import type { Instance } from '../../../services/api';
 import ChatbotCard, { type Chatbot, type BotHealth } from './ChatbotCard';
@@ -17,16 +17,18 @@ export default function ChatbotListPage({ clientToken, instances }: ChatbotListP
   const navigate = useNavigate();
   const [bots, setBots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [healthMap, setHealthMap] = useState<Record<string, BotHealth>>({});
 
   const loadBots = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await fetchApi('/api/platform/chatbots', {
         headers: { Authorization: `Bearer ${clientToken}` },
-      }) as { success: boolean; data: Chatbot[] };
+      }) as { success: boolean; data: Chatbot[]; error?: string; status?: number };
       if (data.success) {
         setBots(data.data);
         const healths = await Promise.all(
@@ -42,8 +44,18 @@ export default function ChatbotListPage({ clientToken, instances }: ChatbotListP
         const map: Record<string, BotHealth> = {};
         healths.forEach(h => Object.assign(map, h));
         setHealthMap(map);
+      } else {
+        setLoadError(data.error || `Failed to load chatbots${data.status ? ` (HTTP ${data.status})` : ''}`);
+        setBots([]);
+        setHealthMap({});
       }
-    } catch { /* ignore */ } finally { setLoading(false); }
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : String(err));
+      setBots([]);
+      setHealthMap({});
+    } finally {
+      setLoading(false);
+    }
   }, [clientToken]);
 
   useEffect(() => { loadBots(); }, [loadBots]);
@@ -137,6 +149,20 @@ export default function ChatbotListPage({ clientToken, instances }: ChatbotListP
       )}
 
       {/* Bot list */}
+      {loadError && !loading && (
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold">Couldn't load chatbots</p>
+              <p className="mt-0.5 text-xs opacity-80">{loadError}</p>
+            </div>
+            <button onClick={() => void loadBots()} className="rounded-lg border border-red-500/40 px-2 py-1 text-xs hover:bg-red-500/10">
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="animate-spin w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full" />

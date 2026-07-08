@@ -15,7 +15,7 @@ interface QRPairingModalProps {
   onRegenerate: () => void;
 }
 
-const QR_TTL_SECONDS = 300;
+const QR_TTL_SECONDS = 60;
 const RADIUS = 44;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const QR_SIZE = 208; // px — matches SVG viewBox 100 scaled to ~208px

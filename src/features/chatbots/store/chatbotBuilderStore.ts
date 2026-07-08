@@ -308,9 +308,10 @@ export function scheduleAutosave(clientToken: string, delayMs = 2000) {
     } catch (_) { /* ignore */ }
 
     // Attempt to save to server
+    let serverOk = false;
     try {
       const draftId = draft.id ? `draft_${draft.id}` : `draft_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      await fetch(`/api/platform/chatbot-drafts`, {
+      const res = await fetch(`/api/platform/chatbot-drafts`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${clientToken}`,
@@ -322,11 +323,19 @@ export function scheduleAutosave(clientToken: string, delayMs = 2000) {
           last_step: draft.currentStep,
         }),
       });
-    } catch (_) { /* fall back to localStorage only */ }
+      serverOk = res.ok;
+      if (!res.ok) console.warn(`[chatbot-autosave] server returned ${res.status}`);
+    } catch (err) {
+      console.warn('[chatbot-autosave] network error:', err);
+    }
 
     setSaving(false);
-    setLastSaved(new Date().toISOString());
-    markClean();
+    if (serverOk) {
+      setLastSaved(new Date().toISOString());
+      markClean();
+    }
+    // If the server save failed, leave isDirty=true so the next change retries;
+    // localStorage backup is still in place.
   }, delayMs);
 }
 

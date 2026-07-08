@@ -54,15 +54,28 @@ export function getChatbot(req: Request, res: Response): void {
     ).get(req.params.id, wsId(req));
     if (!bot) { res.status(404).json({ success: false, error: 'Chatbot not found' }); return; }
 
-    const [aiConfig, capabilities, triggers, rules, policies, handoffRules, groupSettings] = [
+    const [aiConfig, capabilities, triggers, rules, policies, handoffRules] = [
       db.prepare('SELECT * FROM chatbot_ai_configs WHERE chatbot_id = ?').all(req.params.id),
       db.prepare('SELECT * FROM chatbot_capabilities WHERE chatbot_id = ?').all(req.params.id),
       db.prepare('SELECT * FROM chatbot_triggers WHERE chatbot_id = ? ORDER BY priority DESC').all(req.params.id),
       db.prepare('SELECT * FROM chatbot_response_rules WHERE chatbot_id = ? ORDER BY priority DESC').all(req.params.id),
       db.prepare('SELECT * FROM chatbot_response_policies WHERE chatbot_id = ?').all(req.params.id),
       db.prepare('SELECT * FROM chatbot_handoff_rules WHERE chatbot_id = ? ORDER BY priority DESC').all(req.params.id),
-      db.prepare('SELECT cgs.*, cgi.subject as group_name FROM chatbot_group_settings cgs LEFT JOIN cached_group_info cgi ON cgi.group_jid = cgs.group_jid WHERE cgs.chatbot_id = ?').all(req.params.id),
     ];
+    // Group settings: try the rich join with cached_group_info for group_name,
+    // but don't fail the whole endpoint if that table doesn't exist on this DB.
+    let groupSettings: unknown[] = [];
+    try {
+      groupSettings = db.prepare(
+        'SELECT cgs.*, cgi.subject as group_name FROM chatbot_group_settings cgs LEFT JOIN cached_group_info cgi ON cgi.group_jid = cgs.group_jid WHERE cgs.chatbot_id = ?'
+      ).all(req.params.id);
+    } catch (_) {
+      try {
+        groupSettings = db.prepare(
+          'SELECT * FROM chatbot_group_settings WHERE chatbot_id = ?'
+        ).all(req.params.id);
+      } catch (__) { groupSettings = []; }
+    }
 
     res.json({ success: true, data: { ...bot, aiConfig, capabilities, triggers, rules, policies, handoffRules, groupSettings } });
   } catch (err: unknown) {

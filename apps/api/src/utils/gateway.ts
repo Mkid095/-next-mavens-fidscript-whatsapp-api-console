@@ -45,6 +45,7 @@ export async function callGateway(method: string, endpoint: string, body?: objec
     headers: {
       'Content-Type': 'application/json',
       'apikey': EVOLUTION_API_KEY,
+      'Origin': 'https://whatsapp.fidscript.com',
     },
   };
   if (body) {
@@ -69,7 +70,7 @@ export async function callGatewayChecked(method: string, endpoint: string, body?
   const url = `${EVOLUTION_API_URL}${endpoint}`;
   const options: RequestInit = {
     method,
-    headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
+    headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY, 'Origin': 'https://whatsapp.fidscript.com' },
   };
   if (body) options.body = JSON.stringify(body);
   const response = await fetch(url, options);

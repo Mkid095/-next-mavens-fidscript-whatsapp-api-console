@@ -118,15 +118,16 @@ export function useAttachmentUpload({ instanceName, chatJid, onSent, onError }: 
         const sendRes = await instancesApi.sendMedia(instanceName, chatJid, mediaUrl, mediaType, text.trim());
         if (!sendRes.success) throw new Error(sendRes.error || 'Failed to send media');
         onSent(makeOptimistic(text.trim(), mediaUrl, mediaType));
+        // Only clear on success — keep text/attachment so the user can retry on failure.
+        setText('');
+        setAttachment(null);
       } else {
         if (!text.trim()) { inFlight.current = false; setSending(false); return; }
         const res = await instancesApi.sendText(instanceName, chatJid, text.trim());
         if (!res.success) throw new Error(res.error || 'Failed to send text');
         onSent(makeOptimistic(text.trim(), null, null));
+        setText('');
       }
-
-      setText('');
-      setAttachment(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send');
     } finally {

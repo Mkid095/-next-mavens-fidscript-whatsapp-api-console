@@ -44,7 +44,7 @@ export default function StatCards({
           <p className="text-[10px] text-[#6e684a] font-bold uppercase">Containers</p>
         </div>
         <p className="text-xl font-black text-white font-mono">{safeConnected}/{safeInstances}</p>
-        <p className="text-[10px] text-[#6e684a] mt-1">Connected instances</p>
+        <p className="text-[10px] text-[#6e684a] mt-1">Connected containers</p>
       </div>
 
       <div className="bg-[#181711] border border-[#2d2813] rounded-2xl p-4">

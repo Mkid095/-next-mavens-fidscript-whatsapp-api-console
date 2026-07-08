@@ -1,13 +1,16 @@
 import { Inbox, Users, RefreshCw } from 'lucide-react';
-import { useNavigate } from 'react-router';
 import type { Instance } from '../../../services/api';
-import { useChatList } from '../useChatList';
-import { messagesApi } from '../messagesApi';
-import type { ChatListItem } from '../messagesApi';
+import { messagesApi, type ChatListItem } from '../messagesApi';
 import ChatListPane from '../ChatListPane';
 
 interface ChatListSectionProps {
   instances: Instance[];
+  /** Live chat list + load state. Comes from useChatList in the parent (MessagesPageMain). */
+  chats: ChatListItem[];
+  chatsLoading: boolean;
+  chatsError: string | null;
+  /** Switch the parent's currently selected container — reloads chat list/messages. */
+  onSwitchInstance: (i: Instance) => void;
   selectedJid: string | null;
   onSelectJid: (jid: string) => void;
   onNewChat: () => void;
@@ -23,6 +26,10 @@ interface ChatListSectionProps {
 
 export default function ChatListSection({
   instances,
+  chats,
+  chatsLoading,
+  chatsError,
+  onSwitchInstance,
   selectedJid,
   onSelectJid,
   onNewChat,
@@ -35,8 +42,6 @@ export default function ChatListSection({
   onSearchChange,
   onDismissSync,
 }: ChatListSectionProps) {
-  const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null, selectedJid);
-
   return (
     <>
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2d2813] bg-[#1a1915] px-4 py-2.5">
@@ -60,10 +65,18 @@ export default function ChatListSection({
             {syncState === 'syncing' ? 'Syncing…' : 'Sync contacts'}
           </button>
           {instances.length > 1 && (
-            <InstanceSwitcher instances={instances} instance={instance} onSwitch={(i) => {
-              onSelectJid('');
-              onDismissSync();
-            }} />
+            <InstanceSwitcher
+              instances={instances}
+              instance={instance}
+              onSwitch={(i) => {
+                // Order matters: switch the container first so React commits the
+                // new instance (and useChatList/useChatMessages reset to it),
+                // THEN clear the selected JID/sync banner.
+                onSwitchInstance(i);
+                onSelectJid('');
+                onDismissSync();
+              }}
+            />
           )}
         </div>
       </header>

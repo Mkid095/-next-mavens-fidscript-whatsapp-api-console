@@ -108,11 +108,24 @@ export default function ChatbotBuilderShellMain({ clientToken, instances }: Chat
           }) as { success: boolean; data: Record<string, unknown> };
 
           if (res.success && res.data) {
-            const apiData = res.data;
-            const aiConfig = (apiData.ai_config ?? {}) as Record<string, unknown>;
-            const triggers = (apiData.triggers ?? []) as Array<{ id: string; keyword: string; description?: string }>;
-            const rules = (apiData.rules ?? []) as Array<{ id: string; name: string; trigger_id: string; condition: string; response: { type: string; content: string } }>;
-            const groupSettings = (apiData.group_settings ?? {}) as Record<string, unknown>;
+            const apiData = res.data as Record<string, any>;
+            // Backend shape (apps/api/src/routes/platform/chatbotCrudHandlers/handlers.ts:80):
+            //   { ...bot, aiConfig[0], capabilities[], triggers[], rules[], policies[0],
+            //     handoffRules[], groupSettings[] }
+            // Fields that have no dedicated column (tags, contact_ids, group_ids,
+            // group_mode, contact_mode) live in the `config_json` blob on chatbot_configs.
+            const aiConfig = Array.isArray(apiData.aiConfig) ? (apiData.aiConfig[0] ?? {}) : (apiData.aiConfig ?? {});
+            const triggers = Array.isArray(apiData.triggers) ? apiData.triggers : [];
+            const rules = Array.isArray(apiData.rules) ? apiData.rules : [];
+            const policies = Array.isArray(apiData.policies) ? (apiData.policies[0] ?? {}) : (apiData.policies ?? {});
+            const handoffRules = Array.isArray(apiData.handoffRules) ? apiData.handoffRules : [];
+            const groupSettings = Array.isArray(apiData.groupSettings) ? apiData.groupSettings : [];
+
+            // config_json holds the audience fields that have no dedicated column.
+            let configJson: Record<string, any> = {};
+            try {
+              configJson = apiData.config_json ? (JSON.parse(apiData.config_json as string) as Record<string, any>) : {};
+            } catch { configJson = {}; }
 
             initEdit({
               id: botId,
@@ -122,16 +135,16 @@ export default function ChatbotBuilderShellMain({ clientToken, instances }: Chat
                 name: (apiData.name as string) ?? '',
                 description: (apiData.description as string) ?? '',
                 template: 'custom',
-                priority: (apiData.priority as number) ?? 50,
+                priority: Number(apiData.priority ?? 50),
                 enabled: Boolean(apiData.enabled),
               },
               audience: {
-                contactMode: ((apiData.contact_mode as string) ?? 'everyone') as AudienceContactMode,
-                tags: (apiData.tags as string[]) ?? [],
-                contactIds: (apiData.contact_ids as string[]) ?? [],
-                priority: (apiData.priority as number) ?? 50,
-                groupMode: ((apiData.group_mode as string) ?? 'disabled') as GroupMode,
-                groupIds: (apiData.group_ids as string[]) ?? [],
+                contactMode: (configJson.contact_mode as AudienceContactMode) ?? 'everyone',
+                tags: Array.isArray(configJson.tags) ? (configJson.tags as string[]) : [],
+                contactIds: Array.isArray(configJson.contact_ids) ? (configJson.contact_ids as string[]) : [],
+                priority: Number(apiData.priority ?? 50),
+                groupMode: (configJson.group_mode as GroupMode) ?? 'disabled',
+                groupIds: Array.isArray(configJson.group_ids) ? (configJson.group_ids as string[]) : [],
               },
               aiBrain: {
                 provider: ((aiConfig.provider as string) ?? 'fidscript') as AIProvider,
@@ -150,39 +163,43 @@ export default function ChatbotBuilderShellMain({ clientToken, instances }: Chat
                   { enabled: false, label: 'Order history',     description: 'Remember past orders & purchases' },
                   { enabled: false, label: 'Custom attributes', description: 'Remember custom contact fields' },
                 ],
-                systemPrompt: (aiConfig.system_prompt as string) ?? '',
+                systemPrompt: (aiConfig.system_prompt as string) ?? (aiConfig.prompt as string) ?? '',
                 hallucinationPolicy: ((aiConfig.hallucination_policy as string) ?? 'balanced') as 'strict' | 'balanced' | 'creative',
               },
               knowledge: { sources: (apiData.knowledge_sources as Array<never>) ?? [] },
               dataConnections: { connections: (apiData.data_connections as Array<never>) ?? [] },
               tools: {
-                tools: rules.map(r => ({
+                tools: rules.map((r: any) => ({
                   id: r.id,
                   name: r.name,
-                  description: r.condition,
+                  description: r.conditions ?? r.condition ?? '',
                   type: 'webhook' as const,
-                  enabled: true,
+                  enabled: Boolean(r.enabled),
                   requireConfirmation: false,
                   costUnits: 0,
-                  config: { url: '', method: 'POST', headers: {}, body: r.response },
+                  config: { url: '', method: 'POST', headers: {}, body: r.action_config_json ? (() => { try { return JSON.parse(r.action_config_json); } catch { return {}; } })() : {} },
                 })) as ToolDefinition[],
               },
               groups: {
-                settings: Object.entries(groupSettings).map(([id, conf]) => ({
-                  groupJid: String(id),
-                  groupName: (conf as { name: string }).name ?? '',
-                  respondWhenMentioned: (conf as { respondWhenMentioned?: boolean }).respondWhenMentioned ?? false,
-                  respondToAll: (conf as { respondToAll?: boolean }).respondToAll ?? false,
-                  silenceOnBotReply: (conf as { silenceOnBotReply?: boolean }).silenceOnBotReply ?? false,
-                  cooldownSeconds: (conf as { cooldownSeconds?: number }).cooldownSeconds ?? 0,
+                settings: groupSettings.map((gs: any) => ({
+                  groupJid: gs.group_jid ?? '',
+                  groupName: gs.group_name ?? '',
+                  respondWhenMentioned: Boolean(gs.respond_when_mentioned),
+                  respondToAll: Boolean(gs.respond_to_all),
+                  silenceOnBotReply: Boolean(gs.silence_on_bot_reply),
+                  cooldownSeconds: Number(gs.cooldown_seconds ?? 0),
                 })) as GroupSetting[],
               },
               handoff: {
-                triggers: triggers.map(t => (t.keyword as HandoffTrigger)),
-                targetTeamId: (apiData.handoff_team_id as string) ?? '',
-                targetTeamName: (apiData.handoff_team_name as string) ?? '',
-                maxRetries: (apiData.max_handoff_retries as number) ?? 3,
-                fallbackReply: (apiData.fallback_response as string) ?? "I'm not sure I can help with that. Let me connect you with a team member.",
+                triggers: handoffRules.map((h: any) => {
+                  let conds: any = [];
+                  try { conds = h.conditions_json ? JSON.parse(h.conditions_json) : []; } catch { conds = []; }
+                  return { type: 'keyword', value: h.name ?? '', condition: Array.isArray(conds) && conds[0]?.value ? String(conds[0].value) : '' } as HandoffTrigger;
+                }),
+                targetTeamId: (handoffRules[0]?.target_team_id as string) ?? '',
+                targetTeamName: (handoffRules[0]?.target_team_name as string) ?? '',
+                maxRetries: Number(policies.max_retries ?? 3),
+                fallbackReply: (policies.fallback_reply as string) ?? "I'm not sure I can help with that. Let me connect you with a team member.",
               },
               test: { messages: [], testCases: [] },
               currentStep: 'general',

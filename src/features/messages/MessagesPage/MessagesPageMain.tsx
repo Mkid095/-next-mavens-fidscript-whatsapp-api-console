@@ -6,7 +6,6 @@ import { useChatList } from '../useChatList';
 import { useChatMessages } from '../useChatMessages';
 import ChatThread from '../ChatThread';
 import NewChatModal from '../NewChatModal';
-import OutboundUsageIndicator from '../OutboundUsageIndicator';
 import { messagesApi } from '../messagesApi';
 import type { ChatListItem } from '../messagesApi';
 import ChatListSection from './ChatList';
@@ -125,6 +124,10 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[#2d2813] bg-[#181711] shadow-sm">
       <ChatListSection
         instances={instances}
+        chats={chats}
+        chatsLoading={chatsLoading}
+        chatsError={chatsError}
+        onSwitchInstance={switchInstance}
         selectedJid={selectedJid}
         onSelectJid={setSelectedJid}
         onNewChat={() => setShowNewChat(true)}

@@ -193,12 +193,27 @@ router.get('/media', async (req: Request, res) => {
       },
     });
     if (!response.ok) { res.status(502).json({ success: false, error: `Evolution API returned ${response.status}` }); return; }
+
+    // Cap proxied media at 50 MB to prevent a single huge media file from
+    // filling disk via the 24h nginx cache. Audio (voice notes) and small images
+    // are well under this; 4K video is the upper limit we want to support.
+    const MAX_MEDIA_BYTES = 50 * 1024 * 1024;
+    const declaredSize = Number(response.headers.get('content-length') ?? '0');
+    if (declaredSize > MAX_MEDIA_BYTES) {
+      res.status(413).json({ success: false, error: `Media too large (${declaredSize} bytes; max ${MAX_MEDIA_BYTES})` });
+      return;
+    }
+
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     const buffer = await response.arrayBuffer();
+    if (buffer.byteLength > MAX_MEDIA_BYTES) {
+      res.status(413).json({ success: false, error: 'Media exceeded 50 MB during transfer' });
+      return;
+    }
     res.status(200).send(Buffer.from(buffer));
   } catch (err) {
     console.error('[chatMirror] media proxy error:', err);

@@ -115,7 +115,14 @@ export async function syncPhonebookForInstance(
   }
 
   // Remove synced contacts for this instance that disappeared from the phonebook.
-  const before = (countStmt.get(clientId, instance.id) as { c: number }).c;
+  let before = 0;
+  let after = 0;
+  try {
+    const beforeRow = countStmt.get(clientId, instance.id) as { c: number } | undefined;
+    before = beforeRow?.c ?? 0;
+  } catch (err) {
+    console.error('[phonebook] before-count failed:', err);
+  }
   try {
     if (syncedPhones.length === 0) {
       db.prepare('DELETE FROM contacts WHERE client_id = ? AND instance_id = ?').run(clientId, instance.id);
@@ -128,7 +135,12 @@ export async function syncPhonebookForInstance(
   } catch (err) {
     console.error('[phonebook] stale cleanup failed:', err);
   }
-  const after = (countStmt.get(clientId, instance.id) as { c: number }).c;
+  try {
+    const afterRow = countStmt.get(clientId, instance.id) as { c: number } | undefined;
+    after = afterRow?.c ?? 0;
+  } catch (err) {
+    console.error('[phonebook] after-count failed:', err);
+  }
   const removed = Math.max(0, before - after);
   return { synced, removed };
 }

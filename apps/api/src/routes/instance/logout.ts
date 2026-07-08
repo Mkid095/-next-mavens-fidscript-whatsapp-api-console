@@ -16,8 +16,8 @@ router.delete('/logout/:name', clientJwtAuth, async (req: Request, res: Response
     }
 
     try {
-      // WhatsApp API instance name is always req.params.name
-      const evolutionInstanceName = req.params.name;
+      // Use stored evolution_name (which has client_id prefix for client-created instances)
+      const evolutionInstanceName = (instance as any).evolution_name || req.params.name;
       await callGateway('DELETE', `/instance/logout/${evolutionInstanceName}`);
     } catch (evoErr) {
       console.error('Failed to disconnect from the gateway API:', evoErr);

@@ -20,8 +20,8 @@ router.get('/connectionState/:name', clientJwtAuth, async (req: Request, res: Re
     let evoState = 'unknown';
     let phoneNumber: string | null = null;
     try {
-      // WhatsApp API instance name is always req.params.name
-      const evolutionInstanceName = req.params.name;
+      // Use stored evolution_name (which has client_id prefix for client-created instances)
+      const evolutionInstanceName = (instance as any).evolution_name || req.params.name;
       const evoRes = await callGateway('GET', `/instance/connectionState/${evolutionInstanceName}`);
       // the gateway API v2: { instance: { state, phone, ... } }
       const inst = (evoRes.instance as { state?: string; phone?: string; phone_number?: string } | undefined) || evoRes;
