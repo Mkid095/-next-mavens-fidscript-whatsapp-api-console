@@ -1,5 +1,5 @@
 {
-  "latest": "v0.9.2",
+  "latest": "v0.9.3",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,21 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.9.3",
+      "date": "2026-07-08",
+      "bumpType": "patch",
+      "title": "Fix deploy.sh container name, network alias, DB path, docker-compose",
+      "category": "release",
+      "tags": [],
+      "highlights": [],
+      "fixes": [
+        "deploy.sh: fix container name fidscript-whatsapp-api → fidscript_whatsapp_api (underscore); add network alias fidscript-whatsapp-api on every restart so Evolution API webhooks always resolve; docker-compose: add hyphen+underscore network aliases to whatsapp-api service for persistent DNS across container recreations; DB_PATH: fix server/ → apps/api/"
+      ],
+      "commits": [
+        "833e2ff"
+      ]
+    },
     {
       "version": "v0.9.2",
       "date": "2026-07-08",
