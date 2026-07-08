@@ -4,7 +4,7 @@ import Telemetry from '@api/guards/telemetry.guard';
 import { ChannelRouter } from '@api/integrations/channel/channel.router';
 import { EventRouter } from '@api/integrations/event/event.router';
 import { StorageRouter } from '@api/integrations/storage/storage.router';
-import { waMonitor } from '@api/server.module';
+import { prismaRepository, waMonitor } from '@api/server.module';
 import { configService, Database, Facebook } from '@config/env.config';
 import { fetchLatestWaWebVersion } from '@utils/fetchLatestWaWebVersion';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -175,6 +175,60 @@ router
         statusEndpoint: '/anti-ban/status',
       },
       whatsappWebVersion: (await fetchLatestWaWebVersion({})).version.join('.'),
+    });
+  })
+
+  .get('/health', async (req, res) => {
+    const start = Date.now();
+    const checks: Record<string, { status: 'up' | 'down'; latencyMs?: number; detail?: string }> = {};
+
+    // Database check
+    try {
+      const t0 = Date.now();
+      await prismaRepository.$queryRaw`SELECT 1`;
+      checks.database = { status: 'up', latencyMs: Date.now() - t0 };
+    } catch (err) {
+      checks.database = { status: 'down', detail: err instanceof Error ? err.message : String(err) };
+    }
+
+    // Cache check
+    try {
+      const t0 = Date.now();
+      const key = `health:${Date.now()}`;
+      // Access cache via the waMonitor's injected cache if available,
+      // or skip if cache is not initialised
+      const cache = (waMonitor as unknown as { cache?: { get: (k: string) => Promise<unknown>; set: (k: string, v: unknown, t: number) => Promise<void> } }).cache;
+      if (cache) {
+        await cache.set(key, 1, 10);
+        await cache.get(key);
+      } else {
+        checks.cache = { status: 'up', latencyMs: 0, detail: 'no cache configured' };
+      }
+      checks.cache = { status: 'up', latencyMs: Date.now() - t0 };
+    } catch (err) {
+      checks.cache = { status: 'down', detail: err instanceof Error ? err.message : String(err) };
+    }
+
+    // Instance summary
+    try {
+      const instances = waMonitor.waInstances || {};
+      const instanceList = Object.entries(instances).map(([name, inst]) => ({
+        name,
+        state: (inst as { connectionStatus?: { state?: string } })?.connectionStatus?.state || 'unknown',
+      }));
+      const connected = instanceList.filter(i => i.state === 'open').length;
+      checks.instances = { status: 'up', detail: `${connected}/${instanceList.length} connected` };
+    } catch (err) {
+      checks.instances = { status: 'down', detail: err instanceof Error ? err.message : String(err) };
+    }
+
+    const overall = Object.values(checks).every(c => c.status === 'up');
+    res.status(overall ? HttpStatus.OK : 503).json({
+      status: overall ? 'healthy' : 'degraded',
+      version: packageJson.version,
+      uptime: process.uptime(),
+      totalLatencyMs: Date.now() - start,
+      checks,
     });
   })
   .post('/verify-creds', authGuard['apikey'], async (req, res) => {
