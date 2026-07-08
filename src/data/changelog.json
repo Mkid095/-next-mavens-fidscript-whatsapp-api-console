@@ -1,5 +1,5 @@
 {
-  "latest": "v0.9.1",
+  "latest": "v0.9.2",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,26 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.9.2",
+      "date": "2026-07-08",
+      "bumpType": "patch",
+      "title": "Fix chat mirror dedup, JID normalization, unread count, SSE message ID",
+      "category": "release",
+      "tags": [],
+      "highlights": [],
+      "fixes": [
+        "mirrorChatList: keep last-occurrence dedup so newest chat data wins",
+        "saveSentMessage: normalize outgoing JID to phone format so incoming+outgoing threads merge correctly",
+        "findMessagesAll: pass remoteJid filter on every page so Evolution API scopes results server-side",
+        "unread count: accumulate across all JID variants per phone instead of last-variant-wins",
+        "resolveDisplayName: format bare +254 numbers as local Kenyan format (0711 111 111)",
+        "SSE message append: use real Evolution API message ID instead of generating placeholder IDs"
+      ],
+      "commits": [
+        "6f22dc7"
+      ]
+    },
     {
       "version": "v0.9.1",
       "date": "2026-07-04",
