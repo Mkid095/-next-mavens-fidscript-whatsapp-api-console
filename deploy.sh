@@ -10,7 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_FILE="${SCRIPT_DIR}/deploy.log"
-DB_PATH="${SCRIPT_DIR}/server/fidscript.db"
+DB_PATH="${SCRIPT_DIR}/apps/api/fidscript.db"
 
 # =============================================================================
 # Logging Functions

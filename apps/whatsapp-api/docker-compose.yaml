@@ -16,9 +16,11 @@ services:
       fidscript-net:
         aliases:
           - fidscript-whatsapp-api
+          - fidscript_whatsapp_api
       dokploy-network:
         aliases:
           - fidscript-whatsapp-api
+          - fidscript_whatsapp_api
     env_file:
       - .env
     expose:
