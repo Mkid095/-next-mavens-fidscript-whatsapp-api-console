@@ -1,0 +1,20 @@
+{
+  "name": "@fidscript/validate",
+  "version": "0.1.0",
+  "description": "FIDScript Platform Validation Suite — end-to-end health and workflow checker",
+  "type": "module",
+  "bin": {
+    "fidscript-validate": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "validate": "node dist/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
