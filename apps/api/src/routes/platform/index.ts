@@ -18,7 +18,7 @@ import segmentsRoutes from './segments.js';
 import webhooksRoutes from './webhooks.js';
 import auditRoutes from './audit.js';
 import developerLogsRoutes from './developerLogs.js';
-import chatMirrorRoutes from './chatMirror.js';
+import chatMirrorRoutes from './chatMirror/index.js';
 import phonebookRoutes from './phonebook.js';
 import dataSourcesRoutes from './dataSources.js';
 import connectorsRoutes from './connectors.js';

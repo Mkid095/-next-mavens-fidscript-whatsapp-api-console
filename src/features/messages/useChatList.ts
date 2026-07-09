@@ -1,76 +1,70 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { dataEvents } from '../../data';
-import { messagesApi, type ChatListItem } from './messagesApi';
-import { scheduleRefresh } from './useSharedRefreshGate';
+import {useCallback, useEffect} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import {dataEvents} from '../../data';
+import {
+  chatListKey,
+  invalidateChatList,
+  optimisticallyClearUnread,
+  optimisticallyIncrementUnread,
+} from './cacheUtils';
+import {messagesApi, type ChatListItem} from './messagesApi';
 
-// Live chat list for one instance. Real-time SSE events update the list
-// optimistically (unread counter increments) without a full refresh, keeping
-// the UI instant. Periodic background refresh + focus-refresh keep it accurate.
-export function useChatList(instanceName: string | null, activeJid: string | null = null) {
-  const [chats, setChats] = useState<ChatListItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // Keep activeJid in a ref so event handlers don't need it in their deps
-  const activeJidRef = useRef<string | null>(null);
-  activeJidRef.current = activeJid;
+export {chatListKey, invalidateChatList};
 
-  const refresh = useCallback(async () => {
-    if (!instanceName) { setChats([]); return; }
-    setLoading(true);
-    setError(null);
-    const res = await messagesApi.getChats(instanceName);
-    setLoading(false);
-    if (res.success && res.data) { setChats(res.data.chats); return; }
-    setError(res.error || 'Failed to load chats');
-  }, [instanceName]);
+export function useChatList(
+  instanceName: string | null,
+  activeJid: string | null = null,
+) {
+  const {data, isLoading, error, refetch} = useQuery({
+    queryKey: chatListKey(instanceName ?? ''),
+    queryFn: async () => {
+      if (!instanceName) return {chats: [] as ChatListItem[]};
+      const res = await messagesApi.getChats(instanceName);
+      if (res.success && res.data) return res.data;
+      throw new Error(res.error ?? 'Failed to load chats');
+    },
+    enabled: !!instanceName,
+    staleTime: 60_000,
+  });
 
-  // Initial load
-  useEffect(() => { void refresh(); }, [refresh]);
-
+  // Subscribe to SSE real-time events — update cache optimistically + invalidate
+  // in background so the cache stays accurate without blocking the UI.
   useEffect(() => {
     if (!instanceName) return;
 
-    // Real-time incoming message: optimistically increment unread for the
-    // target chat unless it is the chat the user currently has open.
-    // No network request needed — we update local state instantly.
-    const offSSE = dataEvents.on('message.received', (e) => {
-      const payload = e.payload as { id?: string; chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
-      const chatId = payload.chatId;
-      if (!chatId) return;
-      // If this message is for the chat we have open, don't increment the
-      // counter — the message will appear in the thread directly.
-      if (chatId === activeJidRef.current) return;
-      setChats((prev) =>
-        prev.map((c) => c.jid === chatId ? { ...c, unread: c.unread + 1 } : c),
-      );
+    const offReceived = dataEvents.on('message.received', (e) => {
+      const payload = e.payload as {chatId?: string};
+      if (!payload.chatId) return;
+      // Don't optimistically bump the unread counter for the chat we have open —
+      // the thread handles incoming messages directly.
+      if (payload.chatId === activeJid) return;
+      optimisticallyIncrementUnread(instanceName, payload.chatId);
     });
 
-    // message.read: emitted when we mark a chat as read (via mark-read endpoint
-    // which now also syncs to WhatsApp). Zero-out the unread counter for that chat.
     const offRead = dataEvents.on('message.read', (e) => {
-      const { chatId } = (e.payload as { chatId?: string });
+      const {chatId} = e.payload as {chatId?: string};
       if (!chatId) return;
-      setChats((prev) =>
-        prev.map((c) => c.jid === chatId ? { ...c, unread: 0 } : c),
-      );
+      optimisticallyClearUnread(instanceName, chatId);
     });
 
-    // Other events (e.g. chat list changed, presence) — do a background refresh
-    // through the throttle so we eventually sync back to ground truth.
-    const offWild = dataEvents.on('*', () => scheduleRefresh(() => { void refresh(); }));
-
-    const onFocus = () => scheduleRefresh(() => { void refresh(); });
-    window.addEventListener('focus', onFocus);
-    const poll = setInterval(() => scheduleRefresh(() => { void refresh(); }), 30000);
+    // Wildcard: something significant changed — background refetch.
+    const offWild = dataEvents.on('*', () => {
+      invalidateChatList(instanceName);
+    });
 
     return () => {
-      offSSE();
+      offReceived();
       offRead();
       offWild();
-      window.removeEventListener('focus', onFocus);
-      clearInterval(poll);
     };
-  }, [instanceName, refresh]);
+  }, [instanceName, activeJid]);
 
-  return { chats, loading, error, refresh };
+  const refresh = useCallback(() => refetch(), [refetch]);
+
+  return {
+    chats: data?.chats ?? ([] as ChatListItem[]),
+    loading: isLoading,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    refresh,
+  };
 }

@@ -1,166 +1,71 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { dataEvents } from '../../../data';
-import { messagesApi, type MirrorMessage } from '../messagesApi';
-import { scheduleRefresh } from '../useSharedRefreshGate';
+import {useCallback, useEffect, useRef} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import {dataEvents} from '../../../data';
+import {
+  appendToThread,
+  confirmOutgoingMessage,
+  evictInstanceCache,
+  invalidateThread,
+  prependIncomingMessage,
+  threadKey,
+} from '../cacheUtils';
+import {messagesApi, type MirrorMessage} from '../messagesApi';
+
+export {threadKey, evictInstanceCache, appendToThread, invalidateThread};
+
+const MAX_MESSAGES_PER_CHAT = 200;
 
 type IncomingPayload = {
-  id?: string; chatId?: string; fromNumber?: string; fromName?: string;
-  messageType?: string; content?: string; mediaUrl?: string | null;
-  timestamp?: string; isGroup?: number;
+  id?: string;
+  chatId?: string;
+  fromNumber?: string;
+  fromName?: string;
+  messageType?: string;
+  content?: string;
+  mediaUrl?: string | null;
+  timestamp?: string;
+  isGroup?: number;
 };
 type SentPayload = {
-  id?: string; chatId?: string; fromNumber?: string; fromName?: string;
-  messageType?: string; content?: string; mediaUrl?: string | null;
-  timestamp?: string; isGroup?: number;
+  id?: string;
+  chatId?: string;
+  fromNumber?: string;
+  fromName?: string;
+  messageType?: string;
+  content?: string;
+  mediaUrl?: string | null;
+  timestamp?: string;
+  isGroup?: number;
 };
 
-/**
- * Two-tier message cache for instant chat switching:
- * 1. In-memory Map  — lives for the browser tab session
- * 2. localStorage  — persists across page reloads (up to 50 chats, 200 msgs each)
- *
- * On chat switch: show cached messages instantly, fetch only if not yet cached.
- * Real-time SSE events append new messages to the cache so it stays fresh.
- */
-const MAX_LOCALSTORAGE_CHATS = 50;
-const MAX_MESSAGES_PER_CHAT = 200;
-const DISK_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-const LS_KEY = 'wap_chat_cache_v1';
-
-interface CacheEntry { messages: MirrorMessage[]; ts: number; }
-type DiskCache = Record<string, CacheEntry>;
-
-function loadDiskCache(): Map<string, CacheEntry> {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return new Map();
-    const parsed = JSON.parse(raw) as DiskCache;
-    const now = Date.now();
-    const map = new Map<string, CacheEntry>();
-    for (const [k, v] of Object.entries(parsed)) {
-      // Skip entries older than 7 days
-      if (now - v.ts < DISK_CACHE_MAX_AGE_MS) map.set(k, v);
-    }
-    return map;
-  } catch { return new Map; }
-}
-
-function saveDiskCache(cache: Map<string, CacheEntry>) {
-  try {
-    const now = Date.now();
-    const entries = Array.from(cache.entries())
-      .filter(([, v]) => now - v.ts < DISK_CACHE_MAX_AGE_MS);
-    const trimmed = entries.length > MAX_LOCALSTORAGE_CHATS
-      ? entries.slice(-MAX_LOCALSTORAGE_CHATS)
-      : entries;
-    const obj = Object.fromEntries(trimmed) as DiskCache;
-    localStorage.setItem(LS_KEY, JSON.stringify(obj));
-  } catch { /* quota or private mode — ignore */ }
-}
-
-/** In-memory cache: lives for the tab session. */
-const memCache = new Map<string, MirrorMessage[]>();
-/** Disk cache: loaded once at startup, updated on every successful fetch. */
-const diskCache = loadDiskCache();
-/** Set of cacheKeys that have been fetched at least once this session. */
-const hasLoaded = new Set<string>();
-
 export function useChatMessages(instanceName: string | null, jid: string | null) {
-  const [messages, setMessages] = useState<MirrorMessage[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {data, isLoading, error, refetch} = useQuery({
+    queryKey: threadKey(instanceName ?? '', jid ?? ''),
+    queryFn: async () => {
+      if (!instanceName || !jid) return {messages: [] as MirrorMessage[]};
+      const res = await messagesApi.getThread(instanceName, jid);
+      if (res.success && res.data) return res.data;
+      throw new Error(res.error ?? 'Failed to load messages');
+    },
+    enabled: !!(instanceName && jid),
+    staleTime: 5 * 60_000,
+  });
+
   // Track the previous jid to detect chat switches
   const prevJidRef = useRef<string | null>(null);
-  // Guard SSE appends so only the currently open chat receives real-time messages
+
+  // Guard SSE appends — only apply real-time events to the currently open chat
   const activeJidRef = useRef<string | null>(null);
-
-  const cacheKey = instanceName && jid ? `${instanceName}|${jid}` : null;
-
-  const fetchAndCache = useCallback(async () => {
-    if (!instanceName || !jid) { setMessages([]); return; }
-    setLoading(true);
-    setError(null);
-    const ck = cacheKey;
-    const res = await messagesApi.getThread(instanceName, jid);
-    setLoading(false);
-    if (res.success && res.data) {
-      const msgs = res.data.messages.slice(0, MAX_MESSAGES_PER_CHAT);
-      // Only update state if we're still on this chat
-      if (activeJidRef.current !== jid) return;
-      memCache.set(ck!, msgs);
-      diskCache.set(ck!, { messages: msgs, ts: Date.now() });
-      saveDiskCache(diskCache);
-      hasLoaded.add(ck!);
-      setMessages(msgs);
-      return;
-    }
-    if (activeJidRef.current === jid) setError(res.error || 'Failed to load messages');
-  }, [instanceName, jid, cacheKey]);
-
-  // Mark active jid — this prevents stale SSE events or old async fetch
-  // completions from overwriting state after we've switched away
-  useEffect(() => { activeJidRef.current = jid; }, [jid]);
-
-  // Chat switch: show cached data instantly, only fetch if not yet loaded
   useEffect(() => {
-    const prevJid = prevJidRef.current;
-    prevJidRef.current = jid;
-
-    if (!instanceName || !jid) {
-      setMessages([]);
-      setLoading(false);
-      return;
-    }
-
-    // Always set active jid so SSE guards work
     activeJidRef.current = jid;
-
-    // Switching chats: clear immediately
-    if (prevJid !== null && prevJid !== jid) {
-      setMessages([]);
-      setLoading(true);
-    }
-
-    const ck = cacheKey;
-    if (!ck) return;
-
-    // Prefer in-memory cache (instant), fall back to disk cache (instant on reload)
-    const cached = memCache.get(ck) ?? diskCache.get(ck)?.messages;
-    if (cached) {
-      setMessages(cached);
-      setLoading(false);
-      // Only fetch if we've never loaded this chat before
-      if (!hasLoaded.has(ck)) {
-        void fetchAndCache();
-      }
-    } else {
-      // Never cached — must fetch
-      void fetchAndCache();
-    }
-  // fetchAndCache reads jid via closure so we omit it from deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instanceName, jid]);
-
-  // Wildcard events — schedule a refresh for the currently open chat
-  useEffect(() => {
-    if (!instanceName || !jid) return;
-    const off = dataEvents.on('*', () => {
-      // Guard: only process for the currently active chat
-      if (activeJidRef.current !== jid) return;
-      scheduleRefresh(() => {
-        if (activeJidRef.current !== jid) return;
-        void fetchAndCache();
-      });
-    });
-    return off;
-  }, [instanceName, jid, fetchAndCache]);
+    prevJidRef.current = jid;
+  }, [jid]);
 
   // Real-time message append — only for the open conversation
   useEffect(() => {
-    if (!jid) return;
-    const off = dataEvents.on('message.received', (event) => {
-      // Silently ignore events for chats we're not currently viewing
+    if (!instanceName || !jid) return;
+
+    const offReceived = dataEvents.on('message.received', (event) => {
       if (activeJidRef.current !== jid) return;
       const payload = event.payload as IncomingPayload;
       if (payload.chatId !== jid) return;
@@ -173,24 +78,13 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
         mediaMimetype: null,
         senderName: payload.fromName || null,
         senderJid: payload.fromNumber || null,
-        timestamp: payload.timestamp ? new Date(payload.timestamp).getTime() : Date.now(),
+        timestamp: payload.timestamp
+          ? new Date(payload.timestamp).getTime()
+          : Date.now(),
       };
-      const ck = cacheKey;
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
-        const next = [...prev, msg];
-        if (ck) {
-          memCache.set(ck, next);
-          diskCache.set(ck, { messages: next, ts: Date.now() });
-          saveDiskCache(diskCache);
-        }
-        return next;
-      });
+      prependIncomingMessage(instanceName, jid, msg);
     });
 
-    // messageSent: replaces the optimistic bubble with the server-confirmed message
-    // The backend emits this immediately after the DB write (before webhook echo),
-    // so it replaces the optimistic entry that has id starting with "optimistic:".
     const offSent = dataEvents.on('message.sent', (event) => {
       if (activeJidRef.current !== jid) return;
       const payload = event.payload as SentPayload;
@@ -204,39 +98,40 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
         mediaMimetype: null,
         senderName: null,
         senderJid: payload.fromNumber || null,
-        timestamp: payload.timestamp ? new Date(payload.timestamp).getTime() : Date.now(),
+        timestamp: payload.timestamp
+          ? new Date(payload.timestamp).getTime()
+          : Date.now(),
       };
-      const ck = cacheKey;
-      setMessages((prev) => {
-        // Remove any optimistic entry for this senderJid/timestamp, then append confirmed
-        const filtered = prev.filter((m) => !(m.id.startsWith('optimistic:') && m.senderJid === serverMsg.senderJid));
-        if (filtered.some((m) => m.id === serverMsg.id)) return prev; // dedup
-        const next = [...filtered, serverMsg];
-        if (ck) {
-          memCache.set(ck, next);
-          diskCache.set(ck, { messages: next, ts: Date.now() });
-          saveDiskCache(diskCache);
-        }
-        return next;
-      });
+      confirmOutgoingMessage(instanceName, jid, serverMsg.senderJid ?? '', serverMsg);
     });
 
-    return () => { off(); offSent(); };
-  }, [jid, cacheKey]);
+    return () => {
+      offReceived();
+      offSent();
+    };
+  }, [instanceName, jid]);
 
-  const optimisticAppend = useCallback((msg: MirrorMessage) => {
-    const ck = cacheKey;
-    setMessages((prev) => {
-      if (prev.some((m) => m.id === msg.id)) return prev;
-      const next = [...prev, msg];
-      if (ck) {
-        memCache.set(ck, next);
-        diskCache.set(ck, { messages: next, ts: Date.now() });
-        saveDiskCache(diskCache);
-      }
-      return next;
+  // Wildcard events: invalidate the current thread to trigger a background refetch
+  useEffect(() => {
+    if (!instanceName || !jid) return;
+    const off = dataEvents.on('*', () => {
+      invalidateThread(instanceName, jid);
     });
-  }, [cacheKey]);
+    return off;
+  }, [instanceName, jid]);
 
-  return { messages, loading, error, optimisticAppend };
+  const optimisticAppend = useCallback(
+    (msg: MirrorMessage) => {
+      if (!instanceName || !jid) return;
+      appendToThread(instanceName, jid, msg);
+    },
+    [instanceName, jid],
+  );
+
+  return {
+    messages: data?.messages?.slice(0, MAX_MESSAGES_PER_CHAT) ?? ([] as MirrorMessage[]),
+    loading: isLoading,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    optimisticAppend,
+  };
 }

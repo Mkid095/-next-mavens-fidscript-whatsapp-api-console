@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Instance } from '../../../services/api';
 import { instancesApi } from '../../../services/api';
+import { evictInstanceCache } from '../../../features/messages/cacheUtils';
 import { useConnectionPolling } from './useConnectionPolling';
 
 interface UseInstanceConnectionProps {
@@ -159,7 +160,14 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
 
   const handleDeleteInstance = useCallback(async (inst: Instance) => {
     try {
-      await instancesApi.delete(inst.name);
+      const res = await instancesApi.delete(inst.name);
+      if (!res.success) {
+        console.error('Failed to delete instance:', res.error);
+        return;
+      }
+      // Evict all cached messages and chat lists for this instance so no
+      // stale state bleeds into future sessions.
+      evictInstanceCache(inst.name);
       onInstancesChange(instances.filter(i => i.id !== inst.id));
     } catch (err) {
       console.error('Failed to delete instance', err);
