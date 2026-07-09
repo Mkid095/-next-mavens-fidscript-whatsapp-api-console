@@ -34,7 +34,7 @@ export function useChatList(instanceName: string | null, activeJid: string | nul
     // target chat unless it is the chat the user currently has open.
     // No network request needed — we update local state instantly.
     const offSSE = dataEvents.on('message.received', (e) => {
-      const payload = e.payload as { chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
+      const payload = e.payload as { id?: string; chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
       const chatId = payload.chatId;
       if (!chatId) return;
       // If this message is for the chat we have open, don't increment the

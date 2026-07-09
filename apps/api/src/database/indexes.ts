@@ -24,4 +24,5 @@ export function createIndexes(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_inbox_messages_conv ON inbox_messages(conversation_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_inbox_messages_customer ON inbox_messages(customer_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_inbox_messages_ws ON inbox_messages(workspace_id)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_inbox_messages_chat ON inbox_messages(chat_id, timestamp)`);
 }

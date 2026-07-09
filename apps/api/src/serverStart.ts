@@ -112,7 +112,7 @@ export async function startServer(): Promise<void> {
     });
 
     // Start server
-    app.listen(PORT, () => {
+    app.listen(Number(PORT), "0.0.0.0", () => {
       console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║

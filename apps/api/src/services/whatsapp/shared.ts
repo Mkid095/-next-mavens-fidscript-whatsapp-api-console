@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Request } from 'express';
 import db from '../../database.js';
 import type { Instance, Client } from '../../types.js';
-import { emitTokenUpdate, emitAiOverrideChanged } from '../../utils/gateway.js';
+import { emitTokenUpdate, emitAiOverrideChanged, emitMessageSent } from '../../utils/gateway.js';
 import { logApiRequest } from '../../utils/audit.js';
 import { emitDashboardRefresh } from '../../utils/dashboardEmitter.js';
 import { normalizePhone } from '../../utils/phone.js';
@@ -192,6 +192,20 @@ export async function finalize(
   );
   logApiRequest(ctx.req, ctx.instance.id, ctx.instance.client_id, 200, logBody);
   emitDashboardRefresh(ctx.instance.client_id);
+
+  // Emit SSE so the open thread replaces the optimistic bubble with the real server id.
+  // chatId here is already the normalized phone or @g.us JID — matches what the frontend uses.
+  emitMessageSent(ctx.instance.name, {
+    id: msgId,
+    from_number: '',
+    from_name: 'Me',
+    message_type: type,
+    content,
+    media_url: mediaUrl ?? null,
+    timestamp: new Date().toISOString(),
+    chat_id: chatId || to,
+    is_group: isGroup,
+  });
 
   // Emit message.sent so subscribers (search, analytics, timeline) react.
   if (convId && custId) {

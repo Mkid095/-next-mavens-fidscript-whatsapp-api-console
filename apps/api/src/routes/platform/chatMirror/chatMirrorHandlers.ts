@@ -13,6 +13,7 @@ import db from '../../../database.js';
 import { requireConnected } from '../../../services/whatsapp/shared.js';
 import { buildSendCtx, respondSendResult } from '../../../services/whatsapp/http.js';
 import { mirrorChatList, mirrorThread, mirrorProfilePic } from '../../../services/whatsapp/chatMirror.js';
+import { findContacts } from '../../../services/whatsapp/chats.js';
 import { getOutboundUsage, newInitiationsInBatch } from '../../../services/whatsapp/outboundUsage.js';
 import { instanceEmitter } from '../../../utils/gateway.js';
 
@@ -67,6 +68,22 @@ router.get('/profile-pic/:name', profilePicLimiter, async (req, res) => {
   if (guard) { respondSendResult(res, guard); return; }
   const number = String(req.query.number || '');
   respondSendResult(res, await mirrorProfilePic(ctx, number));
+});
+
+// POST /api/platform/chats/:name/contacts { query?: string }
+// Search WhatsApp contacts via Evolution API
+router.post('/chats/:name/contacts', chatMirrorLimiter, async (req, res) => {
+  const ctx = buildSendCtx(req, res, req.params.name);
+  if (!ctx) return;
+  const guard = requireConnected(ctx);
+  if (guard) { respondSendResult(res, guard); return; }
+  const query = typeof req.body?.query === 'string' ? req.body.query : undefined;
+  const result = await findContacts(ctx, query ? { query } : undefined);
+  if (!result.ok) { res.status(502).json({ success: false, error: result.error }); return; }
+  const raw = result.data as { response?: { contacts?: unknown[] }; contacts?: unknown[] };
+  const contacts = Array.isArray(raw.contacts) ? raw.contacts
+    : Array.isArray(raw.response?.contacts) ? raw.response.contacts : [];
+  res.json({ success: true, data: { contacts } });
 });
 
 // GET /api/platform/usage/outbound/:name — outbound volume snapshot for the

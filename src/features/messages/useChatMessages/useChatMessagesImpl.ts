@@ -3,6 +3,17 @@ import { dataEvents } from '../../../data';
 import { messagesApi, type MirrorMessage } from '../messagesApi';
 import { scheduleRefresh } from '../useSharedRefreshGate';
 
+type IncomingPayload = {
+  id?: string; chatId?: string; fromNumber?: string; fromName?: string;
+  messageType?: string; content?: string; mediaUrl?: string | null;
+  timestamp?: string; isGroup?: number;
+};
+type SentPayload = {
+  id?: string; chatId?: string; fromNumber?: string; fromName?: string;
+  messageType?: string; content?: string; mediaUrl?: string | null;
+  timestamp?: string; isGroup?: number;
+};
+
 /**
  * Two-tier message cache for instant chat switching:
  * 1. In-memory Map  — lives for the browser tab session
@@ -151,7 +162,7 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
     const off = dataEvents.on('message.received', (event) => {
       // Silently ignore events for chats we're not currently viewing
       if (activeJidRef.current !== jid) return;
-      const payload = event.payload as { chatId?: string; fromNumber?: string; fromName?: string; messageType?: string; content?: string; mediaUrl?: string | null; timestamp?: string };
+      const payload = event.payload as IncomingPayload;
       if (payload.chatId !== jid) return;
       const msg: MirrorMessage = {
         id: payload.id || `sse_${Date.now()}`,
@@ -176,7 +187,41 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
         return next;
       });
     });
-    return off;
+
+    // messageSent: replaces the optimistic bubble with the server-confirmed message
+    // The backend emits this immediately after the DB write (before webhook echo),
+    // so it replaces the optimistic entry that has id starting with "optimistic:".
+    const offSent = dataEvents.on('message.sent', (event) => {
+      if (activeJidRef.current !== jid) return;
+      const payload = event.payload as SentPayload;
+      if (payload.chatId !== jid) return;
+      const serverMsg: MirrorMessage = {
+        id: payload.id || '',
+        direction: 'outgoing',
+        type: payload.messageType || 'text',
+        content: payload.content || '',
+        mediaUrl: payload.mediaUrl || null,
+        mediaMimetype: null,
+        senderName: null,
+        senderJid: payload.fromNumber || null,
+        timestamp: payload.timestamp ? new Date(payload.timestamp).getTime() : Date.now(),
+      };
+      const ck = cacheKey;
+      setMessages((prev) => {
+        // Remove any optimistic entry for this senderJid/timestamp, then append confirmed
+        const filtered = prev.filter((m) => !(m.id.startsWith('optimistic:') && m.senderJid === serverMsg.senderJid));
+        if (filtered.some((m) => m.id === serverMsg.id)) return prev; // dedup
+        const next = [...filtered, serverMsg];
+        if (ck) {
+          memCache.set(ck, next);
+          diskCache.set(ck, { messages: next, ts: Date.now() });
+          saveDiskCache(diskCache);
+        }
+        return next;
+      });
+    });
+
+    return () => { off(); offSent(); };
   }, [jid, cacheKey]);
 
   const optimisticAppend = useCallback((msg: MirrorMessage) => {

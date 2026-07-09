@@ -102,6 +102,13 @@ export const messagesApi = {
     apiPost<{ success: boolean; message?: string }>(
       `/api/platform/conversations/resume-ai/${encodeURIComponent(chatId)}`
     ),
+
+  /** WhatsApp contact search via Evolution API (finds contacts in the WA phonebook). */
+  findContacts: (instanceName: string, query?: string) =>
+    apiPost<{ contacts: { jid: string; name?: string; pushName?: string; phone?: string }[] }>(
+      `/api/platform/chats/${encodeURIComponent(instanceName)}/contacts`,
+      query ? { query } : {}
+    ),
 };
 
 /** Turn a contact phone (e.g. "+254712345678") into a 1:1 WhatsApp JID. */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Inbox, Link2Off } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import type { Instance } from '../../../services/api';
@@ -47,11 +47,17 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
   const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null, selectedJid);
   const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(instance?.name ?? null, selectedJid);
 
-  // Mark chat as read when it is opened
+  // Mark chat as read when it is opened — only if there are unread messages
+  const prevUnreadRef = useRef(0);
   useEffect(() => {
     if (!instance?.name || !selectedJid) return;
-    messagesApi.markRead(instance.name, selectedJid).catch(() => { /* non-critical */ });
-  }, [instance?.name, selectedJid]);
+    if (prevUnreadRef.current > 0) {
+      messagesApi.markRead(instance.name, selectedJid).catch(() => { /* non-critical */ });
+    }
+    // Update ref for next call
+    const chat = chats.find((c) => c.jid === selectedJid);
+    prevUnreadRef.current = chat?.unread ?? 0;
+  }, [instance?.name, selectedJid, chats]);
 
   const selected = useMemo<ChatListItem | null>(() => {
     if (!selectedJid) return null;
