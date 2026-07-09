@@ -6,9 +6,9 @@ import db from '../database.js';
 export type AuthCodePurpose = 'login' | 'register';
 
 const CODE_TTL_MINUTES = 10;
-const MAX_VERIFY_ATTEMPTS = 5;
-const MAX_CODES_PER_WINDOW = 3;
-const RATE_LIMIT_WINDOW_MINUTES = 15;
+const MAX_VERIFY_ATTEMPTS = 15;
+const MAX_CODES_PER_WINDOW = 15;
+const RATE_LIMIT_WINDOW_MINUTES = 5;
 
 /** SQLite stores CURRENT_TIMESTAMP as 'YYYY-MM-DD HH:MM:SS' UTC. Match it. */
 function utcString(date: Date): string {
