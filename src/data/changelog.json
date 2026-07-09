@@ -1,5 +1,5 @@
 {
-  "latest": "v0.9.5",
+  "latest": "v0.9.6",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,27 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.9.6",
+      "date": "2026-07-09",
+      "bumpType": "patch",
+      "title": "Increased verification code rate limit to 15 retries per 5 minutes",
+      "category": "release",
+      "tags": [
+        "auth",
+        "security"
+      ],
+      "highlights": [],
+      "fixes": [
+        "Increased verification code rate limit to 15 retries per 5 minutes",
+        "Updated MAX_CODES_PER_WINDOW from 3 to 15",
+        "Updated RATE_LIMIT_WINDOW_MINUTES from 15 to 5",
+        "Updated MAX_VERIFY_ATTEMPTS from 5 to 15"
+      ],
+      "commits": [
+        "3088530"
+      ]
+    },
     {
       "version": "v0.9.5",
       "date": "2026-07-09",
