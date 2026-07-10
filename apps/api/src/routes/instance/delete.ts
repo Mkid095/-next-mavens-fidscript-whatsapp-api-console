@@ -2,23 +2,18 @@ import { Router, Request, Response } from 'express';
 import db from '../../database.js';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import type { Instance } from '../../types.js';
+import { callGateway, callGatewayChecked } from '../../utils/gateway.js';
 import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
 
 // DELETE /api/instance/delete/:name - Delete instance (client own instances)
 //
-// NOTE: The Evolution API fork running in this deployment only implements
-// /instance/create and /instance/connect. The delete/logout/terminate endpoints
-// return 404 — there is no API to remove an Evolution instance once created.
-// This means Evolution instances persist forever in the Evolution process memory.
-//
-// Since our DB is the authoritative source for which instances the user sees,
-// we delete the local record regardless. The Evolution instance will remain alive
-// in Evolution's memory but becomes invisible to this system. If the user later
-// tries to create a new instance with the same name, Evolution will reject it
-// with 403 (instance already exists) — the only way to recover is to restart
-// the Evolution container which clears its in-memory state.
+// Flow:
+// 1. Attempt to delete from Evolution API first
+// 2. If Evolution API succeeds (200) → delete from our DB
+// 3. If Evolution API returns 404 (not found) → instance already gone, still clean up our DB
+// 4. If Evolution API returns other error → return error, don't touch our DB
 router.delete('/delete/:name', clientJwtAuth, async (req: Request, res: Response) => {
   const instance = db.prepare('SELECT * FROM instances WHERE name = ? AND client_id = ?').get(req.params.name, req.client?.id) as Instance | undefined;
   if (!instance) {
@@ -27,8 +22,44 @@ router.delete('/delete/:name', clientJwtAuth, async (req: Request, res: Response
 
   const evolutionInstanceName = instance.evolution_name || `${req.client?.id}_${req.params.name}`;
 
-  // Clean up our DB — instance row + all its messages.
-  // Foreign key ON DELETE CASCADE handles inbox_messages, but be explicit.
+  // Step 1: Try to delete from Evolution API first
+  let evolutionDeleted = false;
+  let evolutionError: string | null = null;
+
+  try {
+    const evoResult = await callGatewayChecked('DELETE', `/instance/delete/${evolutionInstanceName}`);
+
+    if (evoResult.ok) {
+      // Evolution API successfully deleted the instance
+      evolutionDeleted = true;
+      console.log(`[instance/delete] Evolution API deleted: ${evolutionInstanceName}`);
+    } else if (evoResult.status === 404) {
+      // Instance doesn't exist in Evolution API — already deleted or never existed
+      // This is fine, we'll clean up our DB record
+      evolutionDeleted = false;
+      console.log(`[instance/delete] Evolution API instance not found (already deleted?): ${evolutionInstanceName}`);
+    } else {
+      // Other error from Evolution API — don't touch our DB
+      evolutionError = evoResult.data?.error || `Evolution API returned ${evoResult.status}`;
+      console.error(`[instance/delete] Evolution API error: ${evolutionError}`);
+      return res.status(400).json({
+        success: false,
+        error: `Failed to delete instance from WhatsApp service: ${evolutionError}`,
+        evolutionInstance: evolutionInstanceName,
+      });
+    }
+  } catch (err) {
+    // Network error calling Evolution API
+    evolutionError = err instanceof Error ? err.message : String(err);
+    console.error(`[instance/delete] Failed to call Evolution API: ${evolutionError}`);
+    return res.status(503).json({
+      success: false,
+      error: `Cannot reach WhatsApp service: ${evolutionError}`,
+      evolutionInstance: evolutionInstanceName,
+    });
+  }
+
+  // Step 2: Clean up our DB — instance row + all its messages
   const deleteMsg = db.prepare('DELETE FROM inbox_messages WHERE instance_id = ?').run(instance.id);
   const deleteInst = db.prepare('DELETE FROM instances WHERE id = ?').run(instance.id);
 
@@ -37,13 +68,16 @@ router.delete('/delete/:name', clientJwtAuth, async (req: Request, res: Response
     'DELETE',
     'instance',
     instance.id,
-    `Deleted instance ${req.params.name} (Evolution instance "${evolutionInstanceName}" remains in Evolution API — no delete endpoint available)`,
+    `Deleted instance ${req.params.name}. Evolution API delete: ${evolutionDeleted ? 'success' : 'not found (skipped)'}`,
   );
 
   res.json({
     success: true,
-    message: 'Instance deleted from database. The WhatsApp session still exists in Evolution API and cannot be removed via API in this deployment.',
+    message: evolutionDeleted
+      ? 'Instance deleted from both WhatsApp service and database.'
+      : 'Instance removed from database (WhatsApp service instance was already deleted or not found).',
     evolutionInstance: evolutionInstanceName,
+    evolutionDeleted,
     deletedMessages: deleteMsg.changes,
   });
 });
