@@ -47,10 +47,6 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
   const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null, selectedJid);
   const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(instance?.name ?? null, selectedJid);
 
-  useEffect(() => {
-    console.log('[DEBUG] selectedJid:', selectedJid, '| chats:', chats.length, '| msgs:', messages.length, '| loading:', msgLoading);
-  }, [selectedJid]);
-
   // Mark chat as read when it is opened — only if there are unread messages
   const prevUnreadRef = useRef(0);
   useEffect(() => {
@@ -153,6 +149,7 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
 
       <div className="flex min-h-0 flex-1">
         <ChatThread
+          key={selectedJid ?? 'none'}
           chat={selected}
           instance={instance}
           messages={messages}
