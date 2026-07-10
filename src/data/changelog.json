@@ -1,5 +1,5 @@
 {
-  "latest": "v0.9.6",
+  "latest": "v0.9.7",
   "feed": "https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commits/main",
   "notes": {
     "versioning": "We follow semver: MAJOR.MINOR.PATCH. Bump PATCH for fixes and small tweaks (v0.4.0 → v0.4.1). Bump MINOR for new features that don't break existing API contracts (v0.4.x → v0.5.0). Bump MAJOR only for breaking changes. Within a MINOR cycle, every release is a new PATCH of the current MINOR.",
@@ -7,6 +7,21 @@
     "agent_reminder": "If you (an AI agent) made changes that the user can see, append to this file before committing. Run `bash scripts/check-version-bump.sh HEAD~1..HEAD` to verify your commit isn't missing a changelog bump."
   },
   "entries": [
+    {
+      "version": "v0.9.7",
+      "date": "2026-07-10",
+      "bumpType": "patch",
+      "title": "Debug chat thread",
+      "category": "release",
+      "tags": [],
+      "highlights": [],
+      "fixes": [
+        "Add debug logging to trace chat thread opening issue"
+      ],
+      "commits": [
+        "2b201fc"
+      ]
+    },
     {
       "version": "v0.9.6",
       "date": "2026-07-09",
