@@ -16,7 +16,7 @@ interface EntityInfo {
 
 function entityInfoFromPayload(
   type: DomainEventType,
-  payload: DomainEventPayload
+  payload: DomainEventPayload,
 ): EntityInfo {
   const p = payload as unknown as Record<string, unknown>;
 
@@ -36,7 +36,6 @@ function entityInfoFromPayload(
     case 'conversation.assigned':
     case 'conversation.priority_changed':
     case 'conversation.status_changed':
-    case 'ai.state_changed':
       return {
         entityType: 'conversation',
         entityId: String(p.conversationId ?? ''),
@@ -75,14 +74,6 @@ function entityInfoFromPayload(
       return {
         entityType: 'automation_flow',
         entityId: String(p.flowId ?? (p.executionId ?? '')),
-        customerId: String(p.customerId ?? null),
-        conversationId: String(p.conversationId ?? null),
-      };
-    case 'ai.reply.generated':
-    case 'ai.handoff_requested':
-      return {
-        entityType: 'conversation',
-        entityId: String(p.conversationId ?? ''),
         customerId: String(p.customerId ?? null),
         conversationId: String(p.conversationId ?? null),
       };
@@ -125,7 +116,7 @@ export function logDomainEvent(
   workspaceId: string | null,
   type: DomainEventType,
   payload: DomainEventPayload,
-  actorUserId: string | null = null
+  actorUserId: string | null = null,
 ): void {
   const { entityType, entityId, customerId, conversationId } = entityInfoFromPayload(type, payload);
 
@@ -143,6 +134,6 @@ export function logDomainEvent(
     conversationId,
     actorUserId,
     JSON.stringify(payload),
-    new Date().toISOString()
+    new Date().toISOString(),
   );
 }

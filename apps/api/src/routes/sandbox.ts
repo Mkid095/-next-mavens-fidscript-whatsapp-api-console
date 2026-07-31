@@ -8,16 +8,12 @@ const router = Router();
  * Determine auth mode + base URL for a given sandbox endpoint path.
  * Returns the resolved base URL and which auth header to apply.
  */
-function resolveTarget(endpoint: string): { url: string; auth: 'apikey' | 'jwt' } | null {
+function resolveTarget(endpoint: string): { url: string; auth: 'apikey' } | null {
   const apiBase = process.env.PUBLIC_API_BASE || 'https://whatsapp.fidscript.com/api';
   // Public v1 endpoints (API key auth)
   if (endpoint.startsWith('/api/v1')) {
     const stripped = endpoint.replace(/^\/api\/v1/, '');
     return { url: `${apiBase}/v1${stripped}`, auth: 'apikey' };
-  }
-  // Platform chatbot + LLM endpoints (JWT auth — uses the caller's session)
-  if (endpoint.startsWith('/api/platform')) {
-    return { url: `${apiBase}${endpoint}`, auth: 'jwt' };
   }
   // Sandbox + internal routes — reject (sandbox is for client-facing APIs only)
   return null;
@@ -45,7 +41,7 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
     // Resolve auth mode + URL
     const target = resolveTarget(ep);
     if (!target) {
-      return res.status(400).json({ success: false, error: `Sandbox cannot proxy '${ep}'. Use /api/v1/* or /api/platform/* (chatbots, llm-connections).` });
+      return res.status(400).json({ success: false, error: `Sandbox cannot proxy '${ep}'. Use /api/v1/* only.` });
     }
 
     // Substitute :instanceName

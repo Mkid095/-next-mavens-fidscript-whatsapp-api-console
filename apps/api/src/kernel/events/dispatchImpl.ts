@@ -25,9 +25,6 @@ import type {
   FlowStartedPayload,
   FlowStepPayload,
   FlowCompletedPayload,
-  AiReplyGeneratedPayload,
-  AiHandoffRequestedPayload,
-  AiStateChangedPayload,
   IntegrationConnectedPayload,
   IntegrationSyncedPayload,
   OrderCreatedPayload,
@@ -226,31 +223,6 @@ export async function dispatchFlowCompleted(
   payload: FlowCompletedPayload
 ): Promise<void> {
   await emit('flow.completed', payload, ctx);
-}
-
-// ---------------------------------------------------------------------------
-// AI events
-// ---------------------------------------------------------------------------
-
-export async function dispatchAiReplyGenerated(
-  ctx: DispatchContext,
-  payload: AiReplyGeneratedPayload
-): Promise<void> {
-  await emit('ai.reply.generated', payload, ctx);
-}
-
-export async function dispatchAiHandoffRequested(
-  ctx: DispatchContext,
-  payload: AiHandoffRequestedPayload
-): Promise<void> {
-  await emit('ai.handoff_requested', payload, ctx);
-}
-
-export async function dispatchAiStateChanged(
-  ctx: DispatchContext,
-  payload: AiStateChangedPayload
-): Promise<void> {
-  await emit('ai.state_changed', payload, ctx);
 }
 
 // ---------------------------------------------------------------------------

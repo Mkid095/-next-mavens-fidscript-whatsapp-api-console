@@ -8,7 +8,6 @@ import LogsAndAnalyticsView from '../LogsAndAnalyticsView';
 import InboxView from '../InboxView';
 import SecurityKeysView from '../SecurityKeysView';
 import LLMProvidersView from './providers/LLMProvidersView';
-import ChatbotsAdminView from './chatbot/ChatbotsAdminView';
 import AnalyticsView from './AnalyticsView';
 import AuditLogView from './audit/AuditLogView';
 import BillingView from './billing/BillingView';
@@ -132,9 +131,6 @@ export function AdminContent({
     }
     if (path === '/admin/providers') {
       return <LLMProvidersView />;
-    }
-    if (path === '/admin/chatbots') {
-      return <ChatbotsAdminView />;
     }
     if (path === '/admin/billing') {
       return <BillingView />;

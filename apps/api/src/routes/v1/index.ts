@@ -11,7 +11,6 @@ import chatsRouter from './chats.js';
 import profileRouter from './profile.js';
 import settingsRouter from './settings.js';
 import instanceRouter from './instance.js';
-import providersRouter from './providers.js';
 import healthRouter from './health.js';
 import customersRouter from './customers.js';
 import conversationsRouter from './conversations.js';
@@ -71,7 +70,6 @@ router.use('/settings', v1Limiter, settingsRouter);
 
 // Instance lifecycle — connection-state, connect/QR, restart (confirm-guarded), logout, set-presence.
 router.use('/instance', v1Limiter, instanceRouter);
-router.use('/providers', v1Limiter, clientApiKeyAuth, V1_READ, providersRouter);
 
 // Developer platform — read-heavy APIs for external integrators
 router.use('/customers', v1Limiter, clientApiKeyAuth, V1_READ, customersRouter);

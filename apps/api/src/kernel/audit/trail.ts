@@ -4,14 +4,8 @@ import db from '../../database.js';
 import type { DomainEventType } from '../events/catalog.js';
 
 // =============================================================================
-// Audit trail bus subscriber (§6.4).
-// bus().subscribe('*', writeAuditTrail):
-//   - captures state-changing events and writes audit_logs rows with
-//     before/after JSON when we can infer them
-//   - the privileged route handlers (assignment, status change, etc.) should
-//     ALSO call logAuditAction() for high-fidelity before/after; this trail
-//     is the safety net for the events that go through the bus
-//     (customer.tagged, conversation.assigned, ai.state_changed, etc.)
+// Audit trail bus subscriber.
+// Captures state-changing events and writes audit_logs rows.
 // =============================================================================
 
 const STATE_CHANGE_EVENTS: DomainEventType[] = [
@@ -20,8 +14,6 @@ const STATE_CHANGE_EVENTS: DomainEventType[] = [
   'conversation.priority_changed',
   'customer.tagged',
   'customer.noted',
-  'ai.state_changed',
-  'ai.handoff_requested',
   'integration.connected',
   'integration.synced',
   'campaign.started',
@@ -31,7 +23,6 @@ const STATE_CHANGE_EVENTS: DomainEventType[] = [
 function entityTypeOf(t: DomainEventType): string {
   if (t.startsWith('conversation.')) return 'conversation';
   if (t.startsWith('customer.')) return 'customer';
-  if (t.startsWith('ai.')) return 'ai_handoff';
   if (t.startsWith('integration.')) return 'integration';
   if (t.startsWith('campaign.')) return 'campaign';
   return t;
@@ -39,7 +30,7 @@ function entityTypeOf(t: DomainEventType): string {
 
 function entityIdFromEnvelope(env: Record<string, unknown>): string {
   return String(
-    env.conversationId ?? env.customerId ?? env.integrationId ?? env.campaignId ?? ''
+    env.conversationId ?? env.customerId ?? env.integrationId ?? env.campaignId ?? '',
   );
 }
 
@@ -56,7 +47,7 @@ export function registerAuditTrail(): void {
     const entityId = entityIdFromEnvelope(env);
     if (!entityId) return;
 
-    const { __type, __id, __workspaceId, __actorUserId, workspaceId: _w, actorUserId: _a, ...payload } = env;
+    const { __type: _t, __id: _i, __workspaceId: _w, __actorUserId: _a, workspaceId: _ws, actorUserId: _au, ...payload } = env;
 
     try {
       db.prepare(`
@@ -66,13 +57,13 @@ export function registerAuditTrail(): void {
       `).run(
         uuidv4(),
         workspaceId,
-        __actorUserId ?? null,
+        env.__actorUserId ?? null,
         `${entityType}.${type.split('.')[1] ?? 'changed'}`,
         entityType,
         entityId,
         null,
         JSON.stringify(payload),
-        new Date().toISOString()
+        new Date().toISOString(),
       );
     } catch (e) {
       console.error('[audit-trail] insert failed', e);

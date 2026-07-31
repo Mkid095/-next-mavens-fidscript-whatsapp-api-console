@@ -14,12 +14,13 @@ export {chatListKey, invalidateChatList};
 export function useChatList(
   instanceName: string | null,
   activeJid: string | null = null,
+  filter?: 'contacts' | 'groups' | 'outbox',
 ) {
   const {data, isLoading, error, refetch} = useQuery({
-    queryKey: chatListKey(instanceName ?? ''),
+    queryKey: chatListKey(instanceName ?? '', filter),
     queryFn: async () => {
       if (!instanceName) return {chats: [] as ChatListItem[]};
-      const res = await messagesApi.getChats(instanceName);
+      const res = await messagesApi.getChats(instanceName, filter);
       if (res.success && res.data) return res.data;
       throw new Error(res.error ?? 'Failed to load chats');
     },
@@ -38,18 +39,18 @@ export function useChatList(
       // Don't optimistically bump the unread counter for the chat we have open —
       // the thread handles incoming messages directly.
       if (payload.chatId === activeJid) return;
-      optimisticallyIncrementUnread(instanceName, payload.chatId);
+      optimisticallyIncrementUnread(instanceName, payload.chatId, filter);
     });
 
     const offRead = dataEvents.on('message.read', (e) => {
       const {chatId} = e.payload as {chatId?: string};
       if (!chatId) return;
-      optimisticallyClearUnread(instanceName, chatId);
+      optimisticallyClearUnread(instanceName, chatId, filter);
     });
 
     // Wildcard: something significant changed — background refetch.
     const offWild = dataEvents.on('*', () => {
-      invalidateChatList(instanceName);
+      invalidateChatList(instanceName, filter);
     });
 
     return () => {
@@ -57,7 +58,7 @@ export function useChatList(
       offRead();
       offWild();
     };
-  }, [instanceName, activeJid]);
+  }, [instanceName, activeJid, filter]);
 
   const refresh = useCallback(() => refetch(), [refetch]);
 

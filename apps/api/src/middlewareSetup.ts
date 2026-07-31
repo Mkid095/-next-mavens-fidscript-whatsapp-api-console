@@ -5,7 +5,6 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { responseTimeMiddleware } from './kernel/audit/index.js';
 import authRoutes from './routes/auth.js';
-import connectorWebhookRoutes from './routes/platform/connectorWebhook.js';
 
 export function setupMiddleware(app: express.Application): void {
   // Security middleware
@@ -16,20 +15,6 @@ export function setupMiddleware(app: express.Application): void {
   }));
 
   // Request parsing
-
-  // Connector webhooks — capture raw body for HMAC verification before any parsing.
-  // Attached only to /api/platform/connectors/* so other routes use normal JSON parsing.
-  app.use('/api/platform/connectors', (req: express.Request, _res: express.Response, next: express.NextFunction) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (chunk: Buffer) => chunks.push(chunk));
-    req.on('end', () => {
-      (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.concat(chunks);
-      next();
-    });
-    req.on('error', () => next());
-  });
-  app.use('/api/platform/connectors', connectorWebhookRoutes);
-
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

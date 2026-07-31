@@ -26,8 +26,15 @@ function previewText(lastMsg: Rec | null): string {
 // Public API
 // ---------------------------------------------------------------------------
 
-export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
+export async function mirrorChatList(ctx: SendContext, filter?: 'contacts' | 'groups' | 'outbox'): Promise<SendResult> {
   const workspaceId = ctx.instance.client_id;
+
+  // Build WHERE clause based on tab filter
+  const conditions: string[] = ['instance_id = ?', 'chat_id IS NOT NULL', "chat_id != ''"];
+  if (filter === 'contacts') conditions.push('is_group = 0');
+  else if (filter === 'groups') conditions.push('is_group = 1');
+  else if (filter === 'outbox') conditions.push("lid = 'LID'");
+  const whereClause = conditions.join(' AND ');
 
   // Primary: build chat list from inbox_messages (instant, no Evolution round-trip).
   // Group by chat_id so each distinct conversation appears once.
@@ -40,7 +47,7 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
         ORDER BY timestamp DESC LIMIT 1) AS lastMessage,
       SUM(CASE WHEN direction = 'incoming' AND is_read = 0 THEN 1 ELSE 0 END) AS unread
     FROM inbox_messages m
-    WHERE instance_id = ? AND chat_id IS NOT NULL AND chat_id != ''
+    WHERE ${whereClause}
     GROUP BY chat_id
     ORDER BY lastMessageAt DESC
   `).all(ctx.instance.id) as {
@@ -78,17 +85,9 @@ export async function mirrorChatList(ctx: SendContext): Promise<SendResult> {
     }
   }
 
-  // Batch-load AI override modes
-  if (deduped.length > 0) {
-    const jids = deduped.map((i) => i.jid);
-    const placeholders = jids.map(() => '?').join(',');
-    const rows = db.prepare(
-      `SELECT conversation_id, mode FROM chatbot_conversation_overrides WHERE conversation_id IN (${placeholders})`
-    ).all(...jids) as { conversation_id: string; mode: string }[];
-    const overrideMap = new Map(rows.map((r) => [r.conversation_id, r.mode as 'ai' | 'manual']));
-    for (const item of deduped) {
-      item.aiMode = overrideMap.get(item.jid) ?? null;
-    }
+  // Set aiMode to null for all items (AI override was a chatbot feature)
+  for (const item of deduped) {
+    item.aiMode = null;
   }
 
   // If DB is empty (brand-new QR scan, no messages yet), fall back to Evolution

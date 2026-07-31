@@ -57,8 +57,10 @@ export interface BatchCheck {
 }
 
 export const messagesApi = {
-  getChats: (instanceName: string) =>
-    apiGet<{ chats: ChatListItem[] }>(`/api/platform/chats/${encodeURIComponent(instanceName)}`),
+  getChats: (instanceName: string, filter?: 'contacts' | 'groups' | 'outbox') =>
+    apiGet<{ chats: ChatListItem[] }>(
+      `/api/platform/chats/${encodeURIComponent(instanceName)}${filter ? `?filter=${filter}` : ''}`
+    ),
   getThread: (instanceName: string, jid: string) =>
     apiGet<{ messages: MirrorMessage[] }>(
       `/api/platform/chats/${encodeURIComponent(instanceName)}/${encodeURIComponent(jid)}`

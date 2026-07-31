@@ -49,7 +49,8 @@ router.get('/chats/:name', chatMirrorLimiter, async (req, res) => {
   if (!ctx) return;
   const guard = requireConnected(ctx);
   if (guard) { respondSendResult(res, guard); return; }
-  respondSendResult(res, await mirrorChatList(ctx));
+  const filter = req.query.filter as 'contacts' | 'groups' | 'outbox' | undefined;
+  respondSendResult(res, await mirrorChatList(ctx, filter));
 });
 
 router.get('/chats/:name/:jid', chatMirrorLimiter, async (req, res) => {

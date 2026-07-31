@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Download } from 'lucide-react';
-import { COUNTRY_OPTIONS } from './helpers';
+import { COUNTRY_OPTIONS } from './import-contacts-country.utils';
 
 interface ImportStepUploadProps {
   importText: string;

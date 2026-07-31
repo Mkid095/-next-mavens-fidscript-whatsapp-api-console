@@ -9,15 +9,19 @@ import type {MirrorMessage} from './messagesApi';
 export const threadKey = (instanceName: string, jid: string) =>
   ['thread', instanceName, jid] as const;
 
-export const chatListKey = (instanceName: string) =>
-  ['chats', instanceName] as const;
+export const chatListKey = (instanceName: string, filter?: 'contacts' | 'groups' | 'outbox') =>
+  ['chats', instanceName, filter ?? 'all'] as const;
 
 /**
  * Evict all cached data for a given instance — called when the instance is
  * deleted so no stale state bleeds into future sessions.
  */
 export function evictInstanceCache(instanceName: string) {
-  queryClient.removeQueries({queryKey: ['chats', instanceName]});
+  // Evict all filter variants of the chat list
+  queryClient.removeQueries({queryKey: ['chats', instanceName, 'all']});
+  queryClient.removeQueries({queryKey: ['chats', instanceName, 'contacts']});
+  queryClient.removeQueries({queryKey: ['chats', instanceName, 'groups']});
+  queryClient.removeQueries({queryKey: ['chats', instanceName, 'outbox']});
   // Evict all thread queries for this instance
   queryClient.removeQueries({queryKey: ['thread', instanceName]});
   // Purge the legacy localStorage cache (covers all instances in v1 format)
@@ -104,9 +108,10 @@ export function appendToThread(
 export function optimisticallyIncrementUnread(
   instanceName: string,
   chatId: string,
+  filter?: 'contacts' | 'groups' | 'outbox',
 ) {
   queryClient.setQueryData<{chats: {jid: string; unread: number}[]}>(
-    chatListKey(instanceName),
+    chatListKey(instanceName, filter),
     (old) => {
       if (!old) return old;
       return {
@@ -122,9 +127,9 @@ export function optimisticallyIncrementUnread(
 /**
  * Zero-out the unread count for a chat in the chat list cache.
  */
-export function optimisticallyClearUnread(instanceName: string, chatId: string) {
+export function optimisticallyClearUnread(instanceName: string, chatId: string, filter?: 'contacts' | 'groups' | 'outbox') {
   queryClient.setQueryData<{chats: {jid: string; unread: number}[]}>(
-    chatListKey(instanceName),
+    chatListKey(instanceName, filter),
     (old) => {
       if (!old) return old;
       return {
@@ -141,8 +146,8 @@ export function optimisticallyClearUnread(instanceName: string, chatId: string) 
  * Invalidate the chat list for an instance — call from SSE handlers when a
  * real-time event indicates the chat list may have changed.
  */
-export function invalidateChatList(instanceName: string) {
-  queryClient.invalidateQueries({queryKey: chatListKey(instanceName)});
+export function invalidateChatList(instanceName: string, filter?: 'contacts' | 'groups' | 'outbox') {
+  queryClient.invalidateQueries({queryKey: chatListKey(instanceName, filter)});
 }
 
 /**

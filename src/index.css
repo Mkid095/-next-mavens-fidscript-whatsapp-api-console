@@ -2,21 +2,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand and Neutral Colors (Reworkd Style Guide) */
-  --color-iris-blue: #3161df;
-  --color-cobalt: #3e79ea;
-  --color-sky-glow: #3e9ed0;
-  --color-mint-pulse: #89ecb0;
-  --color-midnight-iris: #2c65d3;
-  --color-ink: #272c30;
-  --color-pure-white: #ffffff;
-  --color-lavender-mist: #f0f5fe;
-  --color-pale-slate: #e3e8ea;
-  --color-dove-gray: #a6b4ba;
-  --color-iron: #526068;
-  --color-graphite: #60737a;
-  --color-slate-mist: #7b8e95;
-
   /* Fonts */
   --font-selecta: 'Playfair Display', serif;
   --font-suisse-intl: 'Inter', sans-serif;
@@ -24,17 +9,12 @@
   --font-geist-sans: 'Inter', sans-serif;
 
   /* Custom Elevation & Shadows */
-  --shadow-subtle: rgba(39, 44, 48, 0.1) 0px 0px 0px 1px;
-  --shadow-subtle-2: rgba(63, 70, 75, 0.1) 0px 1px 3px 0px, rgba(63, 70, 75, 0.1) 0px 0px 0px 1px;
-  --shadow-xl: rgba(63, 70, 75, 0.1) 0px 21px 44px -32px, rgba(39, 44, 48, 0.2) 0px 26px 30px -23px, rgba(39, 44, 48, 0.05) 0px 14px 40px 0px, rgba(39, 44, 48, 0.08) 0px 0px 0px 1px, rgba(39, 44, 48, 0.12) 0px 4px 8px 0px;
-  --shadow-subtle-3: rgb(255, 255, 255) 0px 0px 0px 2px, rgba(39, 44, 48, 0.13) 0px 1px 2px 2px;
-  --shadow-subtle-4: rgba(255, 255, 255, 0.25) 0px 1px 0px 0px inset, rgba(26, 41, 61, 0.15) 0px 1px 3px 0px, rgba(26, 41, 61, 0.11) 0px 7px 11px -5px, rgba(26, 41, 61, 0.08) 0px 0px 0px 1px;
-  --shadow-xl-2: rgba(63, 70, 75, 0.5) 0px 21px 44px -40px, rgba(39, 44, 48, 0.1) 0px 26px 30px -23px, rgba(39, 44, 48, 0.05) 0px 14px 40px 0px, rgba(39, 44, 48, 0.1) 0px 0px 0px 1px, rgba(39, 44, 48, 0.07) 0px 4px 9px 0px;
-  --shadow-sm: rgba(63, 70, 75, 0.04) 0px 0px 8px 0px, rgba(63, 70, 75, 0.03) 0px 1px 5px 0px, rgba(55, 61, 66, 0.05) 0px 0px 0px 1px;
-  --shadow-subtle-5: rgba(63, 70, 75, 0.4) 0px 1px 3px 0px, rgb(70, 81, 88) 0px 0px 0px 1px;
-  --shadow-md: rgba(63, 70, 75, 0.1) 0px 3px 12px 0px, rgba(63, 70, 75, 0.55) 0px 1px 5px 0px, rgb(63, 70, 75) 0px 0px 0px 1px;
-  --shadow-subtle-6: rgba(63, 70, 75, 0.2) 0px 1px 2px 0px;
-  --shadow-nested-mockup: rgba(63, 70, 75, 0.1) 0px 21px 44px -32px, rgba(39, 44, 48, 0.2) 0px 26px 30px -23px, rgba(39, 44, 48, 0.05) 0px 14px 40px 0px, rgba(39, 44, 48, 0.08) 0px 0px 0px 1px, rgba(39, 44, 48, 0.12) 0px 4px 8px 0px;
+  --shadow-subtle: rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  --shadow-subtle-2: rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+  --shadow-xl: rgba(0, 0, 0, 0.08) 0px 21px 44px -32px, rgba(0, 0, 0, 0.06) 0px 26px 30px -23px, rgba(0, 0, 0, 0.04) 0px 14px 40px 0px;
+  --shadow-sm: rgba(0, 0, 0, 0.02) 0px 0px 8px 0px, rgba(0, 0, 0, 0.02) 0px 1px 5px 0px, rgba(0, 0, 0, 0.04) 0px 0px 0px 1px;
+  --shadow-subtle-4: rgba(255, 255, 255, 0.15) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.08) 0px 1px 3px 0px;
+  --shadow-md: rgba(0, 0, 0, 0.08) 0px 3px 12px 0px, rgba(0, 0, 0, 0.04) 0px 1px 5px 0px, rgba(0, 0, 0, 0.04) 0px 0px 0px 1px;
 
   /* Named Radii */
   --radius-nav: 6px;
@@ -48,47 +28,6 @@
   --animate-pulse-subtle: pulseSubtle 2s infinite ease-in-out;
 
   @keyframes pulseSubtle {
-    0%, 100% { opacity: 0.65; transform: scale(0.9); }
-    50% { opacity: 1; transform: scale(1.15); }
-  }
-}
-
-@theme {
-  /* Brand and Neutral Colors (Eco Aesthetic Reworked to Tech Yellow) */
-  --color-forest-deep: #14130a;
-  --color-forest-medium: #262412;
-  --color-forest-light: #facc15;
-  --color-forest-neon: #fef08a;
-  --color-eco-bg: #f9f9f2;
-  --color-iris-blue: #eab308;
-  --color-cobalt: #ca8a04;
-  --color-sky-glow: #eab308;
-  --color-mint-pulse: #fef08a;
-  --color-ink: #181711;
-  --color-pure-white: #ffffff;
-  --color-pale-slate: #eaebe4;
-  --color-dove-gray: #a8a99e;
-  --color-iron: #525345;
-  --color-graphite: #6a6c5d;
-  --color-slate-mist: #7d8071;
-
-  /* Fonts */
-  --font-selecta: 'Inter', sans-serif;
-  --font-suisse-intl: 'Inter', sans-serif;
-  --font-geist-mono: 'JetBrains Mono', monospace;
-  --font-geist-sans: 'Inter', sans-serif;
-
-  /* Custom Elevation & Shadows */
-  --shadow-subtle: rgba(42, 41, 25, 0.08) 0px 0px 0px 1px;
-  --shadow-subtle-2: rgba(42, 41, 25, 0.05) 0px 1px 3px 0px, rgba(42, 41, 25, 0.05) 0px 0px 0px 1px;
-  --shadow-xl: rgba(38, 36, 18, 0.06) 0px 21px 44px -32px, rgba(42, 41, 25, 0.1) 0px 26px 30px -23px, rgba(42, 41, 25, 0.04) 0px 14px 40px 0px;
-  --shadow-sm: rgba(42, 41, 25, 0.02) 0px 0px 8px 0px, rgba(42, 41, 25, 0.02) 0px 1px 5px 0px, rgba(42, 41, 25, 0.04) 0px 0px 0px 1px;
-  --shadow-subtle-4: rgba(255, 255, 255, 0.15) 0px 1px 0px 0px inset, rgba(38, 36, 18, 0.15) 0px 1px 3px 0px;
-
-  /* Custom Animations */
-  --animate-pulse-subtle: pulseSubtle 2s infinite ease-in-out;
-
-  @keyframes pulseSubtle {
     0%, 100% { opacity: 0.65; transform: scale(0.92); }
     50% { opacity: 1; transform: scale(1.08); }
   }
@@ -96,8 +35,8 @@
 
 @layer base {
   body {
-    background-color: #11100b;
-    color: #1a1913;
+    background-color: #ffffff;
+    color: #1a1a1a;
     font-family: var(--font-suisse-intl);
     margin: 0;
     padding: 0;
@@ -121,21 +60,4 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #bdbeb2;
-}
-
-/* Custom Gradients (Reworkd System) */
-.gradient-headline-text {
-  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.radial-aurora {
-  background-image: radial-gradient(335.69% 99.21% at 57.77% 0px, rgba(234, 179, 8, 0.18) 0px, rgba(254, 240, 138, 0.07) 36.5%, rgba(255, 225, 66, 0) 75.65%, rgba(234, 179, 8, 0) 100%);
-}
-
-.bg-dot-matrix {
-  background-size: 16px 16px;
-  background-image: radial-gradient(#e9ebe4 1.5px, transparent 1.5px);
 }

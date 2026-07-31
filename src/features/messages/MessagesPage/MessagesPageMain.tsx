@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Inbox, Link2Off } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import type { Instance } from '../../../services/api';
@@ -9,18 +9,16 @@ import NewChatModal from '../NewChatModal';
 import { messagesApi } from '../messagesApi';
 import type { ChatListItem } from '../messagesApi';
 import ChatListSection from './ChatList';
+import { useMarkRead } from './useMarkRead';
+import { useSyncPhonebook } from './useSyncPhonebook';
 
-// MessagesPage — WhatsApp-Web 2-pane shell. Owns the selected instance and
-// the selected chat. Container switching fully resets the thread so chats
-// never bleed across instances.
+function pickDefaultInstance(instances: Instance[]): Instance | null {
+  return instances.find((i) => i.status === 'connected') ?? instances[0] ?? null;
+}
 
 interface MessagesPageProps {
   instances: Instance[];
   clientToken?: string;
-}
-
-function pickDefaultInstance(instances: Instance[]): Instance | null {
-  return instances.find((i) => i.status === 'connected') ?? instances[0] ?? null;
 }
 
 export default function MessagesPageMain({ instances, clientToken }: MessagesPageProps) {
@@ -28,8 +26,6 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
   const [search, setSearch] = useState('');
   const [selectedJid, setSelectedJid] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
-  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
-  const [syncMessage, setSyncMessage] = useState<string>('');
 
   useEffect(() => {
     if (!instance) { setInstance(pickDefaultInstance(instances)); return; }
@@ -39,25 +35,21 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
 
   const switchInstance = useCallback((next: Instance | null) => {
     setSelectedJid(null);
-    setSyncState('idle');
-    setSyncMessage('');
     setInstance(next);
   }, []);
 
-  const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(instance?.name ?? null, selectedJid);
-  const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(instance?.name ?? null, selectedJid);
+  const { chats, loading: chatsLoading, error: chatsError, refresh: refreshChats } = useChatList(
+    instance?.name ?? null,
+    selectedJid,
+  );
+  const { messages, loading: msgLoading, error: msgError, optimisticAppend } = useChatMessages(
+    instance?.name ?? null,
+    selectedJid,
+  );
 
-  // Mark chat as read when it is opened — only if there are unread messages
-  const prevUnreadRef = useRef(0);
-  useEffect(() => {
-    if (!instance?.name || !selectedJid) return;
-    if (prevUnreadRef.current > 0) {
-      messagesApi.markRead(instance.name, selectedJid).catch(() => { /* non-critical */ });
-    }
-    // Update ref for next call
-    const chat = chats.find((c) => c.jid === selectedJid);
-    prevUnreadRef.current = chat?.unread ?? 0;
-  }, [instance?.name, selectedJid, chats]);
+  useMarkRead(instance?.name ?? null, selectedJid, chats);
+
+  const { syncState, syncMessage, handleSyncPhonebook } = useSyncPhonebook(refreshChats);
 
   const selected = useMemo<ChatListItem | null>(() => {
     if (!selectedJid) return null;
@@ -66,23 +58,6 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
       lastMessage: '', lastMessageAt: null, unread: 0, profilePic: null, aiMode: null, isRestricted: false, isAdmin: false,
     };
   }, [chats, selectedJid]);
-
-  const handleSyncPhonebook = useCallback(async () => {
-    if (!instance || syncState === 'syncing') return;
-    setSyncState('syncing');
-    setSyncMessage('');
-    const res = await messagesApi.syncPhonebook(instance.name);
-    if (res.success && res.data) {
-      setSyncState('done');
-      setSyncMessage(`Synced ${res.data.synced} contacts (${res.data.removed} removed)`);
-      void refreshChats();
-      setTimeout(() => setSyncState('idle'), 4000);
-    } else {
-      setSyncState('error');
-      setSyncMessage(res.error || 'Sync failed');
-      setTimeout(() => setSyncState('idle'), 6000);
-    }
-  }, [instance, syncState, refreshChats]);
 
   if (instances.length === 0) {
     return (
@@ -104,9 +79,7 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
       <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center bg-[#181711]">
         <div className="text-center max-w-xs">
           <Link2Off size={40} className="mx-auto mb-3 text-[#6e684a]" />
-          <h2 className="text-base font-semibold text-[#a8a99e] mb-1">
-            {instance.name} is not linked
-          </h2>
+          <h2 className="text-base font-semibold text-[#a8a99e] mb-1">{instance.name} is not linked</h2>
           <p className="text-xs text-[#6e684a] mb-5">
             This container has no WhatsApp account connected. Scan a QR code to link it.
           </p>
@@ -140,13 +113,14 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
         instance={instance}
         syncState={syncState}
         syncMessage={syncMessage}
-        onSyncPhonebook={handleSyncPhonebook}
+        onSyncPhonebook={() => instance && handleSyncPhonebook(instance.name)}
         onRefreshChats={refreshChats}
         search={search}
         onSearchChange={setSearch}
-        onDismissSync={() => setSyncState('idle')}
+        onDismissSync={() => {}}
+        activeTab="contacts"
+        onTabChange={() => {}}
       />
-
       <div className="flex min-h-0 flex-1">
         <ChatThread
           key={selectedJid ?? 'none'}
@@ -161,7 +135,6 @@ export default function MessagesPageMain({ instances, clientToken }: MessagesPag
           clientToken={clientToken}
         />
       </div>
-
       <NewChatModal
         open={showNewChat}
         onClose={() => setShowNewChat(false)}

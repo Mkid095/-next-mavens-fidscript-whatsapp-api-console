@@ -10,37 +10,9 @@ import { runPhase5Migrations } from './phase5.js';
 import { runPhase6Migrations } from './phase6.js';
 import { runPhase7Migrations } from './phase7.js';
 import { runPhase8Migrations } from './phase8.js';
-import { runPhase9Migrations } from './phase9.js';
-import { runPhase10Migrations } from './phase10.js';
-import { runPhase11Migrations } from './phase11.js';
-import { runPhase12Migrations } from './phase12.js';
-import { runPhase13Migrations } from './phase13.js';
-import { runPhonebookMigrations } from './phonebook.js';
-import { runEmailLogMigrations } from './emailLog.js';
-import { runPhase14Migrations } from './phase14.js';
-import { runPhase15bMigrations } from './phase15b.js';
-import { runPhase15cMigrations } from './phase15c.js';
-import { runPhase16Migrations } from './phase16.js';
-import { runPhase17Migrations } from './phase17.js';
-import { runPhase18Migrations } from './phase18.js';
-import { runPhase19Migrations } from './phase19.js';
-import { runPhase20Migrations } from './phase20.js';
-import { runPhase21Migrations } from './phase21.js';
-import { runPhase22Migrations } from './phase22.js';
-import { runPhase23Migrations } from './phase23.js';
-import { runPhase24Migrations } from './phase24.js';
-import { runPhase25Migrations } from './phase25.js';
-import { runPhase26Migrations } from './phase26.js';
-import { runPhase27Migrations } from './phase27.js';
-import { runPhase28Migrations } from './phase28.js';
-import { runPhase29Migrations } from './phase29.js';
-import { runPhase31Migrations } from './phase31.js';
 import { runPhase32Migrations } from './phase32.js';
-import { runPhase33Migrations } from './phase33.js';
-import { runPhase34Migrations } from './phase34.js';
-import { runPhase35Migrations } from './phase35.js';
-import { runPhase36Migrations } from './phase36.js';
 import { runPhase37Migrations } from './phase37.js';
+import { runPhase38Migrations } from './phase38.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,37 +39,9 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   runPhase6Migrations(db);     // webhooks + webhook_deliveries + api_logs latency/workspace
   runPhase7Migrations(db);     // P11 airtight: workspace_id on customer_tags/notes/assignments
   runPhase8Migrations(db);     // Group sync: cached_group_info + cached_participants
-  runPhase9Migrations(db);     // Chatbot platform: 25 tables
-  runPhase10Migrations(db);    // Multi-provider LLM: provider_registry + llm_connections extensions
-  runPhase11Migrations(db);    // Runtime contracts: fallback chains + model registry
-  runPhase12Migrations(db);    // Chatbot → llm_connection linkage
-  runPhase13Migrations(db);    // LLM model configs + API formats + group settings + contact assignments
-  runPhonebookMigrations(db);  // contacts.instance_id for WhatsApp phonebook sync
-  runEmailLogMigrations(db);     // email_send_log: every send (success/failure) audited
-  runPhase14Migrations(db);     // Draft autosave + publish jobs + runtime artifacts
-  runPhase15bMigrations(db);    // Job recovery: heartbeat, worker_id, retry_count
-  runPhase15cMigrations(db);    // Knowledge index versioning
-  runPhase16Migrations(db);    // Runtime cache + tool failures + conversation locks
-  runPhase17Migrations(db);    // Token usage + forecasting
-  runPhase18Migrations(db);    // Runtime traces + AI response explainability
-  runPhase19Migrations(db);     // Human takeover mode
-  runPhase20Migrations(db);     // Production-grade handoff (expiry, resume policies, timeline)
-  runPhase21Migrations(db);     // Override history (status/ended_at/ended_reason/source) + auto-takeover
-  runPhase22Migrations(db);     // Conversation assignments table
-  runPhase23Migrations(db);     // Contact identity layer: identifiers + sources
-  runPhase24Migrations(db);     // chatbot_group_settings: respond_mode + group_jid
-  runPhase25Migrations(db);     // Chatbot handoff notification config
-  runPhase26Migrations(db);     // data_sources + tools + chatbot_tools
-  runPhase27Migrations(db);     // tool security: approved + requires_confirmation
-  runPhase28Migrations(db);     // inspector: message_id on traces + metadata versions + skip_reason
-  runPhase29Migrations(db);     // Relax LLM provider CHECK constraints
-  runPhase31Migrations(db);     // Seed FIDScript customer-care agent
   runPhase32Migrations(db);     // Billing control plane: token_action_costs table
-  runPhase33Migrations(db);     // Connector credentials table
-  runPhase34Migrations(db);     // Connector tool type + auto-seeded tools
-  runPhase35Migrations(db);    // Connector events table
-  runPhase36Migrations(db);    // Connector event retry metadata
   runPhase37Migrations(db);    // Webhook delivery ID dedup table
+  runPhase38Migrations(db);    // LID column for outbox tracking
   await seedData(db);
   saveDatabase();
 

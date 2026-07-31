@@ -23,7 +23,6 @@ export const adminNavItems: AdminNavItem[] = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
   { name: 'Instances', icon: Radio, path: '/admin/instances' },
   { name: 'Clients', icon: Users, path: '/admin/clients' },
-  { name: 'Chatbots', icon: Sparkles, path: '/admin/chatbots' },
   { name: 'LLM Providers', icon: Bot, path: '/admin/providers' },
   { name: 'API Console', icon: Terminal, path: '/admin/api-console' },
   { name: 'Logs', icon: FileText, path: '/admin/logs' },

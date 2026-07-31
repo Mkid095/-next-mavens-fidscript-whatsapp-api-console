@@ -1,12 +1,10 @@
 /**
  * Webhook dispatch handlers — resolve conversation, persist message,
- * publish to NATS, emit SSE events.
+ * emit SSE events.
  */
 import { Request } from 'express';
 import { resolveConversation } from '../kernel/entities/index.js';
 import { dispatchMessageReceived, dispatchMessageRead, dispatchMessageDelivered } from '../modules/platform/events/index.js';
-import { resolveContactByPhone } from '../services/contactResolver.js';
-import { publishChatbotInbound } from '../utils/natsPublisher.js';
 import { emitNewMessage, emitMessageReceipt, emitInstanceStateChange } from '../utils/gateway.js';
 import { emitDashboardRefresh } from '../utils/dashboardEmitter.js';
 import { normalizePhone } from '../utils/phone.js';
@@ -57,30 +55,6 @@ export async function dispatchIncomingMessage(
       fromNumber: ctx.phone || ctx.senderJid || '',
       fromName: ctx.resolvedSenderName || null,
     }).catch(err => console.error('[WEBHOOK] dispatchMessageReceived failed:', err));
-  }
-
-  // Publish to NATS for async chatbot processing
-  let resolvedContactId: string | undefined;
-  if (ctx.parsed.messageType === 'text' && ctx.parsed.content && customerId && conversationId) {
-    if (ctx.phone) {
-      const resolved = resolveContactByPhone(instance.client_id, ctx.phone, ctx.resolvedSenderName ?? null, 'whatsapp');
-      resolvedContactId = resolved.contactId;
-    }
-    publishChatbotInbound({
-      conversationId,
-      customerId,
-      workspaceId: instance.client_id,
-      instanceId: String(instance.id),
-      instanceName: (instance as { evolution_name?: string }).evolution_name || instance.name,
-      message: ctx.parsed.content,
-      messageType: ctx.parsed.messageType,
-      chatId: ctx.chatId,
-      isGroup: ctx.isGroup,
-      senderName: ctx.resolvedSenderName,
-      senderPhone: ctx.phone ?? undefined,
-      groupJid: ctx.isGroup ? ctx.remoteJid : undefined,
-      contactId: resolvedContactId,
-    }).catch(err => console.error('[WEBHOOK] publishChatbotInbound failed:', err));
   }
 
   // Auto-create contact for direct messages

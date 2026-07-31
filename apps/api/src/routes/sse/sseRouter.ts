@@ -7,9 +7,7 @@ import { verifyToken } from '../../middleware/auth/jwt.js';
 import { instanceEmitter } from '../../utils/gateway.js';
 import { paymentEmitter } from '../../utils/paymentEmitter.js';
 import { dashboardEmitter } from '../../utils/dashboardEmitter.js';
-import { publishJobEmitter } from '../../utils/publishJobEmitter.js';
 import type { Client } from '../../types.js';
-import type { PublishJob } from '../../types/chatbotDraft.js';
 
 function authClient(req: Request, res: Response): Client | null {
   const token = req.query.token as string;
@@ -62,16 +60,12 @@ export function registerSseRoutes(router: import('express').Router): void {
     const presenceHandler = (emittedName: string, data: { chatId: string; presence: string; fromName: string | null }) => {
       if (emittedName === instanceName) res.write(`event: presence\ndata: ${JSON.stringify({ name: emittedName, ...data })}\n\n`);
     };
-    const aiOverrideHandler = (emittedName: string, data: { chatId: string; mode: string }) => {
-      if (emittedName === instanceName) res.write(`event: aiOverrideChanged\ndata: ${JSON.stringify({ name: emittedName, ...data })}\n\n`);
-    };
 
     instanceEmitter.on('stateChange', stateHandler);
     instanceEmitter.on('newMessage', messageHandler);
     instanceEmitter.on('messageSent', sentHandler);
     instanceEmitter.on('messageReceipt', receiptHandler);
     instanceEmitter.on('presence', presenceHandler);
-    instanceEmitter.on('aiOverrideChanged', aiOverrideHandler);
 
     req.on('close', () => {
       clearInterval(heartbeat);
@@ -80,7 +74,6 @@ export function registerSseRoutes(router: import('express').Router): void {
       instanceEmitter.off('messageSent', sentHandler);
       instanceEmitter.off('messageReceipt', receiptHandler);
       instanceEmitter.off('presence', presenceHandler);
-      instanceEmitter.off('aiOverrideChanged', aiOverrideHandler);
     });
   });
 
@@ -154,26 +147,5 @@ export function registerSseRoutes(router: import('express').Router): void {
     if (!decoded || decoded.type !== 'client') { res.status(401).json({ success: false, error: 'Invalid token' }); return; }
     dashboardEmitter.emit('msgUpdate', decoded.id);
     res.json({ success: true });
-  });
-
-  // GET /api/sse/publish-jobs/:jobId
-  router.get('/publish-jobs/:jobId', (req: Request, res: Response) => {
-    const client = authClient(req, res);
-    if (!client) return;
-
-    const job = db.prepare('SELECT * FROM chatbot_publish_jobs WHERE id = ? AND workspace_id = ?')
-      .get(req.params.jobId, client.id) as PublishJob | undefined;
-    if (!job) { res.status(404).json({ success: false, error: 'Job not found' }); return; }
-
-    setSseHeaders(res);
-    res.write(': connected\n\n');
-    const heartbeat = setInterval(() => { res.write(': heartbeat\n\n'); }, 30000);
-
-    const sendJob = (j: PublishJob) => { try { res.write(`event: jobUpdate\ndata: ${JSON.stringify(j)}\n\n`); } catch (_) { /* disconnected */ } };
-    sendJob(job);
-
-    const jobUpdateHandler = (emittedJobId: string, updatedJob: PublishJob) => { if (emittedJobId === req.params.jobId) sendJob(updatedJob); };
-    publishJobEmitter.on('jobUpdated', jobUpdateHandler);
-    req.on('close', () => { clearInterval(heartbeat); publishJobEmitter.off('jobUpdated', jobUpdateHandler); });
   });
 }

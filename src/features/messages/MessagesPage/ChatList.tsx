@@ -1,15 +1,14 @@
 import { Inbox, Users, RefreshCw } from 'lucide-react';
 import type { Instance } from '../../../services/api';
-import { messagesApi, type ChatListItem } from '../messagesApi';
+import { type ChatListItem } from '../messagesApi';
 import ChatListPane from '../ChatListPane';
+import InstanceSwitcher from './InstanceSwitcher';
 
 interface ChatListSectionProps {
   instances: Instance[];
-  /** Live chat list + load state. Comes from useChatList in the parent (MessagesPageMain). */
   chats: ChatListItem[];
   chatsLoading: boolean;
   chatsError: string | null;
-  /** Switch the parent's currently selected container — reloads chat list/messages. */
   onSwitchInstance: (i: Instance) => void;
   selectedJid: string | null;
   onSelectJid: (jid: string) => void;
@@ -22,7 +21,15 @@ interface ChatListSectionProps {
   search: string;
   onSearchChange: (s: string) => void;
   onDismissSync: () => void;
+  activeTab: 'contacts' | 'groups' | 'outbox';
+  onTabChange: (tab: 'contacts' | 'groups' | 'outbox') => void;
 }
+
+const TABS: { key: 'contacts' | 'groups' | 'outbox'; label: string }[] = [
+  { key: 'contacts', label: 'Contacts' },
+  { key: 'groups', label: 'Groups' },
+  { key: 'outbox', label: 'Outbox' },
+];
 
 export default function ChatListSection({
   instances,
@@ -41,6 +48,8 @@ export default function ChatListSection({
   search,
   onSearchChange,
   onDismissSync,
+  activeTab,
+  onTabChange,
 }: ChatListSectionProps) {
   return (
     <>
@@ -69,9 +78,6 @@ export default function ChatListSection({
               instances={instances}
               instance={instance}
               onSwitch={(i) => {
-                // Order matters: switch the container first so React commits the
-                // new instance (and useChatList/useChatMessages reset to it),
-                // THEN clear the selected JID/sync banner.
                 onSwitchInstance(i);
                 onSelectJid('');
                 onDismissSync();
@@ -96,6 +102,22 @@ export default function ChatListSection({
         </div>
       )}
 
+      <div className="flex justify-center border-b border-[#2d2813] bg-[#1a1915] px-4 py-2 gap-1">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => onTabChange(tab.key)}
+            className={`rounded-full px-4 py-1 text-xs font-medium transition ${
+              activeTab === tab.key
+                ? 'bg-[#eab308] text-black'
+                : 'text-[#6e684a] hover:text-[#a8a99e]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <ChatListPane
         chats={chats}
         loading={chatsLoading}
@@ -110,24 +132,5 @@ export default function ChatListSection({
         onRetry={() => void onRefreshChats()}
       />
     </>
-  );
-}
-
-function InstanceSwitcher({ instances, instance, onSwitch }: { instances: Instance[]; instance: Instance | null; onSwitch: (i: Instance) => void }) {
-  return (
-    <select
-      value={instance?.id ?? ''}
-      onChange={(e) => {
-        const found = instances.find((i) => i.id === e.target.value);
-        if (found) onSwitch(found);
-      }}
-      className="appearance-none rounded-lg border border-[#2d2813] bg-[#1a1915] px-2.5 py-1.5 pr-7 text-xs text-[#a8a99e] outline-none focus:border-[#eab308]"
-    >
-      {instances.map((i) => (
-        <option key={i.id} value={i.id} style={{ background: '#1a1915', color: '#a8a99e' }}>
-          {i.name}{i.status === 'connected' ? ' · connected' : ''}
-        </option>
-      ))}
-    </select>
   );
 }

@@ -13,7 +13,6 @@ import ChangelogVersionPage from '../components/landing/ChangelogVersionPage';
 import ContactPage from '../components/landing/ContactPage';
 import { AdminRoutes } from '../components/admin/adminRoutes';
 import { ClientRoutes } from '../components/client/clientRoutes';
-import ConversationInspector from '../features/chatbots/ConversationInspector';
 import { UpdateToast } from '../components/shared/UpdateToast';
 import { initDeployNotification } from '../services/deployNotification';
 import {
@@ -220,7 +219,6 @@ export default function AppContent() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} />} />
         <Route path="/register" element={currentUser ? (currentUser.role === 'client' ? <Navigate to="/client" replace /> : <Navigate to="/admin" replace />) : <LoginView onLoginSuccess={handleLoginSuccess} onShowClientDashboard={handleShowClientDashboard} initialMode="register" />} />
-        <Route path="/client/chatbots/:id/inspector" element={currentUser && currentUser.role === 'client' ? <ConversationInspector clientToken={localStorage.getItem('fidscript_client_token') || ''} /> : <Navigate to="/login" replace />} />
         <Route path="/client/*" element={<ClientRoutes currentUser={currentUser} clientData={clientData} clientInstances={clientInstances} onInstancesChange={setClientInstances as Dispatch<SetStateAction<Instance[]>>} onLogout={handleLogout} tokenBalance={tokenBalance} tokenPackages={tokenPackages} dailyUsage={dailyUsage} recentMessages={recentMessages} messagesToday={messagesToday} onTokenBalanceChange={setTokenBalance} />} />
         <Route path="/admin/*" element={<AdminRoutes {...adminProps} />} />
         <Route path="*" element={<Navigate to="/" replace />} />

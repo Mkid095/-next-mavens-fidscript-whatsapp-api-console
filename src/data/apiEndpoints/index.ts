@@ -17,7 +17,6 @@ import { chatEndpoints } from './chats';
 import { profileEndpoints, settingsEndpoints } from './profile';
 import { instanceEndpoints } from './instance';
 import { aiProviderEndpoints } from './aiProviders';
-import { chatbotEndpoints } from './chatbots';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type FieldType = 'string' | 'number' | 'boolean' | 'text' | 'array' | 'object';
@@ -73,7 +72,6 @@ export interface ApiCategory {
 export const API_CATEGORIES: ApiCategory[] = [
   { name: 'Platform', icon: 'Compass', desc: 'Auth, usage & the OpenAPI spec' },
   { name: 'AI Providers', icon: 'Bot', desc: 'Discover LLM providers and models' },
-  { name: 'Chatbots', icon: 'Bot', desc: 'AI chatbot CRUD, triggers, rules & testing' },
   { name: 'Messaging', icon: 'Send', desc: 'Send WhatsApp messages of every type' },
   { name: 'Groups', icon: 'Users', desc: 'Create & manage WhatsApp groups' },
   { name: 'Chats', icon: 'MessageSquare', desc: 'Chat operations & presence' },
@@ -89,7 +87,6 @@ export const PUBLIC_API_BASE = 'https://whatsapp.fidscript.com/api/v1';
 export const API_ENDPOINTS: ApiEndpoint[] = [
   ...platformEndpoints,
   ...aiProviderEndpoints,
-  ...chatbotEndpoints,
   ...messagingEndpoints,
   ...groupEndpoints,
   ...chatEndpoints,

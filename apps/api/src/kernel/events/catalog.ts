@@ -165,29 +165,6 @@ export interface FlowCompletedPayload {
 }
 
 // ---------------------------------------------------------------------------
-// AI events
-// ---------------------------------------------------------------------------
-export interface AiReplyGeneratedPayload {
-  agentId: string;
-  conversationId: string;
-  messageId: string;
-  confidence: number;
-}
-
-export interface AiHandoffRequestedPayload {
-  agentId: string;
-  conversationId: string;
-  reason: string;
-  confidence: number;
-}
-
-export interface AiStateChangedPayload {
-  conversationId: string;
-  state: 'ai_active' | 'ai_paused' | 'human_active' | 'escalated';
-  byUserId?: string;
-}
-
-// ---------------------------------------------------------------------------
 // Integration events
 // ---------------------------------------------------------------------------
 export interface IntegrationConnectedPayload {
@@ -232,7 +209,7 @@ export interface KnowledgeIndexedPayload {
 // System events
 // ---------------------------------------------------------------------------
 export interface SystemErrorPayload {
-  source: 'api' | 'worker' | 'connector' | 'automation' | 'chatbot';
+  source: 'api' | 'worker' | 'connector' | 'automation';
   error: string;
   context?: string;
   workspaceId?: string;
@@ -305,10 +282,6 @@ export type DomainEventType =
   | 'flow.started'
   | 'flow.step'
   | 'flow.completed'
-  // AI
-  | 'ai.reply.generated'
-  | 'ai.handoff_requested'
-  | 'ai.state_changed'
   // Integrations
   | 'integration.connected'
   | 'integration.synced'
@@ -346,9 +319,6 @@ export type DomainEventPayload =
   | FlowStartedPayload
   | FlowStepPayload
   | FlowCompletedPayload
-  | AiReplyGeneratedPayload
-  | AiHandoffRequestedPayload
-  | AiStateChangedPayload
   | IntegrationConnectedPayload
   | IntegrationSyncedPayload
   | OrderCreatedPayload

@@ -1,5 +1,4 @@
 // Platform Events module — forwarding re-export from canonical kernel location.
-// All event bus logic lives in kernel/events/.
 export { bus, _resetBus } from '../../../kernel/events/index.js';
 export type { EventBus } from '../../../kernel/events/index.js';
 export { logDomainEvent } from '../../../kernel/events/index.js';
@@ -11,7 +10,6 @@ export {
   dispatchCustomerCreated, dispatchCustomerTagged, dispatchCustomerNoted,
   dispatchCampaignStarted, dispatchCampaignCompleted, dispatchAutomationTriggered,
   dispatchFlowStarted, dispatchFlowStep, dispatchFlowCompleted,
-  dispatchAiReplyGenerated, dispatchAiHandoffRequested, dispatchAiStateChanged,
   dispatchIntegrationConnected, dispatchIntegrationSynced, dispatchOrderCreated,
   dispatchOrderFulfilled, dispatchInventoryUpdated, dispatchKnowledgeIndexed,
   dispatchShopifyOrderCreated, dispatchShopifyOrderUpdated,
@@ -26,7 +24,6 @@ export type {
   CustomerCreatedPayload, CustomerTaggedPayload, CustomerNotedPayload,
   CampaignStartedPayload, CampaignCompletedPayload, AutomationTriggeredPayload,
   FlowStartedPayload, FlowStepPayload, FlowCompletedPayload,
-  AiReplyGeneratedPayload, AiHandoffRequestedPayload, AiStateChangedPayload,
   IntegrationConnectedPayload, IntegrationSyncedPayload, OrderCreatedPayload,
   OrderFulfilledPayload, InventoryUpdatedPayload, KnowledgeIndexedPayload,
   ShopifyOrderCreatedPayload, ShopifyOrderUpdatedPayload,

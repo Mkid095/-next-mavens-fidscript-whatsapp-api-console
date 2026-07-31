@@ -13,7 +13,7 @@ export async function listConversations(req: Request, res: Response): Promise<vo
     let sql = `
       SELECT conv.id, conv.customer_id, conv.channel, conv.instance_id, conv.chat_id,
              conv.status, conv.priority, conv.assignee_type, conv.assignee_id, conv.team_id,
-             conv.unread_count, conv.last_message_at, conv.ai_state,
+             conv.unread_count, conv.last_message_at,
              conv.response_due_at, conv.resolution_due_at, conv.breached_at,
              conv.created_at,
              c.display_name as customer_name,
@@ -79,18 +79,8 @@ export async function getConversationMessages(req: Request, res: Response): Prom
         im.timestamp,
         im.direction,
         im.customer_id,
-        im.conversation_id,
-        crm.confidence       AS ai_confidence,
-        crm.model           AS ai_model,
-        crm.prompt_version  AS ai_prompt_version,
-        crm.bot_version     AS ai_bot_version,
-        crm.sources         AS ai_sources,
-        crm.tools           AS ai_tools,
-        crm.matched_trigger AS ai_matched_trigger,
-        crm.matched_rule    AS ai_matched_rule,
-        crm.skip_reason     AS ai_skip_reason
+        im.conversation_id
       FROM inbox_messages im
-      LEFT JOIN chatbot_response_metadata crm ON crm.message_id = im.id
       WHERE im.conversation_id = ?
       ORDER BY im.timestamp ASC LIMIT 500
     `).all(req.params.id) as Record<string, unknown>[];
@@ -107,17 +97,6 @@ export async function getConversationMessages(req: Request, res: Response): Prom
       direction: m.direction,
       customerId: m.customer_id,
       conversationId: m.conversation_id,
-      aiMetadata: m.ai_confidence != null ? {
-        confidence: m.ai_confidence,
-        model: m.ai_model ?? '',
-        promptVersion: m.ai_prompt_version ?? null,
-        botVersion: m.ai_bot_version ?? null,
-        sources: m.ai_sources ? JSON.parse(m.ai_sources as string) : null,
-        tools: m.ai_tools ? JSON.parse(m.ai_tools as string) : null,
-        matchedTrigger: m.ai_matched_trigger ?? null,
-        matchedRule: m.ai_matched_rule ?? null,
-        skipReason: m.ai_skip_reason ?? null,
-      } : null,
     }));
 
     res.json({ success: true, data: formatted });

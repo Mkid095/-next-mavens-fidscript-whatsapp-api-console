@@ -2,20 +2,13 @@ import 'dotenv/config';
 import express from 'express';
 import { initializeDatabase, saveDatabase } from './database.js';
 import db from './database.js';
-import { recoverStaleJobs } from './modules/chatbot/jobRecovery.js';
 import { registerSearchIndexer } from './modules/platform/search/index.js';
 import { registerAnalyticsProjectors } from './modules/platform/analytics/index.js';
-import { registerInboundPipeline } from './modules/ai/index.js';
-import { registerAutomations } from './modules/automation/index.js';
 import { registerWebhookFanout } from './modules/platform/webhooks/index.js';
 import { registerAuditTrail } from './kernel/audit/index.js';
 import { registerTriggers } from './modules/campaigns/triggers.js';
 import { startDripScheduler } from './modules/campaigns/drip.js';
 import { startStatusScheduler } from './modules/campaigns/statusScheduler.js';
-import { startSlaScheduler } from './modules/automation/slaScheduler.js';
-// Self-registering connectors — must import before any runtime resolution
-import './modules/connectors/shopify/index.js';
-import './modules/connectors/woocommerce/index.js';
 import { setupMiddleware } from './middlewareSetup.js';
 import { registerInlineRoutes } from './routesRegister.js';
 import path from 'path';
@@ -33,23 +26,17 @@ export async function startServer(): Promise<void> {
   try {
     await initializeDatabase();
 
-    // Recover any stale publish jobs left behind by a previous server crash
-    await recoverStaleJobs(db);
-
     // Register event-bus subscribers — the event-driven spine (§5).
     // Without these, bus().emit() fires into the void: search index,
-    // analytics rollups, and the AI inbound pipeline would never run.
+    // analytics rollups would never run.
     registerSearchIndexer();
     registerAnalyticsProjectors();
-    registerInboundPipeline();
-    registerAutomations();
     registerTriggers();
     registerWebhookFanout();
     registerAuditTrail();
     startDripScheduler();
     startStatusScheduler();
-    startSlaScheduler();
-    console.log('✅ Event bus subscribers registered (search, analytics, AI, automations, triggers, webhooks, audit) + drip + status + SLA schedulers started');
+    console.log('✅ Event bus subscribers registered (search, analytics, triggers, webhooks, audit) + drip + status schedulers started');
 
     // Prune expired idempotency keys on every startup (7-day TTL)
     try {

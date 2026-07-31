@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { contactsApi, openGoogleOAuthPopup } from '../../../../services/contacts';
-import { normalizeNumber, detectCountry } from './helpers';
+import { normalizeNumber, detectCountry } from './import-contacts-country.utils';
 import GoogleOAuthSection from './GoogleOAuthSection';
 import ImportStepUpload from './ImportStepUpload';
 import ImportStepPreview from './ImportStepPreview';

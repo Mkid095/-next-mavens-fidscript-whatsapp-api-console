@@ -17,5 +17,4 @@ export { handleClientSse } from './sseClientHandler.js';
 export {
   handleDashboardSse,
   handleDashboardRefresh,
-  handlePublishJobsSse,
 } from './sseConnectionHandlers.js';
