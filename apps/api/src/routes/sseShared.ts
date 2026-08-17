@@ -1,5 +1,5 @@
 /**
- * sseShared.ts — shared SSE helpers
+ * sseShared.ts - shared SSE helpers
  */
 import type { Response } from 'express';
 

@@ -1,5 +1,5 @@
 /**
- * Phase 38 — LID column for outbox tracking
+ * Phase 38 - LID column for outbox tracking
  *
  * Adds `lid` column to inbox_messages. When a message is sent outbound,
  * `lid = 'LID'` is set so sent messages can be queried separately from

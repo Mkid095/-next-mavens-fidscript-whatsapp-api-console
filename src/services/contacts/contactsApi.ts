@@ -1,4 +1,4 @@
-// Contacts API — CRUD + Google OAuth integration
+// Contacts API - CRUD + Google OAuth integration
 import { fetchApi } from '../api';
 import type { Contact } from './contactsTypes';
 
@@ -57,7 +57,7 @@ export function openGoogleOAuthPopup(): Promise<void> {
       // /google/auth-url returns {success, url} at root, not wrapped in data
       const authUrl = res.data?.url || (res as unknown as { url?: string }).url;
       if (!authUrl) {
-        reject(new Error('Server returned an empty auth URL — try again'));
+        reject(new Error('Server returned an empty auth URL - try again'));
         return;
       }
 
@@ -78,7 +78,7 @@ export function openGoogleOAuthPopup(): Promise<void> {
               reject(new Error(decodeURIComponent(errMatch?.[1] || 'Google OAuth failed')));
             }
           } catch {
-            // Cross-origin — can't read URL yet, keep polling
+            // Cross-origin - can't read URL yet, keep polling
           }
         }, 500);
 

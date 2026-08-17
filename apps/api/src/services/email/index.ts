@@ -1,5 +1,5 @@
 /**
- * Centralized email service — the ONLY way the rest of the app sends email.
+ * Centralized email service - the ONLY way the rest of the app sends email.
  *
  * Usage from any backend module:
  *
@@ -20,7 +20,7 @@ import { renderTemplate, type TemplateVars } from './templates.js';
 import { ResendProvider } from './resendProvider.js';
 import type { EmailProvider, SendInput, SendResult } from './provider.js';
 
-// Default provider — swap this one line to change email backends.
+// Default provider - swap this one line to change email backends.
 const provider: EmailProvider = new ResendProvider();
 
 interface LogRow {
@@ -67,7 +67,7 @@ export const emailService = {
     return this.send({ ...rendered, to: args.to, template: args.template });
   },
 
-  /** Test-only / diagnostic — returns the active provider name. */
+  /** Test-only / diagnostic - returns the active provider name. */
   providerName(): string {
     return provider.name;
   },

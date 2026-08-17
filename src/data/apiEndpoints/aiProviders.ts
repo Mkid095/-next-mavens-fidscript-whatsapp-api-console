@@ -1,5 +1,5 @@
 /**
- * AI Providers endpoints — public catalog of LLM providers and models.
+ * AI Providers endpoints - public catalog of LLM providers and models.
  *
  * These endpoints are public (clientApiKeyAuth + V1_READ) so integrators
  * can discover available providers without a full chatbot setup.

@@ -60,7 +60,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Client name — below header, only when expanded */}
+        {/* Client name - below header, only when expanded */}
         {!collapsed && (
           <div className="px-3 py-2 border-b border-[#2d2813]">
             <p className="text-[10px] text-[#6e684a] truncate" title={clientName}>

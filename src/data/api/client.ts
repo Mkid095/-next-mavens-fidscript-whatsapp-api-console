@@ -1,7 +1,7 @@
 // =============================================================================
-// Data Layer — API transport client (§16, P7)
+// Data Layer - API transport client (§16, P7)
 // The single canonical entry point for all HTTP. Components never call fetch
-// directly — they consume hooks (src/data/hooks/*). Existing src/services/* is
+// directly - they consume hooks (src/data/hooks/*). Existing src/services/* is
 // migrated to re-export from here (shim), so imports keep working.
 // =============================================================================
 
@@ -38,7 +38,7 @@ export function getAuthHeaders(): HeadersInit {
 }
 
 // ---------------------------------------------------------------------------
-// Core fetch wrapper — uniform { success, data?, error? } shape + JSON guard
+// Core fetch wrapper - uniform { success, data?, error? } shape + JSON guard
 // ---------------------------------------------------------------------------
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
@@ -64,7 +64,7 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
       if (body.error === 'Authorization header required') {
         body.error = 'Please log in to use this feature';
       } else if (body.error === 'Invalid or expired client token') {
-        body.error = 'Your session has expired — please log in again';
+        body.error = 'Your session has expired - please log in again';
       }
     }
 

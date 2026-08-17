@@ -17,7 +17,7 @@ interface ChatListPaneProps {
   onRetry?: () => void;
 }
 
-// Left pane — search + new-chat + independently scrollable list. The scroll
+// Left pane - search + new-chat + independently scrollable list. The scroll
 // region uses min-h-0 flex-1 overflow-y-auto inside a flex column so the page
 // never scrolls itself (the parent owns the viewport height).
 export default function ChatListPane({

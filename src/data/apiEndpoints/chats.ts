@@ -2,7 +2,7 @@ import type { ApiEndpoint } from './index';
 
 const INSTANCE = { name: 'instance', desc: 'Your WhatsApp instance name', required: true };
 
-/** Chat management — all FREE (no tokens). Reads V1_READ (600/min), mutations V1_MUTATE (120/min). */
+/** Chat management - all FREE (no tokens). Reads V1_READ (600/min), mutations V1_MUTATE (120/min). */
 export const chatEndpoints: ApiEndpoint[] = [
   { id: 'chats.markRead', version: 'v1', method: 'POST', path: '/api/v1/chats/mark-read/:instance', name: 'Mark Read', category: 'Chats', rateLimit: 'mutate',
     desc: 'Mark one or more messages as read.', pathParams: [INSTANCE],

@@ -5,7 +5,7 @@ import { adminAuth } from '../../middleware/auth.js';
 const router = Router();
 router.use(adminAuth);
 
-/** DELETE /api/admin/maintenance/prune — delete expired idempotency keys */
+/** DELETE /api/admin/maintenance/prune - delete expired idempotency keys */
 router.delete('/prune', (req: Request, res: Response) => {
   try {
     const result = db.prepare(`
@@ -23,7 +23,7 @@ router.delete('/prune', (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/admin/maintenance/stats — key + log stats */
+/** GET /api/admin/maintenance/stats - key + log stats */
 router.get('/stats', (_req: Request, res: Response) => {
   try {
     const idempotency = db.prepare(`

@@ -1,5 +1,5 @@
 /**
- * /api/v1/webhooks — webhook management API for external developers.
+ * /api/v1/webhooks - webhook management API for external developers.
  * Auth: API key. List, create, and delete webhooks.
  */
 import { Router, Request, Response } from 'express';
@@ -17,7 +17,7 @@ function isValidUrl(u: string): boolean {
   try { const url = new URL(u); return url.protocol === 'http:' || url.protocol === 'https:'; } catch { return false; }
 }
 
-/** GET /api/v1/webhooks — list webhooks */
+/** GET /api/v1/webhooks - list webhooks */
 router.get('/', V1_READ, (_req: Request, res: Response) => {
   try {
     const rows = db.prepare(
@@ -29,7 +29,7 @@ router.get('/', V1_READ, (_req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/webhooks — create webhook */
+/** POST /api/v1/webhooks - create webhook */
 router.post('/', V1_MUTATE, (req: Request, res: Response) => {
   try {
     const { url, events } = req.body as { url?: string; events?: string[] };
@@ -49,7 +49,7 @@ router.post('/', V1_MUTATE, (req: Request, res: Response) => {
   }
 });
 
-/** DELETE /api/v1/webhooks/:id — delete webhook */
+/** DELETE /api/v1/webhooks/:id - delete webhook */
 router.delete('/:id', V1_MUTATE, (req: Request, res: Response) => {
   try {
     const result = db.prepare(

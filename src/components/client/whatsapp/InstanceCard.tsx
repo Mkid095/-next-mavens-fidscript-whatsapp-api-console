@@ -59,7 +59,7 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete, 
             ) : isConnected ? (
               <span className="text-[10px] text-yellow-600 italic">Number after first message</span>
             ) : (
-              <code className="font-mono text-[#5a554a]">—</code>
+              <code className="font-mono text-[#5a554a]">-</code>
             )}
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function InstanceCard({ inst, onConnect, onDisconnect, onDelete, 
         </div>
       )}
 
-      {/* Always rendered — card height is fixed, AnimatePresence cross-fades between them */}
+      {/* Always rendered - card height is fixed, AnimatePresence cross-fades between them */}
       <AnimatePresence mode="wait">
         {!confirming ? (
           <motion.div

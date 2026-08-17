@@ -77,13 +77,13 @@ Commit
 
 ## Implementation Rules
 
-1. **Read before writing** — Always inspect existing implementation first
-2. **Follow patterns** — Use existing services, hooks, components as templates
-3. **One responsibility per file** — No mixing business logic with UI
-4. **Max 150 lines** — Split before writing
-5. **Feature-based naming** — `[domain]-[action]-[type]`
-6. **Configuration-driven** — Never hardcode values
-7. **Types first** — Define interfaces before implementation
+1. **Read before writing** - Always inspect existing implementation first
+2. **Follow patterns** - Use existing services, hooks, components as templates
+3. **One responsibility per file** - No mixing business logic with UI
+4. **Max 150 lines** - Split before writing
+5. **Feature-based naming** - `[domain]-[action]-[type]`
+6. **Configuration-driven** - Never hardcode values
+7. **Types first** - Define interfaces before implementation
 
 ---
 

@@ -42,7 +42,7 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
     `).run(payment_id, client_id, package_id, pkg.price_kes, formattedPhone, pkg.tokens + pkg.bonus_tokens);
 
     const callback_url = `${PLATFORM_URL}/api/payments/callback`;
-    const description = `Token purchase: ${pkg.name} — ${pkg.tokens.toLocaleString()} tokens`;
+    const description = `Token purchase: ${pkg.name} - ${pkg.tokens.toLocaleString()} tokens`;
 
     const tumaRes: any = await tumaRequest('/payment/stk-push', 'POST', {
       amount: Math.round(pkg.price_kes),
@@ -72,7 +72,7 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
         },
       });
     } else {
-      // Tuma call failed or returned no data — return error so UI shows failure
+      // Tuma call failed or returned no data - return error so UI shows failure
       console.error(`[initiate] Tuma call failed for pkg=${package_id}:`, tumaRes);
       db.prepare("UPDATE payments SET status = 'failed' WHERE id = ?").run(payment_id);
       res.json({

@@ -78,7 +78,7 @@ router.post('/list/:instance', clientApiKeyAuth, clientRateLimit, async (req: Re
   catch (e) { console.error('v1 sendList error:', e); res.status(500).json({ success: false, error: 'Failed to send list message' }); }
 });
 
-// POST /api/v1/messages/audio/:instance — native voice message (PTT)
+// POST /api/v1/messages/audio/:instance - native voice message (PTT)
 router.post('/audio/:instance', clientApiKeyAuth, clientRateLimit, async (req: Request, res: Response) => {
   const { to, audio } = req.body;
   if (!to || !audio) return res.status(400).json({ success: false, error: 'Recipient (to) and audio URL are required' });
@@ -98,7 +98,7 @@ router.post('/sticker/:instance', clientApiKeyAuth, clientRateLimit, async (req:
   catch (e) { console.error('v1 sendSticker error:', e); res.status(500).json({ success: false, error: 'Failed to send sticker' }); }
 });
 
-// POST /api/v1/messages/status/:instance — post a status/story update
+// POST /api/v1/messages/status/:instance - post a status/story update
 router.post('/status/:instance', clientApiKeyAuth, clientRateLimit, async (req: Request, res: Response) => {
   const { type, content } = req.body;
   if (!type || !content) return res.status(400).json({ success: false, error: 'type (text|image|audio) and content are required' });

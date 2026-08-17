@@ -78,7 +78,7 @@ router.post('/sendList/:name', clientJwtAuth, clientRateLimit, async (req: Reque
   catch (e) { console.error('sendList error:', e); res.status(500).json({ success: false, error: 'Failed to send list message' }); }
 });
 
-// POST /api/instance/sendAudio/:name — native voice message (PTT)
+// POST /api/instance/sendAudio/:name - native voice message (PTT)
 router.post('/sendAudio/:name', clientJwtAuth, clientRateLimit, async (req: Request, res: Response) => {
   const { to, audio } = req.body;
   if (!to || !audio) return res.status(400).json({ success: false, error: 'Recipient (to) and audio URL are required' });
@@ -98,7 +98,7 @@ router.post('/sendSticker/:name', clientJwtAuth, clientRateLimit, async (req: Re
   catch (e) { console.error('sendSticker error:', e); res.status(500).json({ success: false, error: 'Failed to send sticker' }); }
 });
 
-// POST /api/instance/sendStatus/:name — post a status/story update
+// POST /api/instance/sendStatus/:name - post a status/story update
 router.post('/sendStatus/:name', clientJwtAuth, clientRateLimit, async (req: Request, res: Response) => {
   const { type, content } = req.body;
   if (!type || !content) return res.status(400).json({ success: false, error: 'type (text|image|audio) and content are required' });

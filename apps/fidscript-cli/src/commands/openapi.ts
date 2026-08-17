@@ -1,5 +1,5 @@
 /**
- * openapi.ts — fetch the live OpenAPI spec from the public API.
+ * openapi.ts - fetch the live OpenAPI spec from the public API.
  *
  *   GET /api/v1/openapi.json
  *   GET /api/v1/openapi.yaml
@@ -39,7 +39,7 @@ export async function openapi(opts: { format?: 'json' | 'yaml' }): Promise<void>
       }
       return;
     }
-    // YAML path — fetch raw
+    // YAML path - fetch raw
     const res = await fetch(`${client.configuredBaseUrl.replace(/\/$/, '')}${path}`, {
       headers: { 'X-API-Key': client['apiKey'] ?? '' },
     });

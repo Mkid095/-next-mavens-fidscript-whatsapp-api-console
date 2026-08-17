@@ -19,7 +19,7 @@ interface WhatsAppContainersProps {
 
 // NOTE: real-time SSE is now owned by useInstanceSSE mounted in ClientDashboard,
 // so the stream stays alive on every page (not just this grid). This component
-// is a pure consumer — instance status arrives fresh via the `instances` prop.
+// is a pure consumer - instance status arrives fresh via the `instances` prop.
 
 export default function WhatsAppContainers({
   client,

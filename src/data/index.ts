@@ -1,5 +1,5 @@
 // =============================================================================
-// Data Layer — public barrel (§16, P7)
+// Data Layer - public barrel (§16, P7)
 // Components import hooks/types/providers from here; they never call the API
 // transport directly. Existing src/services/* re-exports from ./api for compat.
 // =============================================================================
@@ -34,7 +34,7 @@ export type {
   FlowEdgeInput,
   FlowExecution,
 } from './api/index.js';
-// Re-exports for the top-level shell — App.tsx is migrating off services/api.
+// Re-exports for the top-level shell - App.tsx is migrating off services/api.
 export {
   authApi,
   adminApi,

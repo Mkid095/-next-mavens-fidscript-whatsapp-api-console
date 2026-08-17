@@ -12,7 +12,7 @@ import type {
   CampaignCompletedPayload,
 } from '../platform/events/index.js';
 
-// Campaign entity types — canonical source
+// Campaign entity types - canonical source
 export type {
   Campaign,
   CampaignRecipient,

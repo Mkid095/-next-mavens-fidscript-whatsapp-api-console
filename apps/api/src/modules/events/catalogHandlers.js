@@ -1,4 +1,4 @@
-// Event catalog — thin barrel aggregating all event interface groups.
+// Event catalog - thin barrel aggregating all event interface groups.
 export type {
   MessageReceivedPayload,
   MessageSentPayload,

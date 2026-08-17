@@ -1,5 +1,5 @@
 /**
- * whatsapp.ts — WhatsApp messaging types shared across SDK, CLI, and frontend.
+ * whatsapp.ts - WhatsApp messaging types shared across SDK, CLI, and frontend.
  * Covers all 10 send types plus the supporting data shapes.
  */
 

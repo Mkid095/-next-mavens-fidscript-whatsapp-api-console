@@ -3,14 +3,14 @@ import db from '../../database.js';
 import { executeStep, type StepRow } from './steps.js';
 
 // =============================================================================
-// Drip scheduler (§15.4 — Drip flows).
+// Drip scheduler (§15.4 - Drip flows).
 // startDripScheduler() kicks off a setInterval that processes pending drip
 // enrollments every 30s. For each enrollment:
 //   1. Look up campaign_steps WHERE campaign_id = ? ORDER BY step_order
 //   2. Execute the step at index `current_step`
 //   3. Increment current_step; if past last step, mark state=completed
 //   4. Set next_step_at = now + next step's delay_seconds (or NULL when done)
-// Idempotent: re-running the same tick is safe — next_step_at is the gate.
+// Idempotent: re-running the same tick is safe - next_step_at is the gate.
 // =============================================================================
 
 const TICK_MS = 30 * 1000;
@@ -55,7 +55,7 @@ async function tick(): Promise<void> {
 
 async function processOne(enr: EnrollmentRow): Promise<void> {
   // Look up the campaign's workspace + client once (sql.js doesn't accept
-  // object bind values — must extract primitives before passing to .get()).
+  // object bind values - must extract primitives before passing to .get()).
   const campaign = db.prepare('SELECT workspace_id, client_id FROM campaigns WHERE id = ?').get(enr.campaign_id) as { workspace_id: string; client_id: string } | undefined;
   if (!campaign) {
     db.prepare(`UPDATE drip_enrollments SET state = 'failed' WHERE id = ?`).run(enr.id);
@@ -76,7 +76,7 @@ async function processOne(enr: EnrollmentRow): Promise<void> {
   `).all(enr.campaign_id) as unknown as StepRow[];
 
   if (enr.current_step >= steps.length) {
-    // Past the end — mark complete
+    // Past the end - mark complete
     db.prepare(`UPDATE drip_enrollments SET state = 'completed', completed_at = ?, next_step_at = NULL WHERE id = ?`)
       .run(new Date().toISOString(), enr.id);
     return;

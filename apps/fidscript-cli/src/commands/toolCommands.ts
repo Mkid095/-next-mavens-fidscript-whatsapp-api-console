@@ -1,5 +1,5 @@
 /**
- * toolCommands.ts — Tool management commands
+ * toolCommands.ts - Tool management commands
  */
 import type { Command } from 'commander';
 
@@ -28,7 +28,7 @@ export function register(target: Command): void {
     .option('--params <json>', 'Tool parameters as JSON')
     .action(async (id: string, opts: { params?: string }) => {
       const { execTool } = await import('./tool/exec.js');
-      // execTool(dataSourceId, toolId, opts) — dataSourceId left undefined (original command only passed tool id)
+      // execTool(dataSourceId, toolId, opts) - dataSourceId left undefined (original command only passed tool id)
       await execTool(undefined as unknown as string, id, { args: opts.params });
     });
 }

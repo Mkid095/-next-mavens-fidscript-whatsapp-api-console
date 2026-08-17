@@ -26,7 +26,7 @@ export default function ClientTable({
           key={cli.id}
           className="bg-white border border-[#eaebe4]/80 rounded-3xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
         >
-          {/* Card header — clickable for detail view */}
+          {/* Card header - clickable for detail view */}
           <button
             className="p-5 border-b border-[#eaebe4]/60 flex items-start justify-between gap-3 bg-[#f9f9f2] text-left w-full"
             onClick={() => onViewClient?.(cli)}
@@ -61,7 +61,7 @@ export default function ClientTable({
             </div>
             <div className="flex items-center gap-2">
               <Phone className="w-3.5 h-3.5 text-[#8a8c80] shrink-0" />
-              <span className="font-mono">{cli.phone || '—'}</span>
+              <span className="font-mono">{cli.phone || '-'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-[#8a8c80] shrink-0" />

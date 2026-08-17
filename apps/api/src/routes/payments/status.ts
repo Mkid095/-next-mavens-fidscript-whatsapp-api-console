@@ -49,7 +49,7 @@ router.get('/history/:clientId', adminAuth, (req: Request, res: Response) => {
 });
 
 // GET /api/payments/status/:reference - Check payment status by reference
-// NOTE: this catch-all MUST be last — specific routes (/client/history, /history/:clientId) must match first
+// NOTE: this catch-all MUST be last - specific routes (/client/history, /history/:clientId) must match first
 router.get('/:reference', async (req: Request, res: Response) => {
   try {
     const { reference } = req.params;

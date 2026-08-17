@@ -1,7 +1,7 @@
 {
   "name": "@fidscript/validate",
   "version": "0.1.0",
-  "description": "FIDScript Platform Validation Suite — end-to-end health and workflow checker",
+  "description": "FIDScript Platform Validation Suite - end-to-end health and workflow checker",
   "type": "module",
   "bin": {
     "fidscript-validate": "./dist/index.js"

@@ -1,5 +1,5 @@
 /**
- * Group sync — fetches all WhatsApp groups for an instance and ensures each
+ * Group sync - fetches all WhatsApp groups for an instance and ensures each
  * one has a conversation entry in our DB, so groups appear in the inbox even
  * before any message arrives (just like real WhatsApp).
  *
@@ -99,7 +99,7 @@ export async function syncGroupsForInstance(
     req: { headers: {} } as SendContext['req'],
   };
 
-  // Our own phone number — used to determine if we are an admin in each group
+  // Our own phone number - used to determine if we are an admin in each group
   const selfPhoneRaw = (instance as { phone_number?: string }).phone_number || '';
   // Normalize to the same format as participant JIDs: digits only (no +)
   const selfPhoneDigits = selfPhoneRaw.replace(/\D/g, '');

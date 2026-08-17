@@ -3,7 +3,7 @@ import db from '../../database.js';
 import { wsId } from './conversationShared.js';
 
 // =============================================================================
-// GET / — list conversations
+// GET / - list conversations
 // =============================================================================
 export async function listConversations(req: Request, res: Response): Promise<void> {
   try {
@@ -58,7 +58,7 @@ export async function listConversations(req: Request, res: Response): Promise<vo
 }
 
 // =============================================================================
-// GET /:id/messages — full thread for a conversation
+// GET /:id/messages - full thread for a conversation
 // =============================================================================
 export async function getConversationMessages(req: Request, res: Response): Promise<void> {
   try {

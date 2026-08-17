@@ -43,7 +43,7 @@ export function useSegments() {
   return { segments, loading, error, refresh, create, update, remove, preview, previewAdhoc };
 }
 
-// Preview hook — runs the resolver on the current filter. Returns null when idle.
+// Preview hook - runs the resolver on the current filter. Returns null when idle.
 export function useSegmentPreview() {
   const [preview, setPreview] = useState<SegmentPreview | null>(null);
   const [loading, setLoading] = useState(false);

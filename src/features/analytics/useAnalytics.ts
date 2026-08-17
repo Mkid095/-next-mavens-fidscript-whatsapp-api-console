@@ -1,5 +1,5 @@
 /**
- * useAnalytics.ts — data fetching hook for the analytics dashboard.
+ * useAnalytics.ts - data fetching hook for the analytics dashboard.
  */
 import { useState, useEffect, useCallback } from 'react';
 import { platformApi } from '../../data/api/index.js';

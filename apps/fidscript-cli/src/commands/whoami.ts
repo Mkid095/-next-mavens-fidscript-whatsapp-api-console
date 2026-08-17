@@ -1,5 +1,5 @@
 /**
- * whoami.ts — GET /api/v1/whoami
+ * whoami.ts - GET /api/v1/whoami
  * Shows authenticated account: name, email, token balance, plan, instance count.
  */
 import { ApiClient } from '../lib/api-client.js';

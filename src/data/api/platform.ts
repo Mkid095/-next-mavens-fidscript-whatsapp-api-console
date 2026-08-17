@@ -1,5 +1,5 @@
 // =============================================================================
-// Platform API functions — customer-centric reads + operational writes (§6–§13)
+// Platform API functions - customer-centric reads + operational writes (§6–§13)
 // Consumes /api/platform/* (client JWT, workspace-scoped).
 // =============================================================================
 
@@ -77,7 +77,7 @@ export interface ConversationMessage {
   customer_id: string | null;
 }
 
-// ---- Phase 4 — AI + automation types ----
+// ---- Phase 4 - AI + automation types ----
 export interface Agent {
   id: string;
   name: string;
@@ -125,7 +125,7 @@ export interface FlowExecution {
   completed_at: string | null;
 }
 
-// ---- Phase 5 Slice B — Media library types (§15.3) ----
+// ---- Phase 5 Slice B - Media library types (§15.3) ----
 export type MediaKind = 'image' | 'video' | 'audio' | 'document';
 
 export interface MediaAsset {
@@ -144,7 +144,7 @@ export interface MediaAsset {
   created_at: string;
 }
 
-// ---- Phase 5 Slice C — Segments types (§15.2) ----
+// ---- Phase 5 Slice C - Segments types (§15.2) ----
 export type SegmentRule =
   | { field: 'tag'; op: 'has_any_of' | 'has_all_of' | 'has_none_of'; value: string[] }
   | { field: 'last_seen'; op: 'within_days' | 'before_days' | 'never'; value?: number }
@@ -173,7 +173,7 @@ export interface SegmentPreview {
   computed_at: string;
 }
 
-// ---- Phase 5 Slice D — Trigger + Drip types (§15.4-15.5) ----
+// ---- Phase 5 Slice D - Trigger + Drip types (§15.4-15.5) ----
 export type StepActionType = 'send_text' | 'send_media' | 'add_tag' | 'set_status' | 'wait_branch';
 
 export interface StepActionConfig {
@@ -226,7 +226,7 @@ export interface DripEnrollment {
   customer_name: string | null;
 }
 
-// ---- Phase 5 Slice E — Status posts (§15.6) ----
+// ---- Phase 5 Slice E - Status posts (§15.6) ----
 export type StatusPostKind = 'text' | 'image' | 'audio';
 export type StatusPostState = 'draft' | 'scheduled' | 'posting' | 'posted' | 'failed' | 'cancelled';
 
@@ -349,7 +349,7 @@ export const platformApi = {
   addNote: (customerId: string, body: string) => apiPost<{ id: string; body: string; created_at: string }>(`/api/platform/customers/${customerId}/notes`, { body }),
   removeNote: (customerId: string, noteId: string) => apiDelete<null>(`/api/platform/customers/${customerId}/notes/${noteId}`),
 
-  // Customer assignment (§9 — long-term owner)
+  // Customer assignment (§9 - long-term owner)
   getAssignment: (customerId: string) =>
     apiGet<{ id: string; owner_user_id: string | null; team_id: string | null; owner_name: string | null; team_name: string | null } | null>(`/api/platform/customers/${customerId}/assignment`),
   setAssignment: (customerId: string, body: { owner_user_id?: string | null; team_id?: string | null }) =>
@@ -389,7 +389,7 @@ export const platformApi = {
   handoff: (body: { conversation_id: string; state: 'ai_active' | 'ai_paused' | 'human_active' | 'escalated'; reason?: string }) =>
     apiPost<null>(`/api/platform/agents/handoff`, body),
 
-  // AI keyword rules (Phase 4 §10.1 — simple rule form)
+  // AI keyword rules (Phase 4 §10.1 - simple rule form)
   listAIRules: () => apiGet<AIRule[]>(`/api/platform/automation-rules`),
   createAIRule: (body: { keyword: string; reply: string; confidence_threshold?: number; escalate_on_low_confidence?: boolean; set_ai_state?: string; enabled?: boolean }) =>
     apiPost<{ id: string }>(`/api/platform/automation-rules`, body),
@@ -432,7 +432,7 @@ export const platformApi = {
   previewAdhocSegment: (filter: SegmentFilter) =>
     apiPost<SegmentPreview>(`/api/platform/segments/preview-adhoc`, { filter }),
 
-  // Status posts (Phase 5 Slice E §15.6) — /api/campaigns/statuses/*
+  // Status posts (Phase 5 Slice E §15.6) - /api/campaigns/statuses/*
   listStatusPosts: () => apiGet<StatusPost[]>(`/api/campaigns/statuses`),
   createStatusPost: (body: CreateStatusPostInput) =>
     apiPost<StatusPost>(`/api/campaigns/statuses`, body),
@@ -444,7 +444,7 @@ export const platformApi = {
   cancelStatusPost: (id: string) => apiPost<StatusPost>(`/api/campaigns/statuses/${id}/cancel`, {}),
   postStatusNow: (id: string) => apiPost<StatusPost>(`/api/campaigns/statuses/${id}/post`, {}),
 
-  // Webhooks (§14.1) — /api/platform/webhooks
+  // Webhooks (§14.1) - /api/platform/webhooks
   listWebhooks: () => apiGet<Webhook[]>(`/api/platform/webhooks`),
   createWebhook: (body: { url: string; events: string[] }) =>
     apiPost<Webhook & { secret: string }>(`/api/platform/webhooks`, body),
@@ -454,7 +454,7 @@ export const platformApi = {
   listWebhookDeliveries: (id: string, limit = 50) =>
     apiGet<WebhookDelivery[]>(`/api/platform/webhooks/${id}/deliveries?limit=${limit}`),
 
-  // Audit log (§6.4) — /api/platform/audit
+  // Audit log (§6.4) - /api/platform/audit
   listAudit: (filters?: { resource?: string; actor?: string; since?: string; limit?: number }) => {
     const qs = new URLSearchParams();
     if (filters?.resource) qs.set('resource', filters.resource);
@@ -465,7 +465,7 @@ export const platformApi = {
     return apiGet<AuditLogEntry[]>(`/api/platform/audit${tail}`);
   },
 
-  // Developer API logs (§14.2) — /api/platform/developer-logs
+  // Developer API logs (§14.2) - /api/platform/developer-logs
   listDeveloperLogs: (filters?: { method?: string; since?: string; minLatency?: number; limit?: number }) => {
     const qs = new URLSearchParams();
     if (filters?.method) qs.set('method', filters.method);

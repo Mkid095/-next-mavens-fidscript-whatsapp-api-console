@@ -3,7 +3,7 @@ import { clientJwtAuth } from '../../middleware/auth.js';
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/customers — customer-centric reads (§6).
+// /api/platform/customers - customer-centric reads (§6).
 // Workspace-scoped via req.client.id (= workspace_id bridge).
 // =============================================================================
 
@@ -14,7 +14,7 @@ function wsId(req: Request): string {
   return req.client!.id;
 }
 
-// GET / — list customers (optional ?q= name/identifier search, ?limit=)
+// GET / - list customers (optional ?q= name/identifier search, ?limit=)
 router.get('/', (req: Request, res: Response) => {
   try {
     const q = (req.query.q as string | undefined)?.trim();
@@ -43,7 +43,7 @@ router.get('/', (req: Request, res: Response) => {
   }
 });
 
-// GET /:id — customer detail (identifiers + tags)
+// GET /:id - customer detail (identifiers + tags)
 router.get('/:id', (req: Request, res: Response) => {
   try {
     const customer = db.prepare(`
@@ -66,7 +66,7 @@ router.get('/:id', (req: Request, res: Response) => {
   }
 });
 
-// GET /:id/timeline — domain_events for this customer (§7)
+// GET /:id/timeline - domain_events for this customer (§7)
 router.get('/:id/timeline', (req: Request, res: Response) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 100, 500);

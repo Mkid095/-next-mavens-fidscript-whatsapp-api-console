@@ -133,7 +133,7 @@ export default function AppContent() {
     addToast('Logged out successfully');
   };
 
-  // Background fetch after any client login — runs after hard redirect lands on /client
+  // Background fetch after any client login - runs after hard redirect lands on /client
   const handleClientLoginFetch = async () => {
     try {
       const [meRes, instRes, balanceRes, packagesRes] = await Promise.all([
@@ -161,7 +161,7 @@ export default function AppContent() {
         if (packagesRes.success && packagesRes.data) setTokenPackages(packagesRes.data);
       }
     } catch {
-      // Silently fail — the /client page already loaded via hard redirect
+      // Silently fail - the /client page already loaded via hard redirect
     }
   };
 

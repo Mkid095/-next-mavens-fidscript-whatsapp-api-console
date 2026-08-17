@@ -5,7 +5,7 @@ import { logAuditAction } from '../../utils/audit.js';
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/automations — Phase 4 flow CRUD (§11).
+// /api/platform/automations - Phase 4 flow CRUD (§11).
 // The engine lives in server/src/modules/automation/. This router owns the
 // flows + nodes + edges tables, workspace-scoped.
 // =============================================================================
@@ -36,7 +36,7 @@ function loadFlow(workspaceId: string, id: string) {
   };
 }
 
-// GET / — list flows (no node/edge payload, just summary)
+// GET / - list flows (no node/edge payload, just summary)
 router.get('/', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`SELECT id, name, trigger_event, enabled, version, created_at FROM automation_flows WHERE workspace_id = ? ORDER BY created_at DESC`).all(wsId(req));
@@ -44,7 +44,7 @@ router.get('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// GET /:id — full flow (nodes + edges)
+// GET /:id - full flow (nodes + edges)
 router.get('/:id', (req: Request, res: Response) => {
   try {
     const flow = loadFlow(wsId(req), req.params.id);
@@ -53,7 +53,7 @@ router.get('/:id', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST / — create a flow with optional initial nodes/edges
+// POST / - create a flow with optional initial nodes/edges
 router.post('/', (req: Request, res: Response) => {
   try {
     const name = ((req.body?.name as string) || '').trim();
@@ -85,7 +85,7 @@ router.post('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// PATCH /:id — rename / toggle / replace nodes+edges
+// PATCH /:id - rename / toggle / replace nodes+edges
 router.patch('/:id', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT 1 FROM automation_flows WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
@@ -136,7 +136,7 @@ router.delete('/:id', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// GET /:id/executions — recent runs
+// GET /:id/executions - recent runs
 router.get('/:id/executions', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT 1 FROM automation_flows WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));

@@ -1,5 +1,5 @@
 /**
- * sseInstanceHandler.ts — instance SSE handler
+ * sseInstanceHandler.ts - instance SSE handler
  */
 import type { Request, Response } from 'express';
 import db from '../database.js';

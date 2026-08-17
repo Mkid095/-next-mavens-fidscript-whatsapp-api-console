@@ -1,5 +1,5 @@
 /**
- * ChangelogVersionPage.tsx — single-version detail page.
+ * ChangelogVersionPage.tsx - single-version detail page.
  *
  * Renders /changelog/:version. Shows only the matching entry plus:
  *   - sticky version sidebar (all releases + filter)
@@ -33,7 +33,7 @@ export default function ChangelogVersionPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] font-sans antialiased">
       <SeoHead
-        title={`${entry ? entry.version : version} — Changelog — FIDScript`}
+        title={`${entry ? entry.version : version} - Changelog - FIDScript`}
         description={entry ? `Release ${entry.version}: ${entry.title}` : `Release ${version}`}
         canonical={entry ? `/changelog/${encodeURIComponent(entry.version)}` : '/changelog'}
         schema="changelog"
@@ -49,7 +49,7 @@ export default function ChangelogVersionPage() {
         <NotFound version={version} />
       ) : (
         <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 flex gap-6 lg:gap-10">
-          {/* Sidebar — version list */}
+          {/* Sidebar - version list */}
           <aside className="hidden md:block w-56 lg:w-64 shrink-0 sticky top-16 self-start max-h-[calc(100vh-5rem)] overflow-y-auto">
             <div className="text-[10px] font-bold text-[#a0a0a0] uppercase tracking-widest mb-3 flex items-center gap-2">
               <GitCommit className="w-3 h-3" /> All releases
@@ -87,7 +87,7 @@ export default function ChangelogVersionPage() {
             </ol>
           </aside>
 
-          {/* Main content — just this entry */}
+          {/* Main content - just this entry */}
           <main className="flex-1 min-w-0 pt-4">
             <header className="mb-6">
               {isLatest && (
@@ -165,7 +165,7 @@ function NotFound({ version }: { version: string }) {
     <div className="min-h-screen bg-white text-[#1a1a1a] font-sans antialiased flex flex-col">
       <Header scrolled={false} onScroll={() => {}} />
       <main className="max-w-2xl mx-auto px-4 py-24 text-center flex-1">
-        <p className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold mb-3">404 — version not found</p>
+        <p className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold mb-3">404 - version not found</p>
         <h1 className="text-2xl font-bold text-[#1a1a1a] mb-3">
           We couldn't find <code className="font-mono text-[#f97316]">{version || 'this version'}</code>
         </h1>

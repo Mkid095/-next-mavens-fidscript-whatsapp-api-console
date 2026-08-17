@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Tag, X } from 'lucide-react';
 import { useTags } from '../../data/hooks/customers/useTags.js';
 
-// Phase 3 — tags manager for one customer (§6.1 customer_tags + §19 drawer).
+// Phase 3 - tags manager for one customer (§6.1 customer_tags + §19 drawer).
 // Optimistic add/remove via the useTags hook.
 export default function TagsManager({ customerId }: { customerId: string }) {
   const { tags, add, remove } = useTags(customerId);

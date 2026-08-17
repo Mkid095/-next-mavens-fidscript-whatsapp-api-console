@@ -10,7 +10,7 @@ export const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'go', label: 'Go' },
 ];
 
-/** Dark-mode method pill palette — same visual language as ApiKeysSection.tsx. */
+/** Dark-mode method pill palette - same visual language as ApiKeysSection.tsx. */
 export const METHOD_COLORS: Record<string, string> = {
   GET:    'bg-blue-900/40 text-blue-300 border border-blue-900/50',
   POST:   'bg-yellow-900/40 text-yellow-300 border border-yellow-900/50',
@@ -113,5 +113,5 @@ ${params.map(p => `        "${p.name}": "<${p.name}>"`).join(',\n')}
   }
 }
 
-// Local CopyButton removed — consumers should import { CopyButton } from '../shared/CopyButton.js'
+// Local CopyButton removed - consumers should import { CopyButton } from '../shared/CopyButton.js'
 export { CopyButton } from '../shared/CopyButton.js';

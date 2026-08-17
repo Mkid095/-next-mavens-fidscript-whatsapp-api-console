@@ -1,5 +1,5 @@
 /**
- * chatbot/setup.ts — interactive wizard for creating a chatbot.
+ * chatbot/setup.ts - interactive wizard for creating a chatbot.
  *
  * Steps:
  *   1. Chatbot name
@@ -144,7 +144,7 @@ async function applySetupConfig(
     description: `Created via CLI (headless) on ${new Date().toISOString()}`,
   });
 
-  // AI config — applies the user's full customization.
+  // AI config - applies the user's full customization.
   // Calls the same PUT /ai-config endpoint used by the web chatbot editor.
   const prompt = cfg.system_prompt ?? cfg.prompt;
   const aiConfigBody: Record<string, unknown> = {
@@ -298,7 +298,7 @@ export async function setupChatbot(opts: { instance?: string; name?: string; con
 
   // Step 3: system prompt
   const systemPrompt = await promptMultiline(
-    'System prompt — describe the bot\'s tone, role, and what it should/shouldn\'t do.',
+    'System prompt - describe the bot\'s tone, role, and what it should/shouldn\'t do.',
   );
   if (!systemPrompt) {
     console.error(pc.red('error:') + ' system prompt is required.');

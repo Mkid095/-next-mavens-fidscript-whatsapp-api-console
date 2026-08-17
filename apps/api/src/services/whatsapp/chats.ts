@@ -19,7 +19,7 @@ async function run(ctx: SendContext, slug: string, method: string, body?: Record
   // Pace the gateway→WhatsApp per instance so a "mark all read" loop or UI
   // presence polling can't blast the gateway. Reads (3 MPS) and mutations
   // (2 MPS) use independent per-instance pacers so neither can starve the
-  // other — or the bulk-campaign send throughput.
+  // other - or the bulk-campaign send throughput.
   await paceWhatsApp(ctx.instance.id, kindFor(slug));
   const name = encodeURIComponent(gatewayNameOf(ctx.instance));
   const res = await callGatewayChecked(method, `/chat/${slug}/${name}`, body);
@@ -59,7 +59,7 @@ export const profilePicUrl = (ctx: SendContext, number: string) => run(ctx, 'fet
 /**
  * Fetch ALL pages of findMessages results. Evolution API paginates at 50 records/page.
  * When jid is provided, we pass a remoteJid filter on every page request so
- * Evolution API does the filtering server-side — we only get messages for that chat,
+ * Evolution API does the filtering server-side - we only get messages for that chat,
  * not noise from all chats. We cap at 20 pages (1000 records) to avoid hammering
  * the gateway on very active accounts.
  */

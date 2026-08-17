@@ -1,5 +1,5 @@
 /**
- * Analytics projector impl — exports ALL_PROJECTORS constant.
+ * Analytics projector impl - exports ALL_PROJECTORS constant.
  * @see projectorDefs.ts for individual projector definitions
  * @see projectorRegister.ts for registration
  * @see projector.ts for the barrel

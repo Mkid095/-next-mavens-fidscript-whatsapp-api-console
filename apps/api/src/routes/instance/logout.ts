@@ -21,7 +21,7 @@ router.delete('/logout/:name', clientJwtAuth, async (req: Request, res: Response
       await callGateway('DELETE', `/instance/logout/${evolutionInstanceName}`);
     } catch (evoErr) {
       console.error('Failed to disconnect from the gateway API:', evoErr);
-      // Don't treat as fatal — still update our DB state
+      // Don't treat as fatal - still update our DB state
     }
 
     db.prepare("UPDATE instances SET status = 'disconnected', qr_code = NULL, phone_number = NULL WHERE name = ?").run(req.params.name);

@@ -19,7 +19,7 @@ export interface SandboxBodyProps {
   copied: boolean;
   response: string | null;
   responseStatus: number | null;
-  /** Client JWT — required to run /api/platform/* endpoints. */
+  /** Client JWT - required to run /api/platform/* endpoints. */
   clientToken?: string;
   onExecute: () => void;
   onCopyCurl: () => void;
@@ -29,7 +29,7 @@ export interface SandboxBodyProps {
   onCloseResponse: () => void;
 }
 
-/** True when the endpoint path starts with /api/platform/ — those need JWT. */
+/** True when the endpoint path starts with /api/platform/ - those need JWT. */
 function requiresJwt(ep: EndpointDef | null): boolean {
   return !!ep && ep.path.startsWith('/api/platform');
 }

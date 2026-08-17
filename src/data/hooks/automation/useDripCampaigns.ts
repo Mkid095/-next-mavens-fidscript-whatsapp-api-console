@@ -6,7 +6,7 @@ import type {
 } from '../../api/platform.js';
 
 // =============================================================================
-// Phase 5 Slice D — hooks for the trigger + drip routes.
+// Phase 5 Slice D - hooks for the trigger + drip routes.
 // Each hook is campaign-scoped; pass null for campaignId to disable.
 // =============================================================================
 

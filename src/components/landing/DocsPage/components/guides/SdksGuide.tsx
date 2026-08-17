@@ -7,7 +7,7 @@ export function SdksGuide() {
       <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">SDKs &amp; direct HTTP</h1>
       <p className="text-sm text-[#525252] mb-8">
         FIDScript ships an official TypeScript SDK on npm. Every endpoint accepts standard JSON
-        over HTTPS — any HTTP client in any language can integrate. Use the SDK for the fastest
+        over HTTPS - any HTTP client in any language can integrate. Use the SDK for the fastest
         setup, or hit the API directly from any service.
       </p>
 

@@ -11,11 +11,11 @@ Instead, report them privately through one of the following channels:
 
 ### Preferred channels
 
-1. **GitHub Private Vulnerability Reporting** — use the "Security" tab on this
+1. **GitHub Private Vulnerability Reporting** - use the "Security" tab on this
    repository to submit a private advisory.
 
-2. **Email** — send your report to **suporte@evofoundation.com.br** with the
-   subject line `[SECURITY] Evolution API — <brief description>`.
+2. **Email** - send your report to **suporte@evofoundation.com.br** with the
+   subject line `[SECURITY] Evolution API - <brief description>`.
 
 ### What to include
 

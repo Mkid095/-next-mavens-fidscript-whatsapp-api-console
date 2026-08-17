@@ -1,7 +1,7 @@
 import type { Database } from 'sql.js';
 
 // =============================================================================
-// Phase 7 migrations — P11 airtight workspace isolation.
+// Phase 7 migrations - P11 airtight workspace isolation.
 //
 //   - Add workspace_id to child tables (customer_tags, customer_notes,
 //     customer_assignments) so defense-in-depth scoping is possible at

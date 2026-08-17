@@ -6,7 +6,7 @@ import { logAuditAction } from '../utils/audit.js';
 import { enrollCustomer } from '../modules/campaigns/drip.js';
 
 // =============================================================================
-// Phase 5 Slice D — Drip flow sub-routes.
+// Phase 5 Slice D - Drip flow sub-routes.
 // Mounted as router.use('/:id/drip', dripFlowRoutes) on the campaigns router.
 // All paths here are RELATIVE to that mount (e.g. GET '/' reads /:id/drip
 // enrollments list, POST /steps reads /:id/drip/steps, etc.). Keeps the

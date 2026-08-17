@@ -70,7 +70,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] antialiased">
       <SeoHead
-        title="Pricing — Token Plans for WhatsApp API"
+        title="Pricing - Token Plans for WhatsApp API"
         description="Simple, transparent token pricing for FIDScript WhatsApp API. KSh 100 for 1,000 tokens, KSh 900 for 11,000 tokens, KSh 4,000 for 60,000 tokens. M-Pesa STK Push payment. No monthly fees."
         canonical="/pricing"
         schema="pricing"
@@ -100,7 +100,7 @@ export default function PricingPage() {
             <p className="text-sm text-[#525252]">
               New accounts receive{' '}
               <span className="text-[#f97316] font-semibold">500 free welcome tokens</span>{' '}
-              — no payment required.
+              - no payment required.
             </p>
           </div>
         </section>
@@ -194,7 +194,7 @@ export default function PricingPage() {
                 <Link to="/contact" className="text-[#f97316] font-semibold hover:underline">
                   Contact our team
                 </Link>{' '}
-                — we respond within 1–2 business days.
+                - we respond within 1–2 business days.
               </p>
             </motion.div>
           </div>

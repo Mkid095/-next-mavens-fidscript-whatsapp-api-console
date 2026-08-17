@@ -1,5 +1,5 @@
 /**
- * data-source/create.ts — create a workspace data source.
+ * data-source/create.ts - create a workspace data source.
  * Auth: JWT. POST /api/platform/data-sources
  *
  * Examples:

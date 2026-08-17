@@ -1,4 +1,4 @@
-// Contacts service barrel — re-export everything from the old contacts.ts surface
+// Contacts service barrel - re-export everything from the old contacts.ts surface
 export type {
   Contact,
   ClientMessage,

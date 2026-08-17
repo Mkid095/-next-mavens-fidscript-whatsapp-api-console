@@ -8,7 +8,7 @@ import CommandPalette from './CommandPalette.js';
 // + the global keyboard shortcut, and exposes openPalette() via context so any
 // chrome element (sidebar button, mobile nav) can trigger it without lifting
 // state through props. Previously the trigger button was a stray flex child of
-// the root row — it floated in the right margin of every page. Centralizing the
+// the root row - it floated in the right margin of every page. Centralizing the
 // palette here lets the triggers live where they belong (the nav).
 
 interface CommandKContextValue {

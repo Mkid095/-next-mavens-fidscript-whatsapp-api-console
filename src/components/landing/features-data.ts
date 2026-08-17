@@ -21,10 +21,10 @@ export const features: Feature[] = [
   {
     icon: QrCode,
     title: 'QR Code Connection',
-    description: 'Connect WhatsApp instances in seconds. No complex setup — just scan and start sending messages.',
+    description: 'Connect WhatsApp instances in seconds. No complex setup - just scan and start sending messages.',
     code: `// Connect instance via QR code
 GET /api/instance/connect/my-instance
-// Returns base64 QR code image — render in your UI`,
+// Returns base64 QR code image - render in your UI`,
   },
   {
     icon: Webhook,
@@ -65,7 +65,7 @@ POST /api/v1/sendText
   {
     icon: Terminal,
     title: 'One-line CLI',
-    description: 'Install with one curl. Manage instances, send all message types, and stream live events — from any shell, cron job, or automation script.',
+    description: 'Install with one curl. Manage instances, send all message types, and stream live events - from any shell, cron job, or automation script.',
     code: `# Install
 curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh
 
@@ -82,7 +82,7 @@ fidscript send text my-bot --to +254700000000 --text "Hello!"`,
   {
     icon: Key,
     title: 'Open npm SDK',
-    description: 'Official TypeScript SDK on npm. Type-safe wrappers for every endpoint, retry logic, and a clean DX — for Node 18+ services.',
+    description: 'Official TypeScript SDK on npm. Type-safe wrappers for every endpoint, retry logic, and a clean DX - for Node 18+ services.',
     code: `npm install @fidscript/sdk
 
 import { Fidscript } from '@fidscript/sdk';

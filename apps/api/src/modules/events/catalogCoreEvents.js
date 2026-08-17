@@ -1,4 +1,4 @@
-// Event catalog — customer + campaign + automation interfaces.
+// Event catalog - customer + campaign + automation interfaces.
 export interface CustomerCreatedPayload { customerId: string; channel: string; identifier: string; displayName?: string | null; }
 export interface CustomerTaggedPayload { customerId: string; tag: string; byUserId?: string; }
 export interface CustomerNotedPayload { customerId: string; noteId: string; byUserId: string; }

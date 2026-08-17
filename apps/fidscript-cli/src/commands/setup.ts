@@ -1,5 +1,5 @@
 /**
- * setup.ts — `fidscript setup`
+ * setup.ts - `fidscript setup`
  *
  * Onboarding summary for an authenticated user. Prints:
  *   - identity (name, email, plan, balance)
@@ -82,7 +82,7 @@ async function renderHuman(client: ApiClient, whoami: WhoamiResponse, instances:
   const baseUrl = client.configuredBaseUrl;
 
   console.error('');
-  console.error(pc.bold(pc.yellow('✓ Authenticated — FIDScript CLI Setup')));
+  console.error(pc.bold(pc.yellow('✓ Authenticated - FIDScript CLI Setup')));
   console.error('');
   console.error(pc.dim('  Account'));
   console.error(`    ${pc.bold(whoami.name)} <${whoami.email}>`);
@@ -150,7 +150,7 @@ export async function setup(opts: { reveal?: boolean; listOnly?: boolean }): Pro
     process.exit(1);
   }
 
-  // 2. (optional) fetch instance list — prefer DB-backed JWT endpoint
+  // 2. (optional) fetch instance list - prefer DB-backed JWT endpoint
   let instances: InstanceRow[] = [];
   if (client.hasJwt) {
     try {
@@ -163,7 +163,7 @@ export async function setup(opts: { reveal?: boolean; listOnly?: boolean }): Pro
         }));
       }
     } catch {
-      /* fall through — empty instance list is fine */
+      /* fall through - empty instance list is fine */
     }
   }
 

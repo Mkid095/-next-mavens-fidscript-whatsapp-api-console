@@ -18,7 +18,7 @@ interface QRPairingModalProps {
 const QR_TTL_SECONDS = 60;
 const RADIUS = 44;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const QR_SIZE = 208; // px — matches SVG viewBox 100 scaled to ~208px
+const QR_SIZE = 208; // px - matches SVG viewBox 100 scaled to ~208px
 
 export default function QRPairingModal({
   instance,
@@ -86,11 +86,11 @@ export default function QRPairingModal({
         </div>
 
         <div className="p-5 space-y-4">
-          {/* QR code area — centered, fixed size */}
+          {/* QR code area - centered, fixed size */}
           <div className="flex flex-col items-center gap-3">
             {/* Ring + QR container */}
             <div className="relative" style={{ width: QR_SIZE, height: QR_SIZE }}>
-              {/* Countdown ring — SVG coordinate space 100×100, scaled to QR_SIZE */}
+              {/* Countdown ring - SVG coordinate space 100×100, scaled to QR_SIZE */}
               <svg
                 className="absolute inset-0 pointer-events-none"
                 style={{ width: QR_SIZE, height: QR_SIZE }}
@@ -182,7 +182,7 @@ export default function QRPairingModal({
             )}
           </div>
 
-          {/* Error alert — only when no QR */}
+          {/* Error alert - only when no QR */}
           {!qrCode && connectionError && (
             <div className="bg-red-900/20 border border-red-800/40 rounded-xl p-3 space-y-1.5">
               <p className="text-[10px] text-red-400 font-bold flex items-center gap-1.5">

@@ -1,4 +1,4 @@
-// Kernel Campaigns module — public barrel
+// Kernel Campaigns module - public barrel
 export type {
   Campaign,
   CampaignRecipient,

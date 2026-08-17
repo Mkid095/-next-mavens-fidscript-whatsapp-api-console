@@ -4,14 +4,14 @@ import { paceWhatsApp, type WhatsAppCallKind } from './whatsappCallLimiter.js';
 import { overlayLogoOnQR } from '../../utils/qrLogo.js';
 import { type SendContext, type SendResult, gatewayNameOf } from './shared.js';
 
-// QR generation (connectInstance) is heavy — gate it to one call per 10s per
+// QR generation (connectInstance) is heavy - gate it to one call per 10s per
 // instance so a UI retry loop can't hammer it.
 const connectCooldown = new Map<string, number>();
 const CONNECT_COOLDOWN_MS = 10_000;
 
 // Instance ops are mostly mutation-heavy (logout/restart/setPresence); reads
 // are just connectionState + connect (heavy QR fetch). Reads 3 MPS, mutations
-// 2 MPS per instance — conservative enough to prevent restart loops or
+// 2 MPS per instance - conservative enough to prevent restart loops or
 // presence polling from triggering an account block.
 const READ_SLUGS = new Set(['connectionState', 'connect']);
 function kindFor(slug: string): WhatsAppCallKind { return READ_SLUGS.has(slug) ? 'read' : 'mutation'; }
@@ -34,7 +34,7 @@ export const setPresence = (ctx: SendContext, presence: 'available' | 'unavailab
   run(ctx, 'setPresence', 'POST', { presence });
 export const restart = (ctx: SendContext) => run(ctx, 'restart', 'PUT');
 
-/** Connect — generates a QR (no logout-first; use connectWithLogout for the full flow). */
+/** Connect - generates a QR (no logout-first; use connectWithLogout for the full flow). */
 export const connectInstance = async (ctx: SendContext, number?: string): Promise<SendResult> => {
   const key = String(ctx.instance.id);
   const last = connectCooldown.get(key) ?? 0;
@@ -63,7 +63,7 @@ export const connectInstance = async (ctx: SendContext, number?: string): Promis
       // Return branded QR as both qrcode.base64 and qrcode.code for compatibility
       data.qrcode = { base64: brandedQr, code: brandedQr };
     } catch (err) {
-      // Branding failed — return raw QR (never block on logo overlay failure)
+      // Branding failed - return raw QR (never block on logo overlay failure)
       console.warn('[instanceOps] QR branding failed, returning raw QR:', err);
     }
   }

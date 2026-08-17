@@ -1,5 +1,5 @@
 /**
- * customers.ts — GET /api/v1/customers, /api/v1/customers/:id
+ * customers.ts - GET /api/v1/customers, /api/v1/customers/:id
  * List and inspect customers from the command line.
  */
 import { ApiClient } from '../lib/api-client.js';
@@ -37,10 +37,10 @@ export async function listCustomers(opts: { page?: number; limit?: number } = {}
     if (customers.length === 0) { console.log('No customers found.'); return; }
     const rows = customers.map(c => ({
       id: c.id.slice(0, 8),
-      name: c.display_name ?? c.primary_identifier ?? '—',
-      channel: c.channel ?? '—',
+      name: c.display_name ?? c.primary_identifier ?? '-',
+      channel: c.channel ?? '-',
       created: new Date(c.created_at).toLocaleDateString(),
-      lastSeen: c.last_seen_at ? new Date(c.last_seen_at).toLocaleDateString() : '—',
+      lastSeen: c.last_seen_at ? new Date(c.last_seen_at).toLocaleDateString() : '-',
     }));
     renderTable(rows, [
       { key: 'id', header: 'ID' },
@@ -69,11 +69,11 @@ export async function getCustomer(id: string): Promise<void> {
 
     const c = res.data;
     console.log(`Customer ${c.id}`);
-    console.log(`  Name: ${c.display_name ?? '—'}`);
-    console.log(`  Channel: ${c.channel ?? '—'}`);
-    console.log(`  Primary ID: ${c.primary_identifier ?? '—'}`);
+    console.log(`  Name: ${c.display_name ?? '-'}`);
+    console.log(`  Channel: ${c.channel ?? '-'}`);
+    console.log(`  Primary ID: ${c.primary_identifier ?? '-'}`);
     console.log(`  Created: ${new Date(c.created_at).toLocaleString()}`);
-    console.log(`  Last Seen: ${c.last_seen_at ? new Date(c.last_seen_at).toLocaleString() : '—'}`);
+    console.log(`  Last Seen: ${c.last_seen_at ? new Date(c.last_seen_at).toLocaleString() : '-'}`);
   } catch (err) {
     outputFidscriptError(err);
     process.exit(1);

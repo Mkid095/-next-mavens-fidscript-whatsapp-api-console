@@ -1,5 +1,5 @@
 /**
- * SeoHead — barrel re-export.
+ * SeoHead - barrel re-export.
  * Split into: SeoHeadMain, MetaTags, OpenGraph, schemas.
  * @deprecated import from './shared/SeoHead' directly
  */

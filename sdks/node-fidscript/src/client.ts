@@ -1,5 +1,5 @@
 /**
- * client.ts — base HTTP client for the FIDScript API.
+ * client.ts - base HTTP client for the FIDScript API.
  *
  * Handles auth (X-API-Key OR Bearer JWT), JSON encoding, error parsing, and retries.
  * All other modules (sends, instances, chatbots, …) build on this.
@@ -9,9 +9,9 @@ import { FidscriptError } from './errors.js';
 export interface FidscriptClientOptions {
   /** Base URL of the API. Default: https://whatsapp.fidscript.com */
   baseUrl?: string;
-  /** API key (X-API-Key auth) — used for /api/v1/* endpoints */
+  /** API key (X-API-Key auth) - used for /api/v1/* endpoints */
   apiKey?: string;
-  /** JWT Bearer token — used for /api/instance, /api/platform, /api/sse */
+  /** JWT Bearer token - used for /api/instance, /api/platform, /api/sse */
   jwt?: string;
   /** Request timeout in ms. Default: 30_000. */
   timeoutMs?: number;

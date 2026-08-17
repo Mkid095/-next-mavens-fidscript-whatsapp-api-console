@@ -77,7 +77,7 @@ check_prerequisites() {
         exit 1
     fi
 
-    # Refuse if local is ahead of origin — pulling origin/main would silently
+    # Refuse if local is ahead of origin - pulling origin/main would silently
     # rebuild older code (because deploy.sh uses `git pull origin main`).
     # Without this, a developer can commit locally, run deploy.sh, and end up
     # shipping the OLD code without any error indication.
@@ -89,7 +89,7 @@ check_prerequisites() {
             echo "" >&2
             echo "${unpushed}" >&2
             echo "" >&2
-            log_error "deploy.sh pulls from origin/main — running it now would deploy the OLD code."
+            log_error "deploy.sh pulls from origin/main - running it now would deploy the OLD code."
             log_error "Push first, then deploy:"
             echo "    git push origin main && bash deploy.sh" >&2
             exit 1
@@ -100,7 +100,7 @@ check_prerequisites() {
 }
 
 # =============================================================================
-# Changelog discipline — fail early if a commit landed without a bump
+# Changelog discipline - fail early if a commit landed without a bump
 # =============================================================================
 
 check_changelog_bump() {
@@ -393,7 +393,7 @@ build_frontend() {
     # Sync built files to the docker-mounted nginx root.
     # The live frontend is served by the fidscript_whatsapp_frontend nginx container,
     # which bind-mounts this directory read-only into /usr/share/nginx/html.
-    # (Do NOT use /var/www/whatsapp.nextmavens.cloud — that path is unused since the
+    # (Do NOT use /var/www/whatsapp.nextmavens.cloud - that path is unused since the
     # host-nginx setup was replaced by the docker nginx container.)
     local nginx_root="/home/ken/fidscript-deploy/installer/docker/whatsapp-frontend.dist"
     log_info "Syncing dist/ to ${nginx_root}..."
@@ -518,7 +518,7 @@ deploy() {
             record_deployment "backend" "${backend_version}" "${previous_version}" "${commit_hash}" "${changes}" "${changelog}"
             ;;
         none)
-            log_info "No relevant changes detected — forcing clean rebuild to eliminate stale dist artifacts."
+            log_info "No relevant changes detected - forcing clean rebuild to eliminate stale dist artifacts."
 
             build_frontend
             build_backend

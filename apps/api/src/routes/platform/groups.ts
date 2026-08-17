@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { clientJwtAuth } from '../../middleware/auth.js';
 import { getGroupInfo } from '../../services/whatsapp/groupMetadata.js';
 
-// GET /api/platform/groups/:chatId/info — cached group subject/size/owner.
+// GET /api/platform/groups/:chatId/info - cached group subject/size/owner.
 // :chatId is the WhatsApp group JID (e.g. "...@g.us"). Workspace-scoped via
 // the client JWT (the cache is process-wide; the route is auth-gated).
 const router = Router();

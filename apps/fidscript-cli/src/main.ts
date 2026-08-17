@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * main.ts — CLI entry point
+ * main.ts - CLI entry point
  * Handles global flags (--api-key, --json, --yaml, --verbose, --no-color)
  * and delegates to the commander-based CLI tree.
  *

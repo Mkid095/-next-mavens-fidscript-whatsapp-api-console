@@ -1,5 +1,5 @@
 /**
- * commands/index.ts — Thin barrel: registers all CLI command groups.
+ * commands/index.ts - Thin barrel: registers all CLI command groups.
  * Sub-modules each export a `register(target: Command): void` function
  * (messagesCommands uses `async register` for dynamic import).
  */
@@ -25,6 +25,6 @@ export function registerCommands(cli: Command): void {
   registerLlm(cli);
   registerTool(cli);
   registerDataSource(cli);
-  registerMessages(cli); // async — resolves send/list sub-commands dynamically
+  registerMessages(cli); // async - resolves send/list sub-commands dynamically
   registerPlatform(cli);
 }

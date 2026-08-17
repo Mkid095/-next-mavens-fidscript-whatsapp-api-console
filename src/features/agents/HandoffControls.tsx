@@ -3,7 +3,7 @@ import { Hand } from 'lucide-react';
 import { platformApi } from '../../data/api/platform.js';
 import type { Conversation } from '../../data/api/platform.js';
 
-// Phase 4 — manual handoff controls (§10.3) for a single conversation.
+// Phase 4 - manual handoff controls (§10.3) for a single conversation.
 // Buttons flip the ai_state; each transition dispatches ai.state_changed + an
 // ai.handoff_requested event when leaving AI.
 type AIState = 'ai_active' | 'ai_paused' | 'human_active' | 'escalated';
@@ -19,7 +19,7 @@ export default function HandoffControls({ conversation }: { conversation: Conver
     setPending(null);
     // The conversation row in the parent should re-fetch on its own; if the
     // page re-fetches, the new ai_state flows in. A dedicated event hook is
-    // reserved for the inbox refresh — left as a follow-up if the parent
+    // reserved for the inbox refresh - left as a follow-up if the parent
     // doesn't already re-query.
   };
 

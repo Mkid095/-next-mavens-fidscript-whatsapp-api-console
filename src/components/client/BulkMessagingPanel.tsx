@@ -25,7 +25,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 /**
- * Phase 1 — Bulk messaging panel. Two-step UI: create a campaign (audience
+ * Phase 1 - Bulk messaging panel. Two-step UI: create a campaign (audience
  * from saved contacts / groups / pasted phones, message, schedule), then
  * inspect history with per-recipient delivery status. The two sub-panels
  * live in `bulk/` to keep this orchestrator small.

@@ -1,5 +1,5 @@
 /**
- * sseClientHandler.ts — client SSE handler
+ * sseClientHandler.ts - client SSE handler
  */
 import type { Request, Response } from 'express';
 import { paymentEmitter } from '../utils/paymentEmitter.js';

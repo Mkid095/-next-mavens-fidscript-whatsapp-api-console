@@ -1,5 +1,5 @@
 /**
- * Conversations Router — Express router with all route registrations.
+ * Conversations Router - Express router with all route registrations.
  * All handler logic is delegated to focused modules imported from conversationHandlers.js.
  */
 

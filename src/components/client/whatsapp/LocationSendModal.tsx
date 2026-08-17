@@ -10,7 +10,7 @@ interface LocationSendModalProps {
 }
 
 /**
- * LocationSendModal — pick lat/lng + label, send location message.
+ * LocationSendModal - pick lat/lng + label, send location message.
  * Full picker lives at components/client/sandbox/LocationPickerModal.
  */
 export default function LocationSendModal({ to, onClose }: LocationSendModalProps) {

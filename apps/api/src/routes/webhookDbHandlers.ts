@@ -1,5 +1,5 @@
 /**
- * Webhook DB persistence helpers — insert inbox messages, update contacts,
+ * Webhook DB persistence helpers - insert inbox messages, update contacts,
  * update instance/client timestamps.
  */
 import db from '../database.js';
@@ -34,7 +34,7 @@ export function persistInboxMessage(
     db.prepare('UPDATE instances SET last_active = ? WHERE id = ?').run(timestamp, instance.id);
     db.prepare('UPDATE clients SET last_active = ? WHERE id = ?').run(timestamp, instance.client_id);
   } catch {
-    // Duplicate message ID — ignore
+    // Duplicate message ID - ignore
   }
 }
 

@@ -1,5 +1,5 @@
 /**
- * instance/watch.ts — live SSE stream of connection state + inbound messages.
+ * instance/watch.ts - live SSE stream of connection state + inbound messages.
  *
  * Subscribes to GET /api/sse/instance/:name?token=<jwt> until the instance
  * reaches a stable state (open/connected/closed) or the user interrupts
@@ -68,7 +68,7 @@ export async function watchInstance(name: string, opts: { timeout?: number } = {
   const url = `${client.configuredBaseUrl}/api/sse/instance/${encodeURIComponent(name)}?token=${encodeURIComponent(stored.jwt)}`;
 
   console.error(pc.dim(`Subscribing to live state for '${name}'…`));
-  if (opts.timeout) console.error(pc.dim(`(timeout ${opts.timeout}s — Ctrl+C to stop earlier)\n`));
+  if (opts.timeout) console.error(pc.dim(`(timeout ${opts.timeout}s - Ctrl+C to stop earlier)\n`));
   else console.error(pc.dim('(Press Ctrl+C to stop)\n'));
 
   let aborted = false;
@@ -83,7 +83,7 @@ export async function watchInstance(name: string, opts: { timeout?: number } = {
   const sse = await openSse({
     url,
     onOpen: () => {
-      console.error(pc.dim('✓ connected — streaming events'));
+      console.error(pc.dim('✓ connected - streaming events'));
     },
     onError: (err) => {
       console.error(pc.red('sse error:') + ' ' + err.message);

@@ -4,7 +4,7 @@ import { callGateway, emitInstanceStateChange } from '../../utils/gateway.js';
 import { logAuditAction } from '../../utils/audit.js';
 import { extractPhoneFromJid, type WebhookInstance } from './shared.js';
 
-// connection.update — instance connected/connecting/disconnected.
+// connection.update - instance connected/connecting/disconnected.
 export async function handleConnectionUpdate(
   instance: WebhookInstance,
   decodedName: string,

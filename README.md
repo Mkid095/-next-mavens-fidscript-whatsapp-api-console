@@ -27,14 +27,14 @@ FIDScript uses **passwordless magic-code authentication**. There are no password
 
 ### The flow
 
-1. **Frontend sends an email** to `POST /api/auth/request-code` (sign in) or `POST /api/auth/client/request-code` (create account). That is the *only* thing the frontend sends — `{ email }` (plus name + phone for registration).
-2. **Backend generates the code** server-side using Node's cryptographically-secure `crypto.randomInt`. The frontend never generates, sees, or handles the code — it only fires the request.
+1. **Frontend sends an email** to `POST /api/auth/request-code` (sign in) or `POST /api/auth/client/request-code` (create account). That is the *only* thing the frontend sends - `{ email }` (plus name + phone for registration).
+2. **Backend generates the code** server-side using Node's cryptographically-secure `crypto.randomInt`. The frontend never generates, sees, or handles the code - it only fires the request.
 3. **Backend emails the code** to the user via [Resend](https://resend.com), from `FIDScript <noreply@whatsapp.fidscript.com>`.
 4. **The user reads the code from their inbox** and types it into the 6-digit input.
 5. **Frontend sends `{ email, code }`** to `POST /api/auth/verify-code`. The backend compares it against the stored code and, on a match, issues a JWT.
 6. **Role is resolved by the server**: if the email belongs to the `users` table the user is an **admin**; if it belongs to the `clients` table they are a **client**. The matching JWT (`type: 'admin' | 'client'`) is returned and stored in `localStorage` (`fidscript_admin_token` or `fidscript_client_token`).
 
-> **The code is never on the client.** It exists only in server memory (briefly), in the user's email inbox, and — bcrypt-hashed — in the database. There is nothing on the frontend to inspect, reverse-engineer, or tamper with. Tampering with the client can at most submit a wrong code, which the server rejects.
+> **The code is never on the client.** It exists only in server memory (briefly), in the user's email inbox, and - bcrypt-hashed - in the database. There is nothing on the frontend to inspect, reverse-engineer, or tamper with. Tampering with the client can at most submit a wrong code, which the server rejects.
 
 ### Where each piece lives
 
@@ -55,7 +55,7 @@ FIDScript uses **passwordless magic-code authentication**. There are no password
 
 The magic-code system is designed so the client is never trusted with anything sensitive.
 
-- **Codes are generated on the server** with `crypto.randomInt(0, 1_000_000)` — never on the client. The client only ever sends an email address and a code the user typed.
+- **Codes are generated on the server** with `crypto.randomInt(0, 1_000_000)` - never on the client. The client only ever sends an email address and a code the user typed.
 - **Codes are stored bcrypt-hashed** (`cost = 10`) in the `auth_codes` table, never in plaintext. A database compromise does **not** reveal usable codes.
 - **Codes are one-time.** A successful verification marks the code `consumed_at`; it cannot be replayed.
 - **Codes expire** after **10 minutes**.
@@ -146,7 +146,7 @@ Backend config lives in `server/.env` (gitignored). Copy `server/.env.example` a
 | `JWT_SECRET` | JWT signing secret |
 | `CORS_ORIGIN` | Allowed CORS origin (`*` or your frontend URL) |
 | `DB_PATH` | SQLite file path (default `./fidscript.db`) |
-| `RESEND_API_KEY` | Resend API key — **required for magic-code emails** |
+| `RESEND_API_KEY` | Resend API key - **required for magic-code emails** |
 | `MAIL_FROM` | Sender address, e.g. `FIDScript <noreply@whatsapp.fidscript.com>` |
 | `EVOLUTION_API_URL` / `EVOLUTION_API_KEY` | WhatsApp gateway |
 | `PAYHERO_*` | M-Pesa STK push credentials |
@@ -158,7 +158,7 @@ Frontend config lives in `.env.local`:
 | --- | --- |
 | `VITE_API_URL` | Backend base URL (e.g. `https://whatsapp.fidscript.com`) |
 
-> **Production note:** the backend runs under PM2 from `server/ecosystem.config.cjs` (gitignored). Add `RESEND_API_KEY` and `MAIL_FROM` there too. The backend loads `.env` via `import 'dotenv/config'`, so values in `.env` are picked up automatically. Remember that `pm2 restart <name>` does **not** reload ecosystem env vars — use `pm2 restart ecosystem.config.cjs --update-env` (or rely on the dotenv loader, which always runs).
+> **Production note:** the backend runs under PM2 from `server/ecosystem.config.cjs` (gitignored). Add `RESEND_API_KEY` and `MAIL_FROM` there too. The backend loads `.env` via `import 'dotenv/config'`, so values in `.env` are picked up automatically. Remember that `pm2 restart <name>` does **not** reload ecosystem env vars - use `pm2 restart ecosystem.config.cjs --update-env` (or rely on the dotenv loader, which always runs).
 
 ---
 
@@ -252,7 +252,7 @@ SQLite via `sql.js` (in-memory, auto-persisted to `server/fidscript.db` on every
 | --- | --- | --- |
 | `id` | TEXT PK | UUID |
 | `email` | TEXT | Lowercased |
-| `code_hash` | TEXT | bcrypt hash — never the plaintext code |
+| `code_hash` | TEXT | bcrypt hash - never the plaintext code |
 | `purpose` | TEXT | `'login'` \| `'register'` |
 | `attempts` | INTEGER | Failed verify count (max 5) |
 | `consumed_at` | TEXT NULL | Set on success → one-time use |

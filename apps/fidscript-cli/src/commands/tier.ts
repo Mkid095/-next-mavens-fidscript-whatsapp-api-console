@@ -1,5 +1,5 @@
 /**
- * tier.ts — `fidscript tier` (alias: `fidscript quota`)
+ * tier.ts - `fidscript tier` (alias: `fidscript quota`)
  *
  * Shows the user's WhatsApp rate-limit tier, current daily/monthly usage,
  * token balance, and quality-rating state. Combines:

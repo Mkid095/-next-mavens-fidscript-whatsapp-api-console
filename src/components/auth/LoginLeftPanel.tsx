@@ -1,5 +1,5 @@
 /**
- * LoginLeftPanel.tsx — desktop marketing panel shown left of the auth form.
+ * LoginLeftPanel.tsx - desktop marketing panel shown left of the auth form.
  *
  * Sized to fit 100vh without scrolling. Renders: brand eyebrow, editorial
  * headline, lead paragraph, feature list, and a customer testimonial.
@@ -14,10 +14,10 @@ import {
 const FEATURES = [
   { icon: Smartphone, text: 'QR-code WhatsApp pairing in seconds' },
   { icon: MessageSquare, text: 'Send text, media, polls & more via REST API' },
-  { icon: CreditCard, text: 'KSh 100 for 1,000 tokens — no monthly fees' },
+  { icon: CreditCard, text: 'KSh 100 for 1,000 tokens - no monthly fees' },
   { icon: Gift, text: '500 free welcome tokens on signup' },
-  { icon: Shield, text: 'M-Pesa STK Push — M-Pesa-only billing' },
-  { icon: CheckCircle2, text: 'Tokens never expire — no time limits' },
+  { icon: Shield, text: 'M-Pesa STK Push - M-Pesa-only billing' },
+  { icon: CheckCircle2, text: 'Tokens never expire - no time limits' },
 ];
 
 export default function LoginLeftPanel() {
@@ -41,7 +41,7 @@ export default function LoginLeftPanel() {
         </h2>
 
         <p className="text-[13px] text-[#525252] leading-relaxed mb-5 max-w-md">
-          Send transactional messages, run marketing campaigns, and automate customer support — all from one developer-first API with M-Pesa billing built in.
+          Send transactional messages, run marketing campaigns, and automate customer support - all from one developer-first API with M-Pesa billing built in.
         </p>
 
         <ul className="space-y-1.5 mb-4">
@@ -60,7 +60,7 @@ export default function LoginLeftPanel() {
 
         <div className="mt-auto pt-3 border-t border-[#e5e5e5]">
           <p className="text-[11px] text-[#1a1a1a] leading-snug font-medium">
-            "FIDScript cut our customer notification costs by 70% — M-Pesa billing means no invoice chasing."
+            "FIDScript cut our customer notification costs by 70% - M-Pesa billing means no invoice chasing."
           </p>
           <div className="flex items-center gap-2 mt-2">
             <div className="w-6 h-6 rounded-full bg-[#fff7ed] flex items-center justify-center text-[#f97316] font-bold text-[9px] shrink-0">

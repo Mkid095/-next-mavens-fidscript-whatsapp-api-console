@@ -25,13 +25,13 @@ export function generatePrompt(
   }, {});
 
   // Project context + credentials + quick reference
-  nl(`# FIDScript WhatsApp API — Integration Prompt`);
+  nl(`# FIDScript WhatsApp API - Integration Prompt`);
   nl('');
   nl(`> Generated for ${clientName ? `"${clientName}"` : 'your application'} at ${new Date().toLocaleString()}`);
   nl('');
   nl(`## Project Context`);
   nl('');
-  nl(`You are integrating a WhatsApp Business API into a web or mobile application. The backend is a Node.js/Express server (or your chosen framework). The integration communicates with the **FIDScript WhatsApp API** — our platform that handles delivery to WhatsApp on your behalf, with built-in pacing, contact sync, and volume management so your account stays in good standing.`);
+  nl(`You are integrating a WhatsApp Business API into a web or mobile application. The backend is a Node.js/Express server (or your chosen framework). The integration communicates with the **FIDScript WhatsApp API** - our platform that handles delivery to WhatsApp on your behalf, with built-in pacing, contact sync, and volume management so your account stays in good standing.`);
   nl('');
   nl(`## API Credentials`);
   nl('');
@@ -54,8 +54,8 @@ export function generatePrompt(
   nl(`|---|---|`);
   nl(`| Token cost | Text = 1 token; Media/Status/Audio/Sticker = 2 tokens; Management ops = free |`);
   nl(`| Rate limits | Chat reads 10/sec/client (portal) · WhatsApp reads 3/sec/instance, mutations 2/sec/instance · Bulk send 10 MPS (30 MPS when queue ≥ 5,000) · Volume: 250 unique customers/day on Tier 0 (Tier 1: 1k · Tier 2: 10k · Tier 3: 100k · Tier 4: unlimited) · Phonebook sync 5/min |`);
-  nl(`| Idempotency | Send endpoints accept \`Idempotency-Key: <uuid>\` header — retries return cached result, no re-charge |`);
-  nl(`| Instance name | Your WhatsApp container name (e.g. \`my-shop\`) — passed as \`:instance\` path parameter |`);
+  nl(`| Idempotency | Send endpoints accept \`Idempotency-Key: <uuid>\` header - retries return cached result, no re-charge |`);
+  nl(`| Instance name | Your WhatsApp container name (e.g. \`my-shop\`) - passed as \`:instance\` path parameter |`);
   nl('');
 
   // Installation + base request helper
@@ -81,7 +81,7 @@ export function generatePrompt(
       const params = flattenFields(ep.bodyFields);
       const curlExample = buildCurl(ep, apiKey);
 
-      nl(`#### \`${ep.method} ${pathDisplay}\` — ${ep.name}`);
+      nl(`#### \`${ep.method} ${pathDisplay}\` - ${ep.name}`);
       nl('');
       nl(ep.desc);
       nl('');
@@ -91,9 +91,9 @@ export function generatePrompt(
       }
       nl(`**Path parameters:**`);
       if (ep.pathParams.length) {
-        for (const p of ep.pathParams) nl(`- \`${p.name}\` — ${p.desc || 'required path segment'}`);
+        for (const p of ep.pathParams) nl(`- \`${p.name}\` - ${p.desc || 'required path segment'}`);
       } else {
-        nl(`- (none — uses query params or request body)`);
+        nl(`- (none - uses query params or request body)`);
       }
       nl('');
 
@@ -135,20 +135,20 @@ export function generatePrompt(
   nl(`## Integration Notes`);
   nl('');
   for (const note of [
-    `1. **Instance name** — Replace \`{instanceName}\` in the path with your actual WhatsApp container name (e.g. \`my-shop\`, \`prod-instance\`). Get your container name from the dashboard.`,
-    `2. **Phone numbers** — Use international format without the \`+\` sign (e.g. \`254712345678\`, not \`+254712345678\`).`,
-    `3. **Media URLs** — For \`sendMedia\`, the \`media_url\` must be a publicly accessible URL (e.g. from your CDN or object storage).`,
-    `4. **Error handling** — Always check \`result.success\` before using \`result.data\`. On failure, \`result.error\` contains the error message.`,
-    `5. **Token balance** — Monitor your token balance at the dashboard. Top up at the Token Store.`,
-    `6. **Idempotency** — For send endpoints, pass \`Idempotency-Key: <uuid>\` header to prevent duplicate sends on retry.`,
+    `1. **Instance name** - Replace \`{instanceName}\` in the path with your actual WhatsApp container name (e.g. \`my-shop\`, \`prod-instance\`). Get your container name from the dashboard.`,
+    `2. **Phone numbers** - Use international format without the \`+\` sign (e.g. \`254712345678\`, not \`+254712345678\`).`,
+    `3. **Media URLs** - For \`sendMedia\`, the \`media_url\` must be a publicly accessible URL (e.g. from your CDN or object storage).`,
+    `4. **Error handling** - Always check \`result.success\` before using \`result.data\`. On failure, \`result.error\` contains the error message.`,
+    `5. **Token balance** - Monitor your token balance at the dashboard. Top up at the Token Store.`,
+    `6. **Idempotency** - For send endpoints, pass \`Idempotency-Key: <uuid>\` header to prevent duplicate sends on retry.`,
   ]) nl(note);
   nl('');
   nl(`## Webhook Integration`);
   nl('');
   nl(`Configure your webhook URL in the dashboard (Settings → Instance → Webhook). Events you can receive:`);
-  nl(`- \`messages.upsert\` — inbound messages (text, image, video, document, voice, etc.)`);
-  nl(`- \`connection.update\` — connection state changes (connected/disconnected)`);
-  nl(`- \`qrcode.updated\` — new QR code generated`);
+  nl(`- \`messages.upsert\` - inbound messages (text, image, video, document, voice, etc.)`);
+  nl(`- \`connection.update\` - connection state changes (connected/disconnected)`);
+  nl(`- \`qrcode.updated\` - new QR code generated`);
   nl('');
   nl(`Example webhook handler (Node.js/Express):`);
   nl('```javascript');

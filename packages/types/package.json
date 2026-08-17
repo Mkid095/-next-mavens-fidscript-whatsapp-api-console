@@ -1,7 +1,7 @@
 {
   "name": "@fidscript/types",
   "version": "0.0.0",
-  "description": "Shared TypeScript types for the FIDScript monorepo — SDK, CLI, and frontend.",
+  "description": "Shared TypeScript types for the FIDScript monorepo - SDK, CLI, and frontend.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

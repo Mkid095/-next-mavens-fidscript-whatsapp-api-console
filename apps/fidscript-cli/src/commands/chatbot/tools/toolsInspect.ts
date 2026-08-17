@@ -1,5 +1,5 @@
 /**
- * toolsInspect.ts — `fidscript chatbot tools <chatbot-id> detach <tool-id>`
+ * toolsInspect.ts - `fidscript chatbot tools <chatbot-id> detach <tool-id>`
  *
  * Detaches a tool from a chatbot.
  */

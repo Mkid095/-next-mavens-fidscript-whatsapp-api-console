@@ -1,5 +1,5 @@
 /**
- * ChangelogList.tsx — shared rendering of the changelog entries.
+ * ChangelogList.tsx - shared rendering of the changelog entries.
  *
  * Used by both:
  *  - ChangelogPage.tsx (the standalone /changelog page)

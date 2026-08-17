@@ -3,7 +3,7 @@ import { Search, X } from 'lucide-react';
 import { useSearch } from '../../data/hooks/shared/useSearch.js';
 import type { SearchHit } from '../../data/api/platform.js';
 
-// Phase 3 — Command-K universal search palette (§8).
+// Phase 3 - Command-K universal search palette (§8).
 // Listens for ⌘K / Ctrl-K globally while open. Rendered once near the app
 // shell so it's always available.
 interface CommandPaletteProps {

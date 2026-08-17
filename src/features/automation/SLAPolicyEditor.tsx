@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useSLAPolicies } from '../../data/hooks/automation/useSLAPolicies.js';
 
-// Phase 3 — SLA policy editor (§9.2).
+// Phase 3 - SLA policy editor (§9.2).
 // Each policy = (channel?, priority? → first_response_minutes, resolution_minutes).
 // Policies attach automatically to matching conversations and stamp deadlines.
 const CHANNELS = ['', 'whatsapp', 'sms', 'email', 'instagram'] as const;

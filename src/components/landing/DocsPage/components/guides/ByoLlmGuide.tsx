@@ -9,7 +9,7 @@ export function ByoLlmGuide() {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Bring Your Own LLM</h1>
       <p className="text-sm text-[#525252] mb-8">
-        Wire any LLM provider into your chatbot — OpenAI, Anthropic, Google Gemini,
+        Wire any LLM provider into your chatbot - OpenAI, Anthropic, Google Gemini,
         OpenRouter, Azure, or your own self-hosted endpoint. Your API key is encrypted at
         rest and never leaves the FIDScript backend.
       </p>

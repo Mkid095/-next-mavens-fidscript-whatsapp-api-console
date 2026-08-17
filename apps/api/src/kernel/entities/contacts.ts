@@ -1,9 +1,9 @@
 import db from '../../database.js';
-// TODO: Phase 4 — identity — WorkspaceContext lives in modules/platform/workspace/index.ts
+// TODO: Phase 4 - identity - WorkspaceContext lives in modules/platform/workspace/index.ts
 import type { WorkspaceContext } from '../../modules/platform/workspace/index.js';
 
 // =============================================================================
-// getCustomer — workspace-scoped customer lookup.
+// getCustomer - workspace-scoped customer lookup.
 // =============================================================================
 
 interface CustomerRow { id: string; display_name: string | null }
@@ -19,7 +19,7 @@ export function getCustomer(
 }
 
 // =============================================================================
-// getConversation — workspace-scoped conversation lookup.
+// getConversation - workspace-scoped conversation lookup.
 // =============================================================================
 
 interface ConversationRow { id: string }

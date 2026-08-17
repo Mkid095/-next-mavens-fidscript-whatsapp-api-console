@@ -4,7 +4,7 @@ const INSTANCE_PARAM = { name: 'instance', desc: 'Your WhatsApp instance name', 
 
 const RESPONSE_BASE = { messageId: 'msg_3f8a1c2b9d4e', to: '254712345678', timestamp: '2026-06-15T09:30:00.000Z' };
 
-/** Send endpoints — each deducts tokens (see tokenCosts). */
+/** Send endpoints - each deducts tokens (see tokenCosts). */
 export const messagingEndpoints: ApiEndpoint[] = [
   {
     id: 'messages.sendText', version: 'v1', method: 'POST',

@@ -33,7 +33,7 @@ async function runSettings(ctx: SendContext, slug: string, method: string, body?
   return { ok: true, data: res.data as Record<string, unknown> };
 }
 
-// Profile — reads V1_READ, updates V1_STRICT
+// Profile - reads V1_READ, updates V1_STRICT
 export const fetchProfile = (ctx: SendContext, number: string) =>
   run(ctx, 'fetchProfile', 'POST', { number });
 export const fetchPrivacySettings = (ctx: SendContext) =>
@@ -47,7 +47,7 @@ export const updateProfilePicture = (ctx: SendContext, picture: string) =>
 export const removeProfilePicture = (ctx: SendContext) =>
   run(ctx, 'removeProfilePicture', 'DELETE');
 
-// Settings — reads V1_READ, updates V1_STRICT
+// Settings - reads V1_READ, updates V1_STRICT
 export const findSettings = (ctx: SendContext) =>
   runSettings(ctx, 'find', 'GET');
 export const setSettings = (ctx: SendContext, a: { rejectCall?: boolean; msgCall?: string; groupsIgnore?: boolean; alwaysOnline?: boolean; readMessages?: boolean; readStatus?: boolean; syncFullHistory?: boolean }) =>

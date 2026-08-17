@@ -1,5 +1,5 @@
 /**
- * logout.ts — clear stored credentials (JWT + API key).
+ * logout.ts - clear stored credentials (JWT + API key).
  *
  * Wipes ~/.fidscript/credentials and unsets relevant env vars.
  */

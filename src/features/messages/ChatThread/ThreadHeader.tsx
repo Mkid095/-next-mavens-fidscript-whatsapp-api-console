@@ -107,7 +107,7 @@ export default function ThreadHeader({
         <div className="flex items-center justify-center gap-2 border-b border-[#3d3823] bg-[#1a1915] px-4 py-1.5">
           <ShieldOff size={12} className="text-[#eab308]" />
           <span className="text-[11px] font-medium text-[#a8a99e]">
-            AI paused — you are replying manually
+            AI paused - you are replying manually
           </span>
           <button
             onClick={handleResumeAi}

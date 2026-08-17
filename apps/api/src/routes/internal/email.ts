@@ -1,11 +1,11 @@
 /**
- * Internal email endpoints — the centralized, provider-agnostic way for any
+ * Internal email endpoints - the centralized, provider-agnostic way for any
  * backend service (or future cross-process worker) to send email.
  *
- *   POST /api/internal/email/send       — send a pre-rendered email
- *   POST /api/internal/email/template    — send a templated email
- *   GET  /api/internal/email/log         — recent send log (for diagnostics)
- *   GET  /api/internal/email/provider    — which provider is active
+ *   POST /api/internal/email/send       - send a pre-rendered email
+ *   POST /api/internal/email/template    - send a templated email
+ *   GET  /api/internal/email/log         - recent send log (for diagnostics)
+ *   GET  /api/internal/email/provider    - which provider is active
  *
  * No auth by design: these are internal-only routes. They MUST be mounted
  * behind a network policy (localhost bind, private subnet, or an auth

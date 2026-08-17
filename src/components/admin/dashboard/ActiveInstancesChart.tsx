@@ -22,7 +22,7 @@ export default function ActiveInstancesChart({ dailyTrends = [] }: ActiveInstanc
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-[15px] font-bold text-white">Messages per Day</h3>
-          <p className="text-xs text-[#6e684a]">Daily volume — last 7 days</p>
+          <p className="text-xs text-[#6e684a]">Daily volume - last 7 days</p>
         </div>
         <div className="flex items-center gap-1 bg-[#2d2813] border border-[#2d2813] rounded-xl px-3 py-1.5 text-xs text-[#a8a99e] font-medium">
           Last 7 days

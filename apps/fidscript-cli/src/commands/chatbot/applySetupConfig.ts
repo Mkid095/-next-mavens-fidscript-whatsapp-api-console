@@ -1,5 +1,5 @@
 /**
- * applySetupConfig.ts — Apply a SetupConfig to the API (headless path).
+ * applySetupConfig.ts - Apply a SetupConfig to the API (headless path).
  */
 import type { ApiClient } from '../../lib/api-client.js';
 import type { InstanceRow } from './wizardHelpers.js';

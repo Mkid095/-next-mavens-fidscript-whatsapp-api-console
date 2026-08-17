@@ -1,5 +1,5 @@
 /**
- * sseConnectionHandlers.ts — SSE handlers: dashboard, refresh
+ * sseConnectionHandlers.ts - SSE handlers: dashboard, refresh
  */
 import type { Request, Response } from 'express';
 import { verifyToken } from '../middleware/auth/jwt.js';

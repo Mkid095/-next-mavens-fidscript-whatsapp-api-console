@@ -22,7 +22,7 @@ function asString(v: unknown): string | null {
 /**
  * Pull the human-readable message out of an the gateway error body. the gateway
  * returns validation failures as { error: "Bad Request", response: { message:
- * [["field does not meet minimum length of 1"]] } } — the useful detail is
+ * [["field does not meet minimum length of 1"]] } } - the useful detail is
  * nested under response.message as an array of arrays, NOT in the top-level
  * `error` (which is just the HTTP status text). Without this we surfaced only
  * "Bad Request" and hid the real cause.
@@ -150,7 +150,7 @@ export const sendStatus = wrapSend(async (ctx, args: { type: 'text' | 'image' | 
   // (the docs example ships allContacts:true with a non-empty list). When the
   // caller did not specify recipients, seed the list with the sender's own JID;
   // with allContacts=true the list contents are ignored for delivery, so the
-  // broadcast still reaches every contact — it just satisfies the validator.
+  // broadcast still reaches every contact - it just satisfies the validator.
   let statusJidList = args.statusJidList && args.statusJidList.length ? args.statusJidList : [];
   if (statusJidList.length === 0) {
     let self = (ctx.instance as { phone_number?: string | null }).phone_number;

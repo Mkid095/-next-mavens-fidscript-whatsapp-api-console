@@ -108,7 +108,7 @@ export function emitMessageReceipt(instanceName: string, chatId: string, message
 }
 
 /**
- * Emit a confirmed outbound message event for an instance — fired immediately after
+ * Emit a confirmed outbound message event for an instance - fired immediately after
  * the DB write succeeds (before webhook echo). Used by SSE so the open thread
  * replaces the optimistic bubble with the real server-issued id.
  */
@@ -128,7 +128,7 @@ export function emitMessageSent(instanceName: string, msg: {
 
 /**
  * Emit a presence/typing event for an instance (recipient is composing).
- * Ephemeral — pushed to SSE so the inbox shows a typing indicator.
+ * Ephemeral - pushed to SSE so the inbox shows a typing indicator.
  */
 export function emitPresence(instanceName: string, chatId: string, presence: string, fromName?: string | null) {
   instanceEmitter.emit('presence', instanceName, { chatId, presence, fromName: fromName ?? null });

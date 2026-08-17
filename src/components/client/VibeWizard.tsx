@@ -18,7 +18,7 @@ type WizardStep = 1 | 2 | 3;
 const STEP_LABELS = ['Verify Credentials', 'Select Endpoints', 'AI Integration Prompt'];
 
 /**
- * Phase 3 Vibe Coding Wizard — 3-step AI prompt generator.
+ * Phase 3 Vibe Coding Wizard - 3-step AI prompt generator.
  * Step 1 collects credentials (api key paste + optional container).
  * Step 2 picks endpoints from the live registry.
  * Step 3 generates a complete integration-prompt markdown for the user's

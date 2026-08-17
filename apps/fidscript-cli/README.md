@@ -1,6 +1,6 @@
 # @fidscript/cli
 
-FIDScript WhatsApp CLI — manage instances, send messages, and more from your terminal.
+FIDScript WhatsApp CLI - manage instances, send messages, and more from your terminal.
 
 ## Install
 
@@ -17,11 +17,11 @@ npm install -g @fidscript/cli
 ## Get Started
 
 ```bash
-# Option A — magic-code sign-in (recommended)
+# Option A - magic-code sign-in (recommended)
 fidscript login --email you@example.com
 # → check email for code, paste it back
 
-# Option B — API key only
+# Option B - API key only
 export FIDSCRIPT_API_KEY=fidscript_live_xxx
 fidscript whoami
 ```

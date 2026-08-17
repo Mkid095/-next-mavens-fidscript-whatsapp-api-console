@@ -69,7 +69,7 @@ CLI reads `fidscript.config.ts` in project root when running `fidscript new` sca
 
 | File | Purpose |
 |------|---------|
-| `src/cli.ts` | Commander root — registers all command families |
+| `src/cli.ts` | Commander root - registers all command families |
 | `src/main.ts` | Entry point |
 | `src/commands/index.ts` | Registers all command modules |
 | `src/lib/api-client.ts` | REST client with retry + HMAC auth |

@@ -1,5 +1,5 @@
 /**
- * instance/delete.ts — delete an instance (DB row + Evolution API).
+ * instance/delete.ts - delete an instance (DB row + Evolution API).
  * Auth: JWT. Calls DELETE /api/instance/delete/:name.
  */
 import {

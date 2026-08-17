@@ -55,7 +55,7 @@ export default function WebhooksTab() {
 
       {createdSecret && (
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl">
-          <p className="text-[10px] font-bold text-amber-900 mb-1">Signing secret — copy now, won't show again</p>
+          <p className="text-[10px] font-bold text-amber-900 mb-1">Signing secret - copy now, won't show again</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-[11px] font-mono bg-white px-2 py-1.5 rounded border border-amber-200 truncate">{createdSecret}</code>
             <button onClick={() => copySecret(createdSecret)} className="p-1.5 bg-white border border-amber-200 rounded-lg">

@@ -1,5 +1,5 @@
 /**
- * chatbot/tools.ts — list / attach / detach tools on a chatbot.
+ * chatbot/tools.ts - list / attach / detach tools on a chatbot.
  * Auth: JWT.
  *   - list:   GET    /api/platform/chatbots/:id/tools
  *   - attach: POST   /api/platform/chatbots/:id/tools        { tool_ids: [...] }

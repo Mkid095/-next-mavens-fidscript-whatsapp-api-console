@@ -4,7 +4,7 @@ import db from '../../database.js';
 
 // =============================================================================
 // Persist every domain event to domain_events (timeline + replay + analytics).
-// Called by dispatchImpl.ts at emit time — no wildcard subscriber needed.
+// Called by dispatchImpl.ts at emit time - no wildcard subscriber needed.
 // =============================================================================
 
 interface EntityInfo {

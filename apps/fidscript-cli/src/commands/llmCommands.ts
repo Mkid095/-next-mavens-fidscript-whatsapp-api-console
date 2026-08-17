@@ -1,5 +1,5 @@
 /**
- * llmCommands.ts — LLM connection management commands
+ * llmCommands.ts - LLM connection management commands
  */
 import type { Command } from 'commander';
 

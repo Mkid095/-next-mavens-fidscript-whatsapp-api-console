@@ -1,5 +1,5 @@
 /**
- * /api/v1/customers — customer read API for external developers.
+ * /api/v1/customers - customer read API for external developers.
  * Auth: API key (clientApiKeyAuth). Returns workspace-scoped data.
  */
 import { Router, Request, Response } from 'express';
@@ -14,7 +14,7 @@ function clientId(req: Request): string {
   return req.client!.id;
 }
 
-/** GET /api/v1/customers — list customers */
+/** GET /api/v1/customers - list customers */
 router.get('/', (req: Request, res: Response) => {
   try {
     const q = (req.query.q as string | undefined)?.trim();
@@ -52,7 +52,7 @@ router.get('/', (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/v1/customers/:id — customer detail */
+/** GET /api/v1/customers/:id - customer detail */
 router.get('/:id', (req: Request, res: Response) => {
   try {
     const customer = db.prepare(`
@@ -74,7 +74,7 @@ router.get('/:id', (req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/customers — create a customer record */
+/** POST /api/v1/customers - create a customer record */
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { display_name, channel, identifier_value, identifier_label } = req.body as {
@@ -105,7 +105,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-/** PATCH /api/v1/customers/:id — update a customer */
+/** PATCH /api/v1/customers/:id - update a customer */
 router.patch('/:id', (req: Request, res: Response) => {
   try {
     const { display_name } = req.body as { display_name?: string };
@@ -124,7 +124,7 @@ router.patch('/:id', (req: Request, res: Response) => {
   }
 });
 
-/** DELETE /api/v1/customers/:id — remove a customer */
+/** DELETE /api/v1/customers/:id - remove a customer */
 router.delete('/:id', (req: Request, res: Response) => {
   try {
     const existing = db.prepare('SELECT id FROM customers WHERE id = ? AND workspace_id = ?').get(req.params.id, clientId(req));
@@ -141,7 +141,7 @@ router.delete('/:id', (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/v1/customers/:id/timeline — domain events */
+/** GET /api/v1/customers/:id/timeline - domain events */
 router.get('/:id/timeline', (req: Request, res: Response) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 100, 500);

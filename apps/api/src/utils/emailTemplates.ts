@@ -39,7 +39,7 @@ function renderTemplate({ code, purposeText }: TemplateContext): string {
                   </td>
                 </tr>
               </table>
-              <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#7d8071;">This code expires in <strong style="color:#525345;">10 minutes</strong>. If you didn't request it, you can safely ignore this email — no one has accessed your account.</p>
+              <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#7d8071;">This code expires in <strong style="color:#525345;">10 minutes</strong>. If you didn't request it, you can safely ignore this email - no one has accessed your account.</p>
             </td>
           </tr>
           <tr>
@@ -79,5 +79,5 @@ Enter this code to ${action}. The code expires in 10 minutes.
 
 If you didn't request this code, you can safely ignore this email.
 
-FIDScript by Next Mavens — https://whatsapp.fidscript.com`;
+FIDScript by Next Mavens - https://whatsapp.fidscript.com`;
 }

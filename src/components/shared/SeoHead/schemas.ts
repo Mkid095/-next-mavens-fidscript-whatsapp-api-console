@@ -1,5 +1,5 @@
 /**
- * schemas — all JSON-LD structured data helpers for SeoHead.
+ * schemas - all JSON-LD structured data helpers for SeoHead.
  * Exported as a separate module so the data constants don't bloat SeoHeadMain.
  */
 
@@ -126,7 +126,7 @@ export function productSchema(
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: SITE_NAME,
-    description: 'WhatsApp API platform — token-based messaging for Kenyan businesses',
+    description: 'WhatsApp API platform - token-based messaging for Kenyan businesses',
     brand: { '@type': 'Brand', name: 'FIDScript' },
     provider: ORGANIZATION_SCHEMA,
     offers: plans.map(({ name, price, desc }) => ({
@@ -168,7 +168,7 @@ export const API_DOC_SCHEMA = {
   '@type': 'TechArticle',
   name: 'FIDScript WhatsApp API Reference',
   description:
-    'Complete REST API reference for FIDScript WhatsApp platform — messaging, groups, contacts, profile, and instance management.',
+    'Complete REST API reference for FIDScript WhatsApp platform - messaging, groups, contacts, profile, and instance management.',
   url: `${BASE_URL}/docs`,
   publisher: ORGANIZATION_SCHEMA,
   programmingLanguage: 'REST',
@@ -225,7 +225,7 @@ export const FEATURES_FAQS = [
   },
   {
     q: 'What messaging types are supported?',
-    a: 'FIDScript supports text, images, audio, video, documents, locations, contacts, reactions, polls, stickers, and status messages — for both one-on-one and group conversations.',
+    a: 'FIDScript supports text, images, audio, video, documents, locations, contacts, reactions, polls, stickers, and status messages - for both one-on-one and group conversations.',
   },
   {
     q: 'How does M-Pesa billing work?',
@@ -233,11 +233,11 @@ export const FEATURES_FAQS = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'Yes — new accounts receive 500 free welcome tokens. No payment is required to get started.',
+    a: 'Yes - new accounts receive 500 free welcome tokens. No payment is required to get started.',
   },
   {
     q: 'Can I use my own WhatsApp number?',
-    a: 'Yes. You connect your existing WhatsApp number by scanning a QR code from your phone — no new SIM or number required.',
+    a: 'Yes. You connect your existing WhatsApp number by scanning a QR code from your phone - no new SIM or number required.',
   },
 ];
 

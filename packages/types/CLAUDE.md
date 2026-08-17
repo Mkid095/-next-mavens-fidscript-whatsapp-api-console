@@ -1,4 +1,4 @@
-# packages/types — Shared TypeScript Types
+# packages/types - Shared TypeScript Types
 
 ## Overview
 
@@ -44,9 +44,9 @@ This package has **no runtime dependencies**. It should stay as pure TypeScript 
 ## Rules
 
 - No runtime dependencies (imports from other monorepo packages must be types only)
-- No `any` — use proper generic types or `unknown` with type guards
+- No `any` - use proper generic types or `unknown` with type guards
 - All types must be exported through the appropriate subpath entry
-- Do not include implementation logic — types only
+- Do not include implementation logic - types only
 
 ## Consumer Projects
 

@@ -4,7 +4,7 @@ import { useAIRules } from '../../data/hooks/agents/useAIRules.js';
 
 const STATES = ['ai_active', 'ai_paused', 'human_active', 'escalated'] as const;
 
-// Phase 4 — keyword rule editor (§10.1). One row per rule: keyword + reply +
+// Phase 4 - keyword rule editor (§10.1). One row per rule: keyword + reply +
 // confidence + escalation behavior. Mirrors the AI inbound pipeline config.
 export default function KeywordRuleEditor() {
   const { rules, create, remove } = useAIRules();

@@ -1,5 +1,5 @@
 /**
- * chatbot/delete.ts — delete a chatbot (requires --confirm).
+ * chatbot/delete.ts - delete a chatbot (requires --confirm).
  * Auth: JWT. DELETE /api/platform/chatbots/:id
  */
 import {

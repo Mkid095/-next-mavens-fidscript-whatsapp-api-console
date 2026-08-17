@@ -8,7 +8,7 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Don't refetch on every focus — we handle that via SSE invalidation
+      // Don't refetch on every focus - we handle that via SSE invalidation
       // which is faster and avoids unnecessary requests.
       // staleTime: 60s means data is "fresh" for 60s before a background
       // refetch is even considered on the next component mount.

@@ -1,5 +1,5 @@
 // =============================================================================
-// useSearch — universal search hook (§8) for Command-K.
+// useSearch - universal search hook (§8) for Command-K.
 // Debounced; returns grouped hits across customers/messages/orders/etc.
 // =============================================================================
 

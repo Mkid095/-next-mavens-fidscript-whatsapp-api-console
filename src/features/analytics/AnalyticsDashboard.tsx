@@ -1,5 +1,5 @@
 /**
- * AnalyticsDashboard.tsx — full workspace analytics dashboard.
+ * AnalyticsDashboard.tsx - full workspace analytics dashboard.
  *
  * Shows today's overview KPIs, a trend chart, and breakdowns by category.
  * Consumes platformApi.analyticsOverview() and platformApi.analyticsQuery().
@@ -112,7 +112,7 @@ export default function AnalyticsDashboard() {
             <p className="text-lg font-black text-green-400 font-mono">
               {overview['sla_breached']
                 ? `${Math.round((1 - (overview['sla_breached'] as number) / Math.max(overview['conversations_created'] as number, 1)) * 100)}%`
-                : '—'}
+                : '-'}
             </p>
           </div>
         </div>

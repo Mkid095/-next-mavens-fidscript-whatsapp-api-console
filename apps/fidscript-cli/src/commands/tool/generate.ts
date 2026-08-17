@@ -1,8 +1,8 @@
 /**
- * tool/generate.ts — `fidscript tools generate`
+ * tool/generate.ts - `fidscript tools generate`
  *
  * Auto-generate tools from an OpenAPI spec or a database schema.
- * Eliminates manual tool creation — the #1 friction point.
+ * Eliminates manual tool creation - the #1 friction point.
  *
  * Usage:
  *   fidscript tools generate --data-source <id> --from-openapi @spec.json

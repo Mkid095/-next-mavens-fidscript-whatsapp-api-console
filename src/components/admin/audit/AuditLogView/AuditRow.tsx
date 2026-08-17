@@ -106,7 +106,7 @@ export default function AuditRow({ event }: AuditRowProps) {
             <span className="text-[9px] font-mono text-stone-600">{event.ipAddress}</span>
           </div>
         ) : (
-          <span className="text-[9px] text-stone-300">—</span>
+          <span className="text-[9px] text-stone-300">-</span>
         )}
       </div>
 

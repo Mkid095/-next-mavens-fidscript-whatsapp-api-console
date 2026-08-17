@@ -143,7 +143,7 @@ const organizationSchema = {
 const webPageSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'Privacy Policy — FIDScript',
+  name: 'Privacy Policy - FIDScript',
   description: 'Next Mavens / FIDScript Privacy Policy covering data collection, M-Pesa, Google Contacts import, Kenyan DPA compliance, and user rights.',
   url: `${BASE_URL}/privacy`,
   isPartOf: { '@id': `${BASE_URL}/#website` },
@@ -165,20 +165,20 @@ const html = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#0c0b06" />
 <meta name="color-scheme" content="dark" />
-<title>Privacy Policy — FIDScript by Next Mavens</title>
-<meta name="description" content="Next Mavens / FIDScript Privacy Policy — data collection, Google Contacts import (Limited Use), M-Pesa payment handling, third-party sharing disclosures, Kenyan DPA compliance, and your data rights." />
+<title>Privacy Policy - FIDScript by Next Mavens</title>
+<meta name="description" content="Next Mavens / FIDScript Privacy Policy - data collection, Google Contacts import (Limited Use), M-Pesa payment handling, third-party sharing disclosures, Kenyan DPA compliance, and your data rights." />
 <link rel="canonical" href="${BASE_URL}/privacy" />
 <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="shortcut icon" href="/favicon.ico" />
-<meta property="og:title" content="Privacy Policy — FIDScript by Next Mavens" />
+<meta property="og:title" content="Privacy Policy - FIDScript by Next Mavens" />
 <meta property="og:description" content="Data collection, Google Contacts import (Limited Use), M-Pesa billing, Kenyan DPA compliance, and your data rights." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="${BASE_URL}/privacy" />
 <meta property="og:site_name" content="FIDScript WhatsApp API" />
 <meta property="og:locale" content="en_KE" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Privacy Policy — FIDScript by Next Mavens" />
+<meta name="twitter:title" content="Privacy Policy - FIDScript by Next Mavens" />
 <meta name="twitter:description" content="Data collection, Google Contacts import (Limited Use), M-Pesa billing, Kenyan DPA compliance, and your data rights." />
 <script type="application/ld+json">${JSON.stringify(organizationSchema)}</script>
 <script type="application/ld+json">${JSON.stringify(webPageSchema)}</script>

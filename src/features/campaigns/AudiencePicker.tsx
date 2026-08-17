@@ -44,7 +44,7 @@ export default function AudiencePicker({
       ) : mode === 'contacts' ? (
         <div className="max-h-40 overflow-y-auto border border-[#2d2813] rounded-xl divide-y divide-[#2d2813] bg-[#1a1915]">
           {savedContacts.length === 0 ? (
-            <p className="p-3 text-[11px] text-[#6e684a]">No contacts yet — import some from the Contacts section.</p>
+            <p className="p-3 text-[11px] text-[#6e684a]">No contacts yet - import some from the Contacts section.</p>
           ) : savedContacts.map(c => {
             const sel = selectedContactIds.has(c.id);
             return (

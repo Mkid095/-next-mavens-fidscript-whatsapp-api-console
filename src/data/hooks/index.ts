@@ -1,4 +1,4 @@
-// Data Layer hooks barrel — components consume these, never the API directly (P7).
+// Data Layer hooks barrel - components consume these, never the API directly (P7).
 // Re-exports from sub-folders for backwards-compatible surface area.
 
 export { useConversations } from './conversations/index.js';

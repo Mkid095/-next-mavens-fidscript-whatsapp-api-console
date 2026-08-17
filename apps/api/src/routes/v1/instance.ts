@@ -6,7 +6,7 @@ import type { SendContext, SendResult } from '../../services/whatsapp/shared.js'
 import { connectionState, logout, setPresence, restart, connectInstance, connectWithLogout } from '../../services/whatsapp/instanceOps.js';
 
 /**
- * /api/v1/instance/* — connection lifecycle. No tokens (free).
+ * /api/v1/instance/* - connection lifecycle. No tokens (free).
  * Reads get V1_MUTATE (120/min), restart/logout get V1_STRICT (30/min).
  * Restart requires explicit confirmation via body.confirm=true or
  * X-Confirm-Restart: true header (428 if missing).

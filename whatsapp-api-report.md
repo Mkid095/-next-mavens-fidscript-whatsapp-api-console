@@ -1,4 +1,4 @@
-# WhatsApp Evolution API — Comprehensive System Report
+# WhatsApp Evolution API - Comprehensive System Report
 
 **Date:** 2026-08-05  
 **System:** Next Mavens Fidscript WhatsApp API (built on Evolution API)  
@@ -694,7 +694,7 @@ curl -X POST "https://whatsappapi.fidscript.com/settings/set/my_business" \
 
 ### 2.13 Integration Layer (Webhooks & Events)
 
-Located in `src/api/integrations/event/event.router.ts` — handles incoming webhooks and event subscriptions for real-time message receiving.
+Located in `src/api/integrations/event/event.router.ts` - handles incoming webhooks and event subscriptions for real-time message receiving.
 
 ---
 
@@ -712,9 +712,9 @@ Header: apikey: YOUR_API_KEY
 
 For instance-scoped routes, three guards are applied in order:
 
-1. **`instanceExistsGuard`** — Verifies the instance exists
-2. **`instanceLoggedGuard`** — Verifies the WhatsApp account is connected
-3. **`authGuard['apikey']`** — Validates the API key
+1. **`instanceExistsGuard`** - Verifies the instance exists
+2. **`instanceLoggedGuard`** - Verifies the WhatsApp account is connected
+3. **`authGuard['apikey']`** - Validates the API key
 
 ### Environment Configuration
 
@@ -1091,13 +1091,13 @@ POST /message/sendButtons/support_instance
 **Recommendations for external systems:**
 
 1. **Implement retry with exponential backoff** (5xx errors)
-2. **Cache instance connection state** — don't poll `/connectionState` frequently
+2. **Cache instance connection state** - don't poll `/connectionState` frequently
 3. **Use webhooks for incoming messages** instead of polling
 4. **Monitor `/anti-ban/health`** before sending campaigns
 5. **Use `delay` parameter** (milliseconds) for time-distributed sending
 6. **Set `maxPerMinute`** in campaign to control throughput
 7. **Validate phone numbers** before sending (E.164 format recommended)
-8. **Handle rate limit responses** — `429 Too Many Requests` with `retryAfterMs`
+8. **Handle rate limit responses** - `429 Too Many Requests` with `retryAfterMs`
 
 ---
 

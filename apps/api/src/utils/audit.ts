@@ -3,7 +3,7 @@ import type { Request } from 'express';
 import db from '../database.js';
 
 // =============================================================================
-// Legacy audit helpers — now backfilled with the new columns (§6.4).
+// Legacy audit helpers - now backfilled with the new columns (§6.4).
 // Existing 84 call sites continue to work; the new before/after JSON
 // columns are populated when caller passes an object via parseDetails().
 // =============================================================================
@@ -20,7 +20,7 @@ function splitDetails(details?: string): { before_json: string | null; after_jso
       };
     }
   } catch {
-    // not JSON — fall through
+    // not JSON - fall through
   }
   return { before_json: null, after_json: null };
 }

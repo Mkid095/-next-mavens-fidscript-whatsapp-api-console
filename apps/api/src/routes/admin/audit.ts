@@ -7,7 +7,7 @@ router.use(adminAuth);
 
 /**
  * GET /api/admin/audit/events
- * Platform admin audit log — returns all audit_logs rows across all workspaces.
+ * Platform admin audit log - returns all audit_logs rows across all workspaces.
  * Protected: adminAuth middleware.
  */
 router.get('/events', (req: Request, res: Response) => {

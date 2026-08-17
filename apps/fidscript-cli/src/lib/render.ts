@@ -1,5 +1,5 @@
 /**
- * render.ts — output rendering: tables, colored status, ASCII QR, JSON, YAML
+ * render.ts - output rendering: tables, colored status, ASCII QR, JSON, YAML
  */
 import QRCode from 'qrcode';
 import pc from 'picocolors';

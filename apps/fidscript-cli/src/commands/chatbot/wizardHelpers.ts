@@ -1,5 +1,5 @@
 /**
- * wizardHelpers.ts — TTY prompts and input helpers for the chatbot setup wizard.
+ * wizardHelpers.ts - TTY prompts and input helpers for the chatbot setup wizard.
  */
 import { createInterface } from 'node:readline/promises';
 import { stdin, stderr } from 'node:process';

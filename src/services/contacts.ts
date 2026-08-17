@@ -90,7 +90,7 @@ export function openGoogleOAuthPopup(): Promise<void> {
       // /google/auth-url returns {success, url} at root, not wrapped in data
       const authUrl = res.data?.url || (res as any).url;
       if (!authUrl) {
-        reject(new Error('Server returned an empty auth URL — try again'));
+        reject(new Error('Server returned an empty auth URL - try again'));
         return;
       }
 
@@ -112,7 +112,7 @@ export function openGoogleOAuthPopup(): Promise<void> {
               reject(new Error(decodeURIComponent(errMatch?.[1] || 'Google OAuth failed')));
             }
           } catch {
-            // Cross-origin — can't read URL yet, keep polling
+            // Cross-origin - can't read URL yet, keep polling
           }
         }, 500);
 
@@ -125,7 +125,7 @@ export function openGoogleOAuthPopup(): Promise<void> {
           }
         }, 1000);
       } else {
-        // Popup blocked — fall back to redirect flow (works on mobile)
+        // Popup blocked - fall back to redirect flow (works on mobile)
         console.warn('[GoogleOAuth] popup blocked, falling back to redirect');
         sessionStorage.setItem('google_oauth_pending', '1');
         window.location.href = authUrl;
@@ -212,7 +212,7 @@ export const campaignsApi = {
 
   delete: (id: string) => fetchApi<void>(`/api/campaigns/${id}`, { method: 'DELETE' }),
 
-  // Phase 5 Slice D — Trigger + Drip
+  // Phase 5 Slice D - Trigger + Drip
   listSteps: (campaignId: string) => fetchApi<unknown[]>(`/api/campaigns/${campaignId}/steps`),
   createStep: (campaignId: string, body: { step_order?: number; delay_seconds?: number; action_type: string; action_config?: unknown }) =>
     fetchApi<unknown>(`/api/campaigns/${campaignId}/steps`, { method: 'POST', body: JSON.stringify(body) }),

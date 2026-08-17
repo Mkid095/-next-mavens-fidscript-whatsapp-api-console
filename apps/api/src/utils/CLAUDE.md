@@ -1,4 +1,4 @@
-# apps/api/src/utils — Utility Functions
+# apps/api/src/utils - Utility Functions
 
 ## Purpose
 

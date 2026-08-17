@@ -15,7 +15,7 @@ function resolveTarget(endpoint: string): { url: string; auth: 'apikey' } | null
     const stripped = endpoint.replace(/^\/api\/v1/, '');
     return { url: `${apiBase}/v1${stripped}`, auth: 'apikey' };
   }
-  // Sandbox + internal routes — reject (sandbox is for client-facing APIs only)
+  // Sandbox + internal routes - reject (sandbox is for client-facing APIs only)
   return null;
 }
 
@@ -70,7 +70,7 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
       }
       headers['X-API-Key'] = activeKey.api_key;
     } else {
-      // JWT auth — read the caller's session token from the request
+      // JWT auth - read the caller's session token from the request
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ success: false, error: 'This /api/platform/* endpoint requires JWT auth. Run `fidscript login` first.' });
@@ -97,7 +97,7 @@ router.post('/exec', clientJwtAuth, async (req: Request, res: Response) => {
 
 /**
  * GET /api/sandbox/key/:keyId
- * Return the full API key for a given key ID — for the Vibe Wizard prompt generator.
+ * Return the full API key for a given key ID - for the Vibe Wizard prompt generator.
  * The key is looked up server-side so the secret never has to be stored client-side.
  */
 router.get('/key/:keyId', clientJwtAuth, async (req: Request, res: Response) => {
@@ -116,7 +116,7 @@ router.get('/key/:keyId', clientJwtAuth, async (req: Request, res: Response) => 
 
 /**
  * GET /api/sandbox/instances
- * List all instances for the client with their status — for the sandbox UI instance selector
+ * List all instances for the client with their status - for the sandbox UI instance selector
  */
 router.get('/instances', clientJwtAuth, async (req: Request, res: Response) => {
   try {

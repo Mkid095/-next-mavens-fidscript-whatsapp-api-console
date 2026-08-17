@@ -10,7 +10,7 @@ interface ListSendModalProps {
 }
 
 /**
- * ListSendModal — send an interactive list message (sections + rows).
+ * ListSendModal - send an interactive list message (sections + rows).
  * Full builder lives at the API Sandbox (`/api/v1/messages/list`).
  */
 export default function ListSendModal({ to, onClose }: ListSendModalProps) {

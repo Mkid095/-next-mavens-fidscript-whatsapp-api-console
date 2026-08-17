@@ -1,5 +1,5 @@
 // =============================================================================
-// useConversations — conversation list with filters + realtime refresh (§9).
+// useConversations - conversation list with filters + realtime refresh (§9).
 // Updates (assign/priority/status) flow through platformApi.updateConversation.
 // =============================================================================
 

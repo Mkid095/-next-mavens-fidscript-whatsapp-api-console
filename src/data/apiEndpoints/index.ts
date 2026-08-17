@@ -1,8 +1,8 @@
 /**
  * Single source of truth for the public API surface.
  *
- * Every consumer — Docs, Sandbox, ApiReference, the OpenAPI generator, and
- * (by contract) the backend route handlers — derives from this registry.
+ * Every consumer - Docs, Sandbox, ApiReference, the OpenAPI generator, and
+ * (by contract) the backend route handlers - derives from this registry.
  * Append per-category files as new endpoint categories ship; never hand-code
  * a second endpoint list anywhere.
  *
@@ -59,7 +59,7 @@ export interface ApiEndpoint {
   /** Example success response. */
   response?: Record<string, unknown>;
   auth?: 'apikey' | 'none' | 'jwt';
-  /** Internal Evolution path — NEVER rendered publicly; reference only. */
+  /** Internal Evolution path - NEVER rendered publicly; reference only. */
   evolutionPath?: string;
 }
 

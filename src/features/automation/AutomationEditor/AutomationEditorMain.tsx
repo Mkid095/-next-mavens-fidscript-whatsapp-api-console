@@ -5,7 +5,7 @@ import { platformApi } from '../../../data/api/platform.js';
 import type { FlowNodeInput, FlowEdgeInput } from '../../../data/api/platform.js';
 import ConditionBuilder from './ConditionBuilder.js';
 
-// Phase 4 — minimal flow editor: linear trigger → condition → action form
+// Phase 4 - minimal flow editor: linear trigger → condition → action form
 // over the canonical DAG. Each "add node" appends to the last action node;
 // "save" replaces the graph atomically on the server.
 const NODE_TYPES = ['condition', 'action', 'wait', 'branch', 'ai'] as const;

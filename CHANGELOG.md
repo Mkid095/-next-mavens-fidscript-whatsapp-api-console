@@ -23,11 +23,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
-- Landing page (LandingPage.tsx) refactored from 235 lines to 106 lines — extracted API calls to hooks
-- PricingSection.tsx refactored to use `usePricingPlans` hook — no business logic in component
+- Landing page (LandingPage.tsx) refactored from 235 lines to 106 lines - extracted API calls to hooks
+- PricingSection.tsx refactored to use `usePricingPlans` hook - no business logic in component
 - FeaturesSection.tsx split into `features-data.ts`, `useCases-data.ts`, `stats-data.ts`, `brands-data.ts`, `testimonials-data.ts`
-- ChatList.tsx refactored from 159 lines to 130 lines — extracted InstanceSwitcher to own file
-- MessagesPageMain.tsx refactored from 175 lines to 131 lines — extracted hooks
+- ChatList.tsx refactored from 159 lines to 130 lines - extracted InstanceSwitcher to own file
+- MessagesPageMain.tsx refactored from 175 lines to 131 lines - extracted hooks
 - Landing page light mode: replaced dark forest theme with white backgrounds, dark text, orange accent
 - `helpers.ts` renamed to `import-contacts-country.utils.ts` (ANPAS naming compliance)
 - Login page redesigned with two-column editorial layout: marketing panel left (100vh, no scroll), form panel right with own scroll area on desktop

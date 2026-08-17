@@ -1,5 +1,5 @@
 /**
- * chatbot/create.ts — create a chatbot by name + instance.
+ * chatbot/create.ts - create a chatbot by name + instance.
  * Auth: JWT. POST /api/platform/chatbots
  *
  * Returns the new chatbot ID. Use `fidscript chatbot setup` for a guided wizard.

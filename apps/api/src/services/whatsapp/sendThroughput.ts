@@ -8,7 +8,7 @@
  *   queue >= HIGH_QUEUE_THRESHOLD  →  HIGH_QUEUE_MPS (default 30 MPS)
  *
  * Tunables via env (BULK_NORMAL_MPS / BULK_HIGH_QUEUE_MPS /
- * BULK_HIGH_QUEUE_THRESHOLD) — default 10 / 30 / 5000.
+ * BULK_HIGH_QUEUE_THRESHOLD) - default 10 / 30 / 5000.
  *
  * The pacer maintains a steady target rate (sleeping as needed between
  * sends) rather than enforcing a fixed per-send delay, which is more

@@ -1,7 +1,7 @@
 import { Filter } from 'lucide-react';
 import { useTimeline } from '../../data/hooks/shared/useTimeline.js';
 
-// Phase 3 — customer-timeline filter bar (§7.4).
+// Phase 3 - customer-timeline filter bar (§7.4).
 // Toggle event-type chips; pass the active set down via prop so the timeline
 // pane re-queries with the type filter.
 const EVENT_TYPES = [

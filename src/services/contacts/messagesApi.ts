@@ -1,4 +1,4 @@
-// Messaging APIs — client messages, campaigns, and contact groups
+// Messaging APIs - client messages, campaigns, and contact groups
 import { fetchApi } from '../api';
 import type { ClientMessage, Campaign, CampaignRecipient, ContactGroup, ContactGroupMember } from './contactsTypes';
 
@@ -50,7 +50,7 @@ export const campaignsApi = {
 
   delete: (id: string) => fetchApi<void>(`/api/campaigns/${id}`, { method: 'DELETE' }),
 
-  // Phase 5 Slice D — Trigger + Drip
+  // Phase 5 Slice D - Trigger + Drip
   listSteps: (campaignId: string) => fetchApi<unknown[]>(`/api/campaigns/${campaignId}/steps`),
   createStep: (campaignId: string, body: { step_order?: number; delay_seconds?: number; action_type: string; action_config?: unknown }) =>
     fetchApi<unknown>(`/api/campaigns/${campaignId}/steps`, { method: 'POST', body: JSON.stringify(body) }),

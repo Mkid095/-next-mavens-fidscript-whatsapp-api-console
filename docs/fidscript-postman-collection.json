@@ -60,7 +60,7 @@
                 "whoami"
               ]
             },
-            "description": "Confirm an API key is active and resolve the owning client. No side effects — ideal for a connection test."
+            "description": "Confirm an API key is active and resolve the owning client. No side effects - ideal for a connection test."
           },
           "response": [
             {
@@ -7641,7 +7641,7 @@
                 "{{{instance}}}"
               ]
             },
-            "description": "Restart the WhatsApp session. Requires {\"confirm\":true} in the body or X-Confirm-Restart: true header — 428 otherwise.",
+            "description": "Restart the WhatsApp session. Requires {\"confirm\":true} in the body or X-Confirm-Restart: true header - 428 otherwise.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"confirm\": {\n      \"description\": \"Must be true to proceed.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"confirm\"\n  ]\n}",

@@ -128,7 +128,7 @@ export default function Step3Prompt({
         </div>
       ) : keyId && !fullKey ? (
         <div className="flex items-center gap-2 px-3 py-2 bg-[#1a1915] border border-red-800 rounded-xl text-[10px] text-red-400">
-          Could not fetch key — paste it manually or go back and re-select.
+          Could not fetch key - paste it manually or go back and re-select.
         </div>
       ) : null}
 

@@ -62,7 +62,7 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] antialiased">
       <SeoHead
-        title="Documentation — WhatsApp API"
+        title="Documentation - WhatsApp API"
         description="FIDScript WhatsApp API documentation: quick start guide, authentication, webhooks, rate limits, SDKs, and complete REST API reference."
         canonical="/docs"
         schema="docs"

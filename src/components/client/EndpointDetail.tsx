@@ -27,7 +27,7 @@ function EndpointHeader({ endpoint }: { endpoint: DocEndpoint }) {
   );
 }
 
-/** Parameters table — kept compact. */
+/** Parameters table - kept compact. */
 function ParamsTable({ params }: { params: DocEndpoint['params'] }) {
   if (params.length === 0) return null;
   return (

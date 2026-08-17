@@ -32,7 +32,7 @@ export async function seedData(db: Database): Promise<void> {
 		`);
 	}
 
-	// Seed default admin user if none exist — no password (passwordless auth)
+	// Seed default admin user if none exist - no password (passwordless auth)
 	const userCount = db.exec('SELECT COUNT(*) as count FROM users')[0]?.values[0]?.[0] as number;
 	if (!userCount || userCount === 0) {
 		db.run(`
@@ -41,7 +41,7 @@ export async function seedData(db: Database): Promise<void> {
 		`);
 	}
 
-	// Seed Kennedy Mwangi client + instances + API keys (idempotent — INSERT OR IGNORE so it's safe to re-run)
+	// Seed Kennedy Mwangi client + instances + API keys (idempotent - INSERT OR IGNORE so it's safe to re-run)
 	db.run(`
 		INSERT OR IGNORE INTO clients (id, name, email, phone, api_key, plan_id, token_balance, is_active)
 		VALUES ('cli_kennedy_001', 'Kennedy Mwangi', 'kennedygithinjioffice@gmail.com', '+254746269657', 'kennedy_api_key', 'plan_starter', 207394, 1)
@@ -103,7 +103,7 @@ export async function seedData(db: Database): Promise<void> {
 			const exists = db.exec(`SELECT 1 FROM data_sources WHERE workspace_id = '${workspaceId}' AND name = 'acme-demo-catalog' LIMIT 1`);
 			if (exists.length > 0 && exists[0]!.values.length > 0) continue;
 
-			// Demo customers — phone is the key the chatbot looks up by
+			// Demo customers - phone is the key the chatbot looks up by
 			const customers = [
 				{ phone: '+254700000001', name: 'Ken Wanjiku', tier: 'gold', last_order: 'ORD-1024' },
 				{ phone: '+254700000002', name: 'Achieng Otieno', tier: 'silver', last_order: '' },
@@ -111,7 +111,7 @@ export async function seedData(db: Database): Promise<void> {
 				{ phone: '+254700000003', name: 'Kith K', tier: 'bronze', last_order: '' },
 				{ phone: '+254700000004', name: 'Ian Iraya', tier: 'gold', last_order: 'ORD-1031' },
 			];
-			// Demo products — searchable by name/category/stock
+			// Demo products - searchable by name/category/stock
 			const products = [
 				{ sku: 'SPO-001', name: 'Stainless steel spoon', category: 'cutlery', price_kes: 250, in_stock: 120 },
 				{ sku: 'SPO-002', name: 'Wooden soup spoon', category: 'cutlery', price_kes: 380, in_stock: 45 },

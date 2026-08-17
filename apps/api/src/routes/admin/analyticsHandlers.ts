@@ -45,7 +45,7 @@ export function getAnalytics(_req: Request, res: Response): void {
       LIMIT 5
     `).all();
 
-    // Real daily trends from inbox_messages — last 7 days
+    // Real daily trends from inbox_messages - last 7 days
     const dailyTrends = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();

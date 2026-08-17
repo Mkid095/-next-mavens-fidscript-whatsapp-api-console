@@ -4,7 +4,7 @@ import type { Database } from 'sql.js';
 // Platform-module indexes (workspace_members, conversations, domain_events,
 // customers, search_index, audit_logs.workspace_id, …) live in
 // modules/platform/workspace/migrations.ts, because those tables/columns are
-// created AFTER createSchema() — creating their indexes here would crash a
+// created AFTER createSchema() - creating their indexes here would crash a
 // fresh database on boot.
 export function createIndexes(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_instances_client ON instances(client_id)`);

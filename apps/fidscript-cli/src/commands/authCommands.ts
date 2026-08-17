@@ -1,5 +1,5 @@
 /**
- * authCommands.ts — Authentication commands (login, logout, refresh, whoami)
+ * authCommands.ts - Authentication commands (login, logout, refresh, whoami)
  */
 import type { Command } from 'commander';
 

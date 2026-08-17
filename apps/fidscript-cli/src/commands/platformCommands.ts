@@ -1,5 +1,5 @@
 /**
- * platformCommands.ts — Developer platform commands
+ * platformCommands.ts - Developer platform commands
  * customers, conversations, analytics, webhooks
  */
 import type { Command } from 'commander';

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# check-version-bump.sh — fail CI if a commit landed without a changelog bump
+# check-version-bump.sh - fail CI if a commit landed without a changelog bump
 # =============================================================================
 # Usage:
 #   bash scripts/check-version-bump.sh HEAD~1..HEAD
@@ -26,13 +26,13 @@ RANGE="${1:-HEAD~1..HEAD}"
 
 # If we're not in a git repo, skip the check (e.g. deploy on a fresh clone)
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
-  echo "Not a git repo — skipping version-bump check."
+  echo "Not a git repo - skipping version-bump check."
   exit 0
 fi
 
 # Empty range (e.g. first commit) → trivially OK
 if ! git rev-parse "${RANGE%%..*}" >/dev/null 2>&1; then
-  echo "Range '${RANGE}' has no 'from' ref — skipping (initial commit?)."
+  echo "Range '${RANGE}' has no 'from' ref - skipping (initial commit?)."
   exit 0
 fi
 
@@ -64,7 +64,7 @@ for f in $CHANGED; do
 done
 
 if [ "$USER_FACING_CHANGED" = false ]; then
-  echo "✓ No user-facing files in range — no changelog bump needed."
+  echo "✓ No user-facing files in range - no changelog bump needed."
   exit 0
 fi
 

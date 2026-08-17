@@ -26,7 +26,7 @@ interface ClientRow {
 
 const GENERIC_SENT = 'If an account exists for that email, a verification code was sent.';
 
-// POST /api/auth/request-code — start a passwordless sign-in
+// POST /api/auth/request-code - start a passwordless sign-in
 router.post('/request-code', async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email || typeof email !== 'string') {
@@ -42,7 +42,7 @@ router.post('/request-code', async (req: Request, res: Response) => {
   if (admin || client) {
     const code = createAuthCode(normalized, 'login');
     if (!code) {
-      // Rate limited — tell the user instead of silently succeeding
+      // Rate limited - tell the user instead of silently succeeding
       return res.status(429).json({
         success: false,
         error: 'Too many verification codes requested. Please wait 5 minutes and try again.',
@@ -59,7 +59,7 @@ router.post('/request-code', async (req: Request, res: Response) => {
   return res.json({ success: true, data: { message: GENERIC_SENT } });
 });
 
-// POST /api/auth/verify-code — verify the code and issue a JWT
+// POST /api/auth/verify-code - verify the code and issue a JWT
 router.post('/verify-code', (req: Request, res: Response) => {
   const { email, code } = req.body;
   if (!email || !code) {

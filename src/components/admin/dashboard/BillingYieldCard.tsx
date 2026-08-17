@@ -16,7 +16,7 @@ export default function BillingYieldCard({ analytics }: BillingYieldCardProps) {
 
         <div className="space-y-1">
           <h2 className="text-2xl font-extrabold text-white tracking-tight leading-none">
-            {revenue > 0 ? `${(revenue / 1000).toFixed(0)}K tokens` : '—'}
+            {revenue > 0 ? `${(revenue / 1000).toFixed(0)}K tokens` : '-'}
           </h2>
           <p className="text-[10px] text-stone-400">Token purchases + awards · 30d</p>
         </div>

@@ -1,5 +1,5 @@
 /**
- * ProviderModal — Add/Edit LLM provider modal.
+ * ProviderModal - Add/Edit LLM provider modal.
  */
 import { useState } from 'react';
 import {

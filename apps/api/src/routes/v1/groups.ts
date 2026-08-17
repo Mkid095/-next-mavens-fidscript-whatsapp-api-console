@@ -6,7 +6,7 @@ import type { SendContext, SendResult } from '../../services/whatsapp/shared.js'
 import * as groups from '../../services/whatsapp/groups.js';
 
 /**
- * /api/v1/groups/* — group management (FREE, no tokens). All ops are V1_MUTATE
+ * /api/v1/groups/* - group management (FREE, no tokens). All ops are V1_MUTATE
  * (120/min) on top of the per-IP v1 bucket. Each route builds the ctx, delegates
  * to the shared service, and maps the result.
  */

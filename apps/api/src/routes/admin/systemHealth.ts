@@ -1,5 +1,5 @@
 /**
- * systemHealth.ts — GET /admin/system/health
+ * systemHealth.ts - GET /admin/system/health
  *
  * Returns a snapshot of system health: DB connectivity, last error counts,
  * worker heartbeats, and API latency percentiles from the last hour.

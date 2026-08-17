@@ -2,7 +2,7 @@ import type { Request } from 'express';
 import type { AuthenticatedRequest } from './context.js';
 
 // =============================================================================
-// whereWorkspace — the SQL helper that closes the cross-tenant leak.
+// whereWorkspace - the SQL helper that closes the cross-tenant leak.
 //
 // Every platform query that reads/writes customer-scoped data must call this
 // helper and include the returned fragment + param. It is the only supported

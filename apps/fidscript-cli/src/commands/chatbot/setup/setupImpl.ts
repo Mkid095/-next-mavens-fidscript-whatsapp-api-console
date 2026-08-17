@@ -1,5 +1,5 @@
 /**
- * setup/setupImpl.ts — Interactive chatbot setup wizard (headless + TTY).
+ * setup/setupImpl.ts - Interactive chatbot setup wizard (headless + TTY).
  */
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout, stderr } from 'node:process';
@@ -113,7 +113,7 @@ export async function setupChatbot(
 
   // Step 3: system prompt
   const systemPrompt = await promptMultiline(
-    'System prompt — describe the bot\'s tone, role, and what it should/shouldn\'t do.',
+    'System prompt - describe the bot\'s tone, role, and what it should/shouldn\'t do.',
   );
   if (!systemPrompt) {
     console.error(pc.red('error:') + ' system prompt is required.');

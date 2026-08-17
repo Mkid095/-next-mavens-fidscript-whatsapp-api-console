@@ -1,5 +1,5 @@
 // =============================================================================
-// Event type definitions — single source of truth for all domain events.
+// Event type definitions - single source of truth for all domain events.
 // Append-only. Every event type must be defined here.
 // =============================================================================
 
@@ -253,7 +253,7 @@ export interface WooCommerceOrderCreatedPayload {
 }
 
 // ---------------------------------------------------------------------------
-// Union type — exhaustive switch in dispatchImpl.ts uses this
+// Union type - exhaustive switch in dispatchImpl.ts uses this
 // ---------------------------------------------------------------------------
 export type DomainEventType =
   // Messages

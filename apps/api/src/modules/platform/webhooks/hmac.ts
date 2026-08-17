@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 // =============================================================================
 // HMAC signing for outbound webhook deliveries.
-// §14.1 — X-FIDScript-Signature header is HMAC-SHA256(secret, rawBody), hex.
+// §14.1 - X-FIDScript-Signature header is HMAC-SHA256(secret, rawBody), hex.
 // Consumers verify: signature === HMAC(secret, rawBody) with timingSafeEqual.
 // =============================================================================
 

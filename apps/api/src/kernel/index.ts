@@ -29,13 +29,13 @@
  *   ┌─────────────────────────────────────────────────┐
  *   │              PLATFORM KERNEL                     │
  *   │                                                  │
- *   │  identity/     — Workspace, Client, User        │
- *   │  entities/     — Contact, Conversation, Message │ ← resolveConversation, getCustomer, getConversation
- *   │  ledger/       — Message record CRUD            │
- *   │  audit/        — Immutable audit trail          │
- *   │  events/       — Event bus + catalog             │
- *   │  automation/   — Rule definitions + conditions  │
- *   │  campaigns/    — Campaign entity definitions    │
+ *   │  identity/     - Workspace, Client, User        │
+ *   │  entities/     - Contact, Conversation, Message │ ← resolveConversation, getCustomer, getConversation
+ *   │  ledger/       - Message record CRUD            │
+ *   │  audit/        - Immutable audit trail          │
+ *   │  events/       - Event bus + catalog             │
+ *   │  automation/   - Rule definitions + conditions  │
+ *   │  campaigns/    - Campaign entity definitions    │
  *   └─────────────────────────────────────────────────┘
  *         |
  *         v
@@ -43,12 +43,12 @@
  */
 
 export const KERNEL_BOUNDS = {
-  // Identity — multi-tenant workspace, billing account, human user
+  // Identity - multi-tenant workspace, billing account, human user
   Workspace: true,
   Client: true,
   User: true,
 
-  // Business entities — lifecycle management
+  // Business entities - lifecycle management
   Contact: true,      // phonebook contact (canonical identifier per channel)
   Conversation: true,  // thread: contact × channel × instance
   Message: true,       // immutable message record (inbox_messages)

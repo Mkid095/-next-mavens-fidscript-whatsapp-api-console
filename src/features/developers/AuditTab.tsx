@@ -42,7 +42,7 @@ export default function AuditTab() {
                   <td className="px-3 py-1.5 font-mono text-stone-500">{new Date(e.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                   <td className="px-3 py-1.5 font-mono text-forest-deep">{e.action}</td>
                   <td className="px-3 py-1.5 font-mono text-stone-600">{e.entity_type}/{e.entity_id.slice(0, 12)}</td>
-                  <td className="px-3 py-1.5 text-stone-500">{e.actor_user_id ?? '—'}</td>
+                  <td className="px-3 py-1.5 text-stone-500">{e.actor_user_id ?? '-'}</td>
                 </tr>
               ))}
             </tbody>

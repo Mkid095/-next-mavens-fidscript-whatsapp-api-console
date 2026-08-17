@@ -1,5 +1,5 @@
 /**
- * MetricsHistoryChart.tsx — line/area chart for metric trends.
+ * MetricsHistoryChart.tsx - line/area chart for metric trends.
  */
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,

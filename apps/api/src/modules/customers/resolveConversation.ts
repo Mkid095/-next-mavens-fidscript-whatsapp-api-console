@@ -5,9 +5,9 @@ import { dispatchConversationCreated, dispatchCustomerCreated } from '../platfor
 import type { WorkspaceContext } from '../platform/workspace/index.js';
 
 // =============================================================================
-// resolveConversation — the ONE chokepoint for customer + conversation resolution.
+// resolveConversation - the ONE chokepoint for customer + conversation resolution.
 // Every inbound/outbound message routes through here.
-// Returns { customerId, conversationId } — caller writes these to inbox_messages.
+// Returns { customerId, conversationId } - caller writes these to inbox_messages.
 // =============================================================================
 
 export interface ResolveResult {

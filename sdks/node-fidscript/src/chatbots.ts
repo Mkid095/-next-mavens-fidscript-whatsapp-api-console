@@ -1,5 +1,5 @@
 /**
- * chatbots.ts — full chatbot lifecycle.
+ * chatbots.ts - full chatbot lifecycle.
  * GET/POST/PUT/DELETE /api/platform/chatbots[/:id]
  */
 import type { FidscriptClient } from './client.js';

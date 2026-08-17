@@ -1,5 +1,5 @@
 /**
- * /api/platform/phonebook/sync/:name — manually triggers a WhatsApp phonebook
+ * /api/platform/phonebook/sync/:name - manually triggers a WhatsApp phonebook
  * sync for a connected instance. The synced contacts land in the main
  * `contacts` table (flagged with instance_id) so bulk messaging can use
  * them. Manual contacts (instance_id NULL) are preserved untouched.

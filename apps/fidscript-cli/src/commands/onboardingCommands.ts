@@ -1,5 +1,5 @@
 /**
- * onboardingCommands.ts — First-run setup and init commands
+ * onboardingCommands.ts - First-run setup and init commands
  */
 import type { Command } from 'commander';
 

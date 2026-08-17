@@ -1,5 +1,5 @@
 /**
- * OpenGraph — Open Graph + Twitter Card meta tags.
+ * OpenGraph - Open Graph + Twitter Card meta tags.
  */
 import React from 'react';
 import { Helmet } from 'react-helmet-async';

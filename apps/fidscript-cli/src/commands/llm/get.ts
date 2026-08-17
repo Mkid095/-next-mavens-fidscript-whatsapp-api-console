@@ -1,5 +1,5 @@
 /**
- * llm/get.ts — get one LLM connection (with masked key).
+ * llm/get.ts - get one LLM connection (with masked key).
  * Auth: JWT. GET /api/platform/llm-connections/:id would be ideal but the backend only exposes a list endpoint;
  *        we degrade to a filtered list. Documented for symmetry with other `get` commands.
  */

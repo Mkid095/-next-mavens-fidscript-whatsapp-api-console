@@ -1,5 +1,5 @@
 /**
- * Conversations route registrations — delegates to handlers in conversationsHandlers.ts.
+ * Conversations route registrations - delegates to handlers in conversationsHandlers.ts.
  */
 import { Router } from 'express';
 import { clientJwtAuth } from '../../middleware/auth.js';

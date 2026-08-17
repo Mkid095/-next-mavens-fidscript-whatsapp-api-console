@@ -1,5 +1,5 @@
 /**
- * /api/v1/conversations — read-only conversation API for external developers.
+ * /api/v1/conversations - read-only conversation API for external developers.
  * Auth: API key. Returns workspace-scoped data.
  */
 import { Router, Request, Response } from 'express';
@@ -12,7 +12,7 @@ router.use(clientApiKeyAuth, V1_READ);
 
 function clientId(req: Request): string { return req.client!.id; }
 
-/** GET /api/v1/conversations — list conversations */
+/** GET /api/v1/conversations - list conversations */
 router.get('/', (req: Request, res: Response) => {
   try {
     const { status, q } = req.query;
@@ -46,7 +46,7 @@ router.get('/', (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/v1/conversations/:id — conversation detail */
+/** GET /api/v1/conversations/:id - conversation detail */
 router.get('/:id', (req: Request, res: Response) => {
   try {
     const conv = db.prepare(`
@@ -62,7 +62,7 @@ router.get('/:id', (req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/conversations/:id/assign — assign or update priority */
+/** POST /api/v1/conversations/:id/assign - assign or update priority */
 router.post('/:id/assign', (req: Request, res: Response) => {
   try {
     const { status, priority, assignee_type, assignee_id } = req.body as {
@@ -91,7 +91,7 @@ router.post('/:id/assign', (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/v1/conversations/:id/messages — full message thread */
+/** GET /api/v1/conversations/:id/messages - full message thread */
 router.get('/:id/messages', (req: Request, res: Response) => {
   try {
     const owned = db.prepare(

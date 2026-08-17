@@ -1,5 +1,5 @@
 /**
- * data-source/delete.ts — delete a data source (cascades to its tools).
+ * data-source/delete.ts - delete a data source (cascades to its tools).
  * Auth: JWT. DELETE /api/platform/data-sources/:id
  *
  * Example:

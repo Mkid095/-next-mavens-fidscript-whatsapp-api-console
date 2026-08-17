@@ -118,7 +118,7 @@ export default function QuickActions() {
         </div>
       </div>
 
-      {/* Primary actions — 3×2 grid */}
+      {/* Primary actions - 3×2 grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {mainActions.map((action) => (
           <ActionCard
@@ -129,7 +129,7 @@ export default function QuickActions() {
         ))}
       </div>
 
-      {/* Secondary actions — inline row */}
+      {/* Secondary actions - inline row */}
       <div className="flex gap-3 overflow-x-auto pb-1">
         {secondaryActions.map((action) => (
           <button

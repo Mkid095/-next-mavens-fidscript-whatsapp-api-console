@@ -1,5 +1,5 @@
 /**
- * index.ts — Main barrel for @fidscript/types
+ * index.ts - Main barrel for @fidscript/types
  * Re-exports all shared types.
  */
 

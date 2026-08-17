@@ -1,5 +1,5 @@
 /**
- * sseAuth.ts — SSE authentication helper
+ * sseAuth.ts - SSE authentication helper
  */
 import type { Request } from 'express';
 import db from '../database.js';

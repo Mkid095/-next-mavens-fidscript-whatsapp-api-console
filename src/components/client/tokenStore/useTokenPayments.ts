@@ -23,7 +23,7 @@ export function useTokenPayments(phone: string) {
       if (res.success) {
         setPendingRef(res.data?.checkout_request_id || '');
         setPendingCheckoutId(res.data?.checkout_request_id || '');
-        setPayMsg(`M-Pesa prompt sent to ${phone} — complete payment on your phone.`);
+        setPayMsg(`M-Pesa prompt sent to ${phone} - complete payment on your phone.`);
       } else {
         setPayMsg('Error: ' + (res.error || 'Unknown error'));
       }

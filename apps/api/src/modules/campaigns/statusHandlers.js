@@ -1,4 +1,4 @@
-// Campaign status route handlers — thin barrel.
+// Campaign status route handlers - thin barrel.
 import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import type { StatusPostRow, CreateStatusInput } from './statuses.js';

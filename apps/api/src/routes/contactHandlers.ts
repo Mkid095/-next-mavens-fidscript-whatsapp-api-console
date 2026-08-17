@@ -1,5 +1,5 @@
 /**
- * Contact route handlers — thin re-export barrel.
+ * Contact route handlers - thin re-export barrel.
  * Split into: contactCrudHandlers.ts (CRUD), contactGoogleHandlers.ts (Google OAuth).
  */
 

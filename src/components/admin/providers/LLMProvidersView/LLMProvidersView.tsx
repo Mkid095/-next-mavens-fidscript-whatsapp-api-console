@@ -1,5 +1,5 @@
 /**
- * LLMProvidersView — admin UI for global LLM provider registry.
+ * LLMProvidersView - admin UI for global LLM provider registry.
  */
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -120,7 +120,7 @@ export default function LLMProvidersView() {
         <div>
           <h2 className="text-[16px] font-bold text-stone-800">LLM Providers</h2>
           <p className="text-[11px] text-stone-500 mt-0.5">
-            Global provider templates — workspaces reference these when connecting AI models.
+            Global provider templates - workspaces reference these when connecting AI models.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function LLMProvidersView() {
                     {/* Base URL */}
                     <td className="px-4 py-3 hidden md:table-cell">
                       <p className="text-[10px] font-mono text-stone-500 truncate max-w-[180px]" title={p.base_url}>
-                        {p.base_url || '—'}
+                        {p.base_url || '-'}
                       </p>
                     </td>
                     {/* Auth */}

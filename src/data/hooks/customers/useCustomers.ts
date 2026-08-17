@@ -1,5 +1,5 @@
 // =============================================================================
-// useCustomers — customer list + detail + realtime refresh (§6).
+// useCustomers - customer list + detail + realtime refresh (§6).
 // Auto-refreshes when a customer.created / customer.tagged event fires.
 // =============================================================================
 

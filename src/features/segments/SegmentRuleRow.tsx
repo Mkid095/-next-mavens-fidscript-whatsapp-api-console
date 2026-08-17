@@ -26,7 +26,7 @@ function RuleValueEditor({ rule, onChange }: { rule: SegmentRule; onChange: (r: 
     );
   }
   if (rule.field === 'last_seen' || rule.field === 'created') {
-    if (rule.op === 'never') return <span className="text-[10px] text-[#6e684a]">—</span>;
+    if (rule.op === 'never') return <span className="text-[10px] text-[#6e684a]">-</span>;
     return (
       <div className="flex items-center gap-1">
         <input type="number" min={0} value={Number(rule.value ?? 0)} onChange={e => onChange({ ...rule, value: Number(e.target.value) })}

@@ -10,7 +10,7 @@ interface PollSendModalProps {
 }
 
 /**
- * PollSendModal — create a poll (question + 2-12 options) and send.
+ * PollSendModal - create a poll (question + 2-12 options) and send.
  * Full builder lives at the API Sandbox (`/api/v1/messages/poll`).
  */
 export default function PollSendModal({ to, onClose }: PollSendModalProps) {

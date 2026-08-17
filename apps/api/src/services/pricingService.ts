@@ -1,5 +1,5 @@
 /**
- * pricingService — central read path for all token costs.
+ * pricingService - central read path for all token costs.
  *
  * All runtime cost decisions (shared.ts, billingService.ts, billing.ts)
  * must go through this service, NOT hardcoded constants.
@@ -9,7 +9,7 @@
  */
 import db from '../database/index.js';
 
-// In-memory cache — invalidated on admin write. Fast path for hot reads.
+// In-memory cache - invalidated on admin write. Fast path for hot reads.
 interface CostEntry {
   tokenCost: number;
   category: 'whatsapp' | 'ai';
@@ -30,7 +30,7 @@ function _reloadCache(): void {
       });
     }
   } catch {
-    // DB not ready yet — skip cache warm
+    // DB not ready yet - skip cache warm
   }
   _cacheDirty = false;
 }
@@ -68,7 +68,7 @@ export function getCostsByCategory(category: 'whatsapp' | 'ai'): Array<{
 }
 
 /**
- * Get ALL active costs. Use sparingly — for admin panels, not hot paths.
+ * Get ALL active costs. Use sparingly - for admin panels, not hot paths.
  */
 export function getAllCosts(): Array<{
   id: string; action: string; displayName: string;

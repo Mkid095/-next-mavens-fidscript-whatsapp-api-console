@@ -1,5 +1,5 @@
 /**
- * sseDashboardStats.ts — dashboard stats SQL + formatting for SSE
+ * sseDashboardStats.ts - dashboard stats SQL + formatting for SSE
  */
 import db from '../database.js';
 

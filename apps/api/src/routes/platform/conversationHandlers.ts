@@ -1,4 +1,4 @@
-// Thin entry point — re-exports all handlers from focused sub-files
+// Thin entry point - re-exports all handlers from focused sub-files
 
 export { wsId, buildCtx, insertTimelineMessage, resolveInstanceName } from './conversationShared.js';
 

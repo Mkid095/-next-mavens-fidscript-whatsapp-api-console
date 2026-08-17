@@ -51,7 +51,7 @@ export default function InboxView({ messages, onMarkRead }: InboxViewProps) {
 
   return (
     <div className="flex flex-col min-h-0 h-full">
-      {/* Header row — does not scroll */}
+      {/* Header row - does not scroll */}
       <div className="flex items-center justify-between pb-4 shrink-0">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-forest-deep">Webhook Inspector</h1>
@@ -74,7 +74,7 @@ export default function InboxView({ messages, onMarkRead }: InboxViewProps) {
         </div>
       </div>
 
-      {/* Scrollable message panels — each panel scrolls independently */}
+      {/* Scrollable message panels - each panel scrolls independently */}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left: message list */}
         <div className="lg:col-span-3 min-h-0 overflow-hidden flex flex-col">

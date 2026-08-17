@@ -91,7 +91,7 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] font-sans antialiased">
       <SeoHead
-        title="Features — WhatsApp API Platform"
+        title="Features - WhatsApp API Platform"
         description="Everything you need to build on WhatsApp: multi-instance gateway, REST API, M-Pesa billing, webhooks, contact management, analytics, and sandbox testing."
         canonical="/features"
         schema="features"
@@ -122,7 +122,7 @@ export default function FeaturesPage() {
               </h1>
               <p className="text-base text-[#525252] max-w-2xl mx-auto mb-10 leading-relaxed">
                 A complete WhatsApp API platform built for Kenyan businesses. From multi-instance
-                management to M-Pesa billing — FIDScript handles the complexity so you can focus
+                management to M-Pesa billing - FIDScript handles the complexity so you can focus
                 on your product.
               </p>
               <div className="flex flex-wrap justify-center gap-8">

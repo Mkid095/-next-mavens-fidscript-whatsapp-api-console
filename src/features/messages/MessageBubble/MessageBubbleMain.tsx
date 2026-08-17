@@ -10,9 +10,9 @@ interface MessageBubbleProps {
   isContinuation?: boolean;
   /** True when this is the last message in a group of same-sender messages */
   isGroupEnd?: boolean;
-  /** Instance name — required to fetch sender avatar in group chats */
+  /** Instance name - required to fetch sender avatar in group chats */
   instanceName?: string | null;
-  /** True if this thread is a group — shows sender avatar next to name */
+  /** True if this thread is a group - shows sender avatar next to name */
   isGroup?: boolean;
 }
 
@@ -26,7 +26,7 @@ function timeLabel(ts: number): string {
 // with the same phone must not share a cached profile pic lookup).
 function participantToAvatarKey(jid: string | null, isGroup: boolean): string | null {
   if (!jid) return null;
-  if (isGroup) return `g:${jid}`; // group participant — full JID is unique
+  if (isGroup) return `g:${jid}`; // group participant - full JID is unique
   // Individual JID: strip @s.whatsapp.net, prefix to avoid collision with
   // group participant keys that happen to share the same phone digits
   const user = jid.split('@')[0];
@@ -49,7 +49,7 @@ export default function MessageBubbleMain({ message, isContinuation = false, isG
 
   return (
     <div className={`flex flex-col ${outgoing ? 'items-end' : 'items-start'} px-1`}>
-      {/* Sender name + avatar — only for group non-continuation incoming messages */}
+      {/* Sender name + avatar - only for group non-continuation incoming messages */}
       {showSender && (
         <div className="mb-0.5 ml-1 flex items-center gap-1.5">
           <div className="h-5 w-5 shrink-0 overflow-hidden rounded-full bg-[#2d2813]">
@@ -65,7 +65,7 @@ export default function MessageBubbleMain({ message, isContinuation = false, isG
         </div>
       )}
 
-      {/* Bubble container — no top margin if continuation, extra margin if group end */}
+      {/* Bubble container - no top margin if continuation, extra margin if group end */}
       <div
         className={`relative max-w-[78%] ${
           outgoing

@@ -54,7 +54,7 @@ export async function overlayLogoOnQR(base64Qr: string): Promise<string> {
   try {
     logoImage = await Jimp.read(readFileSync(logoPath));
   } catch {
-    // Logo not found — return recolored QR without logo overlay
+    // Logo not found - return recolored QR without logo overlay
     return await qrImage.getBase64('image/png') as string;
   }
 

@@ -1,5 +1,5 @@
 /**
- * toolsGenerate.ts — `fidscript chatbot tools <chatbot-id> attach <tool-id>`
+ * toolsGenerate.ts - `fidscript chatbot tools <chatbot-id> attach <tool-id>`
  *
  * Attaches a tool to a chatbot.
  */

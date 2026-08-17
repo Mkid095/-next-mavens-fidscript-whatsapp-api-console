@@ -1,4 +1,4 @@
-# Evolution API — Trademark and Brand Assets Policy
+# Evolution API - Trademark and Brand Assets Policy
 
 Version 1.0, 2026.05.06
 

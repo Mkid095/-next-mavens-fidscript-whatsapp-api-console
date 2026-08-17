@@ -1,7 +1,7 @@
 import type { Database } from 'sql.js';
 
 // =============================================================================
-// Phase 3 migrations — customer_assignments + SLA columns on conversations.
+// Phase 3 migrations - customer_assignments + SLA columns on conversations.
 // Guarded ALTERs follow the same pattern as workspace/migrations.ts (P9:
 // reserve the seam, ship the slice).
 // =============================================================================

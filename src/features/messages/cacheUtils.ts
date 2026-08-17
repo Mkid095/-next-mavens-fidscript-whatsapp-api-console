@@ -1,5 +1,5 @@
 /**
- * Message cache utilities — shared between the chat hooks and the container
+ * Message cache utilities - shared between the chat hooks and the container
  * delete flow so instance eviction clears both the React Query cache and any
  * legacy localStorage entries.
  */
@@ -13,7 +13,7 @@ export const chatListKey = (instanceName: string, filter?: 'contacts' | 'groups'
   ['chats', instanceName, filter ?? 'all'] as const;
 
 /**
- * Evict all cached data for a given instance — called when the instance is
+ * Evict all cached data for a given instance - called when the instance is
  * deleted so no stale state bleeds into future sessions.
  */
 export function evictInstanceCache(instanceName: string) {
@@ -84,7 +84,7 @@ export function confirmOutgoingMessage(
 }
 
 /**
- * Append a message to a thread's cache instantly — used by the optimistic
+ * Append a message to a thread's cache instantly - used by the optimistic
  * outgoing bubble before the server confirms it.
  */
 export function appendToThread(
@@ -143,7 +143,7 @@ export function optimisticallyClearUnread(instanceName: string, chatId: string, 
 }
 
 /**
- * Invalidate the chat list for an instance — call from SSE handlers when a
+ * Invalidate the chat list for an instance - call from SSE handlers when a
  * real-time event indicates the chat list may have changed.
  */
 export function invalidateChatList(instanceName: string, filter?: 'contacts' | 'groups' | 'outbox') {

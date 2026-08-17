@@ -1,5 +1,5 @@
 /**
- * sseHandlers.ts — SSE route handlers barrel
+ * sseHandlers.ts - SSE route handlers barrel
  *
  * Split into:
  * - sseHandlers.ts              → thin barrel

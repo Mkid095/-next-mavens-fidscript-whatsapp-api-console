@@ -1,5 +1,5 @@
 /**
- * conversationUpdateHelpers.ts — DB queries for conversation management.
+ * conversationUpdateHelpers.ts - DB queries for conversation management.
  */
 import db from '../../database.js';
 

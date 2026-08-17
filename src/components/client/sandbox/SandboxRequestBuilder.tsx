@@ -112,7 +112,7 @@ export default function SandboxRequestBuilder({
           className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed text-[#181711] text-xs font-bold rounded-xl transition-colors"
         >
           <Play className="w-4 h-4" />
-          {loading ? 'Executing…' : (requireJwt && !hasJwt ? 'JWT required — run fidscript login' : 'Execute Request')}
+          {loading ? 'Executing…' : (requireJwt && !hasJwt ? 'JWT required - run fidscript login' : 'Execute Request')}
         </button>
         <button
           onClick={onCopyCurl}

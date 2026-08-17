@@ -1,5 +1,5 @@
 /**
- * webhooks.ts — /api/v1/webhooks + webhook signature verification + replay protection
+ * webhooks.ts - /api/v1/webhooks + webhook signature verification + replay protection
  */
 import crypto from 'crypto';
 import type { Webhook } from '@fidscript/types';
@@ -67,8 +67,8 @@ export class WebhookDeliveryTracker {
 
   /**
    * Check and record a delivery ID.
-   * Returns `true` if this is a fresh (unseen) delivery — safe to process.
-   * Returns `false` if this ID was already seen — reject as a replay.
+   * Returns `true` if this is a fresh (unseen) delivery - safe to process.
+   * Returns `false` if this ID was already seen - reject as a replay.
    */
   mark(deliveryId: string): boolean {
     if (!deliveryId || deliveryId === 'unknown') return true; // skip if no ID
@@ -77,7 +77,7 @@ export class WebhookDeliveryTracker {
     const lastSeen = this.seen.get(deliveryId);
 
     if (lastSeen !== undefined && now - lastSeen < this.maxAgeMs) {
-      return false; // replay — already seen within maxAgeMs window
+      return false; // replay - already seen within maxAgeMs window
     }
 
     this.seen.set(deliveryId, now);
@@ -103,7 +103,7 @@ export class WebhookDeliveryTracker {
  * Verify and parse an incoming FIDScript webhook.
  *
  * Call this at the top of your webhook handler before processing the event.
- * If verification fails, this throws — do not process the payload.
+ * If verification fails, this throws - do not process the payload.
  *
  * @param rawBody  - Raw request body as Buffer or string (NOT yet parsed JSON)
  * @param headers  - Request headers (lowercase keys recommended, case-insensitive)

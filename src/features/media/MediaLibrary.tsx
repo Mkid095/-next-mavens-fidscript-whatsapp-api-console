@@ -5,7 +5,7 @@ import MediaCard from './MediaCard.js';
 import MediaUploadBar from './MediaUploadBar.js';
 
 /**
- * Phase 5 Slice B — workspace-scoped media library. Thin shell that wires
+ * Phase 5 Slice B - workspace-scoped media library. Thin shell that wires
  * the hook to MediaUploadBar (filters + upload) and MediaCard grid.
  * Consumed by MarketingCenter as the "Library" tab.
  */

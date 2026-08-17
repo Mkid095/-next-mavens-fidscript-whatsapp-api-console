@@ -1,5 +1,5 @@
 /**
- * tokens.ts — GET /api/v1/usage (API key auth)
+ * tokens.ts - GET /api/v1/usage (API key auth)
  * Shows token balance and usage stats.
  */
 import { ApiClient } from '../lib/api-client.js';

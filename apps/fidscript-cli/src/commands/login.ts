@@ -1,5 +1,5 @@
 /**
- * login.ts — magic-code sign-in / sign-up
+ * login.ts - magic-code sign-in / sign-up
  *
  * Flow:
  *   1. POST /api/auth/request-code  { email }

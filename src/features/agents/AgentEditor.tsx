@@ -4,7 +4,7 @@ import { platformApi } from '../../data/api/platform.js';
 import { useAgentPermissions } from '../../data/hooks/agents/useAgents.js';
 import type { Agent } from '../../data/api/platform.js';
 
-// Phase 4 — single-agent editor inline within the agent list. Shows description,
+// Phase 4 - single-agent editor inline within the agent list. Shows description,
 // model, and the allow-list from the action catalog. Each toggle hits
 // canAgent() server-side; denials are audited (§10.2).
 interface AgentEditorProps { agent: Agent; }

@@ -1,5 +1,5 @@
 /**
- * webhooks.ts — GET|POST|DELETE /api/v1/webhooks
+ * webhooks.ts - GET|POST|DELETE /api/v1/webhooks
  * Manage webhooks from the command line.
  */
 import { ApiClient } from '../lib/api-client.js';
@@ -65,7 +65,7 @@ export async function createWebhook(url: string, events: string[]): Promise<void
     console.log(`Webhook created: ${wh.id}`);
     console.log(`  URL: ${wh.url}`);
     console.log(`  Secret: ${wh.secret}`);
-    console.log('  Store this secret — it will not be shown again.');
+    console.log('  Store this secret - it will not be shown again.');
   } catch (err) {
     outputFidscriptError(err);
     process.exit(1);

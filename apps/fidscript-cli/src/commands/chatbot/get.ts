@@ -1,5 +1,5 @@
 /**
- * chatbot/get.ts — fetch full chatbot config.
+ * chatbot/get.ts - fetch full chatbot config.
  * Auth: JWT. GET /api/platform/chatbots/:id
  */
 import {

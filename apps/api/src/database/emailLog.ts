@@ -1,4 +1,4 @@
-// Centralized email-send audit log — every send (success or failure) is
+// Centralized email-send audit log - every send (success or failure) is
 // recorded so delivery issues are visible in the UI/API rather than silent.
 import type { Database } from 'sql.js';
 

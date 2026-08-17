@@ -9,7 +9,7 @@ import { getOutboundUsage, newInitiationsInBatch } from '../../services/whatsapp
 import { getCost } from '../../services/pricingService.js';
 
 // =============================================================================
-// Phase 5 Slice A — Campaign send handler.
+// Phase 5 Slice A - Campaign send handler.
 // POST /:id/send routes through modules/campaigns/dispatch.ts which calls the
 // SHARED /api/v1 senders (sendText/sendMedia/sendLocation/sendContact). 1:1
 // chat and campaigns never drift. Per-recipient idempotency. Failed sends

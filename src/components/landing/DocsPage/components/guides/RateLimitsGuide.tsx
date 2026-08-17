@@ -38,7 +38,7 @@ export function RateLimitsGuide() {
           {
             cat: 'Phonebook sync',
             limit: '5/min',
-            note: 'Manual trigger; use sparingly — full phonebook size',
+            note: 'Manual trigger; use sparingly - full phonebook size',
           },
         ].map(({ cat, limit, note }) => (
           <div

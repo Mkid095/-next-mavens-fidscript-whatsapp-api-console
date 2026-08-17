@@ -1,5 +1,5 @@
 /**
- * instance/create.ts — register a new WhatsApp instance for the logged-in client.
+ * instance/create.ts - register a new WhatsApp instance for the logged-in client.
  * Auth: JWT. Source of truth: server DB.
  *
  * Calls POST /api/instance/client-create which:

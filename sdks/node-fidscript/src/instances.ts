@@ -1,5 +1,5 @@
 /**
- * instances.ts — WhatsApp instance lifecycle.
+ * instances.ts - WhatsApp instance lifecycle.
  * GET /api/v1/instance/qr/:instance, POST /api/v1/instance/restart/:instance, etc.
  */
 import type { FidscriptClient } from './client.js';

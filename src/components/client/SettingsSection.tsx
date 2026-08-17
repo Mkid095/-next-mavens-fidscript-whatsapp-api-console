@@ -14,7 +14,7 @@ interface SettingsSectionProps {
 }
 
 /**
- * SettingsSection — account info + workspace + AI/automation panels.
+ * SettingsSection - account info + workspace + AI/automation panels.
  * Dark-mode consistent with the rest of the client dashboard.
  */
 export default function SettingsSection({ client, clientToken, onLogout }: SettingsSectionProps) {

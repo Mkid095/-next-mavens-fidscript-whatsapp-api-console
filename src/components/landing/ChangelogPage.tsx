@@ -22,7 +22,7 @@ export default function ChangelogPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] antialiased">
       <SeoHead
-        title="Changelog — FIDScript WhatsApp API"
+        title="Changelog - FIDScript WhatsApp API"
         description="FIDScript release history: features, fixes, and deployments across frontend, backend, CLI, and SDK."
         canonical="/changelog"
         schema="changelog"
@@ -32,7 +32,7 @@ export default function ChangelogPage() {
       <Header scrolled={scrolled} onScroll={() => setScrolled(window.scrollY > 10)} />
 
       <div className="max-w-6xl mx-auto px-4 pt-[72px] pb-8 md:pt-[80px] md:pb-12 flex gap-8 lg:gap-10">
-        {/* Sidebar — version list */}
+        {/* Sidebar - version list */}
         <aside className="hidden md:block w-52 lg:w-60 shrink-0 sticky top-20 self-start max-h-[calc(100vh-6rem)] overflow-y-auto">
           <div className="text-[10px] font-bold text-[#a0a0a0] uppercase tracking-widest mb-3 flex items-center gap-2">
             <Package className="w-3 h-3" /> Versions
@@ -94,7 +94,7 @@ export default function ChangelogPage() {
               Changelog
             </h1>
             <p className="text-sm text-[#525252] max-w-2xl mb-4 leading-relaxed">
-              Every update shipped to FIDScript. New endpoints, CLI subcommands, and fixes — captured here on every release.
+              Every update shipped to FIDScript. New endpoints, CLI subcommands, and fixes - captured here on every release.
             </p>
 
             {/* Stats strip */}

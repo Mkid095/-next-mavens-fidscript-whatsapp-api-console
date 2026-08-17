@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { platformApi } from '../../api/platform.js';
 import type { AIRule } from '../../api/platform.js';
 
-// Phase 4 — keyword rule list (the simple form of the AI inbound pipeline).
+// Phase 4 - keyword rule list (the simple form of the AI inbound pipeline).
 export function useAIRules() {
   const [rules, setRules] = useState<AIRule[]>([]);
   const [loading, setLoading] = useState(false);

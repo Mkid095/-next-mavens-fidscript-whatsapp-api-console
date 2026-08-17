@@ -2,13 +2,13 @@ import db from '../../database.js';
 import { postStatusNow, type StatusPostRow } from './statuses.js';
 
 // =============================================================================
-// Status scheduler (§15.6 — WhatsApp status posts).
+// Status scheduler (§15.6 - WhatsApp status posts).
 // startStatusScheduler() kicks off a setInterval that, every 30s, finds
 // status_posts WHERE post_state = 'scheduled' AND scheduled_at <= now,
 // then calls postStatusNow(row) on each. postStatusNow handles its own
 // state transitions and token charging (via the shared sendStatus sender).
 //
-// The 30s tick is the same cadence as the drip scheduler — it is the
+// The 30s tick is the same cadence as the drip scheduler - it is the
 // platform's "cron" and is deliberately coarse. If a status is scheduled
 // for 14:23:15 and the next tick fires at 14:23:30, the status goes out
 // 15 seconds late. That is acceptable for status posts; statuses are not

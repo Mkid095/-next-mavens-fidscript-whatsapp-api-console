@@ -65,9 +65,9 @@ See [README.md](./README.md) for project-specific setup instructions.
 
 ## Branch Strategy
 
-- `main` — stable production-ready code
-- `develop` — integration branch for upcoming releases
-- `feat/*`, `fix/*`, `chore/*` — short-lived branches off `develop`
+- `main` - stable production-ready code
+- `develop` - integration branch for upcoming releases
+- `feat/*`, `fix/*`, `chore/*` - short-lived branches off `develop`
 
 ## Trademark Notice
 

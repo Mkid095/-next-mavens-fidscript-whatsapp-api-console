@@ -1,4 +1,4 @@
-# apps/api/src/services — Business Logic Services
+# apps/api/src/services - Business Logic Services
 
 ## Purpose
 

@@ -5,7 +5,7 @@ import { logAuditAction } from '../../utils/audit.js';
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/automation-rules — Phase 4 keyword rules (AI inbound simple
+// /api/platform/automation-rules - Phase 4 keyword rules (AI inbound simple
 // form, §10.1). The richer DAG flows live under /api/platform/automations
 // (flow-based). Both share the same bus subscriber.
 // =============================================================================

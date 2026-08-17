@@ -16,7 +16,7 @@ interface MarketingCenterProps {
 type Tab = 'campaigns' | 'library' | 'segments' | 'statuses';
 
 /**
- * Phase 5 Marketing Center — Slices A-E. The hub for non-bulk campaign work.
+ * Phase 5 Marketing Center - Slices A-E. The hub for non-bulk campaign work.
  * Slice A: Broadcast builder + list view with type filter.
  * Slice B: Media library tab (reusable assets referenced by campaigns).
  * Slice C: Segments tab (named audience filters with preview).
@@ -51,7 +51,7 @@ export default function MarketingCenter({ clientToken, instances }: MarketingCen
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-[#a8a99e]">Marketing Center</p>
           <p className="text-[10px] text-[#6e684a]">
-            Broadcasts · Media library · Segments · Drip flows · Status posts. Shares the same send pipeline as 1:1 chat — failed sends refund tokens automatically.
+            Broadcasts · Media library · Segments · Drip flows · Status posts. Shares the same send pipeline as 1:1 chat - failed sends refund tokens automatically.
           </p>
         </div>
         <Megaphone className="w-5 h-5 text-[#eab308] shrink-0" />

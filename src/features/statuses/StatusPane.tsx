@@ -10,7 +10,7 @@ interface StatusPaneProps {
 }
 
 /**
- * Phase 5 Slice E — Statuses tab content. Owns the composer + list and
+ * Phase 5 Slice E - Statuses tab content. Owns the composer + list and
  * threads the submit/delete/cancel callbacks between them.
  */
 export default function StatusPane({ instances }: StatusPaneProps) {

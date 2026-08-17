@@ -24,7 +24,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] antialiased">
       <SeoHead
-        title="FIDScript — WhatsApp API for Kenyan Businesses"
+        title="FIDScript - WhatsApp API for Kenyan Businesses"
         description="Send WhatsApp messages programmatically at KES 0.11 per message. FIDScript provides WhatsApp API, REST webhooks, M-Pesa billing, and real-time analytics for Kenyan businesses."
         canonical="/"
         schema="website"

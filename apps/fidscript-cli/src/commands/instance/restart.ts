@@ -1,5 +1,5 @@
 /**
- * instance/restart.ts — Restart an instance (requires --confirm)
+ * instance/restart.ts - Restart an instance (requires --confirm)
  * POST /api/v1/instance/restart/:instance
  */
 import { ApiClient } from '../../lib/api-client.js';

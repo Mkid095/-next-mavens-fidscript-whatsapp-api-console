@@ -1,5 +1,5 @@
 /**
- * instance/logout.ts — Disconnect an instance from WhatsApp
+ * instance/logout.ts - Disconnect an instance from WhatsApp
  * DELETE /api/v1/instance/logout/:instance
  */
 import { ApiClient } from '../../lib/api-client.js';

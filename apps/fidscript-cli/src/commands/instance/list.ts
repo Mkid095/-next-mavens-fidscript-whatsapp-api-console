@@ -1,5 +1,5 @@
 /**
- * instance/list.ts — list all instances for the logged-in client.
+ * instance/list.ts - list all instances for the logged-in client.
  * Auth: JWT (client/me). Source of truth: server DB (instances WHERE client_id).
  *
  * Falls back to the v1 connection-state ping per stored instance if no JWT

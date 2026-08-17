@@ -1,5 +1,5 @@
 /**
- * ConfidenceBadge — colored confidence level indicator.
+ * ConfidenceBadge - colored confidence level indicator.
  * Shared between ConversationInspector and TestStep.
  */
 import React from 'react';

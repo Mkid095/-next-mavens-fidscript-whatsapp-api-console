@@ -11,7 +11,7 @@ import { emitDataEvent } from '../../../data';
  *   - `sse-token-update`  → token balance changed (header, store)
  *
  * This hook lives at the ClientDashboard level (always mounted while logged in),
- * NOT inside WhatsAppContainers — so the stream stays alive on /client/messages
+ * NOT inside WhatsAppContainers - so the stream stays alive on /client/messages
  * where it is actually needed. Connections are reopened only when the SET of
  * connected instance names changes, never on ordinary re-renders.
  */
@@ -74,7 +74,7 @@ export function useInstanceSSE(
         } catch { /* malformed payload */ }
       });
 
-      // Confirmed outbound message — emitted immediately after DB write (before webhook echo)
+      // Confirmed outbound message - emitted immediately after DB write (before webhook echo)
       es.addEventListener('messageSent', event => {
         try {
           const raw = JSON.parse((event as MessageEvent).data) as {
@@ -134,7 +134,7 @@ export function useInstanceSSE(
     return () => {
       controllers.forEach(es => es.close());
     };
-    // Reopen only when the connected set changes — not on every render.
+    // Reopen only when the connected set changes - not on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedKey]);
 }

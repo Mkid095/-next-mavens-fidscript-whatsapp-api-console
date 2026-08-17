@@ -1,5 +1,5 @@
 /**
- * chatbot/status.ts — health check for a chatbot.
+ * chatbot/status.ts - health check for a chatbot.
  * Auth: JWT. GET /api/platform/chatbots/:id/health
  */
 import {

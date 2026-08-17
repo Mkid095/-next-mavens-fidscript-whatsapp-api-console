@@ -4,7 +4,7 @@
  * the gateway (Baileys) nests every message type under a distinct key on
  * `data.message` (e.g. `imageMessage`, `audioMessage`, `locationMessage`).
  * This parser extracts display content + media + a typed `extra` blob for each,
- * and falls back to an `unknown` type so we never drop a message — the raw
+ * and falls back to an `unknown` type so we never drop a message - the raw
  * payload is always stored alongside in `inbox_messages.raw_payload`.
  */
 
@@ -115,6 +115,6 @@ export function parseIncomingMessage(data: Rec): ParsedMessage {
       mediaUrl: null, mediaMimetype: null, extra: { selectedButtonId: id } };
   }
 
-  // --- Unknown — preserve the raw type hint so it's still searchable ---
+  // --- Unknown - preserve the raw type hint so it's still searchable ---
   return { messageType: hint || 'unknown', content: '', mediaUrl: null, mediaMimetype: null, extra: { messageKeys: Object.keys(msg) } };
 }

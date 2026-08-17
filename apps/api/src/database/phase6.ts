@@ -1,16 +1,16 @@
 import type { Database } from 'sql.js';
 
 // =============================================================================
-// Phase 6 migrations — Developer ecosystem (§14).
+// Phase 6 migrations - Developer ecosystem (§14).
 //   - webhooks: outbound endpoint registration per workspace
 //   - webhook_deliveries: attempt log for each event fan-out
 //   - api_logs: enrich with latency_ms + workspace_id (was a §14.2 requirement)
-// All guarded by ALTER / CREATE TABLE IF NOT EXISTS — sql.js boot order safe.
+// All guarded by ALTER / CREATE TABLE IF NOT EXISTS - sql.js boot order safe.
 // =============================================================================
 
 export function runPhase6Migrations(db: Database): void {
   // -------------------------------------------------------------------
-  // webhooks — businesses register a URL + event filter; we POST signed
+  // webhooks - businesses register a URL + event filter; we POST signed
   // payloads on every matching domain event.
   // secret is a per-webhook HMAC secret used to sign the body in the
   // X-FIDScript-Signature header (HMAC-SHA256 hex).
@@ -31,7 +31,7 @@ export function runPhase6Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_webhooks_status ON webhooks(workspace_id, status)`);
 
   // -------------------------------------------------------------------
-  // webhook_deliveries — one row per delivery attempt.
+  // webhook_deliveries - one row per delivery attempt.
   // response_code = HTTP status from the consumer (0 if connection failed).
   // attempt = 1..N (we retry on 5xx and network errors up to 5 times).
   // -------------------------------------------------------------------
@@ -53,7 +53,7 @@ export function runPhase6Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_webhook ON webhook_deliveries(webhook_id, created_at DESC)`);
 
   // -------------------------------------------------------------------
-  // api_logs enrichment (§14.2) — latency_ms + workspace_id.
+  // api_logs enrichment (§14.2) - latency_ms + workspace_id.
   // The existing writer at modules/platform/audit/writer.ts writes the
   // current schema; we add the columns now and adopt them in a follow-up.
   // -------------------------------------------------------------------
@@ -63,7 +63,7 @@ export function runPhase6Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_api_logs_latency ON api_logs(workspace_id, latency_ms)`);
 
   // -------------------------------------------------------------------
-  // FTS5 virtual table for search_index (§8.1) — fixes the silent LIKE
+  // FTS5 virtual table for search_index (§8.1) - fixes the silent LIKE
   // fallback. The base search_index table is created in workspace/migrations.ts
   // (run before phase6). We mirror its rows into search_index_fts via
   // triggers so the FTS5 index stays in sync with inserts/updates/deletes.
@@ -92,7 +92,7 @@ export function runPhase6Migrations(db: Database): void {
         )
       `);
 
-      // Initial backfill — copy every existing search_index row into the FTS index.
+      // Initial backfill - copy every existing search_index row into the FTS index.
       db.run(`
         INSERT INTO search_index_fts(rowid, body)
           SELECT rowid, body FROM search_index WHERE body IS NOT NULL
@@ -117,7 +117,7 @@ export function runPhase6Migrations(db: Database): void {
       `);
     }
   } catch (e) {
-    // FTS5 not available in this sql.js build — provider.ts has a LIKE fallback.
+    // FTS5 not available in this sql.js build - provider.ts has a LIKE fallback.
     console.warn('[phase6] FTS5 init failed; falling back to LIKE:', e instanceof Error ? e.message : String(e));
   }
 }

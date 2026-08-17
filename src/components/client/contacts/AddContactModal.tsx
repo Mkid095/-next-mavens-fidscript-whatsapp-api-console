@@ -57,7 +57,7 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
     }
     // Build international format (same as server-side normalizePhone does for Kenya)
     const fullPhone = selectedCountry + phoneDigits;
-    // existingPhones contains digits-only numbers (stripped of '+') — strip our input the same way
+    // existingPhones contains digits-only numbers (stripped of '+') - strip our input the same way
     const digitsOnly = (selectedCountry.replace('+', '') + phoneDigits).replace(/\D/g, '');
     if (existingPhones?.has(digitsOnly)) {
       setError('This phone number is already in your contacts.');
@@ -66,7 +66,7 @@ export default function AddContactModal({ onClose, onSaved, existingPhones }: Ad
     setSaving(true);
     setError('');
     try {
-      // Send in international format — server will normalize it consistently
+      // Send in international format - server will normalize it consistently
       const res = await contactsApi.importBatch([{ phone: fullPhone, name: name.trim(), tags: tags.trim() }]);
       if (res.success) {
         onSaved({

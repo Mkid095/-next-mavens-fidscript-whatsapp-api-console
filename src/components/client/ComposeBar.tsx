@@ -108,7 +108,7 @@ export default function ComposeBar({
         </>
       )}
 
-      {/* Text composer — only shown when no inline editor is active */}
+      {/* Text composer - only shown when no inline editor is active */}
       {!showInlineEditor && (
         <div className="p-3 border-t border-[#eaebe4] bg-white">
           <div className="flex items-end gap-2">

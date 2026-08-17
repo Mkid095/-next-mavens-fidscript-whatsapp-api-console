@@ -1,5 +1,5 @@
 /**
- * llm.ts — BYO LLM connection management.
+ * llm.ts - BYO LLM connection management.
  * GET/POST/PUT/DELETE /api/platform/llm-connections[/:id]
  */
 import type { FidscriptClient } from './client.js';

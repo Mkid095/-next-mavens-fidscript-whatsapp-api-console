@@ -13,7 +13,7 @@ interface SegmentBuilderProps {
 function defaultRule(): SegmentRule { return { field: 'tag', op: 'has_any_of', value: [] }; }
 
 /**
- * Phase 5 Slice C — SegmentBuilder. Compose a filter_json interactively,
+ * Phase 5 Slice C - SegmentBuilder. Compose a filter_json interactively,
  * preview the matching customers before saving, and persist as a named
  * segment for reuse across campaigns.
  */

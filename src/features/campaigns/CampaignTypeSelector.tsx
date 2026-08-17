@@ -3,7 +3,7 @@ export type CampaignFormType = 'broadcast' | 'drip' | 'trigger';
 const TYPES: { value: CampaignFormType; label: string; hint: string }[] = [
   { value: 'broadcast', label: 'Broadcast', hint: 'Send once to a list/segment' },
   { value: 'drip', label: 'Drip', hint: 'Step sequence fired per enrolled customer' },
-  { value: 'trigger', label: 'Trigger', hint: 'Event-driven one-shot (deprecated — use Drip + Triggers)' },
+  { value: 'trigger', label: 'Trigger', hint: 'Event-driven one-shot (deprecated - use Drip + Triggers)' },
 ];
 
 export default function CampaignTypeSelector({ value, onChange }: { value: CampaignFormType; onChange: (t: CampaignFormType) => void; }) {

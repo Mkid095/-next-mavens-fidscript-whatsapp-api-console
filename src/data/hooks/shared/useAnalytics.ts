@@ -1,5 +1,5 @@
 // =============================================================================
-// useAnalytics — metric rollups overview (§13) for dashboard surfaces.
+// useAnalytics - metric rollups overview (§13) for dashboard surfaces.
 // Returns the per-metric sums for the current day, refreshed on events.
 // =============================================================================
 
@@ -31,7 +31,7 @@ export function useAnalyticsOverview(): UseAnalyticsState {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Message activity changes the counts — refresh
+  // Message activity changes the counts - refresh
   useEffect(() => {
     if (messageEvent || sentEvent) {
       const t = setTimeout(refresh, 500); // small delay so the rollup commits first

@@ -62,6 +62,6 @@ export default function ConditionBuilder({ node, onChange }: { node: FlowNodeInp
       );
     case 'branch':
     case 'ai':
-      return <div className="text-[10px] text-stone-500">Advanced config — edit JSON for now</div>;
+      return <div className="text-[10px] text-stone-500">Advanced config - edit JSON for now</div>;
   }
 }

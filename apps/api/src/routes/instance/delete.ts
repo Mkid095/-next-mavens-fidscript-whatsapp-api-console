@@ -34,12 +34,12 @@ router.delete('/delete/:name', clientJwtAuth, async (req: Request, res: Response
       evolutionDeleted = true;
       console.log(`[instance/delete] Evolution API deleted: ${evolutionInstanceName}`);
     } else if (evoResult.status === 404) {
-      // Instance doesn't exist in Evolution API — already deleted or never existed
+      // Instance doesn't exist in Evolution API - already deleted or never existed
       // This is fine, we'll clean up our DB record
       evolutionDeleted = false;
       console.log(`[instance/delete] Evolution API instance not found (already deleted?): ${evolutionInstanceName}`);
     } else {
-      // Other error from Evolution API — don't touch our DB
+      // Other error from Evolution API - don't touch our DB
       evolutionError = evoResult.data?.error || `Evolution API returned ${evoResult.status}`;
       console.error(`[instance/delete] Evolution API error: ${evolutionError}`);
       return res.status(400).json({
@@ -59,7 +59,7 @@ router.delete('/delete/:name', clientJwtAuth, async (req: Request, res: Response
     });
   }
 
-  // Step 2: Clean up our DB — instance row + all its messages
+  // Step 2: Clean up our DB - instance row + all its messages
   const deleteMsg = db.prepare('DELETE FROM inbox_messages WHERE instance_id = ?').run(instance.id);
   const deleteInst = db.prepare('DELETE FROM instances WHERE id = ?').run(instance.id);
 

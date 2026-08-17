@@ -131,7 +131,7 @@ export const adminApi = {
   replayMessage: (id: string) =>
     fetchApi<{ replayed: boolean; webhook_status: number }>(`/api/admin/messages/${id}/replay`, { method: 'POST' }),
 
-  /** Platform audit log — all events with optional filters (platform admin only) */
+  /** Platform audit log - all events with optional filters (platform admin only) */
   getAuditEvents: (filters: AuditEventsFilters = {}) => {
     const params = new URLSearchParams();
     if (filters.actorId) params.set('actorId', filters.actorId);

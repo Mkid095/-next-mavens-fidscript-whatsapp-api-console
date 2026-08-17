@@ -13,7 +13,7 @@ export async function hashKey(key: string): Promise<string> {
 export function verifyKey(key: string, hash: string | null): boolean {
   if (!key) return false;
   if (hash) return bcrypt.compareSync(key, hash);
-  return false; // no hash means legacy row — auth middleware handles plaintext fallback
+  return false; // no hash means legacy row - auth middleware handles plaintext fallback
 }
 
 /** Backfill key_hash for any rows that don't have one yet. Call on startup. */

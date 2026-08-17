@@ -18,7 +18,7 @@ export default function TokenCostGuide() {
 
   const whatsappRows = [
     { action: 'Text message', cost: costs.find(c => c.action === 'whatsapp.text')?.tokenCost ?? 1 },
-    { action: 'Media — image / video / document', cost: costs.find(c => c.action === 'whatsapp.media')?.tokenCost ?? 2 },
+    { action: 'Media - image / video / document', cost: costs.find(c => c.action === 'whatsapp.media')?.tokenCost ?? 2 },
     { action: 'Audio', cost: costs.find(c => c.action === 'whatsapp.audio')?.tokenCost ?? 2 },
     { action: 'Sticker', cost: costs.find(c => c.action === 'whatsapp.sticker')?.tokenCost ?? 2 },
     { action: 'Location', cost: costs.find(c => c.action === 'whatsapp.location')?.tokenCost ?? 1 },

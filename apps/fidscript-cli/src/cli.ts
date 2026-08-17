@@ -1,5 +1,5 @@
 /**
- * cli.ts — Commander root with global flags and command tree
+ * cli.ts - Commander root with global flags and command tree
  */
 import { Command } from 'commander';
 import pc from 'picocolors';
@@ -19,7 +19,7 @@ cli
   .name('fidscript')
   .description(
     applyColor(
-      `${pc.bold('FIDScript WhatsApp CLI')} — manage instances, send messages, and more\n` +
+      `${pc.bold('FIDScript WhatsApp CLI')} - manage instances, send messages, and more\n` +
       `\n` +
       `  ${pc.dim('Get started:')}\n` +
       `    export FIDSCRIPT_API_KEY=fidscript_live_xxx\n` +

@@ -3,7 +3,7 @@ import { clientJwtAuth } from '../../middleware/auth.js';
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/analytics — metric rollups (§13).
+// /api/platform/analytics - metric rollups (§13).
 // Workspace-scoped aggregates computed by the AnalyticsProjectors.
 // =============================================================================
 
@@ -15,7 +15,7 @@ function wsId(req: Request): string {
 }
 
 // GET /?period=day&metric=messages_received
-// GET /overview — a prebuilt dashboard summary of the common metrics
+// GET /overview - a prebuilt dashboard summary of the common metrics
 router.get('/', (req: Request, res: Response) => {
   try {
     const period = (req.query.period as string) || 'day';
@@ -37,7 +37,7 @@ router.get('/', (req: Request, res: Response) => {
   }
 });
 
-// GET /overview — summed counts per metric for the current day (inbox dashboards)
+// GET /overview - summed counts per metric for the current day (inbox dashboards)
 router.get('/overview', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`

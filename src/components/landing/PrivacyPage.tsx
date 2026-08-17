@@ -9,7 +9,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
       <SeoHead
         title="Privacy Policy"
-        description="FIDScript Privacy Policy — data collection, M-Pesa payment handling, third-party sharing disclosures, Kenyan DPA compliance, and your data rights."
+        description="FIDScript Privacy Policy - data collection, M-Pesa payment handling, third-party sharing disclosures, Kenyan DPA compliance, and your data rights."
         canonical="/privacy"
         schema="privacy"
         breadcrumbs={[{ name: 'Privacy', url: '/privacy' }]}

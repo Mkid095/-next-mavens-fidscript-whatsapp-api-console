@@ -1,5 +1,5 @@
 /**
- * llm/providers.ts — list providers available in your workspace's registry.
+ * llm/providers.ts - list providers available in your workspace's registry.
  * Auth: JWT. GET /api/platform/llm-connections/available-providers
  */
 import {

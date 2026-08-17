@@ -90,7 +90,7 @@ export function registerAuditTrail(): void {
 **Boundary rule:** Everything in the kernel communicates through the bus. No direct function calls between kernel submodules.
 
 ```typescript
-// kernel/events/catalog.ts — event type definitions
+// kernel/events/catalog.ts - event type definitions
 export type DomainEventType =
   | 'message.received' | 'message.sent' | 'message.delivered'
   | 'conversation.created' | 'conversation.assigned' | 'conversation.status_changed'
@@ -255,7 +255,7 @@ A new developer asks: **"Where does X logic live?"**
 
 **Import changes:** All callers continue to use existing `modules/automation/index.js` and `modules/ai/chatbotEngine/index.js` barrels (forwarding re-exports to kernel). No caller paths needed updating.
 
-**Risk:** Medium. `evalCondition`/`triggerMatches` are duplicated across `kernel/automation/engine.ts` and `kernel/automation/conditionEvaluator.ts` — intentional (engine re-exports the pure evaluator). Chatbot engine DB queries extracted cleanly.
+**Risk:** Medium. `evalCondition`/`triggerMatches` are duplicated across `kernel/automation/engine.ts` and `kernel/automation/conditionEvaluator.ts` - intentional (engine re-exports the pure evaluator). Chatbot engine DB queries extracted cleanly.
 
 ---
 
@@ -272,7 +272,7 @@ A new developer asks: **"Where does X logic live?"**
 
 **Note:** `kernel/entities/conversations.ts` now imports `dispatchCustomerCreated/dispatchConversationCreated` from `kernel/events/` (Phase 1 ✅) and `WorkspaceContext` from `kernel/identity/` (Phase 4 ✅).
 
-**Risk:** Medium. `resolveConversation` is called in many places — all updated to `kernel/entities/index.js`.
+**Risk:** Medium. `resolveConversation` is called in many places - all updated to `kernel/entities/index.js`.
 
 ---
 
@@ -286,7 +286,7 @@ A new developer asks: **"Where does X logic live?"**
 
 **Import changes:** All callers continue to use `modules/platform/workspace/index.js` (forwarding re-export barrel). `kernel/entities/conversations.ts` and `kernel/automation/engine.ts` now import `WorkspaceContext` from `kernel/identity/index.js` ✅.
 
-**Risk:** Low. Pure rename — the interface does not change.
+**Risk:** Low. Pure rename - the interface does not change.
 
 ---
 
@@ -297,9 +297,9 @@ A new developer asks: **"Where does X logic live?"**
 - New `kernel/campaigns/index.ts` (barrel) ✅
 - `modules/campaigns/index.ts` updated to re-export Campaign types from `kernel/campaigns/` ✅
 
-**What stays in `modules/campaigns/`:** `dispatch.ts`, `drip.ts`, `triggers.ts`, `steps.ts`, `statuses.ts`, `statusScheduler.ts` — these are delivery mechanics (adapters), not entity definitions.
+**What stays in `modules/campaigns/`:** `dispatch.ts`, `drip.ts`, `triggers.ts`, `steps.ts`, `statuses.ts`, `statusScheduler.ts` - these are delivery mechanics (adapters), not entity definitions.
 
-**Import changes:** None — `modules/campaigns/index.js` now additionally re-exports Campaign types from kernel.
+**Import changes:** None - `modules/campaigns/index.js` now additionally re-exports Campaign types from kernel.
 
 **Risk:** Low. Only a new types file + barrel; delivery mechanics unchanged.
 

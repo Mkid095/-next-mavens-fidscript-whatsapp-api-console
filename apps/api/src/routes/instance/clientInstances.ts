@@ -114,8 +114,8 @@ router.post('/client-settings/:name', clientJwtAuth, async (req: Request, res: R
     const updated = { ...current, ...req.body };
     db.prepare('UPDATE instances SET settings = ? WHERE name = ?').run(JSON.stringify(updated), req.params.name);
 
-    // Apply settings to Evolution API (best-effort — never block on gateway errors)
-    // All fields are required by the API — default false for absent booleans
+    // Apply settings to Evolution API (best-effort - never block on gateway errors)
+    // All fields are required by the API - default false for absent booleans
     const evoName = instance.evolution_name || `${instance.client_id}_${instance.name}`;
     const evoSettings = {
       rejectCall: Boolean(updated.reject_calls ?? false),

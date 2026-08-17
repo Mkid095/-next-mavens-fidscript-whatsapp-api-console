@@ -34,7 +34,7 @@ function pump() {
 }
 
 // lookupKey: full JID for groups (123456-789@g.us), phone digits for 1:1 (254712345678).
-// The key doubles as the API param — getProfilePic passes it directly to Evolution API.
+// The key doubles as the API param - getProfilePic passes it directly to Evolution API.
 export function useProfilePic(instanceName: string | null, lookupKey: string | null): CacheValue {
   const key = instanceName && lookupKey ? `${instanceName}::${lookupKey}` : '';
   const cached = key ? cache.get(key) : undefined;

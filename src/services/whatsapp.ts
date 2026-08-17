@@ -1,5 +1,5 @@
 /**
- * FIDScript public API (v1) client — `/api/v1`.
+ * FIDScript public API (v1) client - `/api/v1`.
  *
  * Integrators authenticate with an `X-API-Key` (`fidscript_live_…`). The
  * dashboard Sandbox passes the key through too. All send methods accept an

@@ -110,7 +110,7 @@ export default function CreateInstanceModal({ isOpen, clients, onClose, onSubmit
                   onChange={(e) => setSelectedClientId(e.target.value)}
                   className="w-full px-3 py-2.5 bg-[#1a1915] border border-[#2d2813] text-[#a8a99e] rounded-xl focus:outline-none focus:border-yellow-500/50 text-xs"
                 >
-                  <option value="">— Unassigned —</option>
+                  <option value="">- Unassigned -</option>
                   {clients.map((c) => (
                     <option key={c.client_id} value={c.client_id}>{c.name}</option>
                   ))}

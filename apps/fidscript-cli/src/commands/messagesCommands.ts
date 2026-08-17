@@ -1,5 +1,5 @@
 /**
- * messagesCommands.ts — Message sending commands
+ * messagesCommands.ts - Message sending commands
  */
 import type { Command } from 'commander';
 

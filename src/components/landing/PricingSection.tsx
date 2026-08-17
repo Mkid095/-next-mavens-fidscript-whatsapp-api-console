@@ -96,7 +96,7 @@ export default function PricingSection() {
 
         <div className="text-center mt-8 p-4 bg-[#fb923c]/10 border border-[#f97316]/20 rounded-[28px] max-w-2xl mx-auto">
           <p className="text-sm text-[#525252]">
-            <strong>New!</strong> Sign up today and get <span className="text-[#f97316] font-bold">500 free welcome tokens</span> — no payment required!
+            <strong>New!</strong> Sign up today and get <span className="text-[#f97316] font-bold">500 free welcome tokens</span> - no payment required!
           </p>
         </div>
       </div>

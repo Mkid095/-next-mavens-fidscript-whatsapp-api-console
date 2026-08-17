@@ -1,4 +1,4 @@
-# Google OAuth Verification — Submission Guide
+# Google OAuth Verification - Submission Guide
 
 **App:** FIDScript WhatsApp API
 **Company:** Next Mavens
@@ -13,7 +13,7 @@
 URL: https://console.cloud.google.com/apis/credentials/consent
 
 **App information:**
-- App name: **FIDScript — WhatsApp API by Next Mavens**
+- App name: **FIDScript - WhatsApp API by Next Mavens**
 - User support email: **info@nextmavens.com**
 - App logo: upload a square logo (preferably 120x120 PNG)
 
@@ -49,7 +49,7 @@ Value: (the token Google gives you in Search Console)
 ### 4. Submit for Verification
 1. Click **Submit for verification** button
 2. Fill in the form using the text below
-3. Google will email you follow-up questions — respond within 7 days
+3. Google will email you follow-up questions - respond within 7 days
 
 ---
 
@@ -57,7 +57,7 @@ Value: (the token Google gives you in Search Console)
 
 ### Why do you need access to user's Google Contacts?
 
-> FIDScript is a WhatsApp Business API platform built by Next Mavens for businesses in Africa. When a customer imports their Google Contacts into FIDScript, they can quickly select recipients from their address book when sending WhatsApp outreach or campaign messages — instead of manually re-entering every phone number.
+> FIDScript is a WhatsApp Business API platform built by Next Mavens for businesses in Africa. When a customer imports their Google Contacts into FIDScript, they can quickly select recipients from their address book when sending WhatsApp outreach or campaign messages - instead of manually re-entering every phone number.
 >
 > The contacts data is used exclusively within FIDScript's interface to populate the recipient picker. We do not transfer Google Contacts data to any third party, advertising network, or data broker. We do not use it for advertising, retargeting, or any purpose other than the recipient-selection feature.
 >
@@ -128,11 +128,11 @@ If they ask for "**demonstration of how the data is used**":
 | Reason Google rejects | How to avoid |
 |---|---|
 | Domain not verified | Complete Google Search Console setup BEFORE submitting |
-| Privacy policy missing contact info | Already covered — privacy page has email + phone |
+| Privacy policy missing contact info | Already covered - privacy page has email + phone |
 | App doesn't show OAuth consent clearly | Make sure your OAuth consent screen has logo, name, support email |
 | Scopes used but not declared | Our 4 scopes are all declared |
-| Vague justification | Use the text above — be specific about data flow |
-| Home page empty / placeholder | Our homepage is fully built — `whatsapp.fidscript.com` returns 200 |
+| Vague justification | Use the text above - be specific about data flow |
+| Home page empty / placeholder | Our homepage is fully built - `whatsapp.fidscript.com` returns 200 |
 
 ---
 

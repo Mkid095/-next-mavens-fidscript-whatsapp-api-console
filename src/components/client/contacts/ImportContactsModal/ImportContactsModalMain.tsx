@@ -77,11 +77,11 @@ export default function ImportContactsModal({ onClose, onContactsImported, exist
       const raw = decodeURIComponent(googleErr);
       let friendly = raw;
       if (raw === 'access_denied') {
-        friendly = 'Permission denied — please grant Contacts access to import your address book.';
+        friendly = 'Permission denied - please grant Contacts access to import your address book.';
       } else if (raw === 'redirect_uri_mismatch') {
         friendly = 'OAuth configuration error: redirect URI mismatch. Contact support.';
       } else if (raw === 'invalid_state' || raw === 'missing_params') {
-        friendly = 'OAuth session expired — please try again.';
+        friendly = 'OAuth session expired - please try again.';
       }
       setGoogleError(friendly);
       setTimeout(() => setGoogleError(''), 8000);

@@ -6,13 +6,13 @@ import { logAuditAction } from '../../utils/audit.js';
 import type { Request } from 'express';
 
 // =============================================================================
-// Phase 5 Slice E — Status posts (text/image to the WhatsApp status feed).
+// Phase 5 Slice E - Status posts (text/image to the WhatsApp status feed).
 // post_state lifecycle: draft → scheduled → posting → posted | failed | cancelled
 //
 // postStatusNow(row) is the canonical poster: it loads the instance the post
 // belongs to, builds a SendContext, and calls the shared sendStatus sender
 // (same pipeline 1:1 chat uses → tokens charged, message.sent fired, counters
-// ticked). The state transition is atomic with the gateway call — if the send
+// ticked). The state transition is atomic with the gateway call - if the send
 // throws, the row is marked failed with the error message and tokens are
 // refunded by the shared sender (so a 5% failure rate doesn't burn the budget).
 // =============================================================================
@@ -152,7 +152,7 @@ export function cancelStatusPost(id: string, workspaceId: string): StatusPostRow
 
 /**
  * Post a status now. Looks up the instance + its owner (client) and calls
- * the shared sendStatus sender — which charges tokens, fires message.sent,
+ * the shared sendStatus sender - which charges tokens, fires message.sent,
  * and refunds on failure. Updates the row atomically with the result.
  *
  * Used by:
@@ -163,7 +163,7 @@ export async function postStatusNow(
   row: StatusPostRow,
   req?: Request
 ): Promise<{ ok: boolean; error?: string }> {
-  // 1. Load the instance — must exist, be connected, and owned by the same workspace.
+  // 1. Load the instance - must exist, be connected, and owned by the same workspace.
   const instance = db.prepare(`
     SELECT i.*, c.id AS client_id
     FROM instances i JOIN clients c ON i.client_id = c.id
@@ -220,7 +220,7 @@ export async function postStatusNow(
     req: stubReq,
   };
 
-  // 6. Call the shared sender — for text statuses pass the content as
+  // 6. Call the shared sender - for text statuses pass the content as
   //    `content`; for image/audio pass the media URL + optional caption.
   const result = row.kind === 'text'
     ? await sendStatus(ctx, { type: 'text', content: row.content || '' })
@@ -236,14 +236,14 @@ export async function postStatusNow(
   }
 
   // 7. Mark posted + record any cross-posts (currently we just record the
-  //    intent — future slices could expand to actually firing each).
+  //    intent - future slices could expand to actually firing each).
   const data = result.data as { messageId?: string };
   db.prepare(`
     UPDATE status_posts SET post_state = 'posted', posted_at = CURRENT_TIMESTAMP, error_message = NULL
     WHERE id = ?
   `).run(row.id);
 
-  // Fire audit (best-effort — never blocks the user response)
+  // Fire audit (best-effort - never blocks the user response)
   try {
     if (req) logAuditAction(req, 'STATUS_POSTED', 'status_post', row.id, data.messageId);
   } catch (err) {
@@ -253,7 +253,7 @@ export async function postStatusNow(
   // 8. If cross-post was requested, queue mirrors as additional scheduled
   //    rows for the same content with status=scheduled, scheduled_at=NOW
   //    so the scheduler picks them up next tick. (Defer to a future slice
-  //    to actually fan out — for Slice E we record the intent only.)
+  //    to actually fan out - for Slice E we record the intent only.)
   if (row.cross_post_json) {
     const targets = JSON.parse(row.cross_post_json) as string[];
     for (const targetId of targets) {

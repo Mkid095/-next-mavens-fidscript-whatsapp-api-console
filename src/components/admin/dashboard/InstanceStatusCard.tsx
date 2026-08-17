@@ -42,7 +42,7 @@ export default function InstanceStatusCard({ instances }: InstanceStatusCardProp
                 )}
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold text-white truncate">{inst.display_name || inst.name}</p>
-                  <p className="text-[9px] text-stone-500 font-mono truncate">{inst.phone_number || '—'}</p>
+                  <p className="text-[9px] text-stone-500 font-mono truncate">{inst.phone_number || '-'}</p>
                 </div>
               </div>
               <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${

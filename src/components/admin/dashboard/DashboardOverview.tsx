@@ -48,7 +48,7 @@ export default function DashboardOverview({
     <div className="space-y-6">
       <QuickAlertBar activeClusters={activeClusters} userEmail={userEmail} onNavigate={onNavigate} />
 
-      {/* Stat cards — charcoal + yellow brand palette */}
+      {/* Stat cards - charcoal + yellow brand palette */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <StatCard
           label="Messages Sent Today"

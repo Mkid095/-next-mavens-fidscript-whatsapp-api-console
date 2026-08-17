@@ -1,4 +1,4 @@
-// Connectors API — /api/platform/connectors
+// Connectors API - /api/platform/connectors
 import { apiGet, apiPost, apiDelete } from '../data/api/client.js';
 
 export interface ConnectorTrigger {

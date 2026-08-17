@@ -1,5 +1,5 @@
 /**
- * customers.ts — /api/v1/customers
+ * customers.ts - /api/v1/customers
  *
  * Public API for listing and inspecting customers.
  * Authenticates with X-API-Key.

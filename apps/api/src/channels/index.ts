@@ -1,5 +1,5 @@
 // =============================================================================
-// Channel interface — the seam for adding new channels.
+// Channel interface - the seam for adding new channels.
 // WhatsApp (the gateway) is the first channel; SMS/email/Instagram plug in later.
 // Adding a channel = a folder under channels/ implementing this interface.
 // =============================================================================

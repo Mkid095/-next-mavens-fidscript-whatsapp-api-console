@@ -10,7 +10,7 @@ interface NewChatModalProps {
   onPick: (chat: ChatListItem) => void;
 }
 
-// New-chat picker — start a 1:1 thread with a saved contact. Wraps the
+// New-chat picker - start a 1:1 thread with a saved contact. Wraps the
 // contact's phone into a JID and synthesises a minimal ChatListItem so the
 // caller can open the thread immediately (the real chat will arrive on the
 // next chat-list refresh).

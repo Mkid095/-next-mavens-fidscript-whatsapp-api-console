@@ -6,7 +6,7 @@ import type { SendContext, SendResult } from '../../services/whatsapp/shared.js'
 import * as profile from '../../services/whatsapp/profile.js';
 
 /**
- * /api/v1/profile/* — profile, privacy & settings. Reads get V1_READ (600/min),
+ * /api/v1/profile/* - profile, privacy & settings. Reads get V1_READ (600/min),
  * updates get V1_STRICT (30/min). All FREE (no tokens).
  */
 const router = Router();

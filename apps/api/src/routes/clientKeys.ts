@@ -56,7 +56,7 @@ router.delete('/:id', clientJwtAuth, async (req: Request, res: Response) => {
   }
 });
 
-// Regenerate API key — issues a new secret, returns it ONCE (rotates the row).
+// Regenerate API key - issues a new secret, returns it ONCE (rotates the row).
 // Lets owners recover/copy access again without permanently exposing keys via GET.
 router.post('/:id/regenerate', clientJwtAuth, async (req: Request, res: Response) => {
   try {

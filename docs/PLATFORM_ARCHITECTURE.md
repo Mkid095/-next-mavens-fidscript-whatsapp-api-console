@@ -1,9 +1,9 @@
-# FIDScript — Platform Architecture Specification
+# FIDScript - Platform Architecture Specification
 
-> **Status:** Authoritative master spec (rev. 3 — 2026-06-15). This is the document the development team builds against before any further coding.
+> **Status:** Authoritative master spec (rev. 3 - 2026-06-15). This is the document the development team builds against before any further coding.
 > **Supersedes:** `docs/CHAT_REDESIGN_SPEC.md` (the chat rebuild is now §13 inside this document).
 > **Phase 1 (backend correctness) is shipped** (`74eb0fe`).
-> **Phases 2-5 (Slices A-G) are shipped** (`f54efe9` — G-slice sweep). See [§23 Implementation status](#23-implementation-status) for the truthful per-section current state.
+> **Phases 2-5 (Slices A-G) are shipped** (`f54efe9` - G-slice sweep). See [§23 Implementation status](#23-implementation-status) for the truthful per-section current state.
 
 ---
 
@@ -18,7 +18,7 @@
 7. [The Customer Timeline](#7-the-customer-timeline)
 8. [Universal Search](#8-universal-search)
 9. [Inbox assignment, priority, status & SLA](#9-inbox-assignment-priority-status--sla)
-10. [AI as a first-class system — governance & handoff](#10-ai-as-a-first-class-system--governance--handoff)
+10. [AI as a first-class system - governance & handoff](#10-ai-as-a-first-class-system--governance--handoff)
 11. [Automation → Workflow Builder](#11-automation--workflow-builder)
 12. [Integration Framework & channels](#12-integration-framework--channels)
 13. [Analytics pipeline](#13-analytics-pipeline)
@@ -27,7 +27,7 @@
 16. [Centralized data layer (frontend)](#16-centralized-data-layer-frontend)
 17. [Feature-folder structure & file rules](#17-feature-folder-structure--file-rules)
 18. [Icon & visual system (no emoji chrome)](#18-icon--visual-system-no-emoji-chrome)
-19. [The Inbox — Phase 2 first surface](#19-the-inbox--phase-2-first-surface)
+19. [The Inbox - Phase 2 first surface](#19-the-inbox--phase-2-first-surface)
 20. [Migration path from current code](#20-migration-path-from-current-code)
 21. [Phased roadmap](#21-phased-roadmap)
 22. [Conventions, guardrails & verification](#22-conventions-guardrails--verification)
@@ -39,20 +39,20 @@
 
 Phase 1 fixed messaging so it works. Phase 2 onward builds the **platform around** messaging.
 
-FIDScript is becoming a **Business Communications Operating System**: a single workspace where a business talks to customers, runs campaigns, automates work with AI, connects its store, collaborates as a team, and exposes everything to developers — with WhatsApp as the familiar interaction layer, not the ceiling.
+FIDScript is becoming a **Business Communications Operating System**: a single workspace where a business talks to customers, runs campaigns, automates work with AI, connects its store, collaborates as a team, and exposes everything to developers - with WhatsApp as the familiar interaction layer, not the ceiling.
 
 > **The inbox is not the product. The inbox is the first *surface* that exposes the system.**
 >
 > The product is the chain:
 > `Customer → Conversation → Events → AI → Automation → Commerce → Campaigns → Analytics`, wrapped in a workspace with teams, roles, and permissions.
 >
-> Phase 2 must lay that system — not redesign chat bubbles. Better bubbles have no strategic value; a customer timeline, an event bus, and an RBAC seam do.
+> Phase 2 must lay that system - not redesign chat bubbles. Better bubbles have no strategic value; a customer timeline, an event bus, and an RBAC seam do.
 
 The frame the team must adopt:
 
 > **The UI feels like WhatsApp. The architecture behaves like a combination of WhatsApp Business, HubSpot, Intercom, Shopify Inbox, and an AI automation platform.**
 
-**Non-goals for the spec itself:** this document does not schedule every feature. It fixes the architecture — tables, seams, events, permissions — so any feature can be added without rewrites, and it sequences the first concrete build.
+**Non-goals for the spec itself:** this document does not schedule every feature. It fixes the architecture - tables, seams, events, permissions - so any feature can be added without rewrites, and it sequences the first concrete build.
 
 ---
 
@@ -62,7 +62,7 @@ The frame the team must adopt:
 |---|---|---|
 | P1 | **Conversations are assets, not ephemera** | A conversation is a business record: assignee, priority, SLA, status, notes, tags, AI summary, customer link, full timeline. |
 | P2 | **Model around customers, not messages** | The customer is the center. A customer owns conversations (across channels), orders, campaign touches, CRM rows, a timeline. |
-| P3 | **AI is first-class — and governed** | AI is a platform subsystem (agent registry + knowledge + **permissions** + **human handoff**) that subscribes to events. It is never inlined into messaging, and it can never act beyond its granted permissions. |
+| P3 | **AI is first-class - and governed** | AI is a platform subsystem (agent registry + knowledge + **permissions** + **human handoff**) that subscribes to events. It is never inlined into messaging, and it can never act beyond its granted permissions. |
 | P4 | **Event-driven by default** | Every meaningful state change emits a domain event. AI, automations, analytics, search, timeline, webhooks, integrations are all *subscribers*. |
 | P5 | **Channels & integrations are pluggable** | WhatsApp is one channel behind an interface; Shopify/Woo/etc. are connectors behind internal services. Adding either never touches the inbox, customer model, or event bus. |
 | P6 | **Internal services are the only path to third parties** | AI and automations call internal services (Catalog, Orders, Knowledge), never a third-party API directly. |
@@ -70,8 +70,8 @@ The frame the team must adopt:
 | P8 | **Build for the question** | Every decision must survive: *"Will this still work when we add teams, AI agents, automations, commerce, CRM, analytics, and developer apps?"* If not, redesign before implementing. |
 | P9 | **Reserve the seam, ship the slice** | Define every table/event/permission now (cheap). Implement only the slice a phase needs. Never let a later feature be blocked by a missing seam. |
 | P10 | **The system is the product; surfaces expose it** | The inbox, CRM, campaigns, analytics are thin UIs over the same event-driven core. Build the core first; the surfaces follow. |
-| P11 | **Tenant isolation is a security guarantee** | Every read/write is implicitly scoped by `workspaceId` through a WorkspaceContext. No unscoped queries exist. One business can never see another's data — by construction, not convention. |
-| P12 | **Interface, then implementation** | Cross-cutting machinery (event bus, search, analytics, queue) is consumed through an interface with one Phase-2 implementation. Swapping SQLite-FTS for Meilisearch, or the in-process bus for Redis, is then a one-impl change — not a rewrite. |
+| P11 | **Tenant isolation is a security guarantee** | Every read/write is implicitly scoped by `workspaceId` through a WorkspaceContext. No unscoped queries exist. One business can never see another's data - by construction, not convention. |
+| P12 | **Interface, then implementation** | Cross-cutting machinery (event bus, search, analytics, queue) is consumed through an interface with one Phase-2 implementation. Swapping SQLite-FTS for Meilisearch, or the in-process bus for Redis, is then a one-impl change - not a rewrite. |
 
 ---
 
@@ -81,7 +81,7 @@ The frame the team must adopt:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Frontend (React) — feature folders + centralized data layer      │
+│  Frontend (React) - feature folders + centralized data layer      │
 │  features/<domain> → data/hooks → data/api → data/providers       │
 └──────────────────────────▲──────────────────────────────────────┘
                            │ REST (/api) + SSE (realtime)
@@ -91,7 +91,7 @@ The frame the team must adopt:
 │  │  HTTP routes (/api/v1 public, /api/* workspace+admin)       │ │
 │  │  Auth: workspace-scoped JWT · API key · OAuth (future)      │ │
 │  ├────────────────────────────────────────────────────────────┤ │
-│  │  Access control: can(user, perm, scope) — the one seam      │ │
+│  │  Access control: can(user, perm, scope) - the one seam      │ │
 │  ├────────────────────────────────────────────────────────────┤ │
 │  │  Domain modules: inbox, customers, campaigns, automation,   │ │
 │  │    agents, search, analytics, integrations, developers…     │ │
@@ -109,15 +109,15 @@ The frame the team must adopt:
 
 ### 3.2 The seams that make future integration cheap
 
-1. **Workspace & access-control seam (§4)** — every request resolves to `(user, workspace, permissions)`. No feature adds ad-hoc role checks; all go through `can(user, perm, scope)`.
-2. **Channel seam** — `server/src/channels/` exposes one interface (`send`, `receive`, `parse`, `identity`). Adding a channel = a folder.
-3. **Integration/connector seam (§12)** — `server/src/integrations/connectors/<name>/` publishes events into the bus and exposes actions through internal services.
-4. **Event bus (§5)** — the single place domain changes are announced, consumed through an `EventBus` interface (in-process now, Redis/Kafka/NATS later). Every cross-cutting feature subscribes here.
-5. **Internal service seam** — `server/src/services/domain/` (Catalog, Orders, Knowledge, Media). AI/automations depend on these, never on third parties.
-6. **Data-layer seam (frontend, §16)** — components depend on hooks; swapping cache or transport touches one layer.
-7. **Tenant-isolation seam (§4.6)** — a WorkspaceContext threads `workspaceId` through every repository; unscoped queries cannot exist (P11).
-8. **Audit seam (§6.4)** — every privileged mutation writes a before/after audit row, separate from domain events.
-9. **Swap seams (P12)** — bus, search, and analytics are interface-first; Phase-2 implementations are replaceable without rewrites.
+1. **Workspace & access-control seam (§4)** - every request resolves to `(user, workspace, permissions)`. No feature adds ad-hoc role checks; all go through `can(user, perm, scope)`.
+2. **Channel seam** - `server/src/channels/` exposes one interface (`send`, `receive`, `parse`, `identity`). Adding a channel = a folder.
+3. **Integration/connector seam (§12)** - `server/src/integrations/connectors/<name>/` publishes events into the bus and exposes actions through internal services.
+4. **Event bus (§5)** - the single place domain changes are announced, consumed through an `EventBus` interface (in-process now, Redis/Kafka/NATS later). Every cross-cutting feature subscribes here.
+5. **Internal service seam** - `server/src/services/domain/` (Catalog, Orders, Knowledge, Media). AI/automations depend on these, never on third parties.
+6. **Data-layer seam (frontend, §16)** - components depend on hooks; swapping cache or transport touches one layer.
+7. **Tenant-isolation seam (§4.6)** - a WorkspaceContext threads `workspaceId` through every repository; unscoped queries cannot exist (P11).
+8. **Audit seam (§6.4)** - every privileged mutation writes a before/after audit row, separate from domain events.
+9. **Swap seams (P12)** - bus, search, and analytics are interface-first; Phase-2 implementations are replaceable without rewrites.
 
 ---
 
@@ -145,7 +145,7 @@ Today: `users` = admin accounts, `clients` = API clients (one identity each). Ta
 | `teams` | `id, workspace_id, name` *(Support, Sales, Marketing…)* |
 | `team_members` | `team_id, user_id` |
 | `roles` | `id, workspace_id(NULL=system), name, is_system` *(Owner, Admin, Manager, Support Agent, Sales Agent, Marketing Agent, Custom)* |
-| `permissions` | `id, key, description` *(catalog — see below)* |
+| `permissions` | `id, key, description` *(catalog - see below)* |
 | `role_permissions` | `role_id, permission_id` |
 
 ### 4.3 Permission catalog (append-only)
@@ -170,19 +170,19 @@ workspace.members.manage · workspace.billing · workspace.settings
 
 - Workspace-scoped JWT carries `{ userId, workspaceId, roleId, perms[] }`, refreshed on role change.
 - The existing `clientJwtAuth` evolves into `workspaceAuth` (which also satisfies today's client routes during migration). API-key auth (`clientApiKeyAuth`) remains for `/api/v1` and is workspace-scoped via the owning client.
-- A single middleware attaches `req.workspace`, `req.user`, `req.can(perm)` to every request. Routes call `req.can('campaigns.launch')` — nothing hand-rolls role checks.
+- A single middleware attaches `req.workspace`, `req.user`, `req.can(perm)` to every request. Routes call `req.can('campaigns.launch')` - nothing hand-rolls role checks.
 
 ### 4.5 Migration bridge
 
 `client_id = workspace_id` during transition (one workspace per client). Existing `client_id` columns are valid workspace scopes. The owner of each client becomes a `users` row with the `Owner` system role in their workspace. No big-bang rename; new tables key off `workspace_id`, a helper `workspaceIdOf(client)` bridges reads.
 
-### 4.6 Tenant isolation (WorkspaceContext) — a security guarantee
+### 4.6 Tenant isolation (WorkspaceContext) - a security guarantee
 
 Cross-tenant data leakage is the highest-severity bug class for a multi-business platform. Prevent it structurally, not by convention.
 
 - A **WorkspaceContext** (`{ workspaceId, userId, role, perms }`) is attached to every request by the auth middleware and threaded through every repository/service.
 - **Every query is workspace-scoped.** Repositories take the context and bake `WHERE workspace_id = ?` into every statement. A bare `SELECT * FROM conversations` with no workspace filter must not exist anywhere.
-- Enforced by a repository base class that requires `workspaceId`, plus a review/lint rule — unscoped access is never the default.
+- Enforced by a repository base class that requires `workspaceId`, plus a review/lint rule - unscoped access is never the default.
 
 This is P11: one business can never read another's data, by construction.
 
@@ -192,7 +192,7 @@ This is P11: one business can never read another's data, by construction.
 
 Build the skeleton in Phase 2; every later feature is a subscriber. This is the principle that prevents the second rewrite.
 
-### 5.1 Event bus — interface first, in-process now
+### 5.1 Event bus - interface first, in-process now
 
 The bus is consumed through an interface (P12) so the transport is replaceable. Phase 2 ships `InProcessBus`; Redis/Kafka/NATS drop in later without touching subscribers or dispatch helpers.
 
@@ -206,17 +206,17 @@ interface EventBus {
 
 ```
 server/src/events/
-├── bus.ts            # emit(type, payload) — in-process EventEmitter + durable log + fan-out
+├── bus.ts            # emit(type, payload) - in-process EventEmitter + durable log + fan-out
 ├── catalog.ts        # typed union of all events + payload shapes (single source of truth)
 ├── dispatch.ts       # typed helpers: dispatchMessageReceived(ctx, msg), dispatchCustomerCreated(ctx, c)…
 └── log.ts            # persists every event to domain_events (timeline + replay + analytics + webhooks)
 ```
 
-`emit()` does three things: notify in-process subscribers, append to `domain_events`, and (Phase 7) fan out to outbound webhooks. Subscribers (AI, automations, analytics projectors, search indexer, webhooks) register at boot in `server/src/index.ts`. **Nothing in the codebase calls `EventEmitter` directly — only `bus()`.**
+`emit()` does three things: notify in-process subscribers, append to `domain_events`, and (Phase 7) fan out to outbound webhooks. Subscribers (AI, automations, analytics projectors, search indexer, webhooks) register at boot in `server/src/index.ts`. **Nothing in the codebase calls `EventEmitter` directly - only `bus()`.**
 
-**Every dispatch helper sets `workspace_id`, `customer_id`, `conversation_id` where applicable** — this is what makes the timeline (§7) and analytics (§13) work.
+**Every dispatch helper sets `workspace_id`, `customer_id`, `conversation_id` where applicable** - this is what makes the timeline (§7) and analytics (§13) work.
 
-### 5.2 Event catalog (authoritative — append-only)
+### 5.2 Event catalog (authoritative - append-only)
 
 | Event | Emitted when | Key payload |
 |---|---|---|
@@ -245,13 +245,13 @@ All subscribers read only from this catalog.
 ### 5.3 Subscribers register, features don't inline
 
 ```
-// server/src/index.ts (boot) — register subscribers against bus()
+// server/src/index.ts (boot) - register subscribers against bus()
 bus().subscribe('message.received', runInboundPipeline);               // AI + automations (§10/§11)
 bus().subscribe('*',               searchIndexer.index);              // §8 SearchProvider
-analyticProjectors.forEach(p => bus().subscribe(p.handles, p.project)); // §13 — one subscriber per projector
+analyticProjectors.forEach(p => bus().subscribe(p.handles, p.project)); // §13 - one subscriber per projector
 bus().subscribe('*',               writeAuditTrail);                  // §6.4 (privileged mutations)
 bus().subscribe('*',               fanOutWebhooks);                   // §14 (Phase 7)
-// timeline needs no subscriber — it reads domain_events directly (§7)
+// timeline needs no subscriber - it reads domain_events directly (§7)
 ```
 
 ---
@@ -273,7 +273,7 @@ The customer is the center of gravity. Today the closest thing is `contacts`; me
 | `customer_assignments` | `id, customer_id, owner_user_id, team_id` | 3 |
 | `customer_ai_summaries` | `id, customer_id, summary, model, generated_at` | 4 |
 | `domain_events` | Durable event log + timeline source. `id, workspace_id, type, entity_type, entity_id, customer_id, conversation_id, actor_user_id, payload(json), created_at` | 2 |
-| `audit_logs` *(extended)* | Compliance/security log — **distinct from** `domain_events`. `id, workspace_id, actor_user_id, action, resource_type, resource_id, before_json, after_json, created_at` | 2 |
+| `audit_logs` *(extended)* | Compliance/security log - **distinct from** `domain_events`. `id, workspace_id, actor_user_id, action, resource_type, resource_id, before_json, after_json, created_at` | 2 |
 
 ### 6.2 Identity & conversation resolution (the one chokepoint)
 
@@ -282,7 +282,7 @@ Every inbound/outbound message routes through:
 ```
 resolveConversation(workspaceId, channel, identifier, instanceId)
   → { customer, conversation }
-  1. normalizeIdentifier (normalizePhone for WhatsApp DMs, group JID passthrough — exists from Phase 1)
+  1. normalizeIdentifier (normalizePhone for WhatsApp DMs, group JID passthrough - exists from Phase 1)
   2. upsert customer + customer_identifiers
   3. upsert conversation (customer × channel × instance × chat_id)
   4. return both → message written with conversation_id + customer_id
@@ -294,20 +294,20 @@ This is what lets inbox, CRM, campaigns, AI, timeline, and search all agree on *
 
 Per distinct existing `chat_id`: create a customer (from matching `contacts` row, else `from_name`/phone), an identifier, and a conversation; stamp historical `inbox_messages` with `conversation_id` + `customer_id`. `contacts` becomes a legacy alias onto `customers`.
 
-### 6.4 Audit log (compliance & security) — distinct from domain events
+### 6.4 Audit log (compliance & security) - distinct from domain events
 
 Two records, two purposes:
 
-- **Domain event** (`domain_events`): *what happened in the system* — `conversation.assigned`. Feeds timeline, analytics, search, webhooks.
-- **Audit log** (`audit_logs`): *who did what, to what, with before/after* — "Jane reassigned Conversation #391 from Support Team to Sales Team". Feeds security review, compliance, enterprise audit exports, debugging.
+- **Domain event** (`domain_events`): *what happened in the system* - `conversation.assigned`. Feeds timeline, analytics, search, webhooks.
+- **Audit log** (`audit_logs`): *who did what, to what, with before/after* - "Jane reassigned Conversation #391 from Support Team to Sales Team". Feeds security review, compliance, enterprise audit exports, debugging.
 
-The existing `audit_logs` table + `utils/audit.ts` (`logAuditAction`, `logApiRequest`) are the seed; promote them to the workspace-scoped, `actor_user_id` + `before_json`/`after_json` model. Every mutating privileged action — assignment, role/permission change, API-key creation, customer delete, agent publish, campaign launch, integration connect — writes an audit row. Read via `GET /api/audit?resource=&actor=&since=` behind an `audit.view` permission.
+The existing `audit_logs` table + `utils/audit.ts` (`logAuditAction`, `logApiRequest`) are the seed; promote them to the workspace-scoped, `actor_user_id` + `before_json`/`after_json` model. Every mutating privileged action - assignment, role/permission change, API-key creation, customer delete, agent publish, campaign launch, integration connect - writes an audit row. Read via `GET /api/audit?resource=&actor=&since=` behind an `audit.view` permission.
 
 ---
 
 ## 7. The Customer Timeline
 
-The single highest-leverage feature. The customer drawer must not be a static contact card — it must be a **living timeline** of everything that has happened with this customer, fed by the event bus.
+The single highest-leverage feature. The customer drawer must not be a static contact card - it must be a **living timeline** of everything that has happened with this customer, fed by the event bus.
 
 ### 7.1 Source
 
@@ -319,19 +319,19 @@ WHERE workspace_id = ? AND customer_id = ?
 ORDER BY created_at DESC LIMIT 100;
 ```
 
-No new table is strictly required — `domain_events` is the timeline. (A denormalized `customer_timeline` projection is reserved if read volume demands it; v1 queries the log.)
+No new table is strictly required - `domain_events` is the timeline. (A denormalized `customer_timeline` projection is reserved if read volume demands it; v1 queries the log.)
 
 ### 7.2 Timeline entries render from the catalog
 
 Every event type maps to a `(icon, label, actor)` renderer. Example timeline for one customer:
 
 ```
-[created]      Customer created                 — from WhatsApp +2547…
-[message]      Campaign received: "Black Friday" — via Marketing number
+[created]      Customer created                 - from WhatsApp +2547…
+[message]      Campaign received: "Black Friday" - via Marketing number
 [message]      Clicked campaign link
-[integration]  Order #394 created               — Shopify, KES 4,200
+[integration]  Order #394 created               - Shopify, KES 4,200
 [message]      Asked: "Where is my order?"
-[ai]           AI (Support Agent) replied        — confidence 0.91
+[ai]           AI (Support Agent) replied        - confidence 0.91
 [message]      Support agent (Jane) replied
 [integration]  Order #394 delivered
 [tag]          Tagged "VIP"
@@ -355,7 +355,7 @@ A platform service, not an inbox feature. Without it the platform becomes unusab
 
 ### 8.1 Index + provider interface
 
-Search is consumed through a `SearchProvider` interface (P12) — SQLite FTS5 now, Meilisearch/Typesense/OpenSearch later, swappable without touching the indexer or query UI.
+Search is consumed through a `SearchProvider` interface (P12) - SQLite FTS5 now, Meilisearch/Typesense/OpenSearch later, swappable without touching the indexer or query UI.
 
 ```ts
 interface SearchProvider {
@@ -388,7 +388,7 @@ search_index_fts                           -- SQLite FTS5 virtual table over `bo
 
 ### 8.3 Query & UI
 
-- `GET /api/search?q=…&types=customers,messages,orders&limit=…` — grouped, permission-filtered (`can(user, '<entity>.view')` per type).
+- `GET /api/search?q=…&types=customers,messages,orders&limit=…` - grouped, permission-filtered (`can(user, '<entity>.view')` per type).
 - **Command-K** global search across the whole app: customers, messages, orders, campaigns, knowledge, agents. Returns grouped results; each jumps to its surface.
 
 ---
@@ -421,11 +421,11 @@ active_agent_id nullable
 
 ### 9.3 Default views
 
-The inbox ships with queues built from these fields: **Unassigned**, **Assigned to me**, **My teams**, **Urgent**, **SLA at risk**, **Resolved** — all derived from the same conversation rows, not separate stores.
+The inbox ships with queues built from these fields: **Unassigned**, **Assigned to me**, **My teams**, **Urgent**, **SLA at risk**, **Resolved** - all derived from the same conversation rows, not separate stores.
 
 ---
 
-## 10. AI as a first-class system — governance & handoff
+## 10. AI as a first-class system - governance & handoff
 
 AI is a governed subsystem that subscribes to `message.received`. It is never inlined in messaging, and it can never exceed its granted permissions.
 
@@ -442,7 +442,7 @@ message.received (event)
        6. reply sent via channel service (same path as a human send)
 ```
 
-### 10.2 AI governance — agent permissions (mandatory before any agent acts)
+### 10.2 AI governance - agent permissions (mandatory before any agent acts)
 
 Agents are dangerous without a permission boundary. Define an **action catalog** and an allow-list per agent.
 
@@ -476,7 +476,7 @@ On handoff: `ai.state_changed` → `human_active`, AI stops replying, conversati
 ### 10.4 Agent registry & knowledge hub (schemas reserved; UI Phase 4)
 
 - `ai_agents (id, workspace_id, name, description, model, knowledge_source_ids[], triggers, default_action_set, enabled)`.
-- `knowledge_sources (id, workspace_id, type[website|pdf|docs|faq|catalog|custom], name, ref, status)`. Agents read knowledge through the **internal** Knowledge service — never scrape/call third parties at runtime.
+- `knowledge_sources (id, workspace_id, type[website|pdf|docs|faq|catalog|custom], name, ref, status)`. Agents read knowledge through the **internal** Knowledge service - never scrape/call third parties at runtime.
 
 ---
 
@@ -500,11 +500,11 @@ The canonical flow model is a **DAG** (`automation_edges`) so multi-branch, para
 
 A flow is a graph of typed nodes. Examples:
 
-- **trigger** — `message.received` with condition `body matches "pricing"`.
-- **ai** — invoke a named agent.
-- **wait** — `2 days`.
-- **action** — `send_message`, `assign`, `add_tag`, `create_ticket`, `call_connector`.
-- **branch** — route by condition.
+- **trigger** - `message.received` with condition `body matches "pricing"`.
+- **ai** - invoke a named agent.
+- **wait** - `2 days`.
+- **action** - `send_message`, `assign`, `add_tag`, `create_ticket`, `call_connector`.
+- **branch** - route by condition.
 
 ### 11.3 Example flow
 
@@ -516,7 +516,7 @@ Customer sends "pricing"
   → assign to Sales team
 ```
 
-Phase 4 ships **trigger → condition → action** (rules). The full engine (waits, branches, persistent executions across the wait boundary) is reserved and lands in a later phase — but the schema and node types exist from Phase 2, so no rewrite.
+Phase 4 ships **trigger → condition → action** (rules). The full engine (waits, branches, persistent executions across the wait boundary) is reserved and lands in a later phase - but the schema and node types exist from Phase 2, so no rewrite.
 
 ### 11.4 Automation events
 
@@ -549,7 +549,7 @@ integration_events  (id, integration_id, external_id, type, payload, ingested_at
 
 ### 12.3 The rule (P6, restated)
 
-Connectors publish `order.created`, `inventory.updated`, `lead.created` into the bus. AI, automations, campaigns, analytics, timeline all consume those events. **No subsystem ever calls Shopify directly** — they call `OrdersService` / `CatalogService`, which sit behind the connector abstraction. Swap WooCommerce for Shopify and nothing upstream changes.
+Connectors publish `order.created`, `inventory.updated`, `lead.created` into the bus. AI, automations, campaigns, analytics, timeline all consume those events. **No subsystem ever calls Shopify directly** - they call `OrdersService` / `CatalogService`, which sit behind the connector abstraction. Swap WooCommerce for Shopify and nothing upstream changes.
 
 ### 12.4 Channels (same pattern)
 
@@ -583,7 +583,7 @@ metric_rollups (workspace_id, metric_key, period[day|hour], period_start, value,
 
 ### 13.3 Projectors (not one giant subscriber)
 
-Analytics is consumed through an `AnalyticsProjector` interface (P12) so each domain owns its metrics independently — no monolithic `projectAnalytics` handler that grows unbounded:
+Analytics is consumed through an `AnalyticsProjector` interface (P12) so each domain owns its metrics independently - no monolithic `projectAnalytics` handler that grows unbounded:
 
 ```ts
 interface AnalyticsProjector {
@@ -594,13 +594,13 @@ interface AnalyticsProjector {
 
 Each projector is a focused subscriber:
 
-- `MessageMetricsProjector` — sent/received/read/failed, response times.
-- `ConversationMetricsProjector` — opened/resolved/reopened, resolution time.
-- `SLAMetricsProjector` — breach count, time-to-first-response.
-- `CampaignMetricsProjector` — sent/delivered/failed/conversions.
-- `AIMetricsProjector` — replies/tokens/handoffs/avg confidence.
-- `AutomationMetricsProjector` — triggers/flow completions.
-- `IntegrationMetricsProjector` — orders/revenue.
+- `MessageMetricsProjector` - sent/received/read/failed, response times.
+- `ConversationMetricsProjector` - opened/resolved/reopened, resolution time.
+- `SLAMetricsProjector` - breach count, time-to-first-response.
+- `CampaignMetricsProjector` - sent/delivered/failed/conversions.
+- `AIMetricsProjector` - replies/tokens/handoffs/avg confidence.
+- `AutomationMetricsProjector` - triggers/flow completions.
+- `IntegrationMetricsProjector` - orders/revenue.
 
 Each increments `metric_rollups` keyed by `(workspace, metric, period, dimensions)`. Dashboards read pre-aggregated rollups (cheap); no on-the-fly `domain_events` scans at render.
 
@@ -625,7 +625,7 @@ The existing `api_logs` table is enriched with `latency_ms` and linked to `works
 
 ### 14.3 OAuth apps (future, schema reserved)
 
-`oauth_apps`, `oauth_grants`, `oauth_tokens` — let third-party apps act on behalf of a workspace with scoped permissions (reusing the §4 permission keys). Reserved now so the auth model is extension-ready.
+`oauth_apps`, `oauth_grants`, `oauth_tokens` - let third-party apps act on behalf of a workspace with scoped permissions (reusing the §4 permission keys). Reserved now so the auth model is extension-ready.
 
 ### 14.4 SDKs & playground
 
@@ -638,10 +638,10 @@ JS SDK exists (`server/static/sdk/fidscript.js`). PHP and Python SDKs are genera
 Today: bulk messaging. Target: marketing automation, reusing the **same** send services as 1:1 chat (so they never drift).
 
 - **Types:** broadcast, scheduled, segmented (by tag/segment), trigger-based (`order.created`, customer inactivity), drip sequences.
-- **Audience:** customers, segments, contact-groups, or paste — validated via `/chats/is-whatsapp`.
+- **Audience:** customers, segments, contact-groups, or paste - validated via `/chats/is-whatsapp`.
 - **Content:** text + media from the Media Library; `{{name}}`/`{{field}}` templates resolved per recipient.
 - **Progress:** per-recipient status streamed live; tokens charged per successful send via the shared `chargeAndEmit`.
-- **Trigger/drip campaigns are event subscribers**, not bespoke schedulers — built on the §5 bus.
+- **Trigger/drip campaigns are event subscribers**, not bespoke schedulers - built on the §5 bus.
 - **Events** `campaign.started`/`.completed` feed timeline + analytics.
 
 DB additions (Phase 5): `campaign_segments`, `campaign_steps` (drip), `campaign_triggers` (event→campaign), `media_assets` (reusable library), plus a Status module (schedule, cross-post across numbers, reuse, analytics).
@@ -654,9 +654,9 @@ DB additions (Phase 5): `campaign_segments`, `campaign_steps` (drip), `campaign_
 
 ```
 src/data/
-├── api/                # Layer 1 — typed clients, one file per domain (migrated from src/services/)
-├── hooks/              # Layer 2 — useInbox, useCustomers, useCampaigns, useSearch, useTimeline…
-├── providers/          # Layer 3 — Context providers, mounted once in AppProviders
+├── api/                # Layer 1 - typed clients, one file per domain (migrated from src/services/)
+├── hooks/              # Layer 2 - useInbox, useCustomers, useCampaigns, useSearch, useTimeline…
+├── providers/          # Layer 3 - Context providers, mounted once in AppProviders
 └── events.ts           # client EventBus: useInstanceSSE → bus → hooks
 ```
 
@@ -665,7 +665,7 @@ src/data/
 - **providers:** mount hooks once, share via Context (navigating Inbox → Customers → Inbox does not refetch).
 - **EventBus:** the SSE bridge emits onto the bus; hooks subscribe. Decouples transport; a future WebSocket swap is one layer.
 
-Consumption: `const { conversations, sendMessage } = useInbox();` — no `useEffect`+`fetch` in components.
+Consumption: `const { conversations, sendMessage } = useInbox();` - no `useEffect`+`fetch` in components.
 
 ---
 
@@ -678,7 +678,7 @@ src/
 ├── app/                       # shell, routing, AppProviders
 ├── components/{ui,layout,shared}   # shared primitives + chrome
 ├── features/
-│   ├── inbox/                 # §19 — conversation workspace
+│   ├── inbox/                 # §19 - conversation workspace
 │   ├── customers/             # CRM + timeline + drawer
 │   ├── campaigns/             # marketing center
 │   ├── automation/            # rules + flow builder
@@ -701,7 +701,7 @@ src/
 ```
 server/src/
 ├── modules/
-│   ├── platform/             # PLATFORM SERVICES — everything depends on these; no business logic
+│   ├── platform/             # PLATFORM SERVICES - everything depends on these; no business logic
 │   │   ├── events/           # EventBus interface + InProcessBus + catalog (§5)
 │   │   ├── auth/             # workspace/role/permission + can() + WorkspaceContext (§4)
 │   │   ├── audit/            # audit_logs write/read (§6.4)
@@ -727,13 +727,13 @@ server/src/
 
 - **All UI iconography uses `lucide-react`.** No emoji as chrome.
 - Replace existing emoji chrome: `admin/DashboardOverview` (`📨 ✅ 📱 🟢`), `VibeWizard` (`✓` markers), `MessageDetail` (`↓ ↑`), `dashboardData` (`🟢`).
-- **Emoji allowed only as content** — the constrained reaction set is message content, not chrome.
+- **Emoji allowed only as content** - the constrained reaction set is message content, not chrome.
 - Branded `components/ui/` primitives: `Icon`, `Avatar`, `Badge/Tag`, `Button/IconButton`, `Modal`, `Drawer`, `EmptyState`, `Skeleton`.
 - FIDScript palette only (forest-deep, yellow accent, stone neutrals). No green bubbles; no "WhatsApp"/"Evolution" strings in UI.
 
 ---
 
-## 19. The Inbox — Phase 2 first surface
+## 19. The Inbox - Phase 2 first surface
 
 The inbox is the first UI that exposes the system. Familiar WhatsApp feel; underneath, every message belongs to a customer + conversation, with assignment/priority/SLA/AI-state, and a Customer Intelligence drawer showing the timeline.
 
@@ -776,12 +776,12 @@ Actions exist; **real-time events** for blue ticks / typing do not. Required in 
 
 ## 20. Migration path from current code
 
-Incremental — prod stays green.
+Incremental - prod stays green.
 
 **Backend:**
 1. `server/src/auth/` + workspace tables (§4) + `can()` middleware; bridge `client_id = workspace_id`.
 2. `server/src/events/` (bus + catalog); wire `emit()` into webhook + send via `resolveConversation`.
-3. `modules/inbox/` (resolveConversation), `modules/customers/`, `modules/search/` (indexer), `modules/analytics/` (subscriber) skeletons — schemas land, UI later.
+3. `modules/inbox/` (resolveConversation), `modules/customers/`, `modules/search/` (indexer), `modules/analytics/` (subscriber) skeletons - schemas land, UI later.
 4. `services/whatsapp/` → `channels/whatsapp/` (re-export shim during transition).
 
 **Frontend:**
@@ -808,11 +808,11 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 **Phase 2 internal slices (the immediate work):**
 
-- **A — Foundations (no UI):** `modules/platform/{events,auth,workspace,audit}` — `EventBus` interface + `InProcessBus` + catalog; workspace/RBAC tables + `can()` + **WorkspaceContext**; `audit_logs` writer; `resolveConversation` wired into webhook + send; `domain_events` populated. Customer/conversation rows created for all messages. *Verify: messages still flow; each carries customer/conversation ids; `domain_events` + `audit_logs` grow; every query is workspace-scoped.*
-- **B — Subsystem skeletons (no UI):** `SearchProvider` (SqliteFts) + indexer subscriber; `AnalyticsProjector` projectors + rollups; AI inbound pipeline (keyword rule, governance seam, handoff states on conversation); connector/channel interface. *Verify: index + rollups populate on events; keyword auto-reply works; handoff state flips.*
-- **C — Frontend data layer:** `src/data/{api,hooks,providers,events.ts}`; `AppProviders`; migrate services. *Verify: app works unchanged through the new layer.*
-- **D — Inbox surface:** `features/inbox` 3-pane + Customer Intelligence drawer (timeline, tags, assignee, AI-state); ConversationList queues; unified multi-instance. *Verify: inbox works, drawer shows timeline.*
-- **E — Realtime + icon sweep:** receipt/typing/presence webhook + SSE (blue ticks, typing); profile-pic cache; group metadata; replace all emoji chrome with lucide; split touched oversized files.
+- **A - Foundations (no UI):** `modules/platform/{events,auth,workspace,audit}` - `EventBus` interface + `InProcessBus` + catalog; workspace/RBAC tables + `can()` + **WorkspaceContext**; `audit_logs` writer; `resolveConversation` wired into webhook + send; `domain_events` populated. Customer/conversation rows created for all messages. *Verify: messages still flow; each carries customer/conversation ids; `domain_events` + `audit_logs` grow; every query is workspace-scoped.*
+- **B - Subsystem skeletons (no UI):** `SearchProvider` (SqliteFts) + indexer subscriber; `AnalyticsProjector` projectors + rollups; AI inbound pipeline (keyword rule, governance seam, handoff states on conversation); connector/channel interface. *Verify: index + rollups populate on events; keyword auto-reply works; handoff state flips.*
+- **C - Frontend data layer:** `src/data/{api,hooks,providers,events.ts}`; `AppProviders`; migrate services. *Verify: app works unchanged through the new layer.*
+- **D - Inbox surface:** `features/inbox` 3-pane + Customer Intelligence drawer (timeline, tags, assignee, AI-state); ConversationList queues; unified multi-instance. *Verify: inbox works, drawer shows timeline.*
+- **E - Realtime + icon sweep:** receipt/typing/presence webhook + SSE (blue ticks, typing); profile-pic cache; group metadata; replace all emoji chrome with lucide; split touched oversized files.
 
 ---
 
@@ -820,7 +820,7 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 **Code:** no `any`; `{ success, data?, error? }`; files ≤150 lines; one component per file; feature folders with public barrels; components never call the API directly (P7).
 
-**Backend:** `encodeURIComponent` on Evolution paths; `logApiRequest` on every op; `X-API-Version: v1` on `/api/v1`; every privileged action asserts `req.can('<perm>')`; **every read/write is workspace-scoped via WorkspaceContext — no unscoped queries exist (P11)**; every domain mutation dispatches a catalog event with `workspace_id`/`customer_id`/`conversation_id`; **every privileged mutation writes a before/after `audit_logs` row (§6.4)**; analytics computed by per-domain projectors, never a monolithic subscriber; internal services are the only path to third parties (P6).
+**Backend:** `encodeURIComponent` on Evolution paths; `logApiRequest` on every op; `X-API-Version: v1` on `/api/v1`; every privileged action asserts `req.can('<perm>')`; **every read/write is workspace-scoped via WorkspaceContext - no unscoped queries exist (P11)**; every domain mutation dispatches a catalog event with `workspace_id`/`customer_id`/`conversation_id`; **every privileged mutation writes a before/after `audit_logs` row (§6.4)**; analytics computed by per-domain projectors, never a monolithic subscriber; internal services are the only path to third parties (P6).
 
 **AI:** every agent action gated by `canAgent(agent, action, ctx)`; denials audited; handoff states authoritative on the conversation.
 
@@ -832,7 +832,7 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 
 ## 23. Implementation status
 
-> **Honest accounting** of what is shipped in production (`f54efe9` — 2026-06-15) versus what the spec describes. Status reflects code that is live on `whatsapp.fidscript.com`, not aspirational claims. Use this table to triage: pick a section marked **Partial** or **Not started** before adding a new feature.
+> **Honest accounting** of what is shipped in production (`f54efe9` - 2026-06-15) versus what the spec describes. Status reflects code that is live on `whatsapp.fidscript.com`, not aspirational claims. Use this table to triage: pick a section marked **Partial** or **Not started** before adding a new feature.
 
 | § | Section | Status | Notes |
 |---|---|---|---|
@@ -845,27 +845,27 @@ Each phase = reviewable slices; each slice = build both → commit → push → 
 | 9 | Inbox assignment, priority, status & SLA | ✅ Shipped | 7 queues (All, Mine, My teams, Unassigned, Urgent, SLA at risk, Resolved) live in `features/inbox/QueueFilter.tsx`. SLA-at-risk query: `response_due_at IS NOT NULL AND status NOT IN ('resolved','closed') AND (breached_at IS NOT NULL OR (first_response_at IS NULL AND response_due_at <= now+1h))`. |
 | 10 | AI governance & handoff | ⚠️ Partial | AI state column on conversations; handoff states authoritative. Agent registry, knowledge hub, `canAgent` enforcement UI not yet built. |
 | 11 | Workflow Builder | ✅ Shipped | Triggers, segments, drip campaigns, step executor live. Visual DAG editor partial. |
-| 12 | Integration Framework & channels | ✅ Shipped | `server/src/channels/{index.ts,whatsapp/connector.ts}` — full 13-type Channel implementation; `parseWhatsAppMessage` exported as authoritative inbound parser. SMS/email/Instagram channels not yet built. |
+| 12 | Integration Framework & channels | ✅ Shipped | `server/src/channels/{index.ts,whatsapp/connector.ts}` - full 13-type Channel implementation; `parseWhatsAppMessage` exported as authoritative inbound parser. SMS/email/Instagram channels not yet built. |
 | 13 | Analytics pipeline | ⚠️ Partial | `AnalyticsProjector` + rollups populate; admin dashboard charts use mock data (declared "Simulated" in CLAUDE.md). |
 | 14 | Developer ecosystem | ✅ Shipped | `/api/v1` API-key namespace with 11 send types + groups/chats/profile/settings/instance/usage/openapi. Webhooks CRUD + HMAC-SHA256 signed fan-out + exponential backoff (0s/5s/30s/2m/10m, 5 attempts) + `webhook_deliveries` table. Developer logs endpoint. Frontend: `features/developers/{Webhooks,Audit,DevLogs}Tab`. |
 | 15 | Marketing center | ✅ Shipped | Campaigns (segmented / trigger / drip), media library, WhatsApp Status posts. |
 | 16 | Centralized data layer (frontend) | ✅ Shipped | `src/data/{api,hooks,providers,events.ts}` barrel; `AppProviders` mounted; App.tsx migrated. `src/services/*` retained as re-export shim for 36 remaining component importers. |
 | 17 | Feature-folder structure & file rules | ✅ Shipped | SandboxSection 660→138, TokenStoreSection 580→120 (12 + 9 sub-files). No file >150 lines in touched paths. |
 | 18 | Icon & visual system (no emoji chrome) | ✅ Shipped | ~25 brand-string chrome leaks scrubbed. Prompts (`vibe/promptGenerator.ts`) and landing marketing copy retain "WhatsApp API" as legitimate product-context use. |
-| 19 | The Inbox — Phase 2 first surface | ✅ Shipped | 3-pane inbox + Customer Intelligence drawer; receipt/typing/presence SSE; canonical `chatId`; new numbers auto-create customers. |
+| 19 | The Inbox - Phase 2 first surface | ✅ Shipped | 3-pane inbox + Customer Intelligence drawer; receipt/typing/presence SSE; canonical `chatId`; new numbers auto-create customers. |
 | 20 | Migration path | ✅ Done | `services/whatsapp/` → `channels/whatsapp/` complete; data-layer migration in flight (App.tsx done; 36 component importers pending). |
 | 21 | Phased roadmap | 🔄 In progress | Phases 2–5 shipped (`f54efe9`). Phase 6 (commerce + multi-channel) is the next step. |
 | 22 | Conventions, guardrails & verification | ✅ Shipped | No `any` violations in touched files; 8 `catch (err: any)` blocks converted to `err instanceof Error`; raw `fetch()` consolidated to typed wrappers where it lives in the client surface. |
 
 **Next concrete slices to pull off the backlog:**
 
-1. **P11 airtight (partial done, in `eb993c1`)** — `whereWorkspace` helper + `workspaceAuth` mounted at platform router + `workspace_id` on child tables. Remaining: `req.can()` enforcement at the route level, audit of remaining v1/admin route handlers that bypass `WorkspaceContext`.
-2. **§6.3 customer model** — finish AI summaries + order linkage; promote `customer_identifiers` resolution to handle channel merges.
-3. **§13 charts** — replace the 4 admin chart mocks with real rollup queries.
-4. **§15 visual DAG** — render the workflow editor (the schema is in place; the visual is the gap).
-5. **§10 governance UI** — agent registry + knowledge hub + `canAgent` enforcement panel.
-6. **§20 data-layer migration** — finish the 36 component importers off `src/services/*`.
+1. **P11 airtight (partial done, in `eb993c1`)** - `whereWorkspace` helper + `workspaceAuth` mounted at platform router + `workspace_id` on child tables. Remaining: `req.can()` enforcement at the route level, audit of remaining v1/admin route handlers that bypass `WorkspaceContext`.
+2. **§6.3 customer model** - finish AI summaries + order linkage; promote `customer_identifiers` resolution to handle channel merges.
+3. **§13 charts** - replace the 4 admin chart mocks with real rollup queries.
+4. **§15 visual DAG** - render the workflow editor (the schema is in place; the visual is the gap).
+5. **§10 governance UI** - agent registry + knowledge hub + `canAgent` enforcement panel.
+6. **§20 data-layer migration** - finish the 36 component importers off `src/services/*`.
 
 ---
 
-*This document is the single source of truth for FIDScript's evolution past Phase 1. The guiding test for any change remains P8: will this still work when we add teams, AI agents, automations, commerce, CRM, analytics, and developer apps? And P10: the system is the product — the inbox is merely the first surface that exposes it.*
+*This document is the single source of truth for FIDScript's evolution past Phase 1. The guiding test for any change remains P8: will this still work when we add teams, AI agents, automations, commerce, CRM, analytics, and developer apps? And P10: the system is the product - the inbox is merely the first surface that exposes it.*

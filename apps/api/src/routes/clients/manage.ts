@@ -71,7 +71,7 @@ router.post('/:id/reset-key', (req: Request, res: Response) => {
 //
 // Award contract: credits exactly `amount` tokens. Idempotent by header
 // `Idempotency-Key` (caller-generated, stable per award intent). The client
-// MUST supply an idempotency key — the server uses it to short-circuit any
+// MUST supply an idempotency key - the server uses it to short-circuit any
 // duplicate request (double-click, React StrictMode re-fire, network retry)
 // within a 1-hour window with the cached response, so the balance is
 // credited exactly once. Balance update + ledger insert are wrapped in a
@@ -90,7 +90,7 @@ router.post('/:id/award-tokens', (req: Request, res: Response) => {
     }
 
     // Idempotency replay window: 1 hour. Within this window the same key
-    // returns the cached response — no re-charge.
+    // returns the cached response - no re-charge.
     const existing = db.prepare(
       'SELECT response_json FROM idempotency_keys WHERE id = ? AND created_at > datetime("now", "-1 hour")'
     ).get(idempotencyKey) as { response_json: string } | undefined;
@@ -130,7 +130,7 @@ router.post('/:id/award-tokens', (req: Request, res: Response) => {
     const updated = db.prepare('SELECT token_balance FROM clients WHERE id = ?').get(req.params.id) as { token_balance: number };
     const updatedBalance = updated.token_balance;
 
-    logAuditAction(req, 'AWARD_TOKENS', 'client', req.params.id, `Awarded ${amount} tokens to ${client.name}${note ? ` — ${note}` : ''}`);
+    logAuditAction(req, 'AWARD_TOKENS', 'client', req.params.id, `Awarded ${amount} tokens to ${client.name}${note ? ` - ${note}` : ''}`);
 
     sendTokenAwardEmail(client.email, client.name, amount, note).catch(err =>
       console.error('[token-award] Email failed:', err)

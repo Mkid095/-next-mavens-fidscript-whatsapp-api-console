@@ -70,7 +70,7 @@ export function maskApiKey(key: string): string {
 
 /**
  * Rotate an encrypted key to a new version.
- * Currently just bumps keyVersion — actual re-encryption would need the old key.
+ * Currently just bumps keyVersion - actual re-encryption would need the old key.
  */
 export function rotateKeyVersion(payload: EncryptedPayload): EncryptedPayload {
   return { ...payload, keyVersion: payload.keyVersion + 1 };

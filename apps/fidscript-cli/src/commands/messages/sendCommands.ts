@@ -47,7 +47,7 @@ export async function postSend(
   }
 }
 
-/** Required by Commander dynamic-import flow — register all subcommands on `parent`. */
+/** Required by Commander dynamic-import flow - register all subcommands on `parent`. */
 export function registerSendCommands(parent: Command): void {
   parent
     .command('text <instance>')

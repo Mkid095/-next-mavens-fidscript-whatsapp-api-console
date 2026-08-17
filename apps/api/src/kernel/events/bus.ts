@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import type { DomainEventType, DomainEventPayload } from './catalog.js';
 
 // =============================================================================
-// EventBus interface — Phase 2: InProcessBus. Reserved: RedisBus, KafkaBus, NatsBus.
-// Nothing in the codebase calls EventEmitter directly — only bus().
+// EventBus interface - Phase 2: InProcessBus. Reserved: RedisBus, KafkaBus, NatsBus.
+// Nothing in the codebase calls EventEmitter directly - only bus().
 // =============================================================================
 //
 // Wildcard subscribers (registered with type = '*') receive an envelope:

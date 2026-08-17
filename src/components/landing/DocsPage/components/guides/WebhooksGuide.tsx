@@ -22,7 +22,7 @@ export function WebhooksGuide() {
         ))}
       </div>
 
-      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">Payload — messages.upsert</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">Payload - messages.upsert</h2>
       <DocsCodeBlock
         code={`{\n  "event": "messages.upsert",\n  "instanceName": "my-instance",\n  "data": {\n    "key": {\n      "id": "BAE5F1234567890",\n      "remoteJid": "254712345678@s.whatsapp.net",\n      "fromMe": false\n    },\n    "message": { "conversation": "Hello!" },\n    "messageType": "conversation",\n    "timestamp": 1718123456\n  }\n}`}
         lang="json"

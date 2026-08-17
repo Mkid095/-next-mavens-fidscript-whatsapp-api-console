@@ -10,7 +10,7 @@ interface MediaSendModalProps {
 }
 
 /**
- * MediaSendModal — compose a media message (image/video/document) and dispatch.
+ * MediaSendModal - compose a media message (image/video/document) and dispatch.
  * Stub: full builder is wired through SandboxSection's media upload path; this
  * panel hosts the in-chat picker until the full composer is built.
  */

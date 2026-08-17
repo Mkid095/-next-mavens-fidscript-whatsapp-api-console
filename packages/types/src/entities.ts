@@ -1,5 +1,5 @@
 /**
- * entities.ts — Core entity types shared across SDK, CLI, and frontend.
+ * entities.ts - Core entity types shared across SDK, CLI, and frontend.
  */
 
 // ── Instance ─────────────────────────────────────────────────────────────────

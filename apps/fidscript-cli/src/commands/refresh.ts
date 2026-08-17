@@ -1,5 +1,5 @@
 /**
- * refresh.ts — `fidscript refresh`
+ * refresh.ts - `fidscript refresh`
  *
  * Re-runs the magic-code login flow with the stored email to issue a new JWT.
  * Use this when:
@@ -67,7 +67,7 @@ export async function refresh(opts: { email?: string; code?: string }): Promise<
   // Headless: if --json/--yaml is set, emit structured code-required error.
   // Otherwise, emit human message and exit 1. process.exit terminates before
   // the function can continue, so the "json" branch can never reach the second
-  // if-block — which is why TS narrows flags.mode to 'default' below.
+  // if-block - which is why TS narrows flags.mode to 'default' below.
   if (flags.mode === 'json' || flags.mode === 'yaml') {
     outputJson({
       success: false,

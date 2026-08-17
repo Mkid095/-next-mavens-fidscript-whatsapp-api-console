@@ -5,7 +5,7 @@ import { logAuditAction } from '../../utils/audit.js';
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/teams — Phase 3 team management (§4.5).
+// /api/platform/teams - Phase 3 team management (§4.5).
 // Workspace-scoped. A team has 0..N members (users). Used for conversation
 // assignment + customer ownership.
 // =============================================================================
@@ -15,7 +15,7 @@ router.use(clientJwtAuth);
 
 function wsId(req: Request): string { return req.client!.id; }
 
-// GET / — list teams in this workspace
+// GET / - list teams in this workspace
 router.get('/', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`
@@ -27,7 +27,7 @@ router.get('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST / — create a team
+// POST / - create a team
 router.post('/', (req: Request, res: Response) => {
   try {
     const name = ((req.body?.name as string) || '').trim();
@@ -39,7 +39,7 @@ router.post('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// PATCH /:id — rename
+// PATCH /:id - rename
 router.patch('/:id', (req: Request, res: Response) => {
   try {
     const name = ((req.body?.name as string) || '').trim();
@@ -52,7 +52,7 @@ router.patch('/:id', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// DELETE /:id — remove a team
+// DELETE /:id - remove a team
 router.delete('/:id', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT 1 FROM teams WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
@@ -64,7 +64,7 @@ router.delete('/:id', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// GET /:id/members — list team members
+// GET /:id/members - list team members
 router.get('/:id/members', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT 1 FROM teams WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
@@ -78,7 +78,7 @@ router.get('/:id/members', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST /:id/members — add member
+// POST /:id/members - add member
 router.post('/:id/members', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT 1 FROM teams WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));
@@ -94,7 +94,7 @@ router.post('/:id/members', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// DELETE /:id/members/:userId — remove member
+// DELETE /:id/members/:userId - remove member
 router.delete('/:id/members/:userId', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT 1 FROM teams WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req));

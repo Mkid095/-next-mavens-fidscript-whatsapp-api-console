@@ -1,5 +1,5 @@
 /**
- * Email templates — single source of truth for the HTML/text bodies the
+ * Email templates - single source of truth for the HTML/text bodies the
  * centralized email service renders. Adding a new email is one entry here
  * + the service routes on it; no per-callsite HTML.
  */
@@ -19,7 +19,7 @@ export type TemplateVars =
   | ({ template: 'magic-code' } & MagicCodeVars)
   | ({ template: 'token-award' } & TokenAwardVars);
 
-const MAGIC_CODE_SUBJECT = (vars: MagicCodeVars) => `${vars.code} — your FIDScript verification code`;
+const MAGIC_CODE_SUBJECT = (vars: MagicCodeVars) => `${vars.code} - your FIDScript verification code`;
 
 function magicCodeHtml(vars: MagicCodeVars): string {
   const intent = vars.purpose === 'register' ? 'create your FIDScript account' : 'sign in to FIDScript';
@@ -29,7 +29,7 @@ function magicCodeHtml(vars: MagicCodeVars): string {
     <p style="color:#8f8c6d;margin:0 0 24px;font-size:14px;">Use this 6-digit code to ${intent}. It expires in 10 minutes.</p>
     <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:32px;letter-spacing:8px;text-align:center;background:#1e1d13;border:1px solid #38351c;border-radius:12px;padding:24px;color:#fff;font-weight:700;">${vars.code}</div>
     <p style="color:#6a6c5d;margin:24px 0 0;font-size:12px;">If you didn't request this, you can safely ignore the email.</p>
-    <p style="color:#6a6c5d;margin:16px 0 0;font-size:11px;">— FIDScript by Next Mavens</p>
+    <p style="color:#6a6c5d;margin:16px 0 0;font-size:11px;">- FIDScript by Next Mavens</p>
   </div>
 </body></html>`;
 }
@@ -50,13 +50,13 @@ function tokenAwardHtml(vars: TokenAwardVars): string {
     <p style="color:#8f8c6d;margin:0 0 24px;font-size:14px;">Hi ${vars.clientName}, an administrator has credited your FIDScript account with <strong style="color:#fff;">${vars.amount.toLocaleString()}</strong> tokens.</p>
     ${note}
     <p style="color:#6a6c5d;margin:24px 0 0;font-size:12px;">Sign in to your dashboard to see your updated balance.</p>
-    <p style="color:#6a6c5d;margin:16px 0 0;font-size:11px;">— FIDScript by Next Mavens</p>
+    <p style="color:#6a6c5d;margin:16px 0 0;font-size:11px;">- FIDScript by Next Mavens</p>
   </div>
 </body></html>`;
 }
 function tokenAwardText(vars: TokenAwardVars): string {
   const note = vars.adminNote ? `\n\nNote: ${vars.adminNote}` : '';
-  return `Hi ${vars.clientName},\n\nAn administrator has credited your FIDScript account with ${vars.amount.toLocaleString()} tokens.${note}\n\nSign in to your dashboard to see your updated balance.\n\n— FIDScript by Next Mavens`;
+  return `Hi ${vars.clientName},\n\nAn administrator has credited your FIDScript account with ${vars.amount.toLocaleString()} tokens.${note}\n\nSign in to your dashboard to see your updated balance.\n\n- FIDScript by Next Mavens`;
 }
 
 /** Resolve a template + vars into a ready-to-send payload. Throws on unknown template. */
@@ -81,7 +81,7 @@ export function renderTemplate(
       template: 'token-award',
     };
   }
-  // Exhaustive check — adding a new template without handling it here is a build error.
+  // Exhaustive check - adding a new template without handling it here is a build error.
   const _exhaustive: never = vars;
   throw new Error(`Unknown email template: ${(vars as TemplateVars).template}`);
 }

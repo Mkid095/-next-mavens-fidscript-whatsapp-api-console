@@ -114,7 +114,7 @@ export default function ClientDetailModal({
                 </div>
                 <div className="flex items-center gap-2 text-xs text-stone-600">
                   <Phone size={13} className="text-stone-400 shrink-0" />
-                  <span>{client.phone || '—'}</span>
+                  <span>{client.phone || '-'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-stone-600">
                   <Calendar size={13} className="text-stone-400 shrink-0" />
@@ -129,7 +129,7 @@ export default function ClientDetailModal({
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl bg-stone-50 border border-stone-200 p-3 text-center">
-                  <p className="text-lg font-bold text-stone-800">{(client as any).token_balance?.toLocaleString() ?? '—'}</p>
+                  <p className="text-lg font-bold text-stone-800">{(client as any).token_balance?.toLocaleString() ?? '-'}</p>
                   <p className="text-[10px] text-stone-400">Token balance</p>
                 </div>
                 <div className="rounded-xl bg-stone-50 border border-stone-200 p-3 text-center">

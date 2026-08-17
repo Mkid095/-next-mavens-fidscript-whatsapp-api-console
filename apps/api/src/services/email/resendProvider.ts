@@ -1,6 +1,6 @@
 /**
  * Resend provider implementation. Single source of truth for talking to
- * Resend — swap to a different provider by writing a new class that
+ * Resend - swap to a different provider by writing a new class that
  * implements EmailProvider and changing the export in ./index.ts.
  */
 import { Resend } from 'resend';
@@ -26,7 +26,7 @@ export class ResendProvider implements EmailProvider {
         text: input.text,
       });
       if (error) {
-        // Resend returns errors as objects (name/message/statusCode) — surface the message
+        // Resend returns errors as objects (name/message/statusCode) - surface the message
         // so we can diagnose (e.g. "domain not verified", "test mode", invalid API key).
         return { success: false, providerId: null, error: error.message || String(error) };
       }

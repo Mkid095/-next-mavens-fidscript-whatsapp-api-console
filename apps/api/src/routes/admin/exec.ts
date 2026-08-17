@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * POST /api/admin/exec
- * Admin raw gateway executor — proxies any request directly to the the gateway API
+ * Admin raw gateway executor - proxies any request directly to the the gateway API
  * using the server's own API key. Lets admins test arbitrary the gateway endpoints
  * without needing a client API key.
  *

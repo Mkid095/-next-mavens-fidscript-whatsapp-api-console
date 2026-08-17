@@ -11,7 +11,7 @@ export function installSnippet(lang: CodeLang): string[] {
   return lines;
 }
 
-/** Base request helper in the user's chosen language — produces a ready-to-paste
+/** Base request helper in the user's chosen language - produces a ready-to-paste
  *  fidscriptRequest(...) wrapper, or a cURL env-var stub for `curl`. */
 export function requestHelperSnippet(lang: CodeLang, baseUrl: string, apiKey: string): string[] {
   const lines: string[] = [];

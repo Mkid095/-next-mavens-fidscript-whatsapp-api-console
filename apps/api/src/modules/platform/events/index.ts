@@ -1,4 +1,4 @@
-// Platform Events module — forwarding re-export from canonical kernel location.
+// Platform Events module - forwarding re-export from canonical kernel location.
 export { bus, _resetBus } from '../../../kernel/events/index.js';
 export type { EventBus } from '../../../kernel/events/index.js';
 export { logDomainEvent } from '../../../kernel/events/index.js';

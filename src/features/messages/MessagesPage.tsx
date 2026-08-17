@@ -1,2 +1,2 @@
-// MessagesPage — re-exported from MessagesPage/ subfolder.
+// MessagesPage - re-exported from MessagesPage/ subfolder.
 export { default } from './MessagesPage/MessagesPageMain.js';

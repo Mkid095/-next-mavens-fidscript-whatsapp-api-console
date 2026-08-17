@@ -32,7 +32,7 @@ export default function MessageBubble({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Reaction bar — appears above bubble on hover */}
+      {/* Reaction bar - appears above bubble on hover */}
       {hovered && (
         <div className="absolute bottom-full mb-1 z-10">
           <div className="bg-white border border-[#eaebe4] rounded-2xl shadow-lg px-1.5 py-1 flex items-center gap-0.5">

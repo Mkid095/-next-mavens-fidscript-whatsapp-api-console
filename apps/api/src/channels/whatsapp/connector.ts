@@ -3,12 +3,12 @@ import { normalizePhone } from '../../utils/phone.js';
 import type { Channel, ChannelMessage, ChannelIdentity } from '../index.js';
 
 // =============================================================================
-// WhatsApp channel — the gateway API v2.3.7 connector.
+// WhatsApp channel - the gateway API v2.3.7 connector.
 //
 // The single source of truth for token-charging send paths is
 // `services/whatsapp/messaging.ts` (called by /api/v1/messages/*). The Channel
 // interface here is the shape every future channel (SMS, email, Instagram)
-// must implement — this connector is the reference implementation.
+// must implement - this connector is the reference implementation.
 //
 //   - `parse()`: authoritative inbound parser; webhook receivers call it to
 //     turn raw the gateway `messages.upsert` payloads into canonical ChannelMessages.
@@ -45,8 +45,8 @@ function extractPhoneFromJid(jid: string): string {
 }
 
 /**
- * Authoritative inbound parser. Webhook receivers should call this — not the
- * legacy parseIncomingMessage — so all channels share the same canonical shape.
+ * Authoritative inbound parser. Webhook receivers should call this - not the
+ * legacy parseIncomingMessage - so all channels share the same canonical shape.
  */
 export function parseWhatsAppMessage(raw: Record<string, unknown>): ChannelMessage | null {
   const key = raw.key as { remoteJid?: string; id?: string; fromMe?: boolean } | undefined;

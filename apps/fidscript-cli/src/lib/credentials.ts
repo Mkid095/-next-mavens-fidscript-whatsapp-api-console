@@ -1,5 +1,5 @@
 /**
- * credentials.ts — read/write ~/.fidscript/credentials INI file
+ * credentials.ts - read/write ~/.fidscript/credentials INI file
  *
  * File format (INI):
  *   [default]

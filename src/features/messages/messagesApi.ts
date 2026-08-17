@@ -1,4 +1,4 @@
-// Live WhatsApp-Web mirror + outbound usage + phonebook sync — client-side
+// Live WhatsApp-Web mirror + outbound usage + phonebook sync - client-side
 // API. Mirrors the backend shapes in server/src/services/whatsapp/chatMirror.ts
 // and outboundUsage.ts. All routes are mounted under the platform router so
 // they use the 600/min platformLimiter backstop + per-route 10/sec caps.
@@ -13,7 +13,7 @@ export interface ChatListItem {
   lastMessageAt: number | null;
   unread: number;
   profilePic: string | null;
-  /** AI mode for this chat — 'ai' = AI active, 'manual' = agent override, null = no override */
+  /** AI mode for this chat - 'ai' = AI active, 'manual' = agent override, null = no override */
   aiMode: 'ai' | 'manual' | null;
   /** true = only admins can send in this group */
   isRestricted: boolean;
@@ -29,7 +29,7 @@ export interface MirrorMessage {
   mediaUrl: string | null;
   mediaMimetype: string | null;
   senderName: string | null;
-  /** Full JID of the sender — used for group avatar lookup */
+  /** Full JID of the sender - used for group avatar lookup */
   senderJid: string | null;
   timestamp: number;
 }
@@ -87,8 +87,8 @@ export const messagesApi = {
       `/api/platform/conversations/override/${encodeURIComponent(chatId)}`
     ),
 
-  /** Take over a WhatsApp chat (by JID) — disables AI, enables manual agent mode.
-   * @param opts.expiresAt    ISO timestamp — if set, AI auto-resumes at this time
+  /** Take over a WhatsApp chat (by JID) - disables AI, enables manual agent mode.
+   * @param opts.expiresAt    ISO timestamp - if set, AI auto-resumes at this time
    * @param opts.resumePolicy  'manual' | 'next_message' | 'timeout'
    * @param opts.reason       handoff reason code
    * @param opts.note         free-text note
@@ -99,7 +99,7 @@ export const messagesApi = {
       opts
     ),
 
-  /** Resume AI for a WhatsApp chat (by JID) — removes the manual override. */
+  /** Resume AI for a WhatsApp chat (by JID) - removes the manual override. */
   resumeAi: (chatId: string) =>
     apiPost<{ success: boolean; message?: string }>(
       `/api/platform/conversations/resume-ai/${encodeURIComponent(chatId)}`

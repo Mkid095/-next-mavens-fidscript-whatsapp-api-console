@@ -10,7 +10,7 @@ import { warmGroupCache } from '../../services/whatsapp/groupMetadata.js';
 import { resolveContactByPhone } from '../../services/contactResolver.js';
 import { buildWsCtx, chatIdFromJid, type WebhookInstance } from './shared.js';
 
-// messages.upsert — inbound message: resolve customer/conversation, persist, emit.
+// messages.upsert - inbound message: resolve customer/conversation, persist, emit.
 export async function handleMessagesUpsert(
   instance: WebhookInstance,
   data: Record<string, unknown> | undefined,

@@ -81,11 +81,11 @@ export default function InstanceTable({ instances, onQrConnect, onDisconnect, on
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-[#1a1915] border border-[#2d2813] rounded-xl p-2">
                 <p className="text-[10px] text-[#6e684a]">Client</p>
-                <p className="text-[10px] text-[#a8a99e] font-bold truncate">{inst.client_name || '—'}</p>
+                <p className="text-[10px] text-[#a8a99e] font-bold truncate">{inst.client_name || '-'}</p>
               </div>
               <div className="bg-[#1a1915] border border-[#2d2813] rounded-xl p-2">
                 <p className="text-[10px] text-[#6e684a]">Phone</p>
-                <p className="text-[10px] text-[#a8a99e] font-mono truncate">{inst.phone_number || '—'}</p>
+                <p className="text-[10px] text-[#a8a99e] font-mono truncate">{inst.phone_number || '-'}</p>
               </div>
               <div className="bg-[#1a1915] border border-[#2d2813] rounded-xl p-2">
                 <p className="text-[10px] text-[#6e684a]">Messages</p>
@@ -149,10 +149,10 @@ export default function InstanceTable({ instances, onQrConnect, onDisconnect, on
                   </div>
                 </td>
                 <td className="px-4 py-3.5">
-                  <span className="text-[#a8a99e]">{inst.client_name || '—'}</span>
+                  <span className="text-[#a8a99e]">{inst.client_name || '-'}</span>
                 </td>
                 <td className="px-4 py-3.5">
-                  <span className="font-mono text-[#6e684a] text-[11px]">{inst.phone_number || '—'}</span>
+                  <span className="font-mono text-[#6e684a] text-[11px]">{inst.phone_number || '-'}</span>
                 </td>
                 <td className="px-4 py-3.5">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(inst.status)}`}>

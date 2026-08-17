@@ -63,12 +63,12 @@ curl -X PATCH https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/toggl
 
       <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">AI behavior</h2>
       <p className="text-xs text-[#525252] mb-3">
-        The full AI config endpoint — model, provider, system prompt, hallucination policy,
+        The full AI config endpoint - model, provider, system prompt, hallucination policy,
         generation params, history window, and BYO LLM connection.
       </p>
       <DocsCodeBlock
         lang="bash"
-        code={`# Update AI behavior (PUT — partial updates supported)
+        code={`# Update AI behavior (PUT - partial updates supported)
 curl -X PUT https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/ai-config \\
   -H "Authorization: Bearer $FIDSCRIPT_JWT" -H "Content-Type: application/json" \\
   -d '{

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Trash2, UsersRound } from 'lucide-react';
 import { useTeams } from '../../data/hooks/customers/useTeams.js';
 
-// Phase 3 — workspace teams panel (§4.5). Workspace-scoped CRUD.
+// Phase 3 - workspace teams panel (§4.5). Workspace-scoped CRUD.
 // Each team row reveals a member list when expanded.
 export default function TeamsPanel() {
   const { teams, create, remove } = useTeams();

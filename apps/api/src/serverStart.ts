@@ -19,14 +19,14 @@ const PORT = process.env.PORT || 3001;
 export async function startServer(): Promise<void> {
   const app = express();
 
-  // Behind nginx in production — trust one proxy hop so req.ip resolves from
+  // Behind nginx in production - trust one proxy hop so req.ip resolves from
   // X-Forwarded-For and express-rate-limit can key by real client IP.
   app.set('trust proxy', 1);
 
   try {
     await initializeDatabase();
 
-    // Register event-bus subscribers — the event-driven spine (§5).
+    // Register event-bus subscribers - the event-driven spine (§5).
     // Without these, bus().emit() fires into the void: search index,
     // analytics rollups would never run.
     registerSearchIndexer();
@@ -52,7 +52,7 @@ export async function startServer(): Promise<void> {
     setupMiddleware(app);
     registerInlineRoutes(app);
 
-    // ── API reference (Scalar docs) — served before static middleware ──────
+    // ── API reference (Scalar docs) - served before static middleware ──────
     // GET /api/openapi.json → raw OpenAPI spec JSON
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const openApiPath = path.resolve(__dirname, '..', '..', 'docs', 'openapi.json');
@@ -107,7 +107,7 @@ export async function startServer(): Promise<void> {
 ║   By Next Mavens                                              ║
 ║                                                               ║
 ║   Server running on http://localhost:${PORT}                      ║
-║   Passwordless auth — magic-code login                         ║
+║   Passwordless auth - magic-code login                         ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
       `);

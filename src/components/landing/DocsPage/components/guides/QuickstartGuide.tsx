@@ -34,8 +34,8 @@ export function QuickstartGuide() {
           title: 'Get your API Key',
           items: [
             'Go to Settings → API Keys',
-            'Copy your key — format: fidscript_live_...',
-            'Keep this secret — regenerate if lost',
+            'Copy your key - format: fidscript_live_...',
+            'Keep this secret - regenerate if lost',
           ],
         },
         {

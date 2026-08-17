@@ -1,5 +1,5 @@
 /**
- * /api/v1/campaigns — campaign read API for external developers.
+ * /api/v1/campaigns - campaign read API for external developers.
  * Auth: API key. Read-only list of campaigns and their send stats.
  */
 import { Router, Request, Response } from 'express';
@@ -12,7 +12,7 @@ router.use(clientApiKeyAuth, V1_READ);
 
 function clientId(req: Request): string { return req.client!.id; }
 
-/** GET /api/v1/campaigns — list campaigns */
+/** GET /api/v1/campaigns - list campaigns */
 router.get('/', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`
@@ -30,7 +30,7 @@ router.get('/', (req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/campaigns — create a draft campaign */
+/** POST /api/v1/campaigns - create a draft campaign */
 router.post('/', (req: Request, res: Response) => {
   try {
     const { name, message_type, content, media_url, caption, scheduled_at } = req.body as {
@@ -57,7 +57,7 @@ router.post('/', (req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/campaigns/:id/start — start a draft campaign */
+/** POST /api/v1/campaigns/:id/start - start a draft campaign */
 router.post('/:id/start', (req: Request, res: Response) => {
   try {
     const campaign = db.prepare('SELECT id, status FROM campaigns WHERE id = ? AND client_id = ?')
@@ -74,7 +74,7 @@ router.post('/:id/start', (req: Request, res: Response) => {
   }
 });
 
-/** POST /api/v1/campaigns/:id/pause — pause a running campaign */
+/** POST /api/v1/campaigns/:id/pause - pause a running campaign */
 router.post('/:id/pause', (req: Request, res: Response) => {
   try {
     const campaign = db.prepare('SELECT id, status FROM campaigns WHERE id = ? AND client_id = ?')
@@ -90,7 +90,7 @@ router.post('/:id/pause', (req: Request, res: Response) => {
   }
 });
 
-/** GET /api/v1/campaigns/:id — campaign detail */
+/** GET /api/v1/campaigns/:id - campaign detail */
 router.get('/:id', (req: Request, res: Response) => {
   try {
     const campaign = db.prepare(

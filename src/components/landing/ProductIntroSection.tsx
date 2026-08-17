@@ -18,7 +18,7 @@ export default function ProductIntroSection() {
             <p className="text-base text-[#525252] leading-relaxed">
               FIDScript gives your business a powerful WhatsApp integration without the
               complexity. Send notifications, automate responses, and reach customers directly
-              where they already are — on WhatsApp. With transparent per-message pricing and
+              where they already are - on WhatsApp. With transparent per-message pricing and
               M-Pesa token billing, you pay only for what you use.
             </p>
           </div>

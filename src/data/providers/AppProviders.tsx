@@ -1,5 +1,5 @@
 // =============================================================================
-// AppProviders — the data-layer context root (§16).
+// AppProviders - the data-layer context root (§16).
 // Mounts once near the React tree root. Exposes the API client + data event bus
 // to descendants via useAppData(). Realtime SSE listeners can dispatch into
 // dataEvents from within this provider's lifecycle.

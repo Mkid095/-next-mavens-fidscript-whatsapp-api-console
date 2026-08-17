@@ -7,10 +7,10 @@ import { whereWorkspace } from '../../modules/platform/workspace/scope.js';
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/customers/:id/{tags,notes,assignments} — Phase 3 CRM surfaces.
+// /api/platform/customers/:id/{tags,notes,assignments} - Phase 3 CRM surfaces.
 // All routes workspace-scoped via req.client.id. Mutations emit domain events
 // + write audit_logs rows per spec §6.4. Child tables (tags/notes/assignments)
-// are scoped by workspace_id at the SQL layer for P11 defense-in-depth — the
+// are scoped by workspace_id at the SQL layer for P11 defense-in-depth - the
 // route's ownedCustomer() check is the upstream gate, whereWorkspace() is the
 // SQL-layer guard that prevents leaks if a future route forgets the upstream.
 // =============================================================================

@@ -24,7 +24,7 @@ export default function ReactionPicker({ instance, to, messageId, position, onSe
       await instancesApi.sendReaction(instance.name, to, { remoteJid, fromMe: true, id: messageId }, emoji);
       onSelect(TOKEN_COST.REACTION);
     } catch {
-      // silent — reaction is best-effort
+      // silent - reaction is best-effort
     }
     onClose();
   };

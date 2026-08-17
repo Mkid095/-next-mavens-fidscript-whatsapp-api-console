@@ -1,7 +1,7 @@
 import type { Database } from 'sql.js';
 
 // =============================================================================
-// Phase 5 migrations — Marketing Center foundations.
+// Phase 5 migrations - Marketing Center foundations.
 //   - extend `campaigns` with type (broadcast/scheduled/segmented/trigger/drip)
 //     + workspace_id denorm for fast tenant-scoped queries
 //   - skeleton tables for segments/steps/triggers/media_assets (slices C/D/B
@@ -12,7 +12,7 @@ import type { Database } from 'sql.js';
 export function runPhase5Migrations(db: Database): void {
   // campaigns: type + workspace_id + created_by + template_vars + idempotency_key
   // (idempotency_key = a UUID the campaign can be replayed under, so re-launches
-  //  of the same campaign don't double-charge — same model as /api/v1 sends)
+  //  of the same campaign don't double-charge - same model as /api/v1 sends)
   try { db.run(`ALTER TABLE campaigns ADD COLUMN type TEXT DEFAULT 'broadcast'`); } catch (_) { /* ok */ }
   try { db.run(`ALTER TABLE campaigns ADD COLUMN workspace_id TEXT`); } catch (_) { /* ok */ }
   try { db.run(`ALTER TABLE campaigns ADD COLUMN created_by TEXT`); } catch (_) { /* ok */ }
@@ -20,7 +20,7 @@ export function runPhase5Migrations(db: Database): void {
   try { db.run(`ALTER TABLE campaigns ADD COLUMN template_vars TEXT`); } catch (_) { /* ok */ }
   try { db.run(`ALTER TABLE campaigns ADD COLUMN idempotency_key TEXT`); } catch (_) { /* ok */ }
   // group_id was in the original schema for tables.ts but the prod DB was
-  // created from an earlier deploy that didn't have it — CREATE TABLE IF NOT
+  // created from an earlier deploy that didn't have it - CREATE TABLE IF NOT
   // EXISTS is a no-op on existing tables, so the column was never added.
   try { db.run(`ALTER TABLE campaigns ADD COLUMN group_id TEXT`); } catch (_) { /* ok */ }
 
@@ -51,7 +51,7 @@ export function runPhase5Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_campaign_segments_workspace ON campaign_segments(workspace_id)`);
 
   // -------------------------------------------------------------------
-  // Drip steps (Slice D) — sequence of actions tied to a campaign.
+  // Drip steps (Slice D) - sequence of actions tied to a campaign.
   // delay_seconds = wait this long after the previous step before firing.
   // action_type ∈ { send_text, send_media, add_tag, set_status, wait_branch }
   // -------------------------------------------------------------------
@@ -89,7 +89,7 @@ export function runPhase5Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_drip_enrollments_campaign ON drip_enrollments(campaign_id, state)`);
 
   // -------------------------------------------------------------------
-  // Triggers (Slice D) — bind a campaign to a domain event.
+  // Triggers (Slice D) - bind a campaign to a domain event.
   // event ∈ { order.created, customer.idle, customer.tagged, conversation.created }
   // filter_json narrows which events qualify (e.g. { tag: 'new_signup' })
   // -------------------------------------------------------------------
@@ -106,7 +106,7 @@ export function runPhase5Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_campaign_triggers_event ON campaign_triggers(event, enabled)`);
 
   // -------------------------------------------------------------------
-  // Media library (Slice B) — reusable assets referenced by campaign sends.
+  // Media library (Slice B) - reusable assets referenced by campaign sends.
   // kind ∈ { image, video, audio, document }
   // tags_json = array of strings; used by the MediaLibrary filter.
   // -------------------------------------------------------------------
@@ -127,7 +127,7 @@ export function runPhase5Migrations(db: Database): void {
   db.run(`CREATE INDEX IF NOT EXISTS idx_media_assets_workspace ON media_assets(workspace_id)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_media_assets_kind ON media_assets(workspace_id, kind)`);
 
-  // media_assets: Slice B added public_id (Cloudinary), width, height — guarded
+  // media_assets: Slice B added public_id (Cloudinary), width, height - guarded
   // ALTERS because the table was first created in an earlier deploy that
   // didn't have these columns (CREATE TABLE IF NOT EXISTS is a no-op on
   // existing tables, just like the campaigns.group_id fix).
@@ -136,7 +136,7 @@ export function runPhase5Migrations(db: Database): void {
   try { db.run(`ALTER TABLE media_assets ADD COLUMN height INTEGER`); } catch (_) { /* ok */ }
 
   // -------------------------------------------------------------------
-  // Status posts (Slice E) — text/image/video to the WhatsApp status feed.
+  // Status posts (Slice E) - text/image/video to the WhatsApp status feed.
   // cross_post_json = array of additional instance_ids to mirror to.
   // post_state ∈ { draft, scheduled, posting, posted, failed, cancelled }
   // -------------------------------------------------------------------

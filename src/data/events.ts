@@ -1,5 +1,5 @@
 // =============================================================================
-// Data Layer — frontend event bus (§16, P4)
+// Data Layer - frontend event bus (§16, P4)
 // A tiny typed emitter that bridges SSE pushes to data hooks.
 // SSE listeners (useInstanceSSE etc.) call dataEvents.emit(...); hooks subscribe
 // via useDataEvent. This mirrors the backend domain event catalog (a subset that
@@ -52,7 +52,7 @@ class DataEventBus {
   }
 }
 
-// Singleton bus — the one realtime dispatch point for the frontend
+// Singleton bus - the one realtime dispatch point for the frontend
 export const dataEvents = new DataEventBus();
 
 // Convenience: emit from a raw SSE event name + data blob

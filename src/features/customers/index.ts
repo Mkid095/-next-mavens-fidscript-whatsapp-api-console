@@ -1,4 +1,4 @@
-// Public barrel — Customer Intelligence feature folder (Phase 3).
+// Public barrel - Customer Intelligence feature folder (Phase 3).
 export { default as TagsManager } from './TagsManager.js';
 export { default as NotesEditor } from './NotesEditor.js';
 export { default as AssignmentPanel } from './AssignmentPanel.js';

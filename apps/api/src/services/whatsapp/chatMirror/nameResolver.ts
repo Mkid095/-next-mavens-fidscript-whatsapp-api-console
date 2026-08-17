@@ -1,6 +1,6 @@
 /**
  * Display name resolution for WhatsApp JIDs.
- * NEVER returns a raw JID — always a contact name, group subject, or
+ * NEVER returns a raw JID - always a contact name, group subject, or
  * a human-readable formatted phone number.
  */
 import db from '../../../database.js';
@@ -34,7 +34,7 @@ export function resolveDisplayName(workspaceId: string, jid: string, pushName?: 
     const cached = getCachedGroupInfo(jid);
     if (cached?.subject) return cached.subject;
     if (pushName) return pushName;
-    // Group JID with no subject — return a friendly truncated form
+    // Group JID with no subject - return a friendly truncated form
     return jid.split('@')[0].slice(0, 30) || jid;
   }
   const raw = jid.split('@')[0];
@@ -56,7 +56,7 @@ export function resolveDisplayName(workspaceId: string, jid: string, pushName?: 
     // Format as Kenyan local number
     return formatKenyanPhone(raw.startsWith('+') ? raw : `+${raw}`);
   }
-  // Weird JID — strip device suffix (e.g. :22) and format
+  // Weird JID - strip device suffix (e.g. :22) and format
   const clean = raw.replace(/:.*$/, '');
   return formatKenyanPhone(clean.startsWith('+') ? clean : `+${clean}`);
 }

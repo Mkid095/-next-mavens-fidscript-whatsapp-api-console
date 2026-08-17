@@ -2,7 +2,7 @@ import type { ApiEndpoint } from './index';
 
 const INSTANCE = { name: 'instance', desc: 'Your WhatsApp instance name', required: true };
 
-/** Profile & privacy — all FREE (no tokens). Reads V1_READ (600/min), updates V1_STRICT (30/min). */
+/** Profile & privacy - all FREE (no tokens). Reads V1_READ (600/min), updates V1_STRICT (30/min). */
 export const profileEndpoints: ApiEndpoint[] = [
   { id: 'profile.fetch', version: 'v1', method: 'POST', path: '/api/v1/profile/fetch/:instance', name: 'Fetch Profile', category: 'Profile', rateLimit: 'read',
     desc: 'Fetch a contact\'s full profile by phone number.', pathParams: [INSTANCE],
@@ -22,7 +22,7 @@ export const profileEndpoints: ApiEndpoint[] = [
     desc: 'Remove your profile picture.', pathParams: [INSTANCE], bodyFields: [], evolutionPath: '/chat/removeProfilePicture/{instance}' },
 ];
 
-/** Instance settings — all FREE (no tokens). Reads V1_READ, updates V1_STRICT. */
+/** Instance settings - all FREE (no tokens). Reads V1_READ, updates V1_STRICT. */
 export const settingsEndpoints: ApiEndpoint[] = [
   { id: 'settings.find', version: 'v1', method: 'GET', path: '/api/v1/settings/find/:instance', name: 'Find Settings', category: 'Settings', rateLimit: 'read',
     desc: 'Fetch the current instance settings.', pathParams: [INSTANCE], bodyFields: [], evolutionPath: '/settings/find/{instance}' },

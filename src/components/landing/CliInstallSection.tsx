@@ -1,5 +1,5 @@
 /**
- * CliInstallSection.tsx — landing-page section promoting the FIDScript CLI.
+ * CliInstallSection.tsx - landing-page section promoting the FIDScript CLI.
  *
  * Renders a large install command with a copy button, followed by a quickstart
  * grid of common commands (login, whoami, instance create, chatbot setup).
@@ -43,7 +43,7 @@ const QUICKSTART: QuickstartItem[] = [
 ];
 
 export function CliInstallSection(): React.ReactElement {
-  const installCmd = '# Recommended (Node 18+, picks the latest stable):\nnpm install -g @fidscript/cli\nfidscript --version\n\n# Or the SDK — the CLI is bundled as a dependency:\nnpm install @fidscript/sdk\n# → ./node_modules/.bin/fidscript is ready to use\n\n# Or the one-liner bootstrap (auto-installs Node if missing):\ncurl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh';
+  const installCmd = '# Recommended (Node 18+, picks the latest stable):\nnpm install -g @fidscript/cli\nfidscript --version\n\n# Or the SDK - the CLI is bundled as a dependency:\nnpm install @fidscript/sdk\n# → ./node_modules/.bin/fidscript is ready to use\n\n# Or the one-liner bootstrap (auto-installs Node if missing):\ncurl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh';
 
   return (
     <section className="bg-[#0c0b06] py-16 md:py-24 px-4 sm:px-6 lg:px-8">
@@ -60,7 +60,7 @@ export function CliInstallSection(): React.ReactElement {
           <p className="text-sm sm:text-base text-[#8a886a] max-w-2xl mx-auto leading-relaxed">
             Every <code className="font-mono text-[#f97316]">/api/v1</code> endpoint,
             chatbot, and instance lifecycle is one command away. The CLI is built
-            for both humans and AI agents — every command supports
+            for both humans and AI agents - every command supports
             <code className="font-mono text-[#f97316] mx-1">--json</code> and
             <code className="font-mono text-[#f97316] mx-1">--yaml</code> output.
           </p>
@@ -70,7 +70,7 @@ export function CliInstallSection(): React.ReactElement {
         <div className="max-w-3xl mx-auto">
           <DocsCodeBlock code={installCmd} lang="bash" className="shadow-xl" />
           <p className="text-center text-xs text-[#6a6c5d] mt-3">
-            Requires Node.js 18+ — the installer will bootstrap it for you.
+            Requires Node.js 18+ - the installer will bootstrap it for you.
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 /**
- * toolsList.ts — `fidscript chatbot tools <chatbot-id> list`
+ * toolsList.ts - `fidscript chatbot tools <chatbot-id> list`
  *
  * Lists all tools attached to a chatbot.
  */

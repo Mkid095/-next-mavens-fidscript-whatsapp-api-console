@@ -17,7 +17,7 @@ interface CampaignBuilderProps {
 }
 
 /**
- * Phase 5 — campaign builder for all campaign types.
+ * Phase 5 - campaign builder for all campaign types.
  * Slice A: broadcast (text/media content + audience + save/launch)
  * Slice B: media message can pull from the library
  * Slice C: audience source can be paste / contacts / segment

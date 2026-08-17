@@ -109,7 +109,7 @@ export default function KeyCard({
             onClick={onTest}
             disabled={testing || !hasSecret}
             className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold bg-[#2d2813] hover:bg-[#3d3a1e] text-[#6e684a] border border-[#2d2813] rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            title={hasSecret ? 'Test this key against the live API' : 'Secret not in memory — regenerate to test'}
+            title={hasSecret ? 'Test this key against the live API' : 'Secret not in memory - regenerate to test'}
           >
             <Terminal className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{testing ? 'Testing...' : 'Test'}</span>

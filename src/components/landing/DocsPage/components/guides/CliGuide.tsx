@@ -10,7 +10,7 @@ export function CliGuide() {
       <p className="text-sm text-[#525252] mb-8">
         Every <code className="font-mono text-[#f97316]">/api/v1</code> endpoint is wrapped
         by a single binary called <code className="font-mono text-[#f97316]">fidscript</code>.
-        It's built for both humans and AI agents — every command supports
+        It's built for both humans and AI agents - every command supports
         <code className="font-mono text-[#f97316]">--json</code> and
         <code className="font-mono text-[#f97316]">--yaml</code> output, and
         <code className="font-mono text-[#f97316]">--verbose</code> prints the underlying
@@ -41,7 +41,7 @@ export function CliGuide() {
         <CliComparison
           op="List WhatsApp instances (from DB)"
           curl={`curl ${PUBLIC_API_BASE}/instance/connection-state/my-bot \\\n  -H "X-API-Key: $FIDSCRIPT_API_KEY"`}
-          cli={`fidscript instance list          # JWT auth — DB-backed list\nfidscript instance watch my-bot    # SSE live state`}
+          cli={`fidscript instance list          # JWT auth - DB-backed list\nfidscript instance watch my-bot    # SSE live state`}
         />
         <CliComparison
           op="Create + publish a chatbot"
@@ -61,7 +61,7 @@ export function CliGuide() {
         After login, the data-backed instance list and the chatbot CRUD commands just work.
       </p>
       <DocsCodeBlock
-        code={`# sign in (passwordless — 6-digit code via email)
+        code={`# sign in (passwordless - 6-digit code via email)
 fidscript login --email you@example.com
 
 # verify

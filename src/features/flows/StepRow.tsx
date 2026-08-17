@@ -103,5 +103,5 @@ function ActionConfigEditor({ type, cfg, onChange }: { type: StepActionType; cfg
       </select>
     );
   }
-  return <p className="text-[10px] text-[#6e684a]">No additional config for wait steps — only delay_seconds matters.</p>;
+  return <p className="text-[10px] text-[#6e684a]">No additional config for wait steps - only delay_seconds matters.</p>;
 }

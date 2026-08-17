@@ -3,7 +3,7 @@ import { sqliteFtsProvider } from './provider.js';
 import type { DomainEventPayload } from '../events/index.js';
 
 // =============================================================================
-// Search indexer — bus subscriber.
+// Search indexer - bus subscriber.
 // Subscribes to specific event types and upserts/deletes index rows per event.
 // Registered at server boot via registerSearchIndexer().
 // =============================================================================
@@ -30,7 +30,7 @@ async function indexCampaign(wsId: string, entityId: string, name: string, conte
 }
 
 async function indexOrder(wsId: string, entityId: string, orderId: string, total: number): Promise<void> {
-  await sqliteFtsProvider.index(wsId, 'order', entityId, `Order ${orderId} — KES ${total.toLocaleString()}`, ['order', 'commerce']);
+  await sqliteFtsProvider.index(wsId, 'order', entityId, `Order ${orderId} - KES ${total.toLocaleString()}`, ['order', 'commerce']);
 }
 
 async function indexKnowledge(wsId: string, entityId: string, name: string, ref?: string | null): Promise<void> {

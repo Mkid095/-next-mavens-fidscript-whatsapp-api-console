@@ -7,7 +7,7 @@
 <h1 align="center">Next Mavens Fidscript WhatsApp API</h1>
 
 <p align="center">
-  Enterprise-grade WhatsApp Business API Platform — Built on Evolution API, Enhanced by Next Mavens.
+  Enterprise-grade WhatsApp Business API Platform - Built on Evolution API, Enhanced by Next Mavens.
 </p>
 
 <p align="center">
@@ -240,9 +240,9 @@ Built with **Node.js 20+**, **TypeScript 5+**, **Express.js**, and **Prisma ORM*
 
 ## Built On
 
-- [Evolution API](https://github.com/evolution-foundation/evolution-api) — Core WhatsApp engine
-- [Baileys](https://github.com/WhiskeySockets/Baileys) — WhatsApp Web library
-- [Meta WhatsApp Business API](https://developers.facebook.com/docs/whatsapp) — Official Business API
+- [Evolution API](https://github.com/evolution-foundation/evolution-api) - Core WhatsApp engine
+- [Baileys](https://github.com/WhiskeySockets/Baileys) - WhatsApp Web library
+- [Meta WhatsApp Business API](https://developers.facebook.com/docs/whatsapp) - Official Business API
 
 ---
 

@@ -1,4 +1,4 @@
-// Event dispatch handlers — thin barrel aggregating all dispatch groups.
+// Event dispatch handlers - thin barrel aggregating all dispatch groups.
 export { emit, type DispatchContext } from './dispatchCore.js';
 
 export {

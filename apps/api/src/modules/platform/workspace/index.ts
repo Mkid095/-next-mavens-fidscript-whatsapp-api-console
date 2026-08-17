@@ -1,4 +1,4 @@
-// Platform Workspace module — forwarding re-exports from kernel/identity.
+// Platform Workspace module - forwarding re-exports from kernel/identity.
 // context.ts + scope.ts + can.ts live in kernel/identity/ now.
 export { createWorkspaceTables, seedWorkspaceData } from './tables.js';
 export { runWorkspaceMigrations } from './migrations.js';

@@ -1,4 +1,4 @@
-// Auth API — passwordless magic-code authentication (Resend email)
+// Auth API - passwordless magic-code authentication (Resend email)
 import { fetchApi, type ApiResponse } from './api';
 import type { Client } from './clients';
 

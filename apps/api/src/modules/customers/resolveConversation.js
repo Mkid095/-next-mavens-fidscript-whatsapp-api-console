@@ -1,4 +1,4 @@
-// resolveConversation — thin barrel
+// resolveConversation - thin barrel
 export {
   resolveConversation,
   getCustomer,

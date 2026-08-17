@@ -12,7 +12,7 @@ if command -v node >/dev/null 2>&1; then
     echo "  Node.js found: $NODE_VERSION"
 else
     echo "FIDScript CLI Installer"
-    echo "  Node.js not found — installing..."
+    echo "  Node.js not found - installing..."
     if command -v brew >/dev/null 2>&1; then
         brew install node
     elif command -v apt-get >/dev/null 2>&1; then

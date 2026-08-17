@@ -8,17 +8,17 @@ import {
 import { normalizePhone } from '../../utils/phone.js';
 
 // =============================================================================
-// Campaign dispatch — shared with 1:1 chat (spec §15: never drift).
+// Campaign dispatch - shared with 1:1 chat (spec §15: never drift).
 // Campaign send paths MUST call these helpers, never callGateway
 // directly. Token charging, finalize, message.sent events, idempotency all
-// come from the shared senders — adding a new send type (Phase 2 §2 senders)
+// come from the shared senders - adding a new send type (Phase 2 §2 senders)
 // extends campaigns automatically.
 // =============================================================================
 
 export type CampaignMessageKind = 'text' | 'media' | 'location' | 'contact';
 
 export interface CampaignSendArgs {
-  /** Per-recipient unique key — used for idempotency wrapSend replay. */
+  /** Per-recipient unique key - used for idempotency wrapSend replay. */
   recipientId: string;
   to: string;
   kind: CampaignMessageKind;
@@ -59,7 +59,7 @@ export { newIdempKey as idempotencyKeyFor };
 /**
  * Dispatch a single campaign message via the shared senders.
  *
- * Returns `{ ok, messageId?, error? }`. Does NOT throw — the caller is in a
+ * Returns `{ ok, messageId?, error? }`. Does NOT throw - the caller is in a
  * long-running send loop and must handle per-recipient failures gracefully.
  *
  * The underlying sender handles:

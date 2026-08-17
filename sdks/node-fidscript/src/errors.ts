@@ -1,5 +1,5 @@
 /**
- * errors.ts — typed error class for every FIDScript API response.
+ * errors.ts - typed error class for every FIDScript API response.
  */
 export type FidscriptErrorCode =
   | 'UNAUTHORIZED'

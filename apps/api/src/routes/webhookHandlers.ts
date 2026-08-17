@@ -1,5 +1,5 @@
 /**
- * Webhook route handlers — thin re-export layer.
+ * Webhook route handlers - thin re-export layer.
  * Auth verification lives here; parsing and dispatch are split into
  * dedicated handler modules.
  */
@@ -51,7 +51,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
 
   const instStatus = String(instance.status ?? '');
   if (instStatus && instStatus !== 'open' && instStatus !== 'connected' && instStatus !== 'connecting') {
-    console.log(`[WEBHOOK] Skipping — instance ${instance.name} is ${instStatus}`);
+    console.log(`[WEBHOOK] Skipping - instance ${instance.name} is ${instStatus}`);
     res.status(200).json({ success: true, skipped: 'instance_not_connected' }); return;
   }
 

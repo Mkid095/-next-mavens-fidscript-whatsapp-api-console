@@ -2,7 +2,7 @@ import { callGateway } from '../../utils/gateway.js';
 import { paceWhatsApp } from './whatsappCallLimiter.js';
 
 // =============================================================================
-// Group metadata cache (in-memory, 1h TTL) — proxies the gateway /group/find.
+// Group metadata cache (in-memory, 1h TTL) - proxies the gateway /group/find.
 // Fixes the inbox UX gap: group chats previously showed raw JIDs instead of
 // the group's subject. Cached per-process to avoid hammering the gateway.
 // =============================================================================
@@ -23,11 +23,11 @@ function isFresh(info: GroupInfo): boolean {
 
 /** Fetch group info from the gateway, mapping a few common payload shapes. */
 async function fetchFromGateway(chatId: string): Promise<GroupInfo> {
-  // Pace by chatId — the 1h cache absorbs steady-state traffic so this only
+  // Pace by chatId - the 1h cache absorbs steady-state traffic so this only
   // matters on cold start (first lookup of a group). Uses the read pacer.
   await paceWhatsApp(chatId, 'read');
   const evo = await callGateway('POST', '/group/findGroupInfos', { groupJid: chatId });
-  // the gateway returns either an array or an object — be defensive
+  // the gateway returns either an array or an object - be defensive
   const arr = Array.isArray(evo) ? evo : (Array.isArray((evo as { groups?: unknown[] }).groups) ? (evo as { groups: Record<string, unknown>[] }).groups : []);
   const row = arr.find((g) => g.id === chatId) || arr[0] || {};
   const subject = String((row as Record<string, unknown>).subject ?? '');

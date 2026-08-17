@@ -1,5 +1,5 @@
 /**
- * GET /api/v1/health — public health check
+ * GET /api/v1/health - public health check
  * Returns { ok, version } so the CLI can verify connectivity.
  */
 import { Router, Request, Response } from 'express';

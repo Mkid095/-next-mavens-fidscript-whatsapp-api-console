@@ -51,7 +51,7 @@ export default function ClientContent({
     );
   }
 
-  // Messages is a full-height 2-pane surface — render outside the padded wrapper.
+  // Messages is a full-height 2-pane surface - render outside the padded wrapper.
   if (activeSection === 'messages') {
     return (
       <div className="h-[calc(100vh-1rem)] p-2 lg:p-3">

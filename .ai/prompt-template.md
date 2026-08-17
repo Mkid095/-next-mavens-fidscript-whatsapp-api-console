@@ -56,10 +56,10 @@ Do not change existing message handling or storage. Do not modify the webhook pa
 
 ### Implementation
 
-Create a summary service in `features/conversations/services/summary.service.ts`. Trigger it via an event listener after message count reaches 10. Use the existing LLM gateway — do not create a new one.
+Create a summary service in `features/conversations/services/summary.service.ts`. Trigger it via an event listener after message count reaches 10. Use the existing LLM gateway - do not create a new one.
 
 ### Documentation
 
-- [ ] `features/conversations/README.md` — add summary section
-- [ ] `CHANGELOG.md` — log the addition
-- [ ] `docs/architecture/` — update data flow diagram
+- [ ] `features/conversations/README.md` - add summary section
+- [ ] `CHANGELOG.md` - log the addition
+- [ ] `docs/architecture/` - update data flow diagram

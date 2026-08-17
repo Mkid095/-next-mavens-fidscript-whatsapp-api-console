@@ -1,4 +1,4 @@
-# FIDScript CLI — comprehensive guide
+# FIDScript CLI - comprehensive guide
 
 > The `fidscript` command-line interface is the fastest way to integrate with the FIDScript WhatsApp Business API from any shell, script, or AI agent. It wraps every public endpoint in a small, predictable surface and is designed to be driven by tools as much as by humans.
 
@@ -13,10 +13,10 @@ This guide walks you from "I just installed it" to "I have a chatbot running on 
 3. [First-time setup](#3-first-time-setup)
 4. [Mental model: API key vs JWT](#4-mental-model-api-key-vs-jwt)
 5. [Auth scenarios](#5-auth-scenarios)
-6. [Sending messages — all 10 types](#6-sending-messages--all-10-types)
+6. [Sending messages - all 10 types](#6-sending-messages--all-10-types)
 7. [Managing WhatsApp instances](#7-managing-whatsapp-instances)
 8. [Real-time events (SSE)](#8-real-time-events-sse)
-9. [Chatbots — full lifecycle](#9-chatbots--full-lifecycle)
+9. [Chatbots - full lifecycle](#9-chatbots--full-lifecycle)
 10. [Bring Your Own LLM](#10-bring-your-own-llm)
 11. [Sandbox vs production](#11-sandbox-vs-production)
 12. [OpenAPI & direct HTTP from any language](#12-openapi--direct-http-from-any-language)
@@ -34,20 +34,20 @@ This guide walks you from "I just installed it" to "I have a chatbot running on 
 
 The `fidscript` CLI is a thin, well-typed wrapper around two API surfaces:
 
-- **Public integrator API** at `/api/v1/*` — used by external services. Authenticated with an `X-API-Key` header. Plan-based rate limits. This is what you call from your app, your CRM, your ecommerce backend.
-- **Client portal API** at `/api/instance/*`, `/api/platform/*`, `/api/sse/*` — used by the workspace owner (you, in the dashboard). Authenticated with a short-lived JWT issued via magic-code email sign-in. This is what you call when you want to *configure* a workspace — create instances, build chatbots, manage LLM connections, watch live state.
+- **Public integrator API** at `/api/v1/*` - used by external services. Authenticated with an `X-API-Key` header. Plan-based rate limits. This is what you call from your app, your CRM, your ecommerce backend.
+- **Client portal API** at `/api/instance/*`, `/api/platform/*`, `/api/sse/*` - used by the workspace owner (you, in the dashboard). Authenticated with a short-lived JWT issued via magic-code email sign-in. This is what you call when you want to *configure* a workspace - create instances, build chatbots, manage LLM connections, watch live state.
 
 The CLI exposes both, with one ergonomic twist: it auto-picks the right auth based on the path you call. `/api/v1/*` gets `X-API-Key`, everything else gets `Bearer JWT`. You can override with `--auth apikey|jwt`.
 
-**Mental model**: the CLI is a Swiss Army knife. The `whoami`/`tokens`/`login`/`setup`/`init` commands are your admin tools. The `send` and `instance` commands are your day-to-day tools. The `chatbot` and `llm` commands are your build tools. The `api` command is your escape hatch — it reaches any endpoint we haven't wrapped as a first-class command.
+**Mental model**: the CLI is a Swiss Army knife. The `whoami`/`tokens`/`login`/`setup`/`init` commands are your admin tools. The `send` and `instance` commands are your day-to-day tools. The `chatbot` and `llm` commands are your build tools. The `api` command is your escape hatch - it reaches any endpoint we haven't wrapped as a first-class command.
 
-There is also a published npm SDK at `@fidscript/sdk` for Node.js / TypeScript. The two share the same backend; the SDK is for programs, the CLI is for shells and agents. Pick the right tool for the job — or use both.
+There is also a published npm SDK at `@fidscript/sdk` for Node.js / TypeScript. The two share the same backend; the SDK is for programs, the CLI is for shells and agents. Pick the right tool for the job - or use both.
 
 ---
 
 ## 2. Install
 
-There are three install paths — pick whichever fits your workflow.
+There are three install paths - pick whichever fits your workflow.
 
 ### A. npm (recommended)
 
@@ -98,7 +98,7 @@ npm update -g @fidscript/cli
 The fastest path from zero to "I sent my first WhatsApp message." Run these in order.
 
 ```bash
-# 1. Sign in — you'll get a 6-digit code by email
+# 1. Sign in - you'll get a 6-digit code by email
 fidscript login --email you@example.com
 
 # 2. Confirm auth + see your API key (masked; --reveal shows full)
@@ -109,7 +109,7 @@ fidscript instance list
 #   if empty:
 fidscript instance create my-bot
 
-# 4. Connect WhatsApp — scan the QR with your phone
+# 4. Connect WhatsApp - scan the QR with your phone
 fidscript instance qr my-bot
 #   QR is saved as PNG to /tmp/fidscript-qr-<timestamp>.png; open it
 
@@ -117,7 +117,7 @@ fidscript instance qr my-bot
 fidscript send text my-bot --to +254700000000 --text "Hello from the CLI!"
 ```
 
-That's it. The whole thing takes about 60 seconds. If you want to drive this from a script (no TTY), see [Section 5](#5-auth-scenarios) — every prompt has a `--code` / `--email` flag for non-interactive use.
+That's it. The whole thing takes about 60 seconds. If you want to drive this from a script (no TTY), see [Section 5](#5-auth-scenarios) - every prompt has a `--code` / `--email` flag for non-interactive use.
 
 ---
 
@@ -175,7 +175,7 @@ fidscript --json login --email bot@example.com --code 123456
 ### C. AI agent loop (fully headless)
 
 ```bash
-# Idempotent — does nothing if already logged in
+# Idempotent - does nothing if already logged in
 if ! fidscript --json --quiet whoami > /dev/null 2>&1; then
   echo "Run: fidscript login --email you@example.com" >&2
   exit 1
@@ -196,7 +196,7 @@ FIDSCRIPT_API_KEY=fidscript_live_workspace_a_... fidscript --json whoami
 FIDSCRIPT_API_KEY=fidscript_live_workspace_b_... fidscript --json whoami
 ```
 
-Or pass `--api-key <key>` per command. There is currently one JWT slot — for multiple logged-in workspaces, run a separate shell per JWT.
+Or pass `--api-key <key>` per command. There is currently one JWT slot - for multiple logged-in workspaces, run a separate shell per JWT.
 
 ### E. Checking what's stored
 
@@ -220,7 +220,7 @@ fidscript logout
 
 ---
 
-## 6. Sending messages — all 10 types
+## 6. Sending messages - all 10 types
 
 The CLI exposes `fidscript send <type>` (and the alias `fidscript message <type>`). All send commands take `--to <E.164-number>` as required.
 
@@ -357,7 +357,7 @@ An "instance" is one phone number linked to your workspace. You can have many.
 # Create (registers with Evolution API + persists in our DB)
 fidscript instance create my-bot
 
-# Generate QR — open the PNG, scan with WhatsApp > Linked Devices
+# Generate QR - open the PNG, scan with WhatsApp > Linked Devices
 fidscript instance qr my-bot
 
 # Force a fresh QR (if the old one expired)
@@ -383,7 +383,7 @@ fidscript instance watch my-bot --timeout 60
 # exit 0 if connected, exit 2 if timeout fired
 ```
 
-This is useful in shell loops — wait for the WhatsApp session to be ready before sending messages.
+This is useful in shell loops - wait for the WhatsApp session to be ready before sending messages.
 
 ### Listing
 
@@ -409,10 +409,10 @@ The CLI streams Server-Sent Events for three use cases:
 The CLI wraps both:
 
 ```bash
-# Instance — prints state changes + new inbound messages, exits when terminal
+# Instance - prints state changes + new inbound messages, exits when terminal
 fidscript instance watch my-bot
 
-# Publish — prints a progress bar, exits when status = completed/failed/cancelled
+# Publish - prints a progress bar, exits when status = completed/failed/cancelled
 fidscript chatbot publish bot_xyz --watch
 ```
 
@@ -433,7 +433,7 @@ You can hit the raw endpoint with `curl -N "..." ` from any SSE-compatible clien
 
 ---
 
-## 9. Chatbots — full lifecycle
+## 9. Chatbots - full lifecycle
 
 A chatbot has:
 - An instance it's attached to (its "phone")
@@ -497,7 +497,7 @@ fidscript chatbot delete <id> --confirm
 
 ### Publishing
 
-`publish` runs a multi-step pipeline (validate → build prompt → register triggers → activate). It's async — the call returns immediately with a `jobId`, then you watch progress:
+`publish` runs a multi-step pipeline (validate → build prompt → register triggers → activate). It's async - the call returns immediately with a `jobId`, then you watch progress:
 
 ```bash
 # Kick off + watch in one command (prints progress bar)
@@ -513,7 +513,7 @@ Exit codes from `--watch`: 0 if completed, 2 if timeout fired, 1 on error.
 
 ### Response shape (after a successful send from the bot)
 
-Every bot reply is a WhatsApp message — the underlying call uses the same `/api/v1/messages/*` endpoints. The bot picks the message type based on context (text by default, image when the LLM returns an image URL, etc.).
+Every bot reply is a WhatsApp message - the underlying call uses the same `/api/v1/messages/*` endpoints. The bot picks the message type based on context (text by default, image when the LLM returns an image URL, etc.).
 
 ---
 
@@ -608,8 +608,8 @@ The in-app "API Sandbox" at `/client/sandbox` is a click-and-try interface for e
 - All group operations
 - All chat operations
 - Profile, settings, instance
-- **Chatbot operations** — list, create, get, set-ai-config, publish
-- **LLM operations** — list, create, get, update, test
+- **Chatbot operations** - list, create, get, set-ai-config, publish
+- **LLM operations** - list, create, get, update, test
 
 Use it to prototype without writing code. Once you have a working request, copy the curl from the response panel and use it in your service.
 
@@ -649,7 +649,7 @@ openapi-python-client generate --path schema.json
 
 For languages that don't need a full SDK (PHP, Ruby, shell scripts), just hit the API directly with your language's HTTP client. See [Section 14](#14-real-world-scenarios) for examples.
 
-The official Node.js SDK lives at [@fidscript/sdk](https://www.npmjs.com/package/@fidscript/sdk) — full type hints, retry logic, and a clean DX.
+The official Node.js SDK lives at [@fidscript/sdk](https://www.npmjs.com/package/@fidscript/sdk) - full type hints, retry logic, and a clean DX.
 
 ---
 
@@ -687,12 +687,12 @@ The CLI is built for autonomous agents. Three principles:
 The CLI splits magic-code login into two steps so an agent can drive it:
 
 ```bash
-# Step 1 — request a code (server emails it; no TTY required)
+# Step 1 - request a code (server emails it; no TTY required)
 fidscript --json --quiet login --email user@example.com
 # exit 1, JSON: { error: { code: "CODE_REQUIRED", message: "..." } }
 # The user reads the code from their inbox.
 
-# Step 2 — submit the code (no TTY required)
+# Step 2 - submit the code (no TTY required)
 fidscript --json --quiet login --email user@example.com --code 123456
 # exit 0, JWT + API key stored in ~/.fidscript/credentials
 
@@ -704,20 +704,20 @@ The server returns a generic "If an account exists, a code was sent" message on 
 
 ### Auto-confirm destructive commands
 
-`instance delete`, `instance restart`, `chatbot delete` — all require `--confirm`. **In `--json` or `--yaml` mode, `--confirm` is auto-set.** So:
+`instance delete`, `instance restart`, `chatbot delete` - all require `--confirm`. **In `--json` or `--yaml` mode, `--confirm` is auto-set.** So:
 
 ```bash
-# In a default-mode terminal — needs --confirm:
+# In a default-mode terminal - needs --confirm:
 fidscript instance delete my-bot --confirm
 
-# In an agent script with --json — auto-confirms:
+# In an agent script with --json - auto-confirms:
 fidscript --json instance delete my-bot
 ```
 
 ### Recommended agent loop
 
 ```bash
-# 1. Ensure authenticated (idempotent — does nothing if already logged in)
+# 1. Ensure authenticated (idempotent - does nothing if already logged in)
 if ! fidscript --json --quiet whoami > /dev/null 2>&1; then
   echo "Run: fidscript login --email you@example.com" >&2
   exit 1
@@ -756,7 +756,7 @@ fidscript chatbot publish <id> --watch --timeout 120
 
 ## 14. Real-world scenarios
 
-### Scenario 1 — Spin up a new chatbot from scratch
+### Scenario 1 - Spin up a new chatbot from scratch
 
 ```bash
 # 1. Sign in once (or reuse existing credentials)
@@ -775,7 +775,7 @@ cat > /tmp/bot.json <<'EOF'
 {
   "name": "support-bot",
   "instance": "support-bot",
-  "system_prompt": "You are a polite, concise support agent for Acme. Never promise refunds — escalate to a human.",
+  "system_prompt": "You are a polite, concise support agent for Acme. Never promise refunds - escalate to a human.",
   "llm_connection": "$(fidscript --json llm list | jq -r '.data[] | select(.is_default==1) | .id')",
   "hallucination_policy": "strict",
   "temperature": 0.2,
@@ -794,7 +794,7 @@ EOF
 fidscript chatbot setup --config /tmp/bot.json
 ```
 
-### Scenario 2 — Campaign: send a batch of templated messages
+### Scenario 2 - Campaign: send a batch of templated messages
 
 ```bash
 # Build a CSV of phone numbers (one per line)
@@ -804,11 +804,11 @@ cat > /tmp/phones.csv <<'EOF'
 +254700000003
 EOF
 
-# Send to each (with rate limiting — the server-side clientRateLimit will queue if you exceed)
+# Send to each (with rate limiting - the server-side clientRateLimit will queue if you exceed)
 while IFS= read -r phone; do
   fidscript --json send text my-bot \
     --to "$phone" \
-    --text "Hi! This is a broadcast from Acme — reply STOP to unsubscribe." || break
+    --text "Hi! This is a broadcast from Acme - reply STOP to unsubscribe." || break
   sleep 6   # stay under the 10 MPS WhatsApp ceiling
 done < /tmp/phones.csv
 ```
@@ -822,13 +822,13 @@ fidscript api POST /api/campaigns \
 # ... add recipients via /api/campaigns/:id/recipients
 ```
 
-### Scenario 3 — Inbound-to-CRM pipeline
+### Scenario 3 - Inbound-to-CRM pipeline
 
 Watch for new messages, push them to your CRM:
 
 ```bash
 #!/bin/bash
-# watch-and-pipe.sh — run forever, forward new messages to webhook
+# watch-and-pipe.sh - run forever, forward new messages to webhook
 fidscript instance watch my-bot --timeout 0 \
   | while IFS= read -r line; do
       if [[ "$line" == *'"event":"newMessage"'* ]]; then
@@ -839,7 +839,7 @@ fidscript instance watch my-bot --timeout 0 \
 
 (For real production, use the proper webhook integration: configure your `webhook_url` in instance settings to point at your service. The CLI is good for ad-hoc testing; webhooks are good for production.)
 
-### Scenario 4 — Rotating LLM API keys without downtime
+### Scenario 4 - Rotating LLM API keys without downtime
 
 ```bash
 # Add the new key (without --default)
@@ -852,14 +852,14 @@ fidscript llm test $(fidscript --json llm list | jq -r '.data[] | select(.provid
 # Mark the new one as default (and clear default on the old one in the same call)
 fidscript llm update $(fidscript --json llm list | jq -r '.data[] | select(.provider_name=="OpenAI") | .id' | head -1) --default
 
-# Verify the chatbot picks it up (it does — it reads llm_connection_id at request time)
+# Verify the chatbot picks it up (it does - it reads llm_connection_id at request time)
 fidscript --json chatbot status <chatbot-id>
 
 # Once you're confident, delete the old connection
 fidscript --json llm delete <old-connection-id>
 ```
 
-### Scenario 5 — Cross-workspace dashboard view
+### Scenario 5 - Cross-workspace dashboard view
 
 ```bash
 # Print a one-line summary of every workspace (uses different API keys)
@@ -870,7 +870,7 @@ for ws in personal work client-a client-b; do
 done
 ```
 
-### Scenario 6 — Debug a failing chatbot
+### Scenario 6 - Debug a failing chatbot
 
 ```bash
 # 1. Check overall health
@@ -988,10 +988,10 @@ fidscript login --email you@example.com
 If you're running headless:
 
 ```bash
-# Step 1 — get a code sent
+# Step 1 - get a code sent
 fidscript --json login --email you@example.com
 # (wait for email)
-# Step 2 — submit immediately
+# Step 2 - submit immediately
 fidscript --json login --email you@example.com --code <code>
 ```
 
@@ -1009,7 +1009,7 @@ fidscript --json login --email you@example.com --code 123456
 ### `RATE_LIMITED` from the server
 
 You're hitting your plan's per-minute limit. Either:
-- Wait and retry (the server returned a `Retry-After` header — `fidscript --verbose` shows it)
+- Wait and retry (the server returned a `Retry-After` header - `fidscript --verbose` shows it)
 - Upgrade your plan (`fidscript tokens` shows your current tier)
 - Bulk-send via the campaigns API, which has a higher limit (30 MPS) and queues cleanly
 
@@ -1018,10 +1018,10 @@ You're hitting your plan's per-minute limit. Either:
 For complex nested bodies (contacts, sections, message-key), pass `@file.json` instead of inline JSON:
 
 ```bash
-# Inline — error-prone with quotes:
+# Inline - error-prone with quotes:
 fidscript --json send contact my-bot --to ... --contacts '[{"fullName":"Jane","phoneNumber":"+254"}]'
 
-# File — much cleaner:
+# File - much cleaner:
 fidscript --json send contact my-bot --to ... --contacts @./contacts.json
 ```
 
@@ -1030,10 +1030,10 @@ fidscript --json send contact my-bot --to ... --contacts @./contacts.json
 The npm global bin directory isn't on your PATH. Fix once:
 
 ```bash
-# macOS — add to ~/.zshrc:
+# macOS - add to ~/.zshrc:
 export PATH="$(npm config get prefix)/bin:$PATH"
 
-# Linux — add to ~/.bashrc:
+# Linux - add to ~/.bashrc:
 export PATH="$(npm config get prefix)/bin:$PATH"
 ```
 
@@ -1064,10 +1064,10 @@ In CI, log in at the start of each run; the JWT will outlive the run.
 
 Common causes, in order of likelihood:
 
-1. **Recipient hasn't messaged you first** (WhatsApp restriction for utility templates — they need to opt-in)
+1. **Recipient hasn't messaged you first** (WhatsApp restriction for utility templates - they need to opt-in)
 2. **Recipient has you blocked** (check via `fidscript api POST /api/v1/chats/is-whatsapp/<instance> -d '{"number":"+..."}'`)
-3. **Wrong instance name** — confirm via `fidscript instance list`
-4. **WhatsApp is throttling your account** — wait 24h, reduce send rate
+3. **Wrong instance name** - confirm via `fidscript instance list`
+4. **WhatsApp is throttling your account** - wait 24h, reduce send rate
 
 ### `Cannot find module 'tslib'` or similar runtime error
 
@@ -1082,26 +1082,26 @@ node --version
 
 ## 19. Glossary
 
-- **API key** — long-lived secret (X-API-Key header) for `/api/v1/*`. Format: `fidscript_live_xxx`.
-- **Chatbot** — an AI agent that responds to inbound WhatsApp messages based on triggers + policies + an LLM.
-- **CLI** — the `fidscript` command-line interface (this tool).
-- **Connection state** — `connecting` / `open` / `close` / `disconnected`. Watch via `instance watch`.
-- **Conversation** — an ongoing exchange between a user and your chatbot. Stored server-side; we include the last N messages as context.
-- **E.164** — the international phone format: `+[country code][number]`. Always use this in `--to`.
-- **Endpoint** — a single API URL+method combo (e.g. `POST /api/v1/messages/text/:instance`).
-- **Evolution API** — the open-source WhatsApp gateway we run. All instance/send operations proxy through it.
-- **Hallucination policy** — how strict the chatbot is about uncertain answers. `strict` = refuse on low confidence. `balanced` (default) = hedge. `creative` = improvise. `disabled` = pass through.
-- **Handoff** — when a chatbot routes a conversation to a human team.
-- **Instance** — one WhatsApp phone number, linked to your workspace.
-- **JWT** — short-lived token (Bearer header) for `/api/*` and `/api/sse/*`. 24h TTL.
-- **LLM** — large language model. FIDScript supports any OpenAI-compatible endpoint.
-- **MPS** — messages per second. WhatsApp's hard ceiling is ~80 MPS; we pace to 10–30.
-- **PTT** — push-to-talk. WhatsApp voice notes are PTT-style audio, requires `.ogg`/opus.
-- **Sandbox** — the in-app click-and-try interface for every endpoint, at `/client/sandbox`.
-- **SSE** — server-sent events. Long-lived HTTP stream for live updates.
-- **Tier** — your WhatsApp Business quality rating (0 = new, 4 = unlimited). Determines daily unique-customer volume.
-- **Trigger** — the rule that decides when a chatbot responds. `always` / `keyword` / `regex` / `mention`.
-- **Workspace** — your FIDScript account. One API key, one JWT, many instances and chatbots.
+- **API key** - long-lived secret (X-API-Key header) for `/api/v1/*`. Format: `fidscript_live_xxx`.
+- **Chatbot** - an AI agent that responds to inbound WhatsApp messages based on triggers + policies + an LLM.
+- **CLI** - the `fidscript` command-line interface (this tool).
+- **Connection state** - `connecting` / `open` / `close` / `disconnected`. Watch via `instance watch`.
+- **Conversation** - an ongoing exchange between a user and your chatbot. Stored server-side; we include the last N messages as context.
+- **E.164** - the international phone format: `+[country code][number]`. Always use this in `--to`.
+- **Endpoint** - a single API URL+method combo (e.g. `POST /api/v1/messages/text/:instance`).
+- **Evolution API** - the open-source WhatsApp gateway we run. All instance/send operations proxy through it.
+- **Hallucination policy** - how strict the chatbot is about uncertain answers. `strict` = refuse on low confidence. `balanced` (default) = hedge. `creative` = improvise. `disabled` = pass through.
+- **Handoff** - when a chatbot routes a conversation to a human team.
+- **Instance** - one WhatsApp phone number, linked to your workspace.
+- **JWT** - short-lived token (Bearer header) for `/api/*` and `/api/sse/*`. 24h TTL.
+- **LLM** - large language model. FIDScript supports any OpenAI-compatible endpoint.
+- **MPS** - messages per second. WhatsApp's hard ceiling is ~80 MPS; we pace to 10–30.
+- **PTT** - push-to-talk. WhatsApp voice notes are PTT-style audio, requires `.ogg`/opus.
+- **Sandbox** - the in-app click-and-try interface for every endpoint, at `/client/sandbox`.
+- **SSE** - server-sent events. Long-lived HTTP stream for live updates.
+- **Tier** - your WhatsApp Business quality rating (0 = new, 4 = unlimited). Determines daily unique-customer volume.
+- **Trigger** - the rule that decides when a chatbot responds. `always` / `keyword` / `regex` / `mention`.
+- **Workspace** - your FIDScript account. One API key, one JWT, many instances and chatbots.
 
 ---
 
@@ -1112,7 +1112,7 @@ Every change visible to a user lands in `src/data/changelog.json` and bumps the 
 | Bump type | When | CLI flag |
 |---|---|---|
 | **PATCH** (`v0.4.0 → v0.4.1`) | Bug fixes, small UI tweaks, perf improvements, dark-mode fixes, copy edits | `BUMP_TYPE=patch bash scripts/update-changelog.sh` |
-| **MINOR** (`v0.4.x → v0.5.0`) | New features, new endpoints, new CLI subcommands, new guides — anything that doesn't break the API contract | `BUMP_TYPE=minor bash scripts/update-changelog.sh` |
+| **MINOR** (`v0.4.x → v0.5.0`) | New features, new endpoints, new CLI subcommands, new guides - anything that doesn't break the API contract | `BUMP_TYPE=minor bash scripts/update-changelog.sh` |
 | **MAJOR** (`v0.x.y → v1.0.0`) | Breaking API changes, auth-model changes, schema redesigns | `BUMP_TYPE=major bash scripts/update-changelog.sh` |
 
 If a commit changes user-facing files (`src/`, `server/`, `apps/`, `sdks/`) without bumping the changelog, **`bash scripts/check-version-bump.sh` exits 1** and `bash deploy.sh` aborts.
@@ -1145,4 +1145,4 @@ If it exits non-zero, your commit would be rejected by CI. Run `BUMP_TYPE=... ba
 
 ---
 
-*This document lives at `docs/CLI.md` in the repo. If you spot something wrong, edit and PR — it's the single source of truth for the CLI's behavior.*
+*This document lives at `docs/CLI.md` in the repo. If you spot something wrong, edit and PR - it's the single source of truth for the CLI's behavior.*

@@ -1,4 +1,4 @@
-// Event catalog — AI + integration + order + knowledge interfaces.
+// Event catalog - AI + integration + order + knowledge interfaces.
 export interface AiReplyGeneratedPayload { agentId: string; conversationId: string; messageId: string; confidence: number; }
 export interface AiHandoffRequestedPayload { agentId: string; conversationId: string; reason: string; confidence: number; }
 export interface AiStateChangedPayload {

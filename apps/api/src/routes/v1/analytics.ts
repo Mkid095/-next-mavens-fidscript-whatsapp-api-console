@@ -2,8 +2,8 @@ import { Router, type Request, type Response } from 'express';
 import db from '../../database.js';
 
 /**
- * GET /api/v1/analytics/overview — today's metric totals
- * GET /api/v1/analytics?period=day&metric=messages_received — raw rollups
+ * GET /api/v1/analytics/overview - today's metric totals
+ * GET /api/v1/analytics?period=day&metric=messages_received - raw rollups
  *
  * Uses client JWT auth (req.client.id = workspace_id).
  * Mirrors /api/platform/analytics but at the public v1 namespace.

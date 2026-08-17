@@ -15,7 +15,7 @@ export function normalizePhone(input: string | null | undefined): string {
   if (!input) return '';
   const value = String(input).trim();
   if (!value) return '';
-  if (value.includes('@')) return value; // group or full JID — passthrough
+  if (value.includes('@')) return value; // group or full JID - passthrough
   let digits = value.replace(/\D/g, '');
   if (!digits) return '';
   // Kenya local: leading 0 (07xxxxxxxx / 01xxxxxxxx) → 254…

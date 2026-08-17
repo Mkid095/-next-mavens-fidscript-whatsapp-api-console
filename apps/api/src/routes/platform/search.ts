@@ -3,7 +3,7 @@ import { clientJwtAuth } from '../../middleware/auth.js';
 import { sqliteFtsProvider } from '../../modules/platform/search/index.js';
 
 // =============================================================================
-// /api/platform/search — universal search (§8).
+// /api/platform/search - universal search (§8).
 // Delegates to the SearchProvider (SqliteFts now, swappable later).
 // Workspace-scoped + type-filtered.
 // =============================================================================

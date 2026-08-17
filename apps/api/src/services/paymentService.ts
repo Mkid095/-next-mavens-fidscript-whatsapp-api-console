@@ -1,5 +1,5 @@
 /**
- * paymentService — single service for all token purchase flows.
+ * paymentService - single service for all token purchase flows.
  *
  * Covers:
  * - Package-based purchase (initiate → STK push → callback)
@@ -7,7 +7,7 @@
  * - Admin award (manual token grant)
  * - Refund (reverse a prior purchase)
  *
- * All token credits go through this service — no direct token_balance updates elsewhere.
+ * All token credits go through this service - no direct token_balance updates elsewhere.
  */
 import { randomUUID } from 'crypto';
 import db from '../database/index.js';
@@ -97,7 +97,7 @@ export interface InitiateCustomPurchaseParams {
   clientId: string;
   tokens: number;
   phoneNumber: string;
-  /** KES per token — defaults to 0.11 */
+  /** KES per token - defaults to 0.11 */
   rateKshPerToken?: number;
 }
 
@@ -347,6 +347,6 @@ async function _emitTokenUpdate(clientId: string, _delta: number): Promise<void>
       mpesa_receipt: undefined,
     });
   } catch {
-    // SSE service may not be initialized — non-fatal
+    // SSE service may not be initialized - non-fatal
   }
 }

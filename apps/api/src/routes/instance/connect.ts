@@ -7,7 +7,7 @@ import { logAuditAction } from '../../utils/audit.js';
 
 const router = Router();
 
-// the gateway is inside Docker and can't reach public URLs — use internal hostname for webhooks
+// the gateway is inside Docker and can't reach public URLs - use internal hostname for webhooks
 // Docker Compose normalizes service names to underscores in container names (whatsapp-api → fidscript_whatsapp_api)
 const API_BASE_URL = process.env.API_INTERNAL_URL || 'http://fidscript_whatsapp_api:8080';
 

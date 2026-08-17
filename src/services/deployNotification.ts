@@ -1,6 +1,6 @@
 const VERSION_KEY = 'fidscript_version';
 const DISMISS_KEY = 'fidscript_version_dismissed';
-const POLL_INTERVAL = 30_000;        // poll every 30s — quick enough for deploy awareness
+const POLL_INTERVAL = 30_000;        // poll every 30s - quick enough for deploy awareness
 const DISMISS_DURATION = 30 * 60_000; // 30 minutes
 
 export interface VersionInfo {

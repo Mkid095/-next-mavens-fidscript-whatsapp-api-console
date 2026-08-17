@@ -1,6 +1,6 @@
 # System Overview
 
-**Purpose:** WhatsApp Business API platform for Kenyan businesses — multi-instance WhatsApp management, AI chatbot builder, campaign messaging, and token-based billing.
+**Purpose:** WhatsApp Business API platform for Kenyan businesses - multi-instance WhatsApp management, AI chatbot builder, campaign messaging, and token-based billing.
 
 **Version:** 0.9.9
 
@@ -10,13 +10,13 @@
 
 ## Core Domains
 
-- **Instances:** WhatsApp instance lifecycle — create, connect, disconnect, restart, webhook management
-- **Chatbots:** AI chatbot builder — flow editor, LLM connections, tool definitions
-- **Messages:** Real-time inbox — SSE streaming, message thread, media handling
-- **Campaigns:** Broadcast campaigns — scheduled sends, drip flows, audience segmentation
-- **Contacts:** Contact management — import, tags, group sync (Google Contacts)
-- **Payments:** Token billing — M-Pesa STK push, token top-up, usage tracking
-- **API Gateway:** Public REST API — API key auth, rate limiting, webhook delivery
+- **Instances:** WhatsApp instance lifecycle - create, connect, disconnect, restart, webhook management
+- **Chatbots:** AI chatbot builder - flow editor, LLM connections, tool definitions
+- **Messages:** Real-time inbox - SSE streaming, message thread, media handling
+- **Campaigns:** Broadcast campaigns - scheduled sends, drip flows, audience segmentation
+- **Contacts:** Contact management - import, tags, group sync (Google Contacts)
+- **Payments:** Token billing - M-Pesa STK push, token top-up, usage tracking
+- **API Gateway:** Public REST API - API key auth, rate limiting, webhook delivery
 
 ---
 
@@ -50,14 +50,14 @@ M-Pesa callback → tokens credited → client balance updated
 |-------|-----------|---------|
 | Frontend | React 18 + Vite SPA | 18.x / 6.x |
 | Backend | Express.js + sql.js | 4.x / 0.24.x |
-| Database | SQLite (sql.js) | — |
-| WhatsApp Gateway | Evolution API | — |
-| Message Queue | NATS | — |
-| Email | Resend | — |
-| Payments | M-Pesa | — |
-| SDK | Node.js | — |
-| Container | Docker | — |
-| Reverse Proxy | Traefik + nginx | — |
+| Database | SQLite (sql.js) | - |
+| WhatsApp Gateway | Evolution API | - |
+| Message Queue | NATS | - |
+| Email | Resend | - |
+| Payments | M-Pesa | - |
+| SDK | Node.js | - |
+| Container | Docker | - |
+| Reverse Proxy | Traefik + nginx | - |
 
 ---
 
@@ -88,10 +88,10 @@ fidscript-whatsapp/
 
 ## Restricted Areas
 
-- **server/database.ts** — sql.js init, schema, migration runner; changes risk data loss
-- **apps/api/src/database/** — sequential phase migrations (phase3 → phase31); ordering matters
-- **apps/api/src/routes/webhook.ts** — 415 lines; handles all Evolution API webhook events
-- **server/src/utils/authCodes.ts** — magic code generation, hashing, expiry; security-critical
+- **server/database.ts** - sql.js init, schema, migration runner; changes risk data loss
+- **apps/api/src/database/** - sequential phase migrations (phase3 → phase31); ordering matters
+- **apps/api/src/routes/webhook.ts** - 415 lines; handles all Evolution API webhook events
+- **server/src/utils/authCodes.ts** - magic code generation, hashing, expiry; security-critical
 
 ---
 

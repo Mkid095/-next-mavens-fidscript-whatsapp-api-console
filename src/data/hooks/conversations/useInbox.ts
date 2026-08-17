@@ -1,5 +1,5 @@
 // =============================================================================
-// useInbox — the message thread for a selected conversation (§19).
+// useInbox - the message thread for a selected conversation (§19).
 // Loads /api/platform/conversations/:id/messages, refreshes on realtime events.
 // =============================================================================
 

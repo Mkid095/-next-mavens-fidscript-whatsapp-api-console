@@ -97,7 +97,7 @@ export default function AuditLogView() {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-forest-deep">Audit Logs</h1>
           <p className="text-xs text-graphite mt-0.5">
-            All platform actions — who did what, from where, on what device.
+            All platform actions - who did what, from where, on what device.
           </p>
         </div>
         <button

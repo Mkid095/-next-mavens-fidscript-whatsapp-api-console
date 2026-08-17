@@ -52,10 +52,10 @@ export default function InstanceRow({ inst, onUpdateStatus, onDeleteInstance, on
         </div>
       </td>
       <td className="px-5 py-4">
-        <span className="text-[#525345]">{inst.client_name || '—'}</span>
+        <span className="text-[#525345]">{inst.client_name || '-'}</span>
       </td>
       <td className="px-5 py-4">
-        <span className="font-mono text-[#525345]">{inst.phone_number || '—'}</span>
+        <span className="font-mono text-[#525345]">{inst.phone_number || '-'}</span>
       </td>
       <td className="px-5 py-4">
         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(inst.status)}`}>

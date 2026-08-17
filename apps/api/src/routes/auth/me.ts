@@ -11,7 +11,7 @@ interface ClientRow {
 }
 
 /**
- * GET /api/auth/me — return the currently signed-in admin's profile.
+ * GET /api/auth/me - return the currently signed-in admin's profile.
  *
  * Used by App.tsx on page load to restore the session from localStorage
  * (`fidscript_admin_token`). Without this endpoint, every page refresh

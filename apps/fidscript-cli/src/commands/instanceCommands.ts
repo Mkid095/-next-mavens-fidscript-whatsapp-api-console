@@ -1,5 +1,5 @@
 /**
- * instanceCommands.ts — WhatsApp instance lifecycle commands
+ * instanceCommands.ts - WhatsApp instance lifecycle commands
  */
 import type { Command } from 'commander';
 

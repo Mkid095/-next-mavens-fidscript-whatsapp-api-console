@@ -1,5 +1,5 @@
 /**
- * data-source/list.ts — list data sources for the workspace.
+ * data-source/list.ts - list data sources for the workspace.
  * Auth: JWT. GET /api/platform/data-sources
  *
  * Shows: name, type, is_builtin, tool count.

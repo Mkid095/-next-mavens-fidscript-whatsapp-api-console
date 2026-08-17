@@ -1,5 +1,5 @@
 /**
- * api.ts — `fidscript api call <METHOD> <PATH>`
+ * api.ts - `fidscript api call <METHOD> <PATH>`
  *
  * Generic escape hatch that lets the CLI reach ANY endpoint the API exposes.
  * Useful for endpoints we haven't wrapped as first-class commands yet
@@ -20,8 +20,8 @@
  *   fidscript api DELETE /api/instance/delete/my-bot --confirm --auth jwt
  *
  * Path defaults to API root. Authentication:
- *   - X-API-Key (default for /api/v1/*) — used unless --auth=jwt is given
- *   - Bearer JWT (default for /api/instance/*, /api/platform/*, /api/sse/*) — used if --auth=jwt
+ *   - X-API-Key (default for /api/v1/*) - used unless --auth=jwt is given
+ *   - Bearer JWT (default for /api/instance/*, /api/platform/*, /api/sse/*) - used if --auth=jwt
  *
  * Body (-d / --data) is JSON. Pass @file to load from disk. GET/DELETE ignore body.
  * For raw text bodies, use --raw '<text>'.
@@ -53,7 +53,7 @@ export interface ApiCallOpts {
   data?: string;
   raw?: boolean;
   auth?: 'apikey' | 'jwt';
-  /** For DELETE without body — pass --confirm to auto-acknowledge the destructive intent. */
+  /** For DELETE without body - pass --confirm to auto-acknowledge the destructive intent. */
   confirm?: boolean;
 }
 

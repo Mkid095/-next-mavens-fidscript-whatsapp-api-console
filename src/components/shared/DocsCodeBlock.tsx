@@ -1,5 +1,5 @@
 /**
- * DocsCodeBlock.tsx — shared dark-mode code snippet block.
+ * DocsCodeBlock.tsx - shared dark-mode code snippet block.
  *
  * Renders a header bar (language label + CopyButton) and a pre-formatted
  * <pre> body. Used by DocsPage, CliInstallSection, and any dark-themed

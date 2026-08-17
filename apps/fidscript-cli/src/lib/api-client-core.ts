@@ -1,5 +1,5 @@
 /**
- * api-client-core.ts — ApiClient class (transport layer)
+ * api-client-core.ts - ApiClient class (transport layer)
  */
 import { loadCredentials, saveCredentials, DEFAULT_BASE_URL, type Credentials } from './credentials.js';
 import { FidscriptError, parseApiError } from './errors.js';

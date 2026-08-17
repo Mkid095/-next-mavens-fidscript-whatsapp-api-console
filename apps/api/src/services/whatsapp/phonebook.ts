@@ -1,9 +1,9 @@
 /**
- * WhatsApp phonebook sync — pulls the account's contact list from the gateway
+ * WhatsApp phonebook sync - pulls the account's contact list from the gateway
  * and upserts it into the main `contacts` table with the instance_id flag.
  *
  * Rules:
- *   - Manual contacts (instance_id NULL) are authoritative — never overwritten.
+ *   - Manual contacts (instance_id NULL) are authoritative - never overwritten.
  *   - Synced contacts (instance_id set) are deleted on disconnect / on next
  *     sync if they no longer appear in the phonebook.
  *   - The synced name is the WhatsApp pushName (or name/verifiedName fallback),
@@ -84,7 +84,7 @@ export async function syncPhonebookForInstance(
     const item = rec(entry);
     if (!item) continue;
     const { whatsappName, phone } = readNameAndPhone(item);
-    // Only skip if no phone — we save ALL contacts even without a pushName
+    // Only skip if no phone - we save ALL contacts even without a pushName
     if (!phone) continue;
     const normalized = normalizePhone(phone);
     if (!normalized) continue;
@@ -94,7 +94,7 @@ export async function syncPhonebookForInstance(
     try {
       if (existing) {
         if (existing.instance_id === null) {
-          // Manual contact wins — drop any stale synced duplicate.
+          // Manual contact wins - drop any stale synced duplicate.
           deleteSyncedDup.run(clientId, normalized);
         } else {
           // Update whatsapp_name only when not null; keep existing WhatsApp name

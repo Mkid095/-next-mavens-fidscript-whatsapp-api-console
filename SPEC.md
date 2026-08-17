@@ -1,14 +1,14 @@
-# FIDScript WhatsApp API — Vision & Architecture
+# FIDScript WhatsApp API - Vision & Architecture
 
-> **Living Document** — This file serves as the single source of truth for the FIDScript WhatsApp API platform developed by **Next Mavens**. All implementation decisions, component designs, and feature additions should reference this document.
+> **Living Document** - This file serves as the single source of truth for the FIDScript WhatsApp API platform developed by **Next Mavens**. All implementation decisions, component designs, and feature additions should reference this document.
 
 ---
 
 ## 1. What This Platform Is
 
-FIDScript WhatsApp API is a multi-tenant SaaS platform developed by Next Mavens that lets businesses and developers send and receive WhatsApp messages programmatically via a REST API. Businesses (clients) register on the platform, receive an API key, create WhatsApp instances linked to their account, connect those instances by scanning a QR code, and then send messages through the platform's API — with pricing measured per token.
+FIDScript WhatsApp API is a multi-tenant SaaS platform developed by Next Mavens that lets businesses and developers send and receive WhatsApp messages programmatically via a REST API. Businesses (clients) register on the platform, receive an API key, create WhatsApp instances linked to their account, connect those instances by scanning a QR code, and then send messages through the platform's API - with pricing measured per token.
 
-**Think of it as Twilio for WhatsApp in Kenya/East Africa:** a managed infrastructure layer that abstracts away the complexity of maintaining a live WhatsApp session (Baileys protocol), while giving clients a clean HTTP API to integrate into their own applications — CRMs, ERPs, marketing tools, notification systems, customer support bots.
+**Think of it as Twilio for WhatsApp in Kenya/East Africa:** a managed infrastructure layer that abstracts away the complexity of maintaining a live WhatsApp session (Baileys protocol), while giving clients a clean HTTP API to integrate into their own applications - CRMs, ERPs, marketing tools, notification systems, customer support bots.
 
 ---
 
@@ -45,9 +45,9 @@ A separate interface given to each client. They can:
 
 ### 3.1 Instances
 
-An **Instance** is a single WhatsApp session — one phone number linked to one device. It is the fundamental billing and operational unit. Each instance belongs to one client, has its own connection state (connected/disconnected/connecting), and exposes its own set of API endpoints.
+An **Instance** is a single WhatsApp session - one phone number linked to one device. It is the fundamental billing and operational unit. Each instance belongs to one client, has its own connection state (connected/disconnected/connecting), and exposes its own set of API endpoints.
 
-> **Important:** An instance is not a phone — it is a virtual WhatsApp line managed through the Baileys protocol. The admin creates it, the client's business scans a QR code to link their actual WhatsApp phone, and from that point the instance is live and can send/receive messages via API.
+> **Important:** An instance is not a phone - it is a virtual WhatsApp line managed through the Baileys protocol. The admin creates it, the client's business scans a QR code to link their actual WhatsApp phone, and from that point the instance is live and can send/receive messages via API.
 
 ### 3.2 Clients
 
@@ -72,13 +72,13 @@ Plans define what a client can do and how much they pay. Example fields:
 
 ### 3.4 Token System
 
-**Token-based pricing** — Simple, predictable, memorable.
+**Token-based pricing** - Simple, predictable, memorable.
 
 #### Token Packages (Buy Credits)
 
 | Package | Price | Tokens | Bonus |
 |---------|-------|--------|-------|
-| Starter | KSh 100 | 1,000 | — |
+| Starter | KSh 100 | 1,000 | - |
 | Growth | KSh 900 | 10,000 | +1,000 (10% bonus) |
 | Scale | KSh 4,000 | 50,000 | +10,000 (20% bonus) |
 
@@ -110,7 +110,7 @@ Plans define what a client can do and how much they pay. Example fields:
 
 ---
 
-## 4. Payment Integration — Pay Hero
+## 4. Payment Integration - Pay Hero
 
 ### 4.1 Overview
 

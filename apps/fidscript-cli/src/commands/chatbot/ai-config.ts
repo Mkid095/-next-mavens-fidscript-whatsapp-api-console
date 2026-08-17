@@ -1,5 +1,5 @@
 /**
- * chatbot/ai-config.ts — fully customize a chatbot's AI behavior.
+ * chatbot/ai-config.ts - fully customize a chatbot's AI behavior.
  * Auth: JWT. PUT /api/platform/chatbots/:id/ai-config
  *
  * Lets you wire in your own LLM (via --llm-connection) and tune generation:

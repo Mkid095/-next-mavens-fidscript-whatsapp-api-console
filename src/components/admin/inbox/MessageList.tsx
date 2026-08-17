@@ -56,7 +56,7 @@ export default function MessageList({ messages, selectedMsg, onSelect }: Message
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] text-stone-400">{msg.instance_name || '—'}</span>
+                <span className="text-[9px] text-stone-400">{msg.instance_name || '-'}</span>
               </div>
             </div>
 

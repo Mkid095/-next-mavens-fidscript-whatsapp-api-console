@@ -1,5 +1,5 @@
 /**
- * Phase 32: Billing Control Plane — token_action_costs table
+ * Phase 32: Billing Control Plane - token_action_costs table
  *
  * Adds the configurable per-action token cost table that replaces
  * hardcoded values in tokenCosts.ts, billingService.ts, and billing.ts.
@@ -25,7 +25,7 @@ export function runPhase32Migrations(db: Database): void {
     )
   `);
 
-  // ─── Seed default costs (idempotent — only inserts when action is new) ───────
+  // ─── Seed default costs (idempotent - only inserts when action is new) ───────
   type CostRow = [id: string, action: string, display: string, cost: number, category: string, desc: string];
 
   const defaults: CostRow[] = [

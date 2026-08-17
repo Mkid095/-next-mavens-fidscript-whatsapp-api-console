@@ -58,7 +58,7 @@ export default function DevLogsTab() {
                   <td className="px-3 py-1.5 font-mono font-bold">{e.method}</td>
                   <td className="px-3 py-1.5 font-mono text-forest-deep truncate max-w-xs">{e.endpoint}</td>
                   <td className="px-3 py-1.5"><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${colorFor(e.response_status)}`}>{e.response_status}</span></td>
-                  <td className="px-3 py-1.5 text-right font-mono">{e.latency_ms != null ? `${e.latency_ms}ms` : '—'}</td>
+                  <td className="px-3 py-1.5 text-right font-mono">{e.latency_ms != null ? `${e.latency_ms}ms` : '-'}</td>
                 </tr>
               ))}
             </tbody>

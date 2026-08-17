@@ -3,7 +3,7 @@ import { upsertMetric, ensureMetricRollupsTable, type MetricType, type Period } 
 import type { DomainEventPayload } from '../events/index.js';
 
 // =============================================================================
-// AnalyticsProjector — one per domain, registered at boot.
+// AnalyticsProjector - one per domain, registered at boot.
 // Metric catalog: messages_received/sent, conversations_created/resolved,
 // sla_breached, campaign_sent/delivered/failed, ai_replies_generated,
 // ai_handoffs_requested, automation_flows_started/completed,

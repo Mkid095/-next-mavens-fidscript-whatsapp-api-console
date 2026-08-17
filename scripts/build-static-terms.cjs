@@ -94,8 +94,8 @@ const organizationSchema = {
 const webPageSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'Terms & Conditions — FIDScript',
-  description: 'FIDScript Terms & Conditions — API usage, token billing, acceptable use policy, third-party integrations including Google OAuth, and governing law.',
+  name: 'Terms & Conditions - FIDScript',
+  description: 'FIDScript Terms & Conditions - API usage, token billing, acceptable use policy, third-party integrations including Google OAuth, and governing law.',
   url: `${BASE_URL}/terms`,
   isPartOf: { '@id': `${BASE_URL}/#website` },
   about: { '@id': `${BASE_URL}/#organization` },
@@ -116,20 +116,20 @@ const html = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#0c0b06" />
 <meta name="color-scheme" content="dark" />
-<title>Terms & Conditions — FIDScript by Next Mavens</title>
-<meta name="description" content="FIDScript Terms & Conditions — API usage, token billing, acceptable use policy, third-party integrations including Google OAuth, and governing law for Kenyan businesses." />
+<title>Terms & Conditions - FIDScript by Next Mavens</title>
+<meta name="description" content="FIDScript Terms & Conditions - API usage, token billing, acceptable use policy, third-party integrations including Google OAuth, and governing law for Kenyan businesses." />
 <link rel="canonical" href="${BASE_URL}/terms" />
 <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="shortcut icon" href="/favicon.ico" />
-<meta property="og:title" content="Terms & Conditions — FIDScript by Next Mavens" />
+<meta property="og:title" content="Terms & Conditions - FIDScript by Next Mavens" />
 <meta property="og:description" content="API usage, token billing, acceptable use policy, third-party integrations including Google OAuth, and governing law." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="${BASE_URL}/terms" />
 <meta property="og:site_name" content="FIDScript WhatsApp API" />
 <meta property="og:locale" content="en_KE" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Terms & Conditions — FIDScript by Next Mavens" />
+<meta name="twitter:title" content="Terms & Conditions - FIDScript by Next Mavens" />
 <meta name="twitter:description" content="API usage, token billing, acceptable use policy, third-party integrations including Google OAuth, and governing law." />
 <script type="application/ld+json">${JSON.stringify(organizationSchema)}</script>
 <script type="application/ld+json">${JSON.stringify(webPageSchema)}</script>

@@ -245,7 +245,7 @@ export default function ApiKeysSection({ clientToken, clientName }: ApiKeysSecti
                 <p className="text-xs font-bold text-[#a8a99e]">Keep your API keys secret</p>
                 <p className="text-[11px] text-[#6e684a] leading-relaxed">
                   Keys are only shown once at creation. Copy and store them securely.
-                  Use server-to-server communication — never expose in client-side code.
+                  Use server-to-server communication - never expose in client-side code.
                 </p>
               </div>
             </div>

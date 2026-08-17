@@ -1,5 +1,5 @@
 /**
- * dataSourceCommands.ts — Data source management commands
+ * dataSourceCommands.ts - Data source management commands
  */
 import type { Command } from 'commander';
 

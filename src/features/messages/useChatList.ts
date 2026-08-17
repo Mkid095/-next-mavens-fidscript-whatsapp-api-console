@@ -28,7 +28,7 @@ export function useChatList(
     staleTime: 60_000,
   });
 
-  // Subscribe to SSE real-time events — update cache optimistically + invalidate
+  // Subscribe to SSE real-time events - update cache optimistically + invalidate
   // in background so the cache stays accurate without blocking the UI.
   useEffect(() => {
     if (!instanceName) return;
@@ -36,7 +36,7 @@ export function useChatList(
     const offReceived = dataEvents.on('message.received', (e) => {
       const payload = e.payload as {chatId?: string};
       if (!payload.chatId) return;
-      // Don't optimistically bump the unread counter for the chat we have open —
+      // Don't optimistically bump the unread counter for the chat we have open -
       // the thread handles incoming messages directly.
       if (payload.chatId === activeJid) return;
       optimisticallyIncrementUnread(instanceName, payload.chatId, filter);
@@ -48,7 +48,7 @@ export function useChatList(
       optimisticallyClearUnread(instanceName, chatId, filter);
     });
 
-    // Wildcard: something significant changed — background refetch.
+    // Wildcard: something significant changed - background refetch.
     const offWild = dataEvents.on('*', () => {
       invalidateChatList(instanceName, filter);
     });

@@ -15,7 +15,7 @@ export default function QuickAlertBar({ activeClusters, userEmail, onNavigate }:
           <Signal className="w-3.5 h-3.5" />
         </span>
         <span>
-          FIDScript admin terminal —{' '}
+          FIDScript admin terminal -{' '}
           <code className="font-mono text-stone-100 bg-[#181711] px-1.5 py-0.5 rounded text-[10px]">{userEmail}</code>
         </span>
       </div>

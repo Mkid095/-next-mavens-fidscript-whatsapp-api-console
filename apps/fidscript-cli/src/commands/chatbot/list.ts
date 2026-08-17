@@ -1,5 +1,5 @@
 /**
- * chatbot/list.ts — list chatbots for the logged-in workspace.
+ * chatbot/list.ts - list chatbots for the logged-in workspace.
  * Auth: JWT. GET /api/platform/chatbots
  */
 import pc from 'picocolors';

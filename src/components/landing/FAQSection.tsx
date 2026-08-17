@@ -16,7 +16,7 @@ const QA_LIST: QA[] = [
         </p>
         <p className="mt-3">
           Bulk campaigns are throttled to 10 MPS normally and ramp to 30 MPS when the queue is
-          5,000 — still a fraction of WhatsApp is ~80 MPS ceiling. We also enforce your tier
+          5,000 - still a fraction of WhatsApp is ~80 MPS ceiling. We also enforce your tier
           volume limit (250 unique customers/day on Tier 0): a campaign that would exceed it is paused, not blasted.
         </p>
         <p className="mt-3">
@@ -42,7 +42,7 @@ const QA_LIST: QA[] = [
     a: (
       <p>
         WhatsApp caps how many new customers a business can start a conversation with
-        in a rolling 24-hour window — 250 on Tier 0, scaling up to unlimited at Tier 4 as
+        in a rolling 24-hour window - 250 on Tier 0, scaling up to unlimited at Tier 4 as
         account quality improves. We count every distinct customer you send an outgoing
         message to and surface "47 / 250 new contacts today" right in the dashboard.
       </p>
@@ -53,7 +53,7 @@ const QA_LIST: QA[] = [
     a: (
       <p>
         The webhook fires a background warm-up that runs one paced chat-list fetch through the same upstream limiter (3/sec). No flood
-        of fetches the moment a user scans the QR — which is the single most common cause of new-container blocks.
+        of fetches the moment a user scans the QR - which is the single most common cause of new-container blocks.
       </p>
     ),
   },
@@ -61,7 +61,7 @@ const QA_LIST: QA[] = [
     q: 'Do contacts sync from WhatsApp?',
     a: (
       <p>
-        Yes — one click on Sync contacts pulls your WhatsApp phonebook and stores it under your client. Manual contacts always win; synced
+        Yes - one click on Sync contacts pulls your WhatsApp phonebook and stores it under your client. Manual contacts always win; synced
         ones (flagged with their instance) are deleted automatically when that container disconnects.
       </p>
     ),

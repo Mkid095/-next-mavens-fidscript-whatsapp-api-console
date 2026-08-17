@@ -91,7 +91,7 @@ export default function LoginView({
                 <p className="mt-1 text-sm text-[#525252]">
                   {activeMode === 'login'
                     ? 'Sign in to access your dashboard'
-                    : 'Get 500 free welcome tokens — no payment required'}
+                    : 'Get 500 free welcome tokens - no payment required'}
                 </p>
               </div>
 

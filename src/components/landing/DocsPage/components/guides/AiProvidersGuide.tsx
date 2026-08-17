@@ -16,7 +16,7 @@ export function AiProvidersGuide() {
       <Callout type="info">
         <p>
           <strong className="text-[#1a1a1a]">Bring Your Own Model (BYOM).</strong> You provide
-          the API key — FIDScript encrypts it with AES-256-GCM and never stores plaintext
+          the API key - FIDScript encrypts it with AES-256-GCM and never stores plaintext
           keys. Works at the workspace level so your team shares connections safely.
         </p>
       </Callout>
@@ -62,7 +62,7 @@ export function AiProvidersGuide() {
           },
           {
             name: 'Custom API',
-            desc: 'Any OpenAI-compatible endpoint — self-hosted models, proxies, etc.',
+            desc: 'Any OpenAI-compatible endpoint - self-hosted models, proxies, etc.',
             badge: 'Flexible',
             badgeColor: 'yellow',
           },
@@ -102,7 +102,7 @@ export function AiProvidersGuide() {
       <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Key Management</h2>
       <p className="text-xs text-[#525252] mb-4">
         API keys are encrypted server-side using AES-256-GCM before storage. Each key has a
-        unique IV and auth tag — key rotation does not require re-encryption of all data.
+        unique IV and auth tag - key rotation does not require re-encryption of all data.
       </p>
       <div className="bg-[#f8f8f8] border border-[#e5e5e5] rounded-xl p-4 text-xs text-[#525252] space-y-2">
         <div className="flex items-center gap-2">

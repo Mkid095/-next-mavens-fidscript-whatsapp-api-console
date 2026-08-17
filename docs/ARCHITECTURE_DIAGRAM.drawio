@@ -7,7 +7,7 @@
         <mxCell id="1" parent="0" />
 
         <!-- TITLE -->
-        <mxCell id="T1" value="FIDScript WAAP — Runtime Architecture" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;" vertex="1" parent="1">
+        <mxCell id="T1" value="FIDScript WAAP - Runtime Architecture" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;" vertex="1" parent="1">
           <mxGeometry x="1600" y="10" width="1600" height="40" as="geometry" />
         </mxCell>
 
@@ -209,7 +209,7 @@
         </mxCell>
 
         <!-- PLATFORM KERNEL BOUNDARY (dashed) -->
-        <mxCell id="KERNEL_BOX" value="PLATFORM KERNEL (Proposed)&#xa;— Identity · Entities · Ledger · Audit · Events" style="swimlane;startSize=40;fillColor=none;strokeColor=#1a1a2e;strokeWidth=3;dashed=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;" vertex="1" parent="1">
+        <mxCell id="KERNEL_BOX" value="PLATFORM KERNEL (Proposed)&#xa;- Identity · Entities · Ledger · Audit · Events" style="swimlane;startSize=40;fillColor=none;strokeColor=#1a1a2e;strokeWidth=3;dashed=1;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1a1a2e;" vertex="1" parent="1">
           <mxGeometry x="1740" y="340" width="1080" height="120" as="geometry" />
         </mxCell>
         <mxCell id="K_ID" value="Identity&#xa;Workspace&#xa;Client&#xa;User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=center;" vertex="1" parent="1">

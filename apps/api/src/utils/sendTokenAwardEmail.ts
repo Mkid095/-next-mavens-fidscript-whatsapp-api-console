@@ -1,6 +1,6 @@
 /**
  * Send token award notification email via the centralized email service.
- * Non-blocking: callers don't need to change — the service logs success /
+ * Non-blocking: callers don't need to change - the service logs success /
  * failure and returns the result.
  */
 import { emailService } from '../services/email/index.js';

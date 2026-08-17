@@ -1,5 +1,5 @@
 /**
- * api-client-output.ts — CLI output helpers (JSON/YAML/error formatting)
+ * api-client-output.ts - CLI output helpers (JSON/YAML/error formatting)
  * Extracted from outputHelpers.ts.
  */
 import { FidscriptError } from './errors.js';

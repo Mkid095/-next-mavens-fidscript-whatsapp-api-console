@@ -92,7 +92,7 @@ export default function Step1Credentials({
                 );
               })}
             </div>
-            <p className="text-[9px] text-[#5a554a] mt-1">Select a key above — the full secret is fetched server-side automatically.</p>
+            <p className="text-[9px] text-[#5a554a] mt-1">Select a key above - the full secret is fetched server-side automatically.</p>
           </div>
         )}
 
@@ -116,7 +116,7 @@ export default function Step1Credentials({
           )}
           {matchedPasteKey && (
             <p className="text-[9px] text-green-400 mt-1 flex items-center gap-1">
-              <Check className="w-3 h-3" /> Matches &quot;{matchedPasteKey.name}&quot; — no need to paste, just select it above
+              <Check className="w-3 h-3" /> Matches &quot;{matchedPasteKey.name}&quot; - no need to paste, just select it above
             </p>
           )}
           {isValidKey && !matchedPasteKey && (
@@ -136,7 +136,7 @@ export default function Step1Credentials({
             onChange={e => setSelectedInstance(e.target.value)}
             className="w-full px-3 py-2.5 border border-[#2d2813] bg-[#1a1915] rounded-xl focus:outline-none focus:border-[#eab308] text-xs text-[#a8a99e]"
           >
-            <option value="">— Leave unset —</option>
+            <option value="">- Leave unset -</option>
             {instances.map(i => (
               <option key={i.id} value={i.name}>
                 {i.display_name || i.name} {i.phone_number ? `· ${i.phone_number}` : ''} [{i.status}]
@@ -156,7 +156,7 @@ export default function Step1Credentials({
           <AlertCircle className="w-4 h-4 text-[#eab308] mt-0.5 shrink-0" />
           <p className="text-[10px] text-[#a8a99e] leading-relaxed">
             {activeKeys.length > 0
-              ? 'Select a key above or paste your secret. The key will be fetched server-side — never stored in the prompt itself.'
+              ? 'Select a key above or paste your secret. The key will be fetched server-side - never stored in the prompt itself.'
               : 'Paste the API key you saved when it was created. Keys are only shown once.'}
             The container name will be embedded in the generated prompt.
           </p>

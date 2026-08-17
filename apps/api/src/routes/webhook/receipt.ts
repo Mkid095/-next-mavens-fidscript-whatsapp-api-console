@@ -5,7 +5,7 @@ import { resolveConversation } from '../../kernel/entities/index.js';
 import { dispatchMessageRead, dispatchMessageDelivered } from '../../modules/platform/events/index.js';
 import { buildWsCtx, chatIdFromJid, extractPhoneFromJid, type WebhookInstance } from './shared.js';
 
-// messages.receipt — recipient read/delivered our message (blue ticks).
+// messages.receipt - recipient read/delivered our message (blue ticks).
 export async function handleMessagesReceipt(
   instance: WebhookInstance,
   data: Record<string, unknown> | undefined,
@@ -37,7 +37,7 @@ export async function handleMessagesReceipt(
   res.status(200).json({ success: true, handled: true });
 }
 
-// presence.update — typing indicator (ephemeral, SSE-only).
+// presence.update - typing indicator (ephemeral, SSE-only).
 export function handlePresenceUpdate(
   instance: WebhookInstance,
   data: Record<string, unknown> | undefined,

@@ -3,7 +3,7 @@ import { Plus, Trash2, Workflow } from 'lucide-react';
 import { useFlows } from '../../data/hooks/automation/useFlows.js';
 import AutomationEditor from './AutomationEditor.js';
 
-// Phase 4 — flow list (§11). A flow is a graph of trigger/condition/action
+// Phase 4 - flow list (§11). A flow is a graph of trigger/condition/action
 // nodes. The editor expands inline; the DAG is stored canonically on the
 // server (automation_edges) and this list just shows summary.
 export default function AutomationList() {

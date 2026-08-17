@@ -1,5 +1,5 @@
 /**
- * llm/test.ts — test an LLM connection by sending a "Hi" prompt.
+ * llm/test.ts - test an LLM connection by sending a "Hi" prompt.
  * Auth: JWT. POST /api/platform/llm-connections/:id/test
  */
 import {

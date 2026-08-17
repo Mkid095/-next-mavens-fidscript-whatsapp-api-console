@@ -1,7 +1,7 @@
 import db from '../../../database.js';
 
 // =============================================================================
-// SearchProvider interface — Phase 2: SqliteFtsProvider.
+// SearchProvider interface - Phase 2: SqliteFtsProvider.
 // Reserved: MeilisearchProvider, TypesenseProvider, OpenSearchProvider.
 // Swappable without touching the indexer or query UI.
 // =============================================================================
@@ -31,7 +31,7 @@ export interface SearchProvider {
 }
 
 // =============================================================================
-// SqliteFtsProvider — FTS5 over search_index table
+// SqliteFtsProvider - FTS5 over search_index table
 // Falls back to LIKE scan if FTS5 is unavailable (sql.js build variant).
 // =============================================================================
 
@@ -104,7 +104,7 @@ export const sqliteFtsProvider: SearchProvider = {
         LIMIT ?
       `).all(wsId, `"${q.replace(/"/g, '""')}"`, ...(types ?? []), limit) as Record<string, unknown>[];
     } catch (_) {
-      // FTS5 not available — fall back to LIKE scan
+      // FTS5 not available - fall back to LIKE scan
       rows = db.prepare(`
         SELECT entity_type, entity_id, body, tags, workspace_id
         FROM search_index

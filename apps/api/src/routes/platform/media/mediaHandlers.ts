@@ -6,11 +6,11 @@ import cloudinary from '../../../utils/cloudinary.js';
 import db from '../../../database.js';
 
 // =============================================================================
-// /api/platform/media — Phase 5 Slice B. Workspace-scoped media library (§15.3).
+// /api/platform/media - Phase 5 Slice B. Workspace-scoped media library (§15.3).
 // media_assets was reserved by database/phase5.ts; this route fills it in.
-// Three intake paths: (1) POST { url } — caller already has a public URL
-// (CDN/Cloudinary/etc.); (2) POST { image } data URL — server uploads to
-// Cloudinary; (3) POST { file } as raw binary — server uploads.
+// Three intake paths: (1) POST { url } - caller already has a public URL
+// (CDN/Cloudinary/etc.); (2) POST { image } data URL - server uploads to
+// Cloudinary; (3) POST { file } as raw binary - server uploads.
 // kind is inferred from mime; tags_json is an array of strings.
 // =============================================================================
 
@@ -60,7 +60,7 @@ function serialize(r: MediaRow) {
   };
 }
 
-// GET / — list (workspace-scoped; filterable by kind, tag, q)
+// GET / - list (workspace-scoped; filterable by kind, tag, q)
 router.get('/', (req: Request, res: Response) => {
   try {
     const kind = (req.query.kind as string) || '';
@@ -82,7 +82,7 @@ router.get('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST / — register a media asset. Either { url, name?, mime?, tags? } OR
+// POST / - register a media asset. Either { url, name?, mime?, tags? } OR
 // { image } as a data-URL (uploads to Cloudinary).
 router.post('/', async (req: Request, res: Response) => {
   try {
@@ -136,7 +136,7 @@ router.post('/', async (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// PATCH /:id — update name and/or tags
+// PATCH /:id - update name and/or tags
 router.patch('/:id', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT * FROM media_assets WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req)) as MediaRow | undefined;
@@ -156,7 +156,7 @@ router.patch('/:id', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// DELETE /:id — best-effort Cloudinary cleanup if we have the public_id
+// DELETE /:id - best-effort Cloudinary cleanup if we have the public_id
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT * FROM media_assets WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req)) as MediaRow | undefined;

@@ -1,4 +1,4 @@
-// Data Layer API barrel — the single import surface for all HTTP + types.
+// Data Layer API barrel - the single import surface for all HTTP + types.
 export {
   API_BASE_URL,
   fetchApi,
@@ -50,7 +50,7 @@ export type {
   AuditLogEntry,
   DeveloperLogEntry,
 } from './platform.js';
-// Re-exports for App.tsx — so the top-level shell can drop its services/api import.
+// Re-exports for App.tsx - so the top-level shell can drop its services/api import.
 export {
   authApi,
   adminApi,

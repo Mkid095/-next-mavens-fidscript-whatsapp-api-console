@@ -9,7 +9,7 @@ export default function TermsPage() {
     <div className="min-h-screen bg-[#0c0b06] text-[#cbd3cf] font-suisse-intl antialiased">
       <SeoHead
         title="Terms & Conditions"
-        description="FIDScript Terms & Conditions — API usage, token billing, acceptable use policy, liability, account termination, and governing law for Kenyan businesses."
+        description="FIDScript Terms & Conditions - API usage, token billing, acceptable use policy, liability, account termination, and governing law for Kenyan businesses."
         canonical="/terms"
         schema="terms"
         breadcrumbs={[{ name: 'Terms', url: '/terms' }]}

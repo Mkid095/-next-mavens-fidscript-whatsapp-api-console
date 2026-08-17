@@ -1,5 +1,5 @@
 /**
- * errors.ts — user-friendly error messages for API errors
+ * errors.ts - user-friendly error messages for API errors
  */
 
 export class FidscriptError extends Error {

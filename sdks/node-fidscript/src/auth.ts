@@ -1,5 +1,5 @@
 /**
- * auth.ts — magic-code login (returns API key + JWT).
+ * auth.ts - magic-code login (returns API key + JWT).
  * POST /api/auth/request-code, POST /api/auth/verify-code
  */
 import type { FidscriptClient } from './client.js';

@@ -1,11 +1,11 @@
 import type { ApiEndpoint } from './index';
 
-/** Platform endpoints — auth validation, usage analytics, the OpenAPI spec. */
+/** Platform endpoints - auth validation, usage analytics, the OpenAPI spec. */
 export const platformEndpoints: ApiEndpoint[] = [
   {
     id: 'platform.whoami', version: 'v1', method: 'GET',
     path: '/api/v1/whoami', name: 'Validate Key', category: 'Platform', rateLimit: 'read', auth: 'apikey',
-    desc: 'Confirm an API key is active and resolve the owning client. No side effects — ideal for a connection test.',
+    desc: 'Confirm an API key is active and resolve the owning client. No side effects - ideal for a connection test.',
     pathParams: [],
     bodyFields: [],
     response: { success: true, data: { client: 'Kennedy Mwangi', key_id: 'key_1718...' } },

@@ -1,5 +1,5 @@
 /**
- * conversationUpdateHandlers.ts — assign, transfer, release handlers.
+ * conversationUpdateHandlers.ts - assign, transfer, release handlers.
  */
 import { Request, Response } from 'express';
 import { logAuditAction } from '../../utils/audit.js';

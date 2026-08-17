@@ -1,8 +1,8 @@
-# apps/cli — FIDScript CLI
+# apps/cli - FIDScript CLI
 
 ## Purpose
 
-Developer-facing command-line tool for managing instances, chatbots, and sending messages. Authenticate via magic code, then call the API for all operations. Zero business logic — purely an API client with TTY output.
+Developer-facing command-line tool for managing instances, chatbots, and sending messages. Authenticate via magic code, then call the API for all operations. Zero business logic - purely an API client with TTY output.
 
 ---
 
@@ -49,11 +49,11 @@ fidscript refresh                   # Refresh JWT token
 
 ```
 src/
-├── cli.ts                   # Commander root — global flags, help, version
-├── main.ts                  # Entry point — calls cli.parse()
+├── cli.ts                   # Commander root - global flags, help, version
+├── main.ts                  # Entry point - calls cli.parse()
 ├── version.ts               # Version constant
 ├── lib/
-│   ├── api-client.ts        # HTTP client — auth headers, retries, output modes (316 lines)
+│   ├── api-client.ts        # HTTP client - auth headers, retries, output modes (316 lines)
 │   ├── credentials.ts       # ~/.fidscript/credentials INI read/write
 │   ├── errors.ts            # FidscriptError class
 │   └── render.ts            # JSON/YAML/table output helpers
@@ -61,7 +61,7 @@ src/
     ├── login.ts             # Magic code auth (request + verify)
     ├── logout.ts
     ├── whoami.ts
-    ├── setup.ts             # Onboarding summary (431 lines — needs split)
+    ├── setup.ts             # Onboarding summary (431 lines - needs split)
     ├── init.ts              # First-run orchestrator
     ├── refresh.ts           # JWT refresh
     ├── openapi.ts           # OpenAPI spec export
@@ -69,7 +69,7 @@ src/
     ├── api.ts               # Generic API escape hatch
     ├── instance/            # instance list, create, status, qr, restart, watch, connect, delete
     ├── chatbot/             # chatbot list, create, setup, status, publish, ai-config, tools, delete
-    │   ├── setup.ts        # Interactive wizard (431 lines — needs split)
+    │   ├── setup.ts        # Interactive wizard (431 lines - needs split)
     │   └── steps/          # Wizard sub-steps (extract from setup.ts)
     ├── messages/
     │   └── send.ts          # Send message commands
@@ -101,7 +101,7 @@ On every command, `api-client.ts` reads credentials, attaches `Authorization: Be
 
 **CLI does NOT:**
 - Implement business logic (all calls go to API)
-- Store state locally (stateless — API is the source of truth)
+- Store state locally (stateless - API is the source of truth)
 - Build or deploy chatbots (API does that via publish pipeline)
 - Manage token balances directly (read-only via API)
 

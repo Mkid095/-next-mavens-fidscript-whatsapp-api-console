@@ -1,4 +1,4 @@
-// Event catalog — message + conversation + SLA interfaces.
+// Event catalog - message + conversation + SLA interfaces.
 export interface MessageReceivedPayload {
   conversationId: string;
   customerId: string;

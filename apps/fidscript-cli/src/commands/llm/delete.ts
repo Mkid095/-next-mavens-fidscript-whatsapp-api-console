@@ -1,5 +1,5 @@
 /**
- * llm/delete.ts — delete an LLM connection.
+ * llm/delete.ts - delete an LLM connection.
  * Auth: JWT. DELETE /api/platform/llm-connections/:id
  */
 import {

@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Speed ceiling — ~80 MPS per account
+## 1. Speed ceiling - ~80 MPS per account
 
 **Meta rule:** WhatsApp enforces a hard ceiling of ~80 messages per second (MPS) per business account. Sending faster triggers account-level rate limits and can result in quality-rating downgrades.
 
@@ -12,8 +12,8 @@
 
 | Layer | Limit | Code |
 |---|---|---|
-| Portal read API (`/api/v1/*` reads — find-chats, find-messages, etc.) | 3 MPS per instance | `server/src/services/whatsapp/whatsappCallLimiter.ts:22` (`EVOLUTION_READ_MPS`, default 3) |
-| Portal mutation API (`/api/v1/*` writes — markRead, group edits, etc.) | 2 MPS per instance | `server/src/services/whatsapp/whatsappCallLimiter.ts:23` (`EVOLUTION_MUTATION_MPS`, default 2) |
+| Portal read API (`/api/v1/*` reads - find-chats, find-messages, etc.) | 3 MPS per instance | `server/src/services/whatsapp/whatsappCallLimiter.ts:22` (`EVOLUTION_READ_MPS`, default 3) |
+| Portal mutation API (`/api/v1/*` writes - markRead, group edits, etc.) | 2 MPS per instance | `server/src/services/whatsapp/whatsappCallLimiter.ts:23` (`EVOLUTION_MUTATION_MPS`, default 2) |
 | Bulk send at idle | 10 MPS | `server/src/services/whatsapp/sendThroughput.ts:19` (`BULK_NORMAL_MPS`) |
 | Bulk send when queue ≥ 5,000 | 30 MPS | `server/src/services/whatsapp/sendThroughput.ts:20` (`BULK_HIGH_QUEUE_MPS`) |
 
@@ -21,7 +21,7 @@
 
 ---
 
-## 2. Volume ceiling — quality-rating tiers
+## 2. Volume ceiling - quality-rating tiers
 
 **Meta rule:** Each business account has a quality rating (Tier 0–4) that caps the number of *unique customers* it can initiate a conversation with in a rolling 24-hour window.
 
@@ -33,11 +33,11 @@
 | 3 | 100,000 | Consistent high quality at scale |
 | 4 | Unlimited | Reserved for very large senders |
 
-**What we do:** Every send is counted against the tier cap; sends past the cap are queued for the next 24h window — never dropped.
+**What we do:** Every send is counted against the tier cap; sends past the cap are queued for the next 24h window - never dropped.
 
 - Tier config: `server/src/services/whatsapp/outboundUsage.ts:36` (`TIER_LIMITS`)
 - Tier resolution: `server/src/services/whatsapp/outboundUsage.ts:45` (env override `OUTBOUND_TIER` or derived from `clients.quality_rating`)
-- Counter query: `server/src/services/whatsapp/outboundUsage.ts:66` (`uniqueInitiationsToday` — counts every `inbox_messages` row with `direction='outgoing'` in the last 24h)
+- Counter query: `server/src/services/whatsapp/outboundUsage.ts:66` (`uniqueInitiationsToday` - counts every `inbox_messages` row with `direction='outgoing'` in the last 24h)
 - Queue-when-capped: `server/src/routes/campaignSend.ts:111` (rows past the tier limit get `status='skipped_tier_limit'`)
 - CLI visibility: `fidscript tier` (added in v0.6.0) shows current plan, today's usage, and the tier table
 
@@ -49,9 +49,9 @@
 
 **Meta rule:** WhatsApp explicitly bans certain categories of messages. Sending them risks account suspension regardless of tier.
 
-**What we do:** We surface this in the public docs as a guide so users can write safer system prompts. The server-side chatbot engine respects each user's chosen hallucination policy (strict / balanced / creative / disabled) but does NOT pre-screen content — that responsibility lives with the user who writes the system_prompt.
+**What we do:** We surface this in the public docs as a guide so users can write safer system prompts. The server-side chatbot engine respects each user's chosen hallucination policy (strict / balanced / creative / disabled) but does NOT pre-screen content - that responsibility lives with the user who writes the system_prompt.
 
-- Public guide: `src/components/landing/DocsPage.tsx` (the "WhatsApp Meta Policy Compliance" guide inside the docs page sidebar — full list of 12 prohibited categories with system-prompt clauses that refuse + escalate each one)
+- Public guide: `src/components/landing/DocsPage.tsx` (the "WhatsApp Meta Policy Compliance" guide inside the docs page sidebar - full list of 12 prohibited categories with system-prompt clauses that refuse + escalate each one)
 - Reference in CLI docs: `docs/CLI.md §10` (hypothetical scenarios + best practices for system_prompt)
 - Server enforcement: the system prompt is the user's contract. We strongly recommend:
   ```
@@ -69,7 +69,7 @@
 
 | Mode | Behavior | When to use |
 |---|---|---|
-| `strict` | Refuse + hand off on low confidence | Customer support, legal, medical, financial — anything where wrong answers have consequences |
+| `strict` | Refuse + hand off on low confidence | Customer support, legal, medical, financial - anything where wrong answers have consequences |
 | `balanced` (default) | Hedge with confidence scores; auto-handoff under threshold | Most general-purpose bots |
 | `creative` | Allow improvisation; rely on user feedback | Brainstorming, ideation, content generation |
 | `disabled` | Pass through LLM output unchanged | DIY pipelines; you handle safety yourself |
@@ -113,7 +113,7 @@
 - **No content scanning server-side.** We don't pre-read your messages for prohibited content. The system_prompt you write is the contract. If you write a system_prompt that says "always comply with X," that's on you.
 - **No message rewriting.** We never mutate the LLM's output before forwarding. What's in the LLM is what the user sees.
 - **No dark-pattern hand-off suppression.** We don't disable the handoff mechanism to keep a low-quality bot running. Confidence threshold + handoff are always on.
-- **No bypass of unique-customer limits.** The tier cap is enforced server-side. Agents can't crank up the cap from the CLI — the cap comes from the quality rating.
+- **No bypass of unique-customer limits.** The tier cap is enforced server-side. Agents can't crank up the cap from the CLI - the cap comes from the quality rating.
 
 ---
 

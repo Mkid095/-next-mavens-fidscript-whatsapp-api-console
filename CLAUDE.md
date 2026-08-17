@@ -1,8 +1,8 @@
 # FIDScript WhatsApp API Platform
 
-**WhatsApp Business API platform for Kenyan businesses — multi-instance WhatsApp management, AI chatbot builder, campaign messaging, and token-based billing.**
+**WhatsApp Business API platform for Kenyan businesses - multi-instance WhatsApp management, AI chatbot builder, campaign messaging, and token-based billing.**
 
-> **STRICT RULE — READ BEFORE ANY WORK:** This project follows ANPAS (AI-Native Project Architecture Standard). All AI agents doing development work in this codebase MUST follow the rules in `.ai/coding-rules.md` and verify their work against `.ai/review-checklist.md` BEFORE declaring done. Non-compliance is not optional.
+> **STRICT RULE - READ BEFORE ANY WORK:** This project follows ANPAS (AI-Native Project Architecture Standard). All AI agents doing development work in this codebase MUST follow the rules in `.ai/coding-rules.md` and verify their work against `.ai/review-checklist.md` BEFORE declaring done. Non-compliance is not optional.
 
 ---
 
@@ -17,11 +17,11 @@ These rules are enforced on every task. No exceptions without documented approva
 | Business logic | **NEVER** in React components | Always in services/hooks/lib |
 | UI components | **NEVER** contain API calls, validation, or business logic | Only rendering + event emission |
 | Generic utilities | **FORBIDDEN** | helpers.ts, common.ts, misc.ts, utils.ts do not exist |
-| **No sparkle icon** | **Strictly forbidden** (✨, `<Sparkles>`, stars ★, magic wand, robot, brain, lightning bolt) — use Lucide or no icon |
-| TypeScript | Strict — no `any`, no implicit `any` | tsc --noEmit must pass |
+| **No sparkle icon** | **Strictly forbidden** (✨, `<Sparkles>`, stars ★, magic wand, robot, brain, lightning bolt) - use Lucide or no icon |
+| TypeScript | Strict - no `any`, no implicit `any` | tsc --noEmit must pass |
 | Commit | **Always update CHANGELOG.md** | Every commit, every change |
 | Documentation | **Docs-as-you-build** | Feature README created AT implementation time |
-| No dead code | **Remove unused code** | Never comment out — delete |
+| No dead code | **Remove unused code** | Never comment out - delete |
 
 ---
 
@@ -29,10 +29,10 @@ These rules are enforced on every task. No exceptions without documented approva
 
 Before touching any code, read in this exact order:
 
-1. **`.ai/coding-rules.md`** — enforcement rules (non-negotiable)
-2. **`.ai/project-manifest.md`** — system overview, domains, flows
-3. **`.ai/review-checklist.md`** — must complete every item before declaring done
-4. **`.ai/workflows.md`** — execution flow
+1. **`.ai/coding-rules.md`** - enforcement rules (non-negotiable)
+2. **`.ai/project-manifest.md`** - system overview, domains, flows
+3. **`.ai/review-checklist.md`** - must complete every item before declaring done
+4. **`.ai/workflows.md`** - execution flow
 5. This file (`CLAUDE.md`)
 6. Then: `apps/api/CLAUDE.md` or `apps/frontend/CLAUDE.md` (whichever is relevant)
 7. Then inspect the actual source files
@@ -59,7 +59,7 @@ fidscript-whatsapp/
 ├── .ai/              # AI OPERATING LAYER (ANPAS)
 ├── CLAUDE.md          # This file
 ├── AGENTS.md          # AI agent rules summary
-└── CHANGELOG.md       # Change log — UPDATE ON EVERY COMMIT
+└── CHANGELOG.md       # Change log - UPDATE ON EVERY COMMIT
 ```
 
 ---
@@ -148,7 +148,7 @@ npm run build --workspace=@fidscript/types
 - [ ] No `helpers.ts`, `common.ts`, `misc.ts`, `utils.ts`, `tools.ts` files exist
 - [ ] No business logic in React components (`src/components/*.tsx`, `apps/frontend/src/**/*.tsx`)
 - [ ] No `any` types introduced
-- [ ] No commented-out code — delete instead
+- [ ] No commented-out code - delete instead
 - [ ] CHANGELOG.md updated with this change
 - [ ] `tsc --noEmit` passes in the relevant app
 - [ ] Feature README created if new feature added

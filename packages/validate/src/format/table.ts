@@ -131,7 +131,7 @@ export function printSummary(
     }${
       lo > 0 ? e(`${DIM}${lo} low${RESET}`) : ''
     }`.trim());
-    console.log(`\n  ${DIM}Non-zero exit code — deployment gate failed${RESET}`);
+    console.log(`\n  ${DIM}Non-zero exit code - deployment gate failed${RESET}`);
   }
 
   return { score, failed, severity };

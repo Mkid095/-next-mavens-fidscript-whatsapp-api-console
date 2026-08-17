@@ -33,8 +33,8 @@ export function AuthGuide() {
         {[
           { c: 401, m: 'Invalid or missing API key' },
           { c: 403, m: 'Valid key but insufficient permissions' },
-          { c: 429, m: 'Rate limit exceeded — slow down' },
-          { c: 500, m: 'Server error — retry with backoff' },
+          { c: 429, m: 'Rate limit exceeded - slow down' },
+          { c: 500, m: 'Server error - retry with backoff' },
         ].map(({ c, m }) => (
           <div key={c} className="flex items-center gap-3 text-xs">
             <span className="font-mono font-bold text-[#f97316] w-8">{c}</span>

@@ -1,5 +1,5 @@
 /**
- * conversations.ts — /api/v1/conversations
+ * conversations.ts - /api/v1/conversations
  *
  * Public API for listing and inspecting conversations.
  */

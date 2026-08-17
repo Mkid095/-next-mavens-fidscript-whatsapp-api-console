@@ -93,7 +93,7 @@ export default function CreatePanel({
           value={selectedGroup} onChange={e => onGroupChange(e.target.value)}
           className="w-full px-3 py-2 border border-[#2d2813] bg-[#181711] rounded-xl text-xs text-[#a8a99e] focus:outline-none focus:border-[#eab308]"
         >
-          <option value="">— No group —</option>
+          <option value="">- No group -</option>
           {groups.map(g => (
             <option key={g.id} value={g.id}>{g.name} ({g.member_count} members)</option>
           ))}

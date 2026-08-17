@@ -1,23 +1,23 @@
 /**
- * replayProtection.ts — Replay attack prevention for inbound webhooks.
+ * replayProtection.ts - Replay attack prevention for inbound webhooks.
  *
  * Webhooks sent by FIDScript SDKs include:
- *   X-FidScript-Delivery-ID        — unique per delivery attempt
- *   X-FidScript-Delivery-Timestamp  — Unix epoch seconds when the SDK sent it
+ *   X-FidScript-Delivery-ID        - unique per delivery attempt
+ *   X-FidScript-Delivery-Timestamp  - Unix epoch seconds when the SDK sent it
  *
  * Connectors (Shopify/WooCommerce) use their own ID/timestamp headers:
  *   Shopify: X-Shopify-Triggered-At, X-Shopify-Notification_Id
  *   WooCommerce: X-Wc-Webhook-Signature ( HMAC already unique per payload)
  *
  * This module provides:
- *   1. isReplay(deliveryId)   — returns true if this ID was already seen
- *   2. markDelivered(id)      — record a new delivery ID
- *   3. isStale(timestamp)     — reject webhooks older than MAX_AGE_SECONDS
+ *   1. isReplay(deliveryId)   - returns true if this ID was already seen
+ *   2. markDelivered(id)      - record a new delivery ID
+ *   3. isStale(timestamp)     - reject webhooks older than MAX_AGE_SECONDS
  */
 
 import db from '../../database.js';
 
-const MAX_AGE_SECONDS = 5 * 60; // 5 minutes —，超过这个时间戳就拒绝
+const MAX_AGE_SECONDS = 5 * 60; // 5 minutes -，超过这个时间戳就拒绝
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -52,17 +52,17 @@ export function isStale(timestamp: number): boolean {
 }
 
 /**
- * Reject result shape for markDelivered — returns error message or null.
+ * Reject result shape for markDelivered - returns error message or null.
  * Call markOrReject within the request handler.
  */
 export function markOrReject(
   deliveryId: string | undefined,
   timestamp: number | undefined,
 ): string | null {
-  if (!deliveryId) return null; // header not present — skip (auth relies on HMAC)
+  if (!deliveryId) return null; // header not present - skip (auth relies on HMAC)
 
   if (isReplay(deliveryId)) {
-    return `Duplicate delivery ID '${deliveryId}' — possible replay attack`;
+    return `Duplicate delivery ID '${deliveryId}' - possible replay attack`;
   }
 
   if (timestamp !== undefined && isStale(timestamp)) {

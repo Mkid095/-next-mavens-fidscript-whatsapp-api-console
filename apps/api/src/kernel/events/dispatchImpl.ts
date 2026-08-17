@@ -1,4 +1,4 @@
-// Dispatch implementation — all emit helpers + dispatch functions.
+// Dispatch implementation - all emit helpers + dispatch functions.
 // Each helper calls bus.emit() AND logDomainEvent() in one call.
 import { bus } from './bus.js';
 import { logDomainEvent } from './log.js';

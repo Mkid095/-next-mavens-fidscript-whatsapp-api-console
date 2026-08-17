@@ -24,7 +24,7 @@ function timeAgo(ts: number | null): string {
 
 // Extract the lookup key for profile pic fetch:
 // - 1:1 JID → phone digits (e.g. 254712345678) for fetchProfilePictureUrl
-// - Group JID → full JID (e.g. 123456789-987654321@g.us) — passed directly to Evolution API
+// - Group JID → full JID (e.g. 123456789-987654321@g.us) - passed directly to Evolution API
 function jidToPicLookupKey(jid: string): string | null {
   if (jid.includes('@g.us')) return jid; // full group JID for group pic lookup
   const user = jid.split('@')[0];
@@ -56,7 +56,7 @@ export default function ChatRow({ chat, instanceName, selected, onSelect }: Chat
         <div className="flex items-baseline justify-between gap-2">
           <span className="flex min-w-0 items-center gap-1.5">
             {chat.aiMode === 'manual' && (
-              <span title="AI paused — agent manually handling" className="inline-block h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+              <span title="AI paused - agent manually handling" className="inline-block h-2 w-2 shrink-0 rounded-full bg-amber-400" />
             )}
             {chat.aiMode === 'ai' && (
               <span title="AI active" className="inline-block h-2 w-2 shrink-0 rounded-full bg-blue-400" />

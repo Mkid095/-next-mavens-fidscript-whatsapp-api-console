@@ -1,4 +1,4 @@
-// Kernel Events module — public barrel
+// Kernel Events module - public barrel
 // bus() is the single access point. Nothing calls EventEmitter directly.
 export { bus, _resetBus } from './bus.js';
 export type { EventBus } from './bus.js';

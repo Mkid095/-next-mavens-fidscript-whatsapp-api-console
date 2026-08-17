@@ -1,4 +1,4 @@
-# apps/api/src — Express API Server Source
+# apps/api/src - Express API Server Source
 
 **`server/` is a symlink to this directory.** All API source code lives here.
 `apps/api/src/` is the single source of truth for the backend.
@@ -7,7 +7,7 @@
 
 ```
 src/
-├── index.ts                    # Entry point — Express bootstrap + /api/reference
+├── index.ts                    # Entry point - Express bootstrap + /api/reference
 ├── serverStart.ts              # Middleware setup, route registration
 ├── middlewareSetup.ts          # CORS, Helmet, raw body capture, connector webhook mount
 ├── routesRegister.ts           # Mounts all sub-routers
@@ -68,17 +68,17 @@ src/
 │   ├── auth/                 # jwt, clientJwt, clientApiKey, rateLimit
 │   └── v1Version.ts          # API version header
 │
-└── chatbot-worker/            # ⚠️ LEGACY — canonical worker is apps/worker/src/
+└── chatbot-worker/            # ⚠️ LEGACY - canonical worker is apps/worker/src/
     └── index.ts             # NATS subscriber (runs as separate process)
 ```
 
 ## Key Constraints
 
-- **Max 150 lines per file** — split any file that exceeds this
+- **Max 150 lines per file** - split any file that exceeds this
 - Route handlers go in `routes/` (one file per domain)
 - Business logic in `modules/` or `services/`
 - No direct Evolution API calls outside `services/whatsapp/`
-- Database: use `db.prepare().get/all/run()` — NOT `db.exec()`
+- Database: use `db.prepare().get/all/run()` - NOT `db.exec()`
 - Import paths must use `.js` extensions (moduleResolution: "bundler")
 
 ## API Namespaces
@@ -93,7 +93,7 @@ src/
 | `/api/payments/*` | None | M-Pesa STK push |
 | `/api/contacts` | Client JWT | Contact import/export |
 
-## Phase 36 — Connector Event Retry
+## Phase 36 - Connector Event Retry
 
 | Column | Purpose |
 |--------|---------|
@@ -105,10 +105,10 @@ src/
 Backoff schedule: 1m → 5m → 30m → 2h → 8h
 
 Admin endpoints:
-- `GET /admin/system/connector-events` — list with filter by status/workspace/connector
-- `POST /admin/system/connector-events/retry/:id` — re-dispatch a failed event
+- `GET /admin/system/connector-events` - list with filter by status/workspace/connector
+- `POST /admin/system/connector-events/retry/:id` - re-dispatch a failed event
 
-## Phase 37 — Webhook Replay Protection
+## Phase 37 - Webhook Replay Protection
 
 `webhook_delivery_ids` table: `(delivery_id PK, received_at)`
 

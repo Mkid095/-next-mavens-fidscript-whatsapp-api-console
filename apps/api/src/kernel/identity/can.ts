@@ -1,8 +1,8 @@
 import db from '../../database.js';
 
 // =============================================================================
-// can() — the one permission seam. Every privileged action calls this.
-// Returns true/false. Routes call req.can() — nothing hand-rolls role checks.
+// can() - the one permission seam. Every privileged action calls this.
+// Returns true/false. Routes call req.can() - nothing hand-rolls role checks.
 // =============================================================================
 
 export interface PermScope {

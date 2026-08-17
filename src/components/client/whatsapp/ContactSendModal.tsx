@@ -10,7 +10,7 @@ interface ContactSendModalProps {
 }
 
 /**
- * ContactSendModal — share a single vCard contact.
+ * ContactSendModal - share a single vCard contact.
  * Full picker lives at the API Sandbox (`/api/v1/messages/contact`).
  */
 export default function ContactSendModal({ to, onClose }: ContactSendModalProps) {

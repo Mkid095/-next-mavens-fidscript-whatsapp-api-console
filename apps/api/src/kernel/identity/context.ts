@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { loadUserWorkspacePerms, can } from './can.js';
 
 // =============================================================================
-// WorkspaceContext — attached to every request by workspaceAuth middleware.
+// WorkspaceContext - attached to every request by workspaceAuth middleware.
 // Threaded through every repository; every query is workspace-scoped (P11).
 // =============================================================================
 
@@ -19,7 +19,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 // ---------------------------------------------------------------------------
-// Middleware — resolves user + workspace and attaches context
+// Middleware - resolves user + workspace and attaches context
 // ---------------------------------------------------------------------------
 
 export function workspaceAuth(

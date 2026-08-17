@@ -5,7 +5,7 @@ import { adminAuth } from '../../middleware/auth.js';
 const router = Router();
 router.use(adminAuth);
 
-// GET /api/admin/messages — paginated inbox messages with raw_payload
+// GET /api/admin/messages - paginated inbox messages with raw_payload
 router.get('/messages', (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -42,7 +42,7 @@ router.get('/messages', (req: Request, res: Response) => {
   }
 });
 
-// POST /api/admin/messages/:id/replay — replay raw_payload to instance webhook
+// POST /api/admin/messages/:id/replay - replay raw_payload to instance webhook
 router.post('/messages/:id/replay', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

@@ -1,5 +1,5 @@
 /**
- * tool/exec.ts — execute a tool against its data source.
+ * tool/exec.ts - execute a tool against its data source.
  * Auth: JWT. POST /api/platform/data-sources/:id/tools/:toolId/exec
  * Body: { "arguments": {...} }
  *

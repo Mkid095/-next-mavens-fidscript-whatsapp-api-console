@@ -30,7 +30,7 @@ export default function TopClientsTable({ clients }: TopClientsTableProps) {
               {topClients.map((cli) => (
                 <tr key={cli.id} className="hover:bg-[#1a1915] transition-colors">
                   <td className="py-2.5 pr-4 font-semibold text-white">{cli.name}</td>
-                  <td className="py-2.5 pr-4 text-[#6e684a]">{cli.plan_name || '—'}</td>
+                  <td className="py-2.5 pr-4 text-[#6e684a]">{cli.plan_name || '-'}</td>
                   <td className="py-2.5 pr-4 text-right font-mono text-[#a8a99e]">{cli.total_messages.toLocaleString()}</td>
                   <td className="py-2.5 text-right">
                     <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full ${

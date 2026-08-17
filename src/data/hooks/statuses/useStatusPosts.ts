@@ -16,9 +16,9 @@ interface UseStatusPostsReturn {
 }
 
 /**
- * Phase 5 Slice E — Status posts list hook.
+ * Phase 5 Slice E - Status posts list hook.
  * Polls /api/campaigns/statuses on mount and re-pulls on any status.* event
- * (the server doesn't currently publish those on the bus — the hook uses a
+ * (the server doesn't currently publish those on the bus - the hook uses a
  * manual refresh + a coarse 30s poll as the safety net).
  */
 export function useStatusPosts(): UseStatusPostsReturn {

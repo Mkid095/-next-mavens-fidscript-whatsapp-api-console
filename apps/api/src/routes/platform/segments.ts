@@ -6,7 +6,7 @@ import { resolveSegment, type Filter } from '../../modules/campaigns/segments.js
 import db from '../../database.js';
 
 // =============================================================================
-// /api/platform/segments — Phase 5 Slice C. Workspace-scoped saved segments
+// /api/platform/segments - Phase 5 Slice C. Workspace-scoped saved segments
 // (§15.2). CRUD + /preview endpoint that resolves a segment's filter_json to
 // a phone list and caches the count + last_computed_at on the row.
 // =============================================================================
@@ -44,7 +44,7 @@ function serialize(r: SegmentRow) {
   };
 }
 
-// GET / — list
+// GET / - list
 router.get('/', (req: Request, res: Response) => {
   try {
     const rows = db.prepare(`
@@ -54,7 +54,7 @@ router.get('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST / — create
+// POST / - create
 router.post('/', (req: Request, res: Response) => {
   try {
     const name = ((req.body?.name as string) || '').trim();
@@ -74,7 +74,7 @@ router.post('/', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// PATCH /:id — update
+// PATCH /:id - update
 router.patch('/:id', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT * FROM campaign_segments WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req)) as SegmentRow | undefined;
@@ -104,7 +104,7 @@ router.delete('/:id', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST /:id/preview — resolve the segment to a phone list, cache the count
+// POST /:id/preview - resolve the segment to a phone list, cache the count
 router.post('/:id/preview', (req: Request, res: Response) => {
   try {
     const owned = db.prepare('SELECT * FROM campaign_segments WHERE id = ? AND workspace_id = ?').get(req.params.id, wsId(req)) as SegmentRow | undefined;
@@ -129,7 +129,7 @@ router.post('/:id/preview', (req: Request, res: Response) => {
   } catch (err: unknown) { res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) }); }
 });
 
-// POST /preview — resolve an ad-hoc filter_json (not yet saved). Used by the
+// POST /preview - resolve an ad-hoc filter_json (not yet saved). Used by the
 // builder's "Preview" button before save.
 router.post('/preview-adhoc', (req: Request, res: Response) => {
   try {

@@ -1,5 +1,5 @@
 /**
- * llm/create.ts — create a workspace LLM connection (BYO API key).
+ * llm/create.ts - create a workspace LLM connection (BYO API key).
  * Auth: JWT. POST /api/platform/llm-connections
  *
  * Examples:
@@ -44,7 +44,7 @@ export async function createConnection(
     process.exit(1);
   }
 
-  // Resolve API key — accept @file syntax
+  // Resolve API key - accept @file syntax
   let apiKey = opts.apiKey;
   if (apiKey && apiKey.startsWith('@')) {
     const fs = await import('node:fs');
@@ -90,7 +90,7 @@ export async function createConnection(
   console.error(`  fidscript chatbot ai-config <chatbot-id> --llm-connection ${resp.id}`);
 }
 
-/** Helper used by agent flows — list available providers (registry). */
+/** Helper used by agent flows - list available providers (registry). */
 export async function listAvailableProviders(): Promise<AvailableProvider[]> {
   const client = new ApiClient();
   return await client.jwtGetData<AvailableProvider[]>('/api/platform/llm-connections/available-providers');

@@ -24,7 +24,7 @@ interface BuyContentProps {
   onPendingStatus: (status: string) => void;
 }
 
-/** Single package card — kept inline to avoid a 150-line BuyContent.tsx. */
+/** Single package card - kept inline to avoid a 150-line BuyContent.tsx. */
 function PackageCard({ pkg, selected, onSelect }: { pkg: TokenPackage; selected: boolean; onSelect: () => void }) {
   const total = pkg.tokens + pkg.bonus_tokens;
   return (

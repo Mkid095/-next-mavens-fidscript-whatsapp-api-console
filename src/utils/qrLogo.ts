@@ -34,7 +34,7 @@ export async function overlayLogoOnQR(
 
       ctx.putImageData(imageData, 0, 0);
 
-      // Cut logo recess and overlay logo — same color as QR modules so it blends in
+      // Cut logo recess and overlay logo - same color as QR modules so it blends in
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       logoImg.onload = () => {
@@ -42,7 +42,7 @@ export async function overlayLogoOnQR(
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        // Recess in forest-deep — same color as QR modules
+        // Recess in forest-deep - same color as QR modules
         ctx.fillStyle = '#14130a';
         ctx.fillRect(cx - logoSize / 2, cy - logoSize / 2, logoSize, logoSize);
 

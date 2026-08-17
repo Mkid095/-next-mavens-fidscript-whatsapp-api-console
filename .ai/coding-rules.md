@@ -39,7 +39,7 @@ Enforcement rules for all AI-assisted development in this project.
 - Descriptive names that communicate purpose
 - Use domain language, not technical jargon
 - Boolean variables: `isEnabled`, `hasPermission`, `isLoading`
-- Functions: verb-first — `getUserProfile`, `sendMessage`, `validateEmail`
+- Functions: verb-first - `getUserProfile`, `sendMessage`, `validateEmail`
 
 ---
 
@@ -87,17 +87,17 @@ Enforcement rules for all AI-assisted development in this project.
 
 ### 13. Professional Icons Only
 - No emojis in UI
-- **No sparkle icon (✨ or `<Sparkles>`) in any UI element** — this is the canonical AI indicator and is **strictly forbidden** in every project
-- **Forbidden AI-tell icons** (never use as decoration): sparkle (✨), stars (★), magic wand, robot, brain, lightning bolt — all convey AI/magic
+- **No sparkle icon (✨ or `<Sparkles>`) in any UI element** - this is the canonical AI indicator and is **strictly forbidden** in every project
+- **Forbidden AI-tell icons** (never use as decoration): sparkle (✨), stars (★), magic wand, robot, brain, lightning bolt - all convey AI/magic
 - Use Lucide icons or similar professional icon library
-- If you need a "new" or "special" indicator, use a badge, label, or styling — not an emoji/sparkle/icon
+- If you need a "new" or "special" indicator, use a badge, label, or styling - not an emoji/sparkle/icon
 - Use Lucide icons or similar professional icon library
 - Icons must be semantically appropriate
 
 ### 14. Consistent Design System
 - Use shared components from `shared/components/`
 - Follow existing patterns for modals, forms, tables
-- No inline styles — use the project's CSS/Tailwind system
+- No inline styles - use the project's CSS/Tailwind system
 
 ---
 

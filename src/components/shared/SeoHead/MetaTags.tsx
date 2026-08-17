@@ -1,6 +1,6 @@
 /**
- * MetaTags — plain meta tag generation (title, description, canonical, robots).
- * No Open Graph or schema — those live in their own modules.
+ * MetaTags - plain meta tag generation (title, description, canonical, robots).
+ * No Open Graph or schema - those live in their own modules.
  */
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -23,7 +23,7 @@ export function MetaTags({
   canonical = '/',
   noindex = false,
 }: MetaTagsProps) {
-  const fullTitle = title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
+  const fullTitle = title === SITE_NAME ? title : `${title} - ${SITE_NAME}`;
   const canonicalUrl = canonical.startsWith('http') ? canonical : `${BASE_URL}${canonical}`;
 
   return (

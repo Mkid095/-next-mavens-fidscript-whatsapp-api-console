@@ -1,5 +1,5 @@
 /**
- * api.ts — API request/response types shared across SDK, CLI, and frontend.
+ * api.ts - API request/response types shared across SDK, CLI, and frontend.
  */
 
 // ── API Response ─────────────────────────────────────────────────────────────

@@ -1,11 +1,11 @@
 /**
- * init.ts — `fidscript init`
+ * init.ts - `fidscript init`
  *
  * First-run onboarding orchestrator. Wires:
  *   1. login (sign in via magic code)
  *   2. setup (display identity + copy-able API key + quickstart)
  *
- * Fully headless when --email and --code are both supplied. Idempotent —
+ * Fully headless when --email and --code are both supplied. Idempotent -
  * if already authenticated, it skips login and just runs setup.
  */
 import pc from 'picocolors';

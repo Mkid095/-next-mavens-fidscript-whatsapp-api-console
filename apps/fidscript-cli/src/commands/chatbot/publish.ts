@@ -1,5 +1,5 @@
 /**
- * chatbot/publish.ts — kick off the publish pipeline + optional SSE watch.
+ * chatbot/publish.ts - kick off the publish pipeline + optional SSE watch.
  * Auth: JWT.
  *
  *   POST /api/platform/chatbots/:id/publish  { draft_json: '...' }
@@ -134,10 +134,10 @@ export async function publishChatbot(id: string, opts: { watch?: boolean; draft?
 
   /**
    * Exit codes:
-   *   0 — job reached a terminal status (completed/failed/cancelled)
-   *   2 — --timeout fired before terminal status (or user pressed Ctrl+C)
+   *   0 - job reached a terminal status (completed/failed/cancelled)
+   *   2 - --timeout fired before terminal status (or user pressed Ctrl+C)
    * Note: a successful publish also leaves the pipeline running on the server;
-   * we don't tear it down — the worker will mark it completed eventually.
+   * we don't tear it down - the worker will mark it completed eventually.
    */
   if (opts.timeout || aborted) {
     if (!reachedTerminal) process.exit(2);

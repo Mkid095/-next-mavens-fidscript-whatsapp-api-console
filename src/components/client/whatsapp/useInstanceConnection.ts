@@ -16,7 +16,7 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
   const [regeneratingQR, setRegeneratingQR] = useState(false);
   const [connectionError, setConnectionError] = useState('');
   const esRef = useRef<EventSource | null>(null);
-  // True once the user explicitly closed the modal — suppresses any cleanup side effects.
+  // True once the user explicitly closed the modal - suppresses any cleanup side effects.
   const closingManually = useRef(false);
 
   // Polling fallback (every 3s) in case a proxy strips the SSE stream.
@@ -39,7 +39,7 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
 
   /**
    * SSE listener for real-time connection state. The backend emits a NAMED
-   * `stateChange` event — `onmessage` never fires for named events, so we must
+   * `stateChange` event - `onmessage` never fires for named events, so we must
    * use addEventListener('stateChange'). Polling is wired alongside as a fallback.
    */
   const openSSEConnection = useCallback((inst: Instance) => {
@@ -62,14 +62,14 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
           ));
           resolvePairing();
         }
-        // disconnected — update badge but keep modal open (QR flow: user is scanning)
+        // disconnected - update badge but keep modal open (QR flow: user is scanning)
         else if (data.state === 'disconnected') {
           onInstancesChange(instances.map(i =>
             i.id === inst.id
               ? { ...i, status: 'disconnected' as const, phone_number: null }
               : i
           ));
-          // Do NOT resolvePairing() — keep the QR modal open until user scans or closes
+          // Do NOT resolvePairing() - keep the QR modal open until user scans or closes
         }
       } catch {
         // Ignore malformed messages
@@ -108,7 +108,7 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     setGeneratingQR(false);
   }, [openSSEConnection, startPolling, resolvePairing]);
 
-  // Regenerates a new QR — must logout first to clear the old session, then connect
+  // Regenerates a new QR - must logout first to clear the old session, then connect
   const handleRegenerateQR = useCallback(async () => {
     if (!pairingInstance) return;
     setRegeneratingQR(true);
@@ -127,7 +127,7 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
     setRegeneratingQR(false);
   }, [pairingInstance]);
 
-  // Manual check — user-initiated fallback when SSE/polling haven't fired
+  // Manual check - user-initiated fallback when SSE/polling haven't fired
   const handleSimulateSuccessfulScan = useCallback(async () => {
     if (!pairingInstance) return;
     try {
@@ -143,7 +143,7 @@ export function useInstanceConnection({ instances, onInstancesChange }: UseInsta
         resolvePairing();
       }
     } catch {
-      // Silently fail — SSE/polling will catch the real event
+      // Silently fail - SSE/polling will catch the real event
     }
   }, [pairingInstance, instances, onInstancesChange, resolvePairing]);
 

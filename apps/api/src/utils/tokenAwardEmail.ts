@@ -1,5 +1,5 @@
 /**
- * Token award email — branded HTML + plain-text render functions.
+ * Token award email - branded HTML + plain-text render functions.
  * Used by sendTokenAwardEmail.ts to notify clients of admin-awarded tokens.
  */
 
@@ -67,5 +67,5 @@ FIDScript Admin has awarded you ${amount.toLocaleString()} tokens.
 ${adminNote ? `Note: ${adminNote}\n` : ''}
 Your new token balance will be reflected immediately in your dashboard.
 
-FIDScript by Next Mavens — https://whatsapp.fidscript.com`;
+FIDScript by Next Mavens - https://whatsapp.fidscript.com`;
 }

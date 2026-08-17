@@ -7,11 +7,11 @@ import * as chats from '../../services/whatsapp/chats.js';
 import { mirrorChatList, mirrorThread } from '../../services/whatsapp/chatMirror.js';
 
 /**
- * /api/v1/chats/* — chat management. Reads get V1_READ (600/min), mutations
- * get V1_MUTATE (120/min). No tokens — all free.
+ * /api/v1/chats/* - chat management. Reads get V1_READ (600/min), mutations
+ * get V1_MUTATE (120/min). No tokens - all free.
  *
  * For SDK backward-compatibility, find-chats and find-messages now read from the
- * local DB (inbox_messages) instead of paginating Evolution — but return responses
+ * local DB (inbox_messages) instead of paginating Evolution - but return responses
  * shaped exactly like Evolution's API so existing SDK consumers see no change.
  */
 const router = Router();
@@ -28,7 +28,7 @@ function wrap(handler: Handler) {
   };
 }
 
-// Mutations — V1_MUTATE
+// Mutations - V1_MUTATE
 router.post('/mark-read/:instance', ...authMutate, wrap((c, r) => chats.markRead(c, r.body)));
 router.post('/mark-unread/:instance', ...authMutate, wrap((c, r) => chats.markUnread(c, r.body)));
 router.post('/archive/:instance', ...authMutate, wrap((c, r) => chats.archiveChat(c, r.body)));
@@ -36,7 +36,7 @@ router.post('/presence/:instance', ...authMutate, wrap((c, r) => chats.sendPrese
 router.delete('/delete-for-everyone/:instance', ...authMutate, wrap((c, r) => chats.deleteForEveryone(c, r.body)));
 router.post('/update-message/:instance', ...authMutate, wrap((c, r) => chats.updateMessage(c, r.body)));
 
-// Reads — V1_READ
+// Reads - V1_READ
 // find-chats: DB-backed (mirrorChatList), return Evolution shape { response: [...] }
 router.post('/find-chats/:instance', ...authRead, async (req: Request, res: Response) => {
   const ctx = buildSendCtx(req, res, req.params.instance);

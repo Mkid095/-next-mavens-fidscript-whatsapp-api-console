@@ -205,7 +205,7 @@ export default function BillingView() {
                           type="number" className="w-full px-2 py-1 bg-[#181711] border border-[#2d2813] rounded text-white text-xs" /></td>
                         <td className="px-4 py-2"><input value={pkgFormEdit.priceKsh} onChange={e => setPkgFormEdit(p => ({ ...p, priceKsh: e.target.value }))}
                           type="number" className="w-full px-2 py-1 bg-[#181711] border border-[#2d2813] rounded text-white text-xs" /></td>
-                        <td className="px-4 py-2 text-right text-[#6e684a]">—</td>
+                        <td className="px-4 py-2 text-right text-[#6e684a]">-</td>
                         <td className="px-4 py-2 text-center">
                           <button onClick={() => setPkgFormEdit(p => ({ ...p, isActive: !p.isActive }))}
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${pkgFormEdit.isActive ? 'bg-green-900/40 text-green-400' : 'bg-red-900/40 text-red-400'}`}>
@@ -223,7 +223,7 @@ export default function BillingView() {
                       <>
                         <td className="px-4 py-3 text-white font-medium">{pkg.name}</td>
                         <td className="px-4 py-3 text-right text-[#cbd3cf]">{pkg.tokens.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-green-400">{pkg.bonus_tokens > 0 ? `+${pkg.bonus_tokens.toLocaleString()}` : '—'}</td>
+                        <td className="px-4 py-3 text-right text-green-400">{pkg.bonus_tokens > 0 ? `+${pkg.bonus_tokens.toLocaleString()}` : '-'}</td>
                         <td className="px-4 py-3 text-right text-yellow-500 font-bold">KES {pkg.price_kes.toLocaleString()}</td>
                         <td className="px-4 py-3 text-right text-[#6e684a]">{(pkg.price_kes / (pkg.tokens + pkg.bonus_tokens)).toFixed(3)}</td>
                         <td className="px-4 py-3 text-center">

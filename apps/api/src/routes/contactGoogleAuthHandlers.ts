@@ -1,5 +1,5 @@
 /**
- * Google OAuth — authentication handlers.
+ * Google OAuth - authentication handlers.
  * Handles: getGoogleAuthUrl, handleGoogleCallback.
  */
 import { Request, Response } from 'express';

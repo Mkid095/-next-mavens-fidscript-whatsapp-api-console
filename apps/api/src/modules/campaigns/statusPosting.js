@@ -1,4 +1,4 @@
-// Status post execution — the actual WhatsApp status send logic.
+// Status post execution - the actual WhatsApp status send logic.
 import { v4 as uuidv4 } from 'uuid';
 import db from '../../database.js';
 import { sendStatus } from '../../services/whatsapp/messaging.js';

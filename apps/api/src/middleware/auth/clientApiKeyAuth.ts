@@ -18,7 +18,7 @@ export function clientApiKeyAuth(req: Request, res: Response, next: NextFunction
     return;
   }
 
-  // Fetch key record with client join — keyed by api_key for legacy compat.
+  // Fetch key record with client join - keyed by api_key for legacy compat.
   const row = db.prepare(`
     SELECT c.*, k.id AS key_id, k.api_key, k.key_hash AS key_hash
     FROM client_api_keys k
@@ -36,7 +36,7 @@ export function clientApiKeyAuth(req: Request, res: Response, next: NextFunction
   if (row.key_hash) {
     valid = bcrypt.compareSync(apiKey, row.key_hash);
   } else {
-    // Legacy row without hash — compare plaintext, then upgrade to hash
+    // Legacy row without hash - compare plaintext, then upgrade to hash
     valid = row.api_key === apiKey;
     if (valid) {
       const hash = bcrypt.hashSync(apiKey, 10);

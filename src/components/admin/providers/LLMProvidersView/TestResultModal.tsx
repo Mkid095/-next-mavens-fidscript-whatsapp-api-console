@@ -1,5 +1,5 @@
 /**
- * TestResultModal — shows connection test result with model list.
+ * TestResultModal - shows connection test result with model list.
  */
 import { TestTube, CheckCircle2, X, AlertCircle } from 'lucide-react';
 

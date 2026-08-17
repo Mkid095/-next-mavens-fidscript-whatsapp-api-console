@@ -1,5 +1,5 @@
 // =============================================================================
-// useTimeline — the Customer Timeline (§7), reads domain_events for a customer.
+// useTimeline - the Customer Timeline (§7), reads domain_events for a customer.
 // The killer drawer feature: every event across every subsystem, unified.
 // =============================================================================
 

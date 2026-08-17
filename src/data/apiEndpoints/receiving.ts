@@ -1,7 +1,7 @@
 import type { ApiEndpoint } from './index';
 
 /**
- * Inbound webhook events. These are NOT request endpoints — they document the
+ * Inbound webhook events. These are NOT request endpoints - they document the
  * events FIDScript delivers to a client's configured webhook URL. Cost is always
  * free; `method` is conceptually the delivered event.
  */

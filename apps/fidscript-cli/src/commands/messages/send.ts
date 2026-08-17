@@ -1,5 +1,5 @@
 /**
- * messages/send.ts — All 10 WhatsApp message types.
+ * messages/send.ts - All 10 WhatsApp message types.
  *
  * Wraps the public /api/v1/messages/<type>/:instance endpoints.
  *
@@ -16,7 +16,7 @@
  *   fidscript send status   my-bot --type text --content "On vacation" --all-contacts
  *
  * Anything more complex (e.g. nested objects) accepts inline JSON via
- * --contacts / --sections / --message-key / --status-jid-list — or pass
+ * --contacts / --sections / --message-key / --status-jid-list - or pass
  * the whole body via `fidscript api POST /api/v1/messages/<type>/<inst> -d @body.json`.
  */
 import { Command } from 'commander';
@@ -79,7 +79,7 @@ async function postSend(
   }
 }
 
-/** Required by Commander dynamic-import flow — register all subcommands on `parent`. */
+/** Required by Commander dynamic-import flow - register all subcommands on `parent`. */
 export function registerSendCommands(parent: Command): void {
   parent
     .command('text <instance>')

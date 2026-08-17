@@ -1,6 +1,6 @@
 # @fidscript/sdk
 
-Official Node.js / TypeScript SDK for the [FIDScript WhatsApp Business API](https://whatsapp.fidscript.com). Type-safe wrappers for every public endpoint — auth, instance lifecycle, all 10 message types, chatbot CRUD, BYO LLM, and an escape hatch for anything else.
+Official Node.js / TypeScript SDK for the [FIDScript WhatsApp Business API](https://whatsapp.fidscript.com). Type-safe wrappers for every public endpoint - auth, instance lifecycle, all 10 message types, chatbot CRUD, BYO LLM, and an escape hatch for anything else.
 
 ## Install
 
@@ -59,7 +59,7 @@ const fs = new Fidscript();
 await fs.auth.requestCode('me@example.com');
 // (user reads the code from their inbox)
 
-// Step 2: verify — the SDK stores both the API key and the JWT on the client
+// Step 2: verify - the SDK stores both the API key and the JWT on the client
 const { client } = await fs.auth.verifyCode('me@example.com', '123456');
 console.log(`API key: ${client?.api_key}`);
 
@@ -103,7 +103,7 @@ console.log(`LLM test: ${ok.success ? 'OK' : ok.error}`);
 | `fs.llm.list/create/get/update/delete/test` | BYO LLM connections |
 | `fs.api(method, path, body?)` | Hit any other endpoint (groups, chats, profile, settings, …) |
 
-The `fs.api()` escape hatch covers everything — auto-picks auth from the path (`/api/v1/*` → X-API-Key, otherwise → Bearer JWT).
+The `fs.api()` escape hatch covers everything - auto-picks auth from the path (`/api/v1/*` → X-API-Key, otherwise → Bearer JWT).
 
 ## Error handling
 
@@ -145,4 +145,4 @@ fs.client.setJwt('eyJhbGc…');  // now JWT-authenticated routes work too
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT - see [LICENSE](./LICENSE).

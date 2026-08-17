@@ -1,5 +1,5 @@
 /**
- * sse.ts — Server-Sent Events client for Node (no browser EventSource available).
+ * sse.ts - Server-Sent Events client for Node (no browser EventSource available).
  *
  * Parses an SSE-formatted stream manually:
  *   - "event: <name>\n"

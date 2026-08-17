@@ -1,5 +1,5 @@
 /**
- * /api/platform/chats/* + /api/platform/profile-pic/:name — client-JWT proxies
+ * /api/platform/chats/* + /api/platform/profile-pic/:name - client-JWT proxies
  * to the live WhatsApp-Web mirror, mounted under the platform router so it
  * uses platformLimiter (600/min backstop). The per-route chatMirrorLimiter
  * caps the heavy the gateway calls (find-chats/find-messages) at 10/min per
@@ -17,7 +17,7 @@ import { findContacts } from '../../../services/whatsapp/chats.js';
 import { getOutboundUsage, newInitiationsInBatch } from '../../../services/whatsapp/outboundUsage.js';
 import { instanceEmitter } from '../../../utils/gateway.js';
 
-// 10/sec per client — responsive UI reads (find-chats/find-messages) without
+// 10/sec per client - responsive UI reads (find-chats/find-messages) without
 // approaching the ~80 MPS WhatsApp send throughput (reads aren't subject to
 // the 80 MPS limit; this cap just prevents runaway bursts and keeps us well
 // under any the gateway/WhatsApp read-rate ceiling). The frontend coalesces
@@ -87,13 +87,13 @@ router.post('/chats/:name/contacts', chatMirrorLimiter, async (req, res) => {
   res.json({ success: true, data: { contacts } });
 });
 
-// GET /api/platform/usage/outbound/:name — outbound volume snapshot for the
+// GET /api/platform/usage/outbound/:name - outbound volume snapshot for the
 // instance (unique initiations in the last 24h vs tier limit). The frontend
 // uses this to render "47 / 250 new contacts today" + the upgrade threshold.
 router.get('/usage/outbound/:name', async (req, res) => {
   const ctx = buildSendCtx(req, res, req.params.name);
   if (!ctx) return;
-  // No requireConnected — usage should be readable even when disconnected.
+  // No requireConnected - usage should be readable even when disconnected.
   try {
     const usage = getOutboundUsage(ctx.instance.id, ctx.client.id);
     res.json({ success: true, data: usage });
@@ -159,7 +159,7 @@ router.post('/chats/:name/mark-read', async (req, res) => {
     'UPDATE inbox_messages SET is_read = 1 WHERE instance_id = ? AND chat_id = ? AND is_read = 0 AND direction = ?'
   ).run(ctx.instance.id, jid, 'incoming');
 
-  // Send read receipts to WhatsApp via Evolution API — this makes the sender
+  // Send read receipts to WhatsApp via Evolution API - this makes the sender
   // see blue ticks on their WhatsApp. Fire-and-forget; we already updated our DB.
   if (unreadRows.length > 0) {
     const { markRead } = await import('../../../services/whatsapp/chats.js');
@@ -180,7 +180,7 @@ router.post('/chats/:name/mark-read', async (req, res) => {
 });
 
 // GET /api/platform/chatmirror/media?url=<encoded_media_url>
-// Proxy for Evolution API media URLs — fetches the media with the correct API
+// Proxy for Evolution API media URLs - fetches the media with the correct API
 // key headers and returns it with proper CORS headers so the browser can render
 // images/video/audio that would otherwise 403 (browser can't send apikey header).
 // The URL must belong to our Evolution API instance; we reject anything else.

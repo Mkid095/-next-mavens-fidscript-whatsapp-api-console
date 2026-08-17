@@ -6,12 +6,12 @@
  *   node dist/index.js [--json] [--git-sha SHA]
  *
  * Environment variables (or set in .env):
- *   PLATFORM_API_URL    — SaaS backend (e.g. https://apiwhatsapp.fidscript.com)
- *   WHATSAPP_API_URL    — WhatsApp API (e.g. http://localhost:3099)
- *   WHATSAPP_API_KEY    — Evolution API key
- *   ADMIN_EMAIL        — admin login email
- *   ADMIN_PASSWORD     — admin login password
- *   TEST_WHATSAPP_NUMBER — recipient for messaging tests (e.g. +254700000000)
+ *   PLATFORM_API_URL    - SaaS backend (e.g. https://apiwhatsapp.fidscript.com)
+ *   WHATSAPP_API_URL    - WhatsApp API (e.g. http://localhost:3099)
+ *   WHATSAPP_API_KEY    - Evolution API key
+ *   ADMIN_EMAIL        - admin login email
+ *   ADMIN_PASSWORD     - admin login password
+ *   TEST_WHATSAPP_NUMBER - recipient for messaging tests (e.g. +254700000000)
  */
 
 import { createClients } from './client/http.js';

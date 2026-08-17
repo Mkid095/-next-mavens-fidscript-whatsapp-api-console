@@ -9,7 +9,7 @@ export function ToolsIntegrationsGuide() {
       <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Tools &amp; Integrations</h1>
       <p className="text-sm text-[#525252] mb-8">
         FIDScript is an <strong className="text-[#1a1a1a]">AI orchestration layer</strong> that
-        sits on top of your business systems. The chatbot never stores your customer data — it
+        sits on top of your business systems. The chatbot never stores your customer data - it
         calls{' '}
         <strong className="text-[#1a1a1a]">tools</strong> that hit your external APIs,
         databases, or e-commerce platforms in real time. This means the bot always answers with
@@ -20,7 +20,7 @@ export function ToolsIntegrationsGuide() {
         <p>
           <strong className="text-[#1a1a1a]">Data-first principle:</strong> When a tool exists
           that could answer the user's question, the bot MUST use the tool before relying on its
-          own knowledge. Never guess inventory, pricing, customer details, or order status —
+          own knowledge. Never guess inventory, pricing, customer details, or order status -
           always call the tool first.
         </p>
       </Callout>
@@ -29,20 +29,20 @@ export function ToolsIntegrationsGuide() {
       <DocsCodeBlock
         code={`External Systems (Shopify, Postgres, REST API, ERP, CRM)
        ↓
-1. integration_connections  — encrypted credentials to external systems
+1. integration_connections  - encrypted credentials to external systems
        ↓
-2. data_sources             — datasets exposed by a connection
+2. data_sources             - datasets exposed by a connection
        ↓
-3. tools                    — individual LLM-callable operations:
+3. tools                    - individual LLM-callable operations:
                                lookup (single-record fetch)
                                search (free-text filter)
                                query  (HTTP GET)
                                action (HTTP POST/PUT/DELETE)
                                workflow (multi-step chain)
        ↓
-4. chatbot_tools            — attach tools to chatbots + per-tool limits
+4. chatbot_tools            - attach tools to chatbots + per-tool limits
        ↓
-5. tool_execution_logs      — every call logged for audit
+5. tool_execution_logs      - every call logged for audit
        ↓
 LLM → WhatsApp reply`}
         lang="text"
@@ -54,7 +54,7 @@ LLM → WhatsApp reply`}
         static JSON dataset (for demos), an API endpoint, or a SQL query.
       </p>
       <DocsCodeBlock
-        code={`# Demo data source (e-commerce sample — works immediately)
+        code={`# Demo data source (e-commerce sample - works immediately)
 fidscript data-source create my-catalog --type demo --description "Sample products + customers"
 
 # Real API data source (your production system)
@@ -238,7 +238,7 @@ fidscript chatbot create store-assistant --instance store-bot \\
 fidscript chatbot tools <bot-id> attach <tool-id>
 fidscript chatbot publish <bot-id>
 
-# Done — the bot is live and answering with real product data.`}
+# Done - the bot is live and answering with real product data.`}
         lang="bash"
       />
     </motion.div>

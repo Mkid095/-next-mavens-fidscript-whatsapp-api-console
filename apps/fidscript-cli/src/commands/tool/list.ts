@@ -1,5 +1,5 @@
 /**
- * tool/list.ts — list tools in the workspace.
+ * tool/list.ts - list tools in the workspace.
  * Auth: JWT.
  *   - With --data-source <id>: GET /api/platform/data-sources/:id/tools
  *   - Without: lists tools across ALL data sources (fetches each DS's tools)

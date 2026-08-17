@@ -1,5 +1,5 @@
 /**
- * campaigns.ts — /api/v1/campaigns
+ * campaigns.ts - /api/v1/campaigns
  *
  * Public API for listing campaigns.
  */

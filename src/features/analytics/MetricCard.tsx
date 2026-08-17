@@ -1,5 +1,5 @@
 /**
- * MetricCard.tsx — single KPI card for the analytics dashboard.
+ * MetricCard.tsx - single KPI card for the analytics dashboard.
  */
 import { type ReactNode } from 'react';
 

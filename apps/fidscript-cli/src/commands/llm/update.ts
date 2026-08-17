@@ -1,5 +1,5 @@
 /**
- * llm/update.ts — update an existing LLM connection.
+ * llm/update.ts - update an existing LLM connection.
  * Auth: JWT. PUT /api/platform/llm-connections/:id
  */
 import {

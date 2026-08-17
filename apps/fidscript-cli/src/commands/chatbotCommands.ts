@@ -1,5 +1,5 @@
 /**
- * chatbotCommands.ts — Chatbot management commands
+ * chatbotCommands.ts - Chatbot management commands
  */
 import type { Command } from 'commander';
 

@@ -6,6 +6,6 @@ const apiKey = process.env.RESEND_API_KEY;
 // without email). Callers should guard on this before sending.
 export const resend: Resend | null = apiKey ? new Resend(apiKey) : null;
 
-// Sender address — domain must be verified in the Resend dashboard.
+// Sender address - domain must be verified in the Resend dashboard.
 export const MAIL_FROM =
   process.env.MAIL_FROM || 'FIDScript <noreply@whatsapp.fidscript.com>';

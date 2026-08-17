@@ -1,5 +1,5 @@
 /**
- * instance/connect.ts — Initiate connection (logout old + fresh QR)
+ * instance/connect.ts - Initiate connection (logout old + fresh QR)
  * GET /api/v1/instance/connect/:instance
  */
 import { ApiClient } from '../../lib/api-client.js';

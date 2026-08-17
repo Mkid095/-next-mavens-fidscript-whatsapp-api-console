@@ -1,5 +1,5 @@
 /**
- * WhatsApp-Web mirror — turns raw Baileys JSON into clean typed shapes.
+ * WhatsApp-Web mirror - turns raw Baileys JSON into clean typed shapes.
  */
 import db from '../../../database.js';
 import { parseIncomingMessage } from '../../../utils/messageParser.js';

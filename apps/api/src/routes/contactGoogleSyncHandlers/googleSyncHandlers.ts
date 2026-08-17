@@ -1,5 +1,5 @@
 /**
- * Google OAuth — sync handlers.
+ * Google OAuth - sync handlers.
  * Handles: getGoogleStatus, importGoogleContacts, unlinkGoogle, refreshGoogleAccessToken.
  */
 import { Request, Response } from 'express';

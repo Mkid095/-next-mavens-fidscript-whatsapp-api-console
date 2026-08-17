@@ -10,7 +10,7 @@ interface SegmentListProps {
 }
 
 /**
- * Phase 5 Slice C — Segment list. Two modes:
+ * Phase 5 Slice C - Segment list. Two modes:
  *   - Management (no onPick): name, count, last computed, delete
  *   - Pick (onPick provided): adds a "Use" button to each row, used by
  *     CampaignBuilder's "From segment" audience mode.
@@ -43,7 +43,7 @@ export default function SegmentList({ onCreate, onPick, pickMode }: SegmentListP
       {filtered.length === 0 && !loading ? (
         <div className="p-8 border-2 border-dashed border-[#2d2813] rounded-2xl text-center">
           <Users className="w-8 h-8 mx-auto text-[#6e684a] mb-2" />
-          <p className="text-xs text-[#6e684a]">{pickMode ? 'No segments yet — create one to target by audience rules.' : 'No segments yet. Build one to target campaigns by audience rules.'}</p>
+          <p className="text-xs text-[#6e684a]">{pickMode ? 'No segments yet - create one to target by audience rules.' : 'No segments yet. Build one to target campaigns by audience rules.'}</p>
         </div>
       ) : (
         <div className="space-y-2">

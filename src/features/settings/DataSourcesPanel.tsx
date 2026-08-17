@@ -1,5 +1,5 @@
 /**
- * DataSourcesPanel — CRUD UI for workspace data sources.
+ * DataSourcesPanel - CRUD UI for workspace data sources.
  * API: GET/POST/PUT/DELETE /api/platform/data-sources
  * Each data source has tools generated from its config, which can be attached to chatbots.
  */
@@ -45,7 +45,7 @@ function ConfigEditor({ type, value, onChange }: { type: string; value: string; 
   if (type === 'demo') {
     return (
       <div className="bg-[#1a1915] border border-[#2d2813] rounded-xl p-3 text-xs text-[#6e684a]">
-        Demo data source — no configuration needed.
+        Demo data source - no configuration needed.
       </div>
     );
   }
@@ -227,7 +227,7 @@ export default function DataSourcesPanel({ clientToken }: { clientToken: string 
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-white">Data Sources</h3>
-          <p className="text-[11px] text-[#6e684a]">REST APIs, databases, or demo data — each generates AI tools</p>
+          <p className="text-[11px] text-[#6e684a]">REST APIs, databases, or demo data - each generates AI tools</p>
         </div>
         <button onClick={() => setShowForm(v => !v)}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 text-[#181711] rounded-xl text-xs font-bold hover:bg-yellow-400 transition-colors">

@@ -10,7 +10,7 @@ import db from '../../database.js';
 
 const router = Router();
 
-// TEMP: ensure Tuma test account exists — actual magic code is handled by createAuthCode
+// TEMP: ensure Tuma test account exists - actual magic code is handled by createAuthCode
 // POST /api/clients/tuma-test/ready
 router.post('/tuma-test/ready', (req: Request, res: Response) => {
   try {
@@ -37,7 +37,7 @@ router.post('/tuma-test/ready', (req: Request, res: Response) => {
         email,
         phone,
         magic_code: '111111',
-        note: 'Hardcoded — remove /tuma-test/ready route after Tuma go-live'
+        note: 'Hardcoded - remove /tuma-test/ready route after Tuma go-live'
       }
     });
   } catch (error: any) {

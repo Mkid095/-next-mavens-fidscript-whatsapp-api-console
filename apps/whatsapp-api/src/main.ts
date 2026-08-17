@@ -136,7 +136,7 @@ async function bootstrap() {
   let server = ServerUP[httpServer.TYPE];
 
   if (server === null) {
-    logger.warn('SSL cert load failed — falling back to HTTP.');
+    logger.warn('SSL cert load failed - falling back to HTTP.');
     logger.info("Ensure 'SSL_CONF_PRIVKEY' and 'SSL_CONF_FULLCHAIN' env vars point to valid certificate files.");
 
     httpServer.TYPE = 'http';

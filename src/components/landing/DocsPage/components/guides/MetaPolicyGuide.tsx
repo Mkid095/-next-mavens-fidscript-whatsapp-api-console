@@ -34,7 +34,7 @@ export function MetaPolicyGuide() {
 
       <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">2. Quality rating tiers</h2>
       <p className="text-xs text-[#525252] mb-3">
-        Your tier is set by Meta based on the quality of conversations you have — recipient
+        Your tier is set by Meta based on the quality of conversations you have - recipient
         blocks, reports, and low engagement all drag it down. Higher tiers unlock higher
         volume.
       </p>
@@ -63,7 +63,7 @@ export function MetaPolicyGuide() {
       <p className="text-xs text-[#525252] mb-3">
         WhatsApp explicitly bans the following. Your chatbot's{' '}
         <code className="font-mono text-[#f97316]">system_prompt</code> should refuse or hand
-        off on any of these — never try to comply:
+        off on any of these - never try to comply:
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
         {[
@@ -93,32 +93,32 @@ export function MetaPolicyGuide() {
       <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">4. How FIDScript enforces compliance</h2>
       <ul className="list-disc list-inside text-sm text-[#525252] space-y-2 mb-8">
         <li>
-          <strong className="text-[#1a1a1a]">Tier-aware volume cap</strong> — daily unique-customer
+          <strong className="text-[#1a1a1a]">Tier-aware volume cap</strong> - daily unique-customer
           initiations are tracked against your tier. Sends past the cap are queued for the next
           24h window, never dropped.
         </li>
         <li>
-          <strong className="text-[#1a1a1a]">Adaptive bulk pacing</strong> — 10 MPS at idle, ramps
+          <strong className="text-[#1a1a1a]">Adaptive bulk pacing</strong> - 10 MPS at idle, ramps
           to 30 MPS when the queue hits 5,000+ (still well under Meta's 80 MPS cap).
         </li>
         <li>
-          <strong className="text-[#1a1a1a]">Per-instance rate limiter</strong> — 3 reads/sec/instance
+          <strong className="text-[#1a1a1a]">Per-instance rate limiter</strong> - 3 reads/sec/instance
           and 2 mutations/sec/instance to prevent account-level blocks.
         </li>
         <li>
-          <strong className="text-[#1a1a1a]">Hallucination policy</strong> — set per-chatbot.{' '}
+          <strong className="text-[#1a1a1a]">Hallucination policy</strong> - set per-chatbot.{' '}
           <code className="font-mono text-[#f97316]">strict</code> refuses on low confidence;{' '}
           <code className="font-mono text-[#f97316]">balanced</code> gives a hedged answer;{' '}
           <code className="font-mono text-[#f97316]">creative</code> lets the model improvise;{' '}
           <code className="font-mono text-[#f97316]">disabled</code> passes through unchanged.
         </li>
         <li>
-          <strong className="text-[#1a1a1a]">Confidence threshold + handoff</strong> — below your
+          <strong className="text-[#1a1a1a]">Confidence threshold + handoff</strong> - below your
           configured threshold (e.g. 0.6), the bot hands the conversation to a human instead of
           risking a wrong answer that triggers a user block.
         </li>
         <li>
-          <strong className="text-[#1a1a1a]">24h session window</strong> — utility templates can
+          <strong className="text-[#1a1a1a]">24h session window</strong> - utility templates can
           only be sent within 24h of the user's last message. Marketing templates require
           explicit opt-in via template approval.
         </li>
@@ -140,7 +140,7 @@ Hard rules:
 - Never promise a refund, return, or legal outcome. If the user asks for one,
   respond: "I'll connect you with a manager who can help" and trigger a handoff.
 - Never give medical, legal, or financial advice. Respond: "I'm not qualified
-  to advise on that — please consult a professional."
+  to advise on that - please consult a professional."
 - Never discuss politics, religion, or competitor products.
 - Never claim to be a real person. You can say you're an AI assistant for ACME.
 - If you're not sure, say so. It's better to admit uncertainty than to guess

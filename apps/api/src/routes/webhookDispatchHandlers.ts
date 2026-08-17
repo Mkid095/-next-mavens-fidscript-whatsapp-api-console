@@ -1,5 +1,5 @@
 /**
- * Webhook dispatch handlers — resolve conversation, persist message,
+ * Webhook dispatch handlers - resolve conversation, persist message,
  * emit SSE events.
  */
 import { Request } from 'express';

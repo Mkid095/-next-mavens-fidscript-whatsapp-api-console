@@ -81,7 +81,7 @@ export default function PendingPoller({
     return (
       <div className="p-3 rounded-xl text-xs font-semibold bg-amber-900/40 text-amber-400 border border-amber-900/50 flex items-center gap-2">
         <AlertCircle className="w-4 h-4 shrink-0" />
-        Payment may have failed — check your M-Pesa app. Tokens will be added automatically once confirmed.
+        Payment may have failed - check your M-Pesa app. Tokens will be added automatically once confirmed.
       </div>
     );
   }

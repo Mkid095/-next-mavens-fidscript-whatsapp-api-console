@@ -1,5 +1,5 @@
 /**
- * sends.ts — typed wrappers for all 10 WhatsApp message types.
+ * sends.ts - typed wrappers for all 10 WhatsApp message types.
  * POST /api/v1/messages/<type>/:instance
  */
 import type { FidscriptClient } from './client.js';

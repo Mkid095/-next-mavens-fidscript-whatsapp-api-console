@@ -4,7 +4,7 @@ import db from '../../database.js';
 import type { WorkspaceContext } from '../../modules/platform/workspace/index.js';
 
 // =============================================================================
-// Audit writer — distinct from domain_events.
+// Audit writer - distinct from domain_events.
 // Every privileged mutation writes a before/after row.
 // Read via GET /api/audit behind audit.view permission.
 // =============================================================================

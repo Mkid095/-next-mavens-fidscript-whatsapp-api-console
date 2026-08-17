@@ -20,7 +20,7 @@ export default function CampaignForm({ name, setName, instanceName, setInstanceN
         <label className="block text-[10px] font-bold text-[#6e684a] uppercase mb-1">Send from</label>
         <select value={instanceName} onChange={e => setInstanceName(e.target.value)}
           className="w-full px-3 py-2 border border-[#2d2813] bg-[#181711] rounded-xl text-xs text-[#a8a99e] focus:outline-none focus:border-[#eab308]">
-          <option value="">— select instance —</option>
+          <option value="">- select instance -</option>
           {instances.map(i => (
             <option key={i.id} value={i.name}>
               {i.display_name || i.name} {i.phone_number ? `· ${i.phone_number}` : ''} [{i.status}]

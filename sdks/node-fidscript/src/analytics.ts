@@ -1,5 +1,5 @@
 /**
- * analytics.ts — /api/v1/analytics (maps to /api/platform/analytics on backend)
+ * analytics.ts - /api/v1/analytics (maps to /api/platform/analytics on backend)
  *
  * Public API for workspace analytics and metrics.
  */

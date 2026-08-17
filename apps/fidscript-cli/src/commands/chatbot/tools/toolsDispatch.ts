@@ -1,5 +1,5 @@
 /**
- * toolsDispatch.ts — `fidscript chatbot tools <chatbot-id> [list|attach|detach]`
+ * toolsDispatch.ts - `fidscript chatbot tools <chatbot-id> [list|attach|detach]`
  *
  * Subcommand dispatcher for chatbot tools.
  */

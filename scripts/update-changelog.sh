@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# update-changelog.sh — append a new entry to src/data/changelog.json
+# update-changelog.sh - append a new entry to src/data/changelog.json
 # =============================================================================
 # Usage:
 #   BUMP_TYPE=patch   bash scripts/update-changelog.sh              # v0.4.0 → v0.4.1
@@ -12,11 +12,11 @@
 #     bash scripts/update-changelog.sh
 #
 # Semver discipline:
-#   patch  — bug fixes, small UI tweaks, perf improvements, dark-mode fixes
-#   minor  — new features, new endpoints, new CLI subcommands (no breaking changes)
-#   major  — breaking API changes, auth model changes, schema redesigns
+#   patch  - bug fixes, small UI tweaks, perf improvements, dark-mode fixes
+#   minor  - new features, new endpoints, new CLI subcommands (no breaking changes)
+#   major  - breaking API changes, auth model changes, schema redesigns
 #
-# The script is idempotent — running twice for the same version is a no-op.
+# The script is idempotent - running twice for the same version is a no-op.
 # =============================================================================
 set -euo pipefail
 
@@ -51,10 +51,10 @@ case "$BUMP_TYPE" in
   major) NEW_MAJOR=$((LATEST_MAJOR + 1));    NEXT="v${NEW_MAJOR}.0.0" ;;
 esac
 
-# Idempotency — bail out if the latest version already matches
+# Idempotency - bail out if the latest version already matches
 EXISTING_LATEST=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$CHANGELOG','utf8')).latest)" 2>/dev/null || echo "")
 if [ "$EXISTING_LATEST" = "$NEXT" ]; then
-  echo "Changelog already has $NEXT — skipping."
+  echo "Changelog already has $NEXT - skipping."
   exit 0
 fi
 
@@ -84,7 +84,7 @@ const fixes = (process.env.FIXES || '').split(';;').map(s => s.trim()).filter(Bo
 const tags = (process.env.TAGS || '').split(',').map(s => s.trim()).filter(Boolean);
 const commits = (process.env.COMMIT_HASH || '$COMMIT').split(';;').map(s => s.trim()).filter(Boolean);
 
-// Validate — refuse to write a near-empty entry
+// Validate - refuse to write a near-empty entry
 const errors = [];
 if (!title) errors.push('TITLE env var is required (e.g. TITLE="New feature X").');
 if (!highlights.length && !fixes.length) errors.push('At least one of HIGHLIGHTS or FIXES must be provided (use ;;; as separator).');
@@ -119,6 +119,6 @@ EOF
 
 echo ""
 echo "Next steps:"
-echo "  1. Edit src/data/changelog.json — fill in highlights/fixes/commit hashes"
+echo "  1. Edit src/data/changelog.json - fill in highlights/fixes/commit hashes"
 echo "  2. Commit: git add src/data/changelog.json && git commit -m 'chore(changelog): $NEXT'"
 echo "  3. Push + deploy: git push origin main && bash deploy.sh"

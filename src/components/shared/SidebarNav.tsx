@@ -106,7 +106,7 @@ export default function SidebarNav({ activeSection, collapsed }: SidebarNavProps
     <nav className="flex-1 overflow-y-auto">
       {navGroups.map((group, gi) => (
         <div key={group.label}>
-          {/* Section label — only when expanded */}
+          {/* Section label - only when expanded */}
           {!collapsed && (
             <div className="px-3 pt-4 pb-1">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#5a554a]">
@@ -134,7 +134,7 @@ export default function SidebarNav({ activeSection, collapsed }: SidebarNavProps
               );
             })}
           </div>
-          {/* Divider between groups — only when expanded */}
+          {/* Divider between groups - only when expanded */}
           {gi < navGroups.length - 1 && !collapsed && (
             <div className="mx-3 border-b border-[#2d2813]" />
           )}

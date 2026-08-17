@@ -5,9 +5,9 @@ import { dispatchConversationCreated, dispatchCustomerCreated } from '../events/
 import type { WorkspaceContext } from '../identity/index.js';
 
 // =============================================================================
-// resolveConversation — THE canonical chokepoint for customer + conversation.
+// resolveConversation - THE canonical chokepoint for customer + conversation.
 // Every inbound/outbound message routes through here.
-// Returns { customerId, conversationId } — caller writes to inbox_messages.
+// Returns { customerId, conversationId } - caller writes to inbox_messages.
 // =============================================================================
 
 export interface ResolveResult {

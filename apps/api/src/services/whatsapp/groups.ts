@@ -4,13 +4,13 @@ import { paceWhatsApp, type WhatsAppCallKind } from './whatsappCallLimiter.js';
 import { type SendContext, type SendResult, gatewayNameOf } from './shared.js';
 
 /**
- * Group management — 16 ops, all FREE (no tokens). Every op proxies to the gateway's
+ * Group management - 16 ops, all FREE (no tokens). Every op proxies to the gateway's
  * /group/* surface, logs the request, and maps the gateway response to a SendResult.
  * groupJid/inviteCode travel as query params (the gateway's contract); mutations
  * carry their value in the body.
  *
  * Reads and mutations are paced independently per instance (see
- * whatsappCallLimiter) — group churn (add/remove participants, invite,
+ * whatsappCallLimiter) - group churn (add/remove participants, invite,
  * toggleEphemeral) is the highest block-risk surface in this file, so
  * mutations are capped at 2 MPS while reads stay at 3 MPS.
  */

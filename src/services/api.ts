@@ -1,6 +1,6 @@
-// FIDScript API Service — COMPAT SHIM
+// FIDScript API Service - COMPAT SHIM
 // Core transport (fetchApi, API_BASE_URL, tokens, response types) now lives in
-// src/data/api/client.ts — the canonical data layer (§16). This file re-exports
+// src/data/api/client.ts - the canonical data layer (§16). This file re-exports
 // it so existing imports (`services/api`) keep working during migration. New
 // code should import from `src/data` instead.
 

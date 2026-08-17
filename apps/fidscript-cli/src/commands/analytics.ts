@@ -1,5 +1,5 @@
 /**
- * analytics.ts — GET /api/v1/analytics/overview
+ * analytics.ts - GET /api/v1/analytics/overview
  * Show workspace analytics from the command line.
  */
 import { ApiClient } from '../lib/api-client.js';
@@ -21,7 +21,7 @@ export async function analyticsOverview(): Promise<void> {
     const data = res.data ?? {};
     const entries = Object.entries(data);
     if (entries.length === 0) { console.log('No analytics data for today.'); return; }
-    console.log('Analytics — today');
+    console.log('Analytics - today');
     for (const [metric, value] of entries.sort()) {
       console.log(`  ${metric.replace(/_/g, ' ')}: ${value.toLocaleString()}`);
     }

@@ -1,5 +1,5 @@
 /**
- * SeoHeadMain — the main SeoHead component that composes MetaTags, OpenGraph,
+ * SeoHeadMain - the main SeoHead component that composes MetaTags, OpenGraph,
  * and all structured-data schemas.
  */
 import React from 'react';
@@ -46,7 +46,7 @@ export interface SeoHeadProps {
   schema?: PageSchema;
   /** Override or supplement the default schemas with extra ones */
   extraSchemas?: object[];
-  /** Breadcrumb items — first item is always the site root */
+  /** Breadcrumb items - first item is always the site root */
   breadcrumbs?: { name: string; url: string }[];
 }
 
@@ -61,7 +61,7 @@ export function SeoHeadMain({
   extraSchemas = [],
   breadcrumbs = [],
 }: SeoHeadProps) {
-  const fullTitle = title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
+  const fullTitle = title === SITE_NAME ? title : `${title} - ${SITE_NAME}`;
   const canonicalUrl = canonical.startsWith('http') ? canonical : `${BASE_URL}${canonical}`;
 
   // Build the schema list based on page type
@@ -124,14 +124,14 @@ export function SeoHeadMain({
       />
 
       <Helmet>
-        {/* Structured Data — all schemas for this page */}
+        {/* Structured Data - all schemas for this page */}
         {schemas.map((s, i) => (
           <script key={i} type="application/ld+json">
             {JSON.stringify(s)}
           </script>
         ))}
 
-        {/* FIDScript — explicit product schema under Next Mavens */}
+        {/* FIDScript - explicit product schema under Next Mavens */}
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
@@ -147,7 +147,7 @@ export function SeoHeadMain({
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'KES',
-              description: 'Free trial — 500 welcome tokens. No credit card required.',
+              description: 'Free trial - 500 welcome tokens. No credit card required.',
               availability: 'https://schema.org/InStock',
             },
             isPartOf: {
@@ -172,7 +172,7 @@ export function SeoHeadMain({
               '@type': 'Thing',
               name: 'WhatsApp Business API for Africa',
               description:
-                'Programmatic WhatsApp messaging for Kenyan and African businesses — affordable, sustainable, built by Kenyan developers',
+                'Programmatic WhatsApp messaging for Kenyan and African businesses - affordable, sustainable, built by Kenyan developers',
             },
           })}
         </script>

@@ -1,5 +1,5 @@
 /**
- * llm/list.ts — list LLM connections in the workspace.
+ * llm/list.ts - list LLM connections in the workspace.
  * Auth: JWT. GET /api/platform/llm-connections
  */
 import {

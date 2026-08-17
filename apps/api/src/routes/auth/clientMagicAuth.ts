@@ -23,7 +23,7 @@ interface ClientRow {
   api_key: string;
 }
 
-// POST /api/auth/client/request-code — start passwordless sign-up
+// POST /api/auth/client/request-code - start passwordless sign-up
 router.post('/client/request-code', async (req: Request, res: Response) => {
   try {
     const { name, email, phone } = req.body;
@@ -63,7 +63,7 @@ router.post('/client/request-code', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/auth/client/verify-code — verify the code and create the account
+// POST /api/auth/client/verify-code - verify the code and create the account
 router.post('/client/verify-code', (req: Request, res: Response) => {
   try {
   const { name, email, phone, code } = req.body;
@@ -79,7 +79,7 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
   const existing = db.prepare('SELECT * FROM clients WHERE email = ?').get(normalized) as (ClientRow & { is_active: number }) | undefined;
 
   if (existing) {
-    // Existing client — issue a login JWT
+    // Existing client - issue a login JWT
     if (!existing.is_active) {
       return res.status(403).json({ success: false, error: 'Account is disabled. Contact support.' });
     }
@@ -95,7 +95,7 @@ router.post('/client/verify-code', (req: Request, res: Response) => {
     });
   }
 
-  // New client — create account
+  // New client - create account
   const freePlan = db.prepare("SELECT id FROM plans WHERE name = 'Free' AND is_active = 1").get() as { id: string } | undefined;
   const defaultPlanId = freePlan?.id || null;
 

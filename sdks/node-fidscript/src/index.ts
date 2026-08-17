@@ -1,5 +1,5 @@
 /**
- * index.ts — public surface of @fidscript/sdk.
+ * index.ts - public surface of @fidscript/sdk.
  *
  * Usage:
  *   import { Fidscript } from '@fidscript/sdk';

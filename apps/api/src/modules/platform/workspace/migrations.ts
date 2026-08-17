@@ -2,7 +2,7 @@ import type { Database } from 'sql.js';
 import { createWorkspaceTables, seedWorkspaceData } from './tables.js';
 
 // =============================================================================
-// Workspace migrations — extend existing tables for multi-workspace / RBAC
+// Workspace migrations - extend existing tables for multi-workspace / RBAC
 // All migrations are guarded: ALTER TABLE ADD COLUMN IF NOT EXISTS (sqlite pattern)
 // =============================================================================
 
@@ -30,7 +30,7 @@ export function runWorkspaceMigrations(db: Database): void {
   try { db.run("ALTER TABLE token_transactions ADD COLUMN workspace_id TEXT"); } catch (_) { /* ok */ }
   try { db.run("ALTER TABLE payments ADD COLUMN workspace_id TEXT"); } catch (_) { /* ok */ }
 
-  // domain_events table (new — created if not exists)
+  // domain_events table (new - created if not exists)
   db.run(`
     CREATE TABLE IF NOT EXISTS domain_events (
       id TEXT PRIMARY KEY,
@@ -175,7 +175,7 @@ export function runWorkspaceMigrations(db: Database): void {
     )
   `);
 
-  // ai_agents (reserved Phase 4 — schema exists now)
+  // ai_agents (reserved Phase 4 - schema exists now)
   db.run(`
     CREATE TABLE IF NOT EXISTS ai_agents (
       id TEXT PRIMARY KEY,
@@ -211,7 +211,7 @@ export function runWorkspaceMigrations(db: Database): void {
     )
   `);
 
-  // ai_keyword_rules (Phase 2 — simple keyword → reply + handoff)
+  // ai_keyword_rules (Phase 2 - simple keyword → reply + handoff)
   db.run(`
     CREATE TABLE IF NOT EXISTS ai_keyword_rules (
       id TEXT PRIMARY KEY,
@@ -251,7 +251,7 @@ export function runWorkspaceMigrations(db: Database): void {
     )
   `);
 
-  // search_index (Phase 2 — FTS added in indexes.ts)
+  // search_index (Phase 2 - FTS added in indexes.ts)
   db.run(`
     CREATE TABLE IF NOT EXISTS search_index (
       id TEXT PRIMARY KEY,
@@ -266,7 +266,7 @@ export function runWorkspaceMigrations(db: Database): void {
 
   // -------------------------------------------------------------------------
   // Indexes on platform tables. These MUST run here (after table/column
-  // creation), not in database/indexes.ts — those tables/columns do not exist
+  // creation), not in database/indexes.ts - those tables/columns do not exist
   // at createSchema() time, so indexing them there would crash a fresh DB.
   // -------------------------------------------------------------------------
   // Workspace / RBAC

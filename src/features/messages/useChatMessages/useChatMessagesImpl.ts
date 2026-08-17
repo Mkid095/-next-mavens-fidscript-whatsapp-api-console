@@ -54,14 +54,14 @@ export function useChatMessages(instanceName: string | null, jid: string | null)
   // Track the previous jid to detect chat switches
   const prevJidRef = useRef<string | null>(null);
 
-  // Guard SSE appends — only apply real-time events to the currently open chat
+  // Guard SSE appends - only apply real-time events to the currently open chat
   const activeJidRef = useRef<string | null>(null);
   useEffect(() => {
     activeJidRef.current = jid;
     prevJidRef.current = jid;
   }, [jid]);
 
-  // Real-time message append — only for the open conversation
+  // Real-time message append - only for the open conversation
   useEffect(() => {
     if (!instanceName || !jid) return;
 

@@ -137,7 +137,7 @@ export function updateCounters(instanceName: string, clientId: string) {
  * Resolve the recipient to a customer + conversation for an outbound send.
  * Uses normalizePhone (group JIDs pass through); returns empty ids for
  * non-resolvable targets like 'status' so the invariant holds where it can.
- * Never throws — a resolution failure must not break the send path.
+ * Never throws - a resolution failure must not break the send path.
  */
 async function resolveOutbound(
   ctx: SendContext,
@@ -195,7 +195,7 @@ export async function finalize(
   emitDashboardRefresh(ctx.instance.client_id);
 
   // Emit SSE so the open thread replaces the optimistic bubble with the real server id.
-  // chatId here is already the normalized phone or @g.us JID — matches what the frontend uses.
+  // chatId here is already the normalized phone or @g.us JID - matches what the frontend uses.
   emitMessageSent(ctx.instance.name, {
     id: msgId,
     from_number: '',
@@ -219,7 +219,7 @@ export async function finalize(
 
 /**
  * Idempotency wrapper. If the request carries an `Idempotency-Key` header, a
- * prior result for (key, client) is replayed verbatim — no token charge, no
+ * prior result for (key, client) is replayed verbatim - no token charge, no
  * gateway call. The first completed result (success OR failure) is cached, so a
  * retried failed send with the same key returns the same error without retrying.
  */

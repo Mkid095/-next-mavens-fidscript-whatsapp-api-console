@@ -50,7 +50,7 @@ export default function HistoryContent({ loading, txs }: HistoryContentProps) {
           <div className="min-w-0">
             <p className="text-[11px] font-bold text-[#cbd3cf] truncate">{tx.package_name || tx.package_id || 'Custom'}</p>
             <p className="text-[9px] text-[#5a554a]">
-              {tx.tokens ? `${(tx.tokens + (tx.bonus_tokens || 0)).toLocaleString()} tokens` : '—'}
+              {tx.tokens ? `${(tx.tokens + (tx.bonus_tokens || 0)).toLocaleString()} tokens` : '-'}
             </p>
           </div>
           <div className="text-right">

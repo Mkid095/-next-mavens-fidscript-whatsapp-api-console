@@ -3,7 +3,7 @@ import { instancesApi } from '../../../services/api';
 import type { Instance } from '../../../services/api';
 
 /**
- * Polling fallback for connection-state detection — used when a proxy strips
+ * Polling fallback for connection-state detection - used when a proxy strips
  * SSE mid-flight. Callbacks are stable (refs hold the latest values) so callers
  * can hold them in closures without going stale. startPolling self-clears once a
  * terminal state (connected/disconnected/error) is observed.

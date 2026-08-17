@@ -9,7 +9,7 @@ const router = Router();
 // Returns audit_logs rows scoped to the workspace, filterable by resource /
 // actor / time. Permission check: this surface is the Owner/Admin view;
 // gating with `audit.view` is reserved for when workspaceAuth fully replaces
-// clientJwtAuth — today the bridge gives Owner perms to the client owner.
+// clientJwtAuth - today the bridge gives Owner perms to the client owner.
 // =============================================================================
 
 router.use(clientJwtAuth);

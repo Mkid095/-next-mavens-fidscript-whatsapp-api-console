@@ -1,5 +1,5 @@
 /**
- * CopyButton.tsx — shared dark-mode copy-to-clipboard button.
+ * CopyButton.tsx - shared dark-mode copy-to-clipboard button.
  *
  * Used by code blocks, install commands, and API key displays.
  * Shows a brief "Copied" confirmation for 2s after click.

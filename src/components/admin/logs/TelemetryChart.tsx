@@ -27,7 +27,7 @@ export default function TelemetryChart({ dailyTrends = [] }: TelemetryChartProps
         <div>
           <span className="font-mono text-[9px] uppercase tracking-widest text-[#15803d] font-bold">Real-Time Node Monitors</span>
           <h3 className="text-sm font-bold text-forest-deep mt-1">
-            {cfg.label} Messages — Last 7 Days
+            {cfg.label} Messages - Last 7 Days
           </h3>
           <p className="text-xs text-graphite mt-0.5">
             Daily {cfg.label.toLowerCase()} message volume

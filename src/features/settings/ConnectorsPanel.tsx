@@ -1,5 +1,5 @@
 /**
- * ConnectorsPanel — UI for workspace connector management.
+ * ConnectorsPanel - UI for workspace connector management.
  *
  * Lists available integrations (Shopify, WooCommerce, etc.), shows install status,
  * and provides credential management (OAuth flow / API key entry).
@@ -272,7 +272,7 @@ export default function ConnectorsPanel({ clientToken }: { clientToken: string }
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs text-[#6e684a]">
-          Connect external services — AI tools can use their APIs in conversations.
+          Connect external services - AI tools can use their APIs in conversations.
         </p>
         <span className="text-[10px] text-[#3d3a1e]">{connectors.filter(c => c.installed).length}/{connectors.length} installed</span>
       </div>

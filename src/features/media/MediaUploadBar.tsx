@@ -25,7 +25,7 @@ interface MediaUploadBarProps {
 
 /**
  * Toolbar above the media grid: kind filter, tag filter, search, upload
- * (file picker) and From-URL (paste a public URL). Pure presentational —
+ * (file picker) and From-URL (paste a public URL). Pure presentational -
  * MediaLibrary owns the upload handler.
  */
 export default function MediaUploadBar({

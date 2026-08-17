@@ -1,5 +1,5 @@
 /**
- * contactResolver.ts — Canonical Contact Identity Layer
+ * contactResolver.ts - Canonical Contact Identity Layer
  *
  * Single source of truth for resolving a contact across all identifier types.
  * Every inbound message, Google import, and CSV import goes through here.
@@ -81,7 +81,7 @@ export function resolveContact(opts: {
       `).get(normalized, clientId) as { contact_id: string } | undefined;
 
       if (byPhone) {
-        // Phone matched — touch last_seen and return
+        // Phone matched - touch last_seen and return
         db.prepare(`UPDATE contacts SET whatsapp_name = COALESCE(NULLIF(whatsapp_name,''), ?) WHERE id = ?`)
           .run(displayName ?? null, byPhone.contact_id);
         return {
@@ -125,7 +125,7 @@ export function resolveContact(opts: {
     }
   }
 
-  // ── Step 4: no match — create new contact ────────────────────────────────
+  // ── Step 4: no match - create new contact ────────────────────────────────
   const contactId = `cnt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
   const primaryPhone = phone ? (normalizePhone(phone) || phone) : null;
 
@@ -235,10 +235,10 @@ export function updateContactSourceSyncStatus(
 
 /**
  * Returns the best display name for a contact using canonical priority:
- * 1. contacts.name          — manually set name
- * 2. contacts.whatsapp_name — WhatsApp profile name
- * 3. contacts.google_name   — imported from Google
- * 4. phone number           — last resort
+ * 1. contacts.name          - manually set name
+ * 2. contacts.whatsapp_name - WhatsApp profile name
+ * 3. contacts.google_name   - imported from Google
+ * 4. phone number           - last resort
  */
 export function getContactDisplayName(contactId: string): string | null {
   const row = db.prepare(`

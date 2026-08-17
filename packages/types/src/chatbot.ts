@@ -1,5 +1,5 @@
 /**
- * chatbot.ts — Chatbot and AI configuration types shared across SDK, CLI, and frontend.
+ * chatbot.ts - Chatbot and AI configuration types shared across SDK, CLI, and frontend.
  */
 
 // ── Chatbot ──────────────────────────────────────────────────────────────────

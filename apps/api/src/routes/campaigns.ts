@@ -90,7 +90,7 @@ router.post('/', clientJwtAuth, async (req: Request, res: Response) => {
     } else if (Array.isArray(phone_numbers) && phone_numbers.length > 0) {
       resolvedPhones = phone_numbers;
     } else if (type === 'drip' || type === 'trigger') {
-      // Drip + trigger campaigns have a dynamic audience — recipients are added
+      // Drip + trigger campaigns have a dynamic audience - recipients are added
       // over time as triggers fire or via manual /enroll. No initial list needed.
       resolvedPhones = [];
     } else {

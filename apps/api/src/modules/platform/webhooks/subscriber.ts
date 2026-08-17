@@ -4,7 +4,7 @@ import { signPayload } from './hmac.js';
 import type { DomainEventType, DomainEventPayload } from '../events/index.js';
 
 // =============================================================================
-// Webhook fan-out — bus().subscribe('*', deliverToWebhooks).
+// Webhook fan-out - bus().subscribe('*', deliverToWebhooks).
 // §14.1: every domain event is delivered to matching webhooks with HMAC
 // signing, exponential backoff (5 attempts: 0s, 5s, 30s, 2m, 10m), and a
 // delivery row recorded in webhook_deliveries for the activity log.

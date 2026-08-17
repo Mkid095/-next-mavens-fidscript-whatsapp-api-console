@@ -43,7 +43,7 @@ async function testFrontend(url: string) {
     const res = await fetch(url, { redirect: 'follow' });
     const ok = res.status >= 200 && res.status < 400;
     return {
-      name: `frontend — ${url}`,
+      name: `frontend - ${url}`,
       status: ok ? 'pass' as const : 'fail' as const,
       severity: ok ? undefined : ('high' as Severity),
       category: 'infrastructure' as string,
@@ -52,7 +52,7 @@ async function testFrontend(url: string) {
     };
   } catch (err) {
     return {
-      name: `frontend — ${url}`,
+      name: `frontend - ${url}`,
       status: 'fail' as const,
       severity: 'high' as Severity,
       category: 'infrastructure',

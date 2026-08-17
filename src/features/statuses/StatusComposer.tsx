@@ -19,7 +19,7 @@ interface StatusComposerProps {
 }
 
 /**
- * Phase 5 Slice E — Status composer. Compact form for posting a text or
+ * Phase 5 Slice E - Status composer. Compact form for posting a text or
  * image/audio status, optionally scheduled for a future time.
  */
 export default function StatusComposer({ instances, onSubmit, submitting, error }: StatusComposerProps) {

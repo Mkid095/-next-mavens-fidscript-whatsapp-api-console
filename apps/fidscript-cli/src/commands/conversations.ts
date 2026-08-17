@@ -1,5 +1,5 @@
 /**
- * conversations.ts — GET /api/v1/conversations
+ * conversations.ts - GET /api/v1/conversations
  * List and inspect conversations from the command line.
  */
 import { ApiClient } from '../lib/api-client.js';
@@ -42,7 +42,7 @@ export async function listConversations(opts: { status?: string; priority?: stri
       status: c.status,
       priority: c.priority,
       unread: c.unread_count,
-      lastMsg: c.last_message_at ? new Date(c.last_message_at).toLocaleDateString() : '—',
+      lastMsg: c.last_message_at ? new Date(c.last_message_at).toLocaleDateString() : '-',
       created: new Date(c.created_at).toLocaleDateString(),
     }));
     renderTable(rows, [

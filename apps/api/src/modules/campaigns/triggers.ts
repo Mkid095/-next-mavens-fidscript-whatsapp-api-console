@@ -11,7 +11,7 @@ import type {
 import { enrollCustomer } from './drip.js';
 
 // =============================================================================
-// Campaign trigger subscriber (§15.5 — Event-triggered campaigns).
+// Campaign trigger subscriber (§15.5 - Event-triggered campaigns).
 // For every trigger-eligible event, find campaigns with type='drip' (and a
 // matching campaign_triggers row) in the same workspace, apply the trigger's
 // filter_json, and enroll matching customers into the campaign.
@@ -36,7 +36,7 @@ function matchesFilter(filterJson: string, eventKey: string, eventVal: unknown):
   if (!filterJson) return true; // empty filter = matches all
   let f: Record<string, unknown> = {};
   try { f = JSON.parse(filterJson) as Record<string, unknown>; } catch { return true; }
-  // Minimal matcher: filter is a flat object { tag: 'vip' } — every key must
+  // Minimal matcher: filter is a flat object { tag: 'vip' } - every key must
   // match the event payload via the supplied getter.
   for (const [k, v] of Object.entries(f)) {
     if (k === eventKey) {

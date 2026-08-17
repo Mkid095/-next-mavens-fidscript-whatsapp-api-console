@@ -3,7 +3,7 @@ import type { Request } from 'express';
 
 /**
  * Per-client rate limiters for the /api/v1 surface, keyed by the authenticated
- * client (falling back to IP if req.client is unset — e.g. on the public spec
+ * client (falling back to IP if req.client is unset - e.g. on the public spec
  * routes). Distinct buckets prevent read-heavy endpoints from exhausting the
  * send budget and vice-versa.
  *

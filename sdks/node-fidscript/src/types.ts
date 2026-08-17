@@ -1,5 +1,5 @@
 /**
- * types.ts — re-exports all shared types from @fidscript/types.
+ * types.ts - re-exports all shared types from @fidscript/types.
  * Kept as a barrel so SDK consumers can `import { … } from '@fidscript/sdk/types'`
  * (the SDK's package.json routes `@fidscript/sdk/types` → `./types.ts`).
  */

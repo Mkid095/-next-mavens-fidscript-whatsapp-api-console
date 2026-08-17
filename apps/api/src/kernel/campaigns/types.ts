@@ -1,5 +1,5 @@
 /**
- * Campaign entity types — the canonical "what" of a campaign.
+ * Campaign entity types - the canonical "what" of a campaign.
  * Delivery mechanics (dispatch, drip, scheduling) live in modules/campaigns/.
  */
 
@@ -18,7 +18,7 @@ export interface Campaign {
   status: CampaignStatus;
   /** Total recipients at launch time (snapshot, not live) */
   totalRecipients: number;
-  /** Aggregated counts — updated by campaign_completed event */
+  /** Aggregated counts - updated by campaign_completed event */
   sentCount: number;
   deliveredCount: number;
   failedCount: number;

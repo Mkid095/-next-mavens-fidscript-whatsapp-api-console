@@ -1,12 +1,12 @@
 import type { Database } from 'sql.js';
 
 // =============================================================================
-// Workspace tables — created via CREATE TABLE IF NOT EXISTS
+// Workspace tables - created via CREATE TABLE IF NOT EXISTS
 // client_id = workspace_id bridge during migration (§4.5 spec)
 // =============================================================================
 
 export function createWorkspaceTables(db: Database): void {
-  // Workspaces — one per client (initially), workspace_id = client_id
+  // Workspaces - one per client (initially), workspace_id = client_id
   db.run(`
     CREATE TABLE IF NOT EXISTS workspaces (
       id TEXT PRIMARY KEY,
@@ -18,7 +18,7 @@ export function createWorkspaceTables(db: Database): void {
     )
   `);
 
-  // Users — unified admin + client owner identity
+  // Users - unified admin + client owner identity
   // Existing 'users' table is extended via migrations.ts
   db.run(`
     CREATE TABLE IF NOT EXISTS workspace_members (
@@ -53,7 +53,7 @@ export function createWorkspaceTables(db: Database): void {
     )
   `);
 
-  // Roles — system roles are workspace_id = NULL
+  // Roles - system roles are workspace_id = NULL
   db.run(`
     CREATE TABLE IF NOT EXISTS roles (
       id TEXT PRIMARY KEY,
@@ -142,7 +142,7 @@ const PERMISSIONS = [
 ];
 
 export function seedWorkspaceData(db: Database): void {
-  // Seed permissions — use db.exec() for static multi-row inserts
+  // Seed permissions - use db.exec() for static multi-row inserts
   PERMISSIONS.forEach((p, i) => {
     db.exec(
       `INSERT OR IGNORE INTO permissions (id, key, description) VALUES ('perm_${i}', '${p.key.replace(/'/g, "''")}', NULL)`

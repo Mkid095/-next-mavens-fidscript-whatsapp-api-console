@@ -4,9 +4,9 @@ import { getInstanceForClient } from '../../services/whatsapp/shared.js';
 import { dispatchCampaignMessage, type CampaignMessageKind } from './dispatch.js';
 
 // =============================================================================
-// Step executor (§15.4 — Drip flows).
+// Step executor (§15.4 - Drip flows).
 // action_type ∈ { send_text, send_media, add_tag, set_status, wait_branch }
-// action_config — JSON shape per action type:
+// action_config - JSON shape per action type:
 //   send_text:   { text, instance_name? }
 //   send_media:  { media_url, caption?, instance_name? }
 //   add_tag:     { tag }
@@ -86,7 +86,7 @@ export async function executeStep(
       return { ok: true };
     }
     case 'wait_branch': {
-      // No-op — the drip scheduler uses delay_seconds to schedule the next step.
+      // No-op - the drip scheduler uses delay_seconds to schedule the next step.
       return { ok: true };
     }
     default:
@@ -110,7 +110,7 @@ async function sendViaInstance(
 ): Promise<StepExecutionResult> {
   const instance = getInstanceForClient(instanceName, ctx.workspaceId);
   if (!instance) return { ok: false, error: `instance not found: ${instanceName}` };
-  // Use a synthetic req for the dispatcher (no HTTP context — steps are server-internal)
+  // Use a synthetic req for the dispatcher (no HTTP context - steps are server-internal)
   const fakeReq = { headers: {}, get: (h: string) => undefined } as never;
   const result = await dispatchCampaignMessage(
     { instance, client: ctx.client as never, req: fakeReq },

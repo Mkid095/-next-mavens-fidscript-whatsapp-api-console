@@ -1,5 +1,5 @@
 /**
- * Webhook parse handlers — message parsing, phone extraction, LID learning,
+ * Webhook parse handlers - message parsing, phone extraction, LID learning,
  * contact-name resolution, and self-message filtering.
  */
 import { Request } from 'express';

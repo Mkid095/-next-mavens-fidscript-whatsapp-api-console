@@ -1,4 +1,4 @@
-# apps/api — Express API Server
+# apps/api - Express API Server
 
 ## Purpose
 
@@ -12,7 +12,7 @@ The main HTTP API server. Single source of truth for all business logic, databas
 
 ```
 src/
-├── index.ts                    # Entry point — Express app setup, middleware, route registration
+├── index.ts                    # Entry point - Express app setup, middleware, route registration
 ├── database.ts                 # sql.js init, schema, migration runner, seed data
 ├── database/
 │   ├── index.ts                # Imports ALL phase migrations
@@ -20,14 +20,14 @@ src/
 │   └── phase*.ts               # Sequential migrations (phase3 → phase31)
 ├── routes/
 │   ├── index.ts                # Mounts all sub-routers
-│   ├── webhook.ts               # Evolution API webhook receiver (415 lines — needs split)
+│   ├── webhook.ts               # Evolution API webhook receiver (415 lines - needs split)
 │   ├── sse.ts                   # Server-Sent Events for real-time updates
 │   ├── auth/                    # Admin + client JWT auth, magic code
 │   ├── v1/                      # Public /api/v1/ endpoints (API key auth)
 │   ├── platform/                # Workspace-scoped API (JWT auth)
 │   ├── admin/                   # Admin-only routes (analytics, instances, keys)
 │   ├── clients.ts               # Client CRUD
-│   ├── contacts.ts              # Contact management (383 lines — needs split)
+│   ├── contacts.ts              # Contact management (383 lines - needs split)
 │   ├── campaigns.ts             # Campaign + drip flow management
 │   └── instance/                # WhatsApp instance lifecycle
 ├── modules/

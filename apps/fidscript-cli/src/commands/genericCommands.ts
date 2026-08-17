@@ -1,5 +1,5 @@
 /**
- * genericCommands.ts — API introspection and token commands
+ * genericCommands.ts - API introspection and token commands
  */
 import type { Command } from 'commander';
 import type { ApiCallOpts } from './api.js';

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NotebookPen, Trash2 } from 'lucide-react';
 import { useNotes } from '../../data/hooks/customers/useNotes.js';
 
-// Phase 3 — internal-only customer notes (§6.1 customer_notes).
+// Phase 3 - internal-only customer notes (§6.1 customer_notes).
 // Author + created_at come from the server. Optimistic prepend.
 export default function NotesEditor({ customerId }: { customerId: string }) {
   const { notes, add, remove } = useNotes(customerId);
@@ -37,7 +37,7 @@ export default function NotesEditor({ customerId }: { customerId: string }) {
                 </button>
               </div>
               <p className="mt-1 text-[10px] text-stone-400">
-                {n.author_name ?? '—'} · {new Date(n.created_at).toLocaleString()}
+                {n.author_name ?? '-'} · {new Date(n.created_at).toLocaleString()}
               </p>
             </div>
           ))

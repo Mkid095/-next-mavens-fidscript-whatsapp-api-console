@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import db from '../../database.js';
 
 /**
- * GET /api/v1/usage — aggregate API usage for the authenticated client.
+ * GET /api/v1/usage - aggregate API usage for the authenticated client.
  * Backed by api_logs (requests + failures) and token_transactions (sends + spend).
  * Coverage grows as management ops begin logging in later phases.
  */

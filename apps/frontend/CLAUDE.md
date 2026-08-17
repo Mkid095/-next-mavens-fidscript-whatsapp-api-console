@@ -1,8 +1,8 @@
-# apps/frontend — React SPA
+# apps/frontend - React SPA
 
 ## Purpose
 
-Admin and client dashboard for the FIDScript WAAP platform. React 18 + Vite SPA. Two portals in one app: admin (platform management) and client (workspace management). All data fetched via REST API — no WebSocket subscriptions except for real-time message updates (SSE).
+Admin and client dashboard for the FIDScript WAAP platform. React 18 + Vite SPA. Two portals in one app: admin (platform management) and client (workspace management). All data fetched via REST API - no WebSocket subscriptions except for real-time message updates (SSE).
 
 ---
 
@@ -42,7 +42,7 @@ Admin and client dashboard for the FIDScript WAAP platform. React 18 + Vite SPA.
 
 ```
 src/
-├── App.tsx                      # Root — auth state, routing, sidebar (13.7K — needs split)
+├── App.tsx                      # Root - auth state, routing, sidebar (13.7K - needs split)
 ├── main.tsx                     # Entry point
 ├── types.ts                     # Shared UI types (InboxMessage, SystemLog, etc.)
 ├── index.css                    # Global styles
@@ -55,7 +55,7 @@ src/
 │   │   ├── adminRoutes.tsx
 │   │   ├── dashboard/           # Dashboard charts and stats
 │   │   ├── instances/           # Instance management
-│   │   ├── providers/           # LLM provider config (LLMProvidersView — 1541 lines)
+│   │   ├── providers/           # LLM provider config (LLMProvidersView - 1541 lines)
 │   │   └── api-console/         # ApiConsoleView (live REST tester)
 │   ├── client/                  # Client portal components
 │   │   ├── ClientDashboard.tsx  # Client shell (~120 lines)
@@ -66,7 +66,7 @@ src/
 │   │   └── vibe/               # AI prompt builder
 │   ├── landing/                 # Marketing site components
 │   │   ├── LandingPage.tsx
-│   │   ├── DocsPage.tsx        # API docs (1729 lines — needs split)
+│   │   ├── DocsPage.tsx        # API docs (1729 lines - needs split)
 │   │   ├── PricingPage.tsx
 │   │   └── features/            # Feature sections
 │   └── shared/                  # Shared UI primitives
@@ -76,11 +76,11 @@ src/
 │       └── LoadingScreen.tsx
 │
 ├── features/                    # Feature-based modules
-│   ├── chatbots/                # Bot builder (ChatbotBuilderShell 764 lines — needs split)
+│   ├── chatbots/                # Bot builder (ChatbotBuilderShell 764 lines - needs split)
 │   │   ├── ChatbotBuilderShell.tsx
-│   │   ├── ConversationInspector.tsx  # 609 lines — needs split
+│   │   ├── ConversationInspector.tsx  # 609 lines - needs split
 │   │   ├── steps/
-│   │   │   ├── AIBrainStep.tsx   # 402 lines — needs split
+│   │   │   ├── AIBrainStep.tsx   # 402 lines - needs split
 │   │   │   ├── AudienceStep.tsx
 │   │   │   ├── SetupStep.tsx
 │   │   │   └── TestDeployStep.tsx
@@ -127,7 +127,7 @@ tsconfig.json
 
 - **App.tsx**: owns `currentUser`, `clientData`, `clientInstances`, `tokenBalance`, `tokenPackages`, `dailyUsage`
 - **Section components**: own their UI state (modals, forms, local flags)
-- **No prop drilling beyond 2 levels** — use React Context for deeper state
+- **No prop drilling beyond 2 levels** - use React Context for deeper state
 - **Session restore on refresh**: `useEffect` in App.tsx checks `localStorage` for admin/client tokens
 
 ---

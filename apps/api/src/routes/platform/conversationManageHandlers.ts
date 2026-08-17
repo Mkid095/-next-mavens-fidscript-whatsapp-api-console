@@ -1,5 +1,5 @@
 /**
- * conversationManageHandlers.ts — /api/platform/conversations/:id
+ * conversationManageHandlers.ts - /api/platform/conversations/:id
  * updateConversation handler + assign/transfer/release barrel.
  */
 import { Request, Response } from 'express';

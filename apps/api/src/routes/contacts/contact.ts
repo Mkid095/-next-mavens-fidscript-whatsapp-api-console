@@ -3,7 +3,7 @@ import { resend, MAIL_FROM } from '../../utils/resend.js';
 
 const router = Router();
 
-// POST /api/contact — Contact form submission
+// POST /api/contact - Contact form submission
 router.post('/', async (req: Request, res: Response) => {
   const { name, email, subject, message } = req.body as {
     name?: string;
@@ -28,7 +28,7 @@ router.post('/', async (req: Request, res: Response) => {
         from: MAIL_FROM,
         to: 'info@nextmavens.com',
         replyTo: email,
-        subject: `[FIDScript Contact] ${subject || 'New message'} — from ${name}`,
+        subject: `[FIDScript Contact] ${subject || 'New message'} - from ${name}`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #181711; border-bottom: 2px solid #eab308; padding-bottom: 8px;">
@@ -67,7 +67,7 @@ router.post('/', async (req: Request, res: Response) => {
       await resend.emails.send({
         from: MAIL_FROM,
         to: email,
-        subject: 'We received your message — Next Mavens',
+        subject: 'We received your message - Next Mavens',
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #181711; padding: 24px; text-align: center;">
@@ -104,7 +104,7 @@ router.post('/', async (req: Request, res: Response) => {
       });
     } catch (err) {
       console.error('[contact] Auto-reply failed:', err);
-      // Non-fatal — the main email already sent
+      // Non-fatal - the main email already sent
     }
   }
 

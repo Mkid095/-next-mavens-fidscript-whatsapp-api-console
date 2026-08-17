@@ -1,5 +1,5 @@
 /**
- * Outbound volume tracking — WhatsApp caps the number of UNIQUE customers a
+ * Outbound volume tracking - WhatsApp caps the number of UNIQUE customers a
  * business can INITIATE a conversation with in a rolling 24-hour period.
  *
  *   Tier 0 (unverified / new accounts): 250 unique users / day
@@ -12,7 +12,7 @@
  * uses ≥50% of its current limit consistently over 7 days. We surface the
  * current usage in the UI so clients can plan toward that 50% threshold.
  *
- * Source of truth: `inbox_messages` — distinct chat_ids the instance has sent
+ * Source of truth: `inbox_messages` - distinct chat_ids the instance has sent
  * an outgoing message to in the last 24h. No new table needed; the webhook
  * and finalize() already persist outgoing messages with direction='outgoing'.
  */
@@ -25,7 +25,7 @@ export interface OutboundUsage {
   uniqueInitiationsToday: number;
   tier: Tier;
   tierLimit: number;             // numeric cap; Number.POSITIVE_INFINITY for Tier 4
-  upgradeThreshold: number;      // 50% of tierLimit — the target to trigger upgrade
+  upgradeThreshold: number;      // 50% of tierLimit - the target to trigger upgrade
   windowStart: string;            // ISO 24h ago
   resetsAt: string;               // ISO when the rolling window slides past the oldest init
   remaining: number;              // tierLimit - uniqueInitiationsToday (Infinity for Tier 4)
@@ -84,7 +84,7 @@ export function getOutboundUsage(instanceId: string | number, clientId: string):
     ORDER BY timestamp ASC LIMIT 1
   `).get(String(instanceId), clientId) as { timestamp: string } | undefined;
 
-  // Approx "when does the window free up the oldest initiation" — 24h after
+  // Approx "when does the window free up the oldest initiation" - 24h after
   // the oldest in-window message. For Tier 4 it's never.
   const resetsAt = tier === 4 || !oldest
     ? new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()

@@ -3,7 +3,7 @@ import { Bot, Plus, Trash2 } from 'lucide-react';
 import { useAgents } from '../../data/hooks/agents/useAgents.js';
 import AgentEditor from './AgentEditor.js';
 
-// Phase 4 — agent registry list (§10.4). One component = list + create
+// Phase 4 - agent registry list (§10.4). One component = list + create
 // affordance + click-to-edit. Editing expands the AgentEditor inline.
 export default function AgentList() {
   const { agents, create, remove } = useAgents();
@@ -24,7 +24,7 @@ export default function AgentList() {
         <Bot size={12} /> AI agents
       </div>
       <p className="mb-3 text-[11px] text-stone-500">
-        Agents are governed AI responders. Each agent gets an explicit allow-list from the action catalog — anything not granted is denied and audited.
+        Agents are governed AI responders. Each agent gets an explicit allow-list from the action catalog - anything not granted is denied and audited.
       </p>
       <div className="mb-3 flex items-center gap-1.5">
         <input

@@ -3,7 +3,7 @@ import { UserCog } from 'lucide-react';
 import { useAssignment } from '../../data/hooks/customers/useAssignment.js';
 import { useTeams } from '../../data/hooks/customers/useTeams.js';
 
-// Phase 3 — long-term customer owner (§6.1 customer_assignments + §9).
+// Phase 3 - long-term customer owner (§6.1 customer_assignments + §9).
 // Distinct from the conversation-level assignee: a customer may be owned by
 // Sales even when their current conversation is unassigned.
 export default function AssignmentPanel({ customerId }: { customerId: string }) {
@@ -31,7 +31,7 @@ export default function AssignmentPanel({ customerId }: { customerId: string }) 
       <p className="mb-2 text-[11px] text-stone-500">
         {assignment?.team_name
           ? `Currently owned by ${assignment.team_name}`
-          : 'Unassigned — pick a team to take long-term ownership.'}
+          : 'Unassigned - pick a team to take long-term ownership.'}
       </p>
       <div className="flex items-center gap-1.5">
         <select
@@ -39,7 +39,7 @@ export default function AssignmentPanel({ customerId }: { customerId: string }) 
           onChange={(e) => setTeamId(e.target.value)}
           className="flex-1 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-xs outline-none focus:border-forest-deep"
         >
-          <option value="">— Unassigned —</option>
+          <option value="">- Unassigned -</option>
           {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
         <button

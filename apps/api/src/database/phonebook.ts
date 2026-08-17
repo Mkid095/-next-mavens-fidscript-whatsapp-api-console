@@ -1,4 +1,4 @@
-// Phonebook sync support — adds an `instance_id` column to `contacts` so the
+// Phonebook sync support - adds an `instance_id` column to `contacts` so the
 // WhatsApp-synced phonebook is stored alongside manual contacts in the same
 // table (bulk messaging picks them up naturally).
 //

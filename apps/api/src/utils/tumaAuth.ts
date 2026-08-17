@@ -1,4 +1,4 @@
-// Node.js 20+ has native global fetch — no import needed
+// Node.js 20+ has native global fetch - no import needed
 
 const TUMA_API_URL = 'https://api.tuma.co.ke';
 

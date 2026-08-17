@@ -1,2 +1,2 @@
-// Client management handlers — barrel
+// Client management handlers - barrel
 export { default } from './manageHandlers.js';

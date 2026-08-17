@@ -1,5 +1,5 @@
 /**
- * new.ts — `fidscript new`
+ * new.ts - `fidscript new`
  *
  * Scaffold a new FIDScript project in a local directory.
  *
@@ -10,9 +10,9 @@
  *   fidscript new my-agent --yes                # non-interactive
  *
  * Templates:
- *   agent          — WhatsApp AI chatbot (prompt, tools, triggers, examples)
- *   workflow       — Event-driven automation (Shopify/WooCommerce → WhatsApp)
- *   shopify-order  — Shopify order → WhatsApp confirmation flow
+ *   agent          - WhatsApp AI chatbot (prompt, tools, triggers, examples)
+ *   workflow       - Event-driven automation (Shopify/WooCommerce → WhatsApp)
+ *   shopify-order  - Shopify order → WhatsApp confirmation flow
  */
 import { Command } from 'commander';
 import pc from 'picocolors';
@@ -115,8 +115,8 @@ function readmeShopify(name: string): string {
     NL,
     `## Files`,
     NL,
-    `  fidscript.config.ts   — Project manifest`,
-    `  workflows/order-confirm.ts  — Order -> WhatsApp message flow`,
+    `  fidscript.config.ts   - Project manifest`,
+    `  workflows/order-confirm.ts  - Order -> WhatsApp message flow`,
     `  .env.example`,
     `  README.md`,
   ].join(NL);
@@ -141,9 +141,9 @@ function readmeWorkflow(name: string): string {
     NL,
     `## Events`,
     NL,
-    `  shopify.order.created    — fires when a Shopify order is placed`,
-    `  woocommerce.order.created — fires when a WooCommerce order is created`,
-    `  message.received        — fires when a customer sends a WhatsApp message`,
+    `  shopify.order.created    - fires when a Shopify order is placed`,
+    `  woocommerce.order.created - fires when a WooCommerce order is created`,
+    `  message.received        - fires when a customer sends a WhatsApp message`,
     NL,
     `## Workflows`,
     NL,
@@ -190,7 +190,7 @@ function readmeMd(name: string, template: Template): string {
 function agentCustomerSupport(): string {
   return [
     `/**`,
-    ` * agents/customer-support.ts — Default AI agent`,
+    ` * agents/customer-support.ts - Default AI agent`,
     ` */`,
     `import type { AgentDefinition } from 'fidscript';`,
     NL,
@@ -214,7 +214,7 @@ function agentCustomerSupport(): string {
 function workflowOrderConfirm(): string {
   return [
     `/**`,
-    ` * workflows/order-confirm.ts — Shopify order -> WhatsApp confirmation`,
+    ` * workflows/order-confirm.ts - Shopify order -> WhatsApp confirmation`,
     ` *`,
     ` * Trigger: shopify.order.created`,
     ` * Action:  send WhatsApp message to the customer`,
@@ -240,7 +240,7 @@ function workflowOrderConfirm(): string {
 function workflowExample(): string {
   return [
     `/**`,
-    ` * workflows/example.ts — Example workflow`,
+    ` * workflows/example.ts - Example workflow`,
     ` *`,
     ` * Trigger: shopify.order.created`,
     ` * Condition: order total > 1000 KES`,
@@ -270,7 +270,7 @@ function workflowExample(): string {
 function toolsIndex(): string {
   return [
     `/**`,
-    ` * tools/index.ts — Custom tools for this agent`,
+    ` * tools/index.ts - Custom tools for this agent`,
     ` *`,
     ` * Define tools here that wrap your internal APIs, databases, or third-party services.`,
     ` * Tools are callable by the AI agent at runtime.`,
@@ -295,7 +295,7 @@ function toolsIndex(): string {
 function webhooksHandlers(): string {
   return [
     `/**`,
-    ` * webhooks/handlers.ts — Custom webhook handlers`,
+    ` * webhooks/handlers.ts - Custom webhook handlers`,
     ` *`,
     ` * The FIDScript platform already handles Shopify and WooCommerce webhooks`,
     ` * automatically. Implement this for custom third-party integrations.`,
@@ -313,7 +313,7 @@ function webhooksHandlers(): string {
 function examplesSendMessage(): string {
   return [
     `/**`,
-    ` * examples/send-message.ts — Send a WhatsApp message via the SDK`,
+    ` * examples/send-message.ts - Send a WhatsApp message via the SDK`,
     ` *`,
     ` * Run: npx ts-node examples/send-message.ts`,
     ` */`,
@@ -341,7 +341,7 @@ function examplesSendMessage(): string {
 function examplesCreateCampaign(): string {
   return [
     `/**`,
-    ` * examples/create-campaign.ts — Create a broadcast campaign`,
+    ` * examples/create-campaign.ts - Create a broadcast campaign`,
     ` */`,
     `import { Fidscript } from 'fidscript';`,
     NL,

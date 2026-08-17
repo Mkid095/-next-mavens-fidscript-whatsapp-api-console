@@ -1,5 +1,5 @@
 /**
- * api-client.ts — typed fetch wrapper for the FIDScript API
+ * api-client.ts - typed fetch wrapper for the FIDScript API
  *
  * Handles:
  * - Auth header (X-API-Key)
@@ -15,7 +15,7 @@ import pc from 'picocolors';
 
 export type OutputMode = 'default' | 'json' | 'yaml';
 
-// ── Global flags (mutable object — safe to mutate properties) ─────────────────
+// ── Global flags (mutable object - safe to mutate properties) ─────────────────
 
 export const flags = {
   mode: 'default' as OutputMode,
@@ -309,7 +309,7 @@ export function outputCliError(code: string, message: string): void {
 export function outputMsg(msg: string): void {
   if (flags.quiet) return;
   if (flags.mode === 'json' || flags.mode === 'yaml') {
-    // In structured mode, info messages are suppressed — they don't belong in the data stream.
+    // In structured mode, info messages are suppressed - they don't belong in the data stream.
     return;
   }
   console.error(renderSuccess(msg));
