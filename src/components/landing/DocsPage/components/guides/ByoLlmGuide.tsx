@@ -7,15 +7,15 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function ByoLlmGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">Bring Your Own LLM</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Bring Your Own LLM</h1>
+      <p className="text-sm text-[#525252] mb-8">
         Wire any LLM provider into your chatbot — OpenAI, Anthropic, Google Gemini,
         OpenRouter, Azure, or your own self-hosted endpoint. Your API key is encrypted at
         rest and never leaves the FIDScript backend.
       </p>
 
-      <h2 className="text-lg font-bold text-white mb-4">1. See what's available</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">1. See what's available</h2>
+      <p className="text-xs text-[#525252] mb-3">
         List the providers your admin has registered (custom providers, free-tier OpenRouter, etc.):
       </p>
       <DocsCodeBlock
@@ -26,7 +26,7 @@ fidscript --json llm providers`}
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">2. Create a connection (with your API key)</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">2. Create a connection (with your API key)</h2>
       <CliComparison
         op="Create a connection (BYO API key)"
         curl={`curl -X POST ${PUBLIC_API_BASE.replace('/api/v1', '')}/api/platform/llm-connections \\
@@ -45,13 +45,13 @@ fidscript --json llm providers`}
   --default`}
       />
 
-      <p className="text-xs text-[#6a6c5d] mt-3">
-        The CLI also accepts <code className="font-mono text-[#eab308]">--api-key @key.txt</code>{' '}
+      <p className="text-xs text-[#525252] mt-3">
+        The CLI also accepts <code className="font-mono text-[#f97316]">--api-key @key.txt</code>{' '}
         for files. The key is encrypted with AES-GCM before being stored; only the last 4
         characters are ever shown back to you.
       </p>
 
-      <h3 className="text-sm font-bold text-[#cbd3cf] mt-6 mb-3">
+      <h3 className="text-sm font-bold text-[#1a1a1a] mt-6 mb-3">
         Self-hosted / Ollama / custom endpoint
       </h3>
       <DocsCodeBlock
@@ -70,7 +70,7 @@ fidscript llm create openrouter-free \\
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">3. Verify it works</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">3. Verify it works</h2>
       <DocsCodeBlock
         code={`fidscript --json llm test llmc_abc123
 # → { "success": true, "message": "Connection verified successfully" }
@@ -80,10 +80,10 @@ fidscript llm get llmc_abc123`}
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">4. Attach the connection to a chatbot</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">4. Attach the connection to a chatbot</h2>
+      <p className="text-xs text-[#525252] mb-3">
         When creating a chatbot, set{' '}
-        <code className="font-mono text-[#eab308]">llm_connection</code> in the setup config.
+        <code className="font-mono text-[#f97316]">llm_connection</code> in the setup config.
         You can also swap it on an existing chatbot at any time.
       </p>
       <DocsCodeBlock
@@ -117,68 +117,68 @@ fidscript chatbot ai-config bot_xyz789 \\
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">5. Tune generation</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">5. Tune generation</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Every AI config field is exposed via the CLI. Combine them to shape the bot's behavior.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-[#1a1910]">
+          <thead className="bg-[#f8f8f8]">
             <tr>
               {['Field', 'Type', 'Effect'].map(h => (
-                <th key={h} className="text-left px-4 py-2 font-bold text-[#8a886a]">{h}</th>
+                <th key={h} className="text-left px-4 py-2 font-bold text-[#525252]">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#262413]">
+          <tbody className="divide-y divide-[#e5e5e5]">
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">system_prompt</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">string</td>
-              <td className="px-4 py-2 text-[#a8a594]">Your custom instructions: tone, persona, hard rules.</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">system_prompt</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">string</td>
+              <td className="px-4 py-2 text-[#525252]">Your custom instructions: tone, persona, hard rules.</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">model</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">string</td>
-              <td className="px-4 py-2 text-[#a8a594]">Model name passed to the provider.</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">model</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">string</td>
+              <td className="px-4 py-2 text-[#525252]">Model name passed to the provider.</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">temperature</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">0–2</td>
-              <td className="px-4 py-2 text-[#a8a594]">Lower = more deterministic, higher = more creative.</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">temperature</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">0–2</td>
+              <td className="px-4 py-2 text-[#525252]">Lower = more deterministic, higher = more creative.</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">top_p</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">0–1</td>
-              <td className="px-4 py-2 text-[#a8a594]">Nucleus sampling. 1.0 = no filter.</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">top_p</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">0–1</td>
+              <td className="px-4 py-2 text-[#525252]">Nucleus sampling. 1.0 = no filter.</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">max_tokens</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">int</td>
-              <td className="px-4 py-2 text-[#a8a594]">Hard cap on response length.</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">max_tokens</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">int</td>
+              <td className="px-4 py-2 text-[#525252]">Hard cap on response length.</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">max_history_messages</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">int</td>
-              <td className="px-4 py-2 text-[#a8a594]">Past N messages included in context.</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">max_history_messages</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">int</td>
+              <td className="px-4 py-2 text-[#525252]">Past N messages included in context.</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">hallucination_policy</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">enum</td>
-              <td className="px-4 py-2 text-[#a8a594]">
+              <td className="px-4 py-2 font-mono text-[#f97316]">hallucination_policy</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">enum</td>
+              <td className="px-4 py-2 text-[#525252]">
                 strict refuses on low confidence; balanced (default); creative allows; disabled passes through.
               </td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">llm_connection_id</td>
-              <td className="px-4 py-2 font-mono text-[#8a886a]">id</td>
-              <td className="px-4 py-2 text-[#a8a594]">Wires a workspace LLM connection (BYO key).</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">llm_connection_id</td>
+              <td className="px-4 py-2 font-mono text-[#525252]">id</td>
+              <td className="px-4 py-2 text-[#525252]">Wires a workspace LLM connection (BYO key).</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">6. Failover chains</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">6. Failover chains</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Register multiple connections, set priorities, and FIDScript will fall over if your
         primary provider hits a rate limit or goes down.
       </p>

@@ -6,9 +6,9 @@ export function Callout({
   type?: 'info' | 'warning' | 'success';
 }) {
   const colors = {
-    info:    'border-blue-800 bg-blue-950/30 text-blue-300',
-    warning: 'border-yellow-800 bg-yellow-950/30 text-yellow-200',
-    success: 'border-green-800 bg-green-950/30 text-green-300',
+    info:    'border-blue-200 bg-blue-50 text-blue-800',
+    warning: 'border-orange-200 bg-orange-50 text-orange-800',
+    success: 'border-green-200 bg-green-50 text-green-800',
   };
 
   return (

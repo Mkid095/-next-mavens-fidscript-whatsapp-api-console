@@ -1,19 +1,24 @@
 import React from 'react';
+import { trustedBrands } from './brands-data';
 
-interface TrustBrandsSectionProps {
-  brands: string[];
-}
+export default function TrustBrandsSection() {
+  const doubled = [...trustedBrands, ...trustedBrands];
 
-export default function TrustBrandsSection({ brands }: TrustBrandsSectionProps) {
   return (
-    <section className="py-12 border-y border-[#e5e5e5] bg-[#f8f8f8]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="text-center text-xs text-[#a0a0a0] uppercase tracking-widest mb-8">
-          Trusted by Kenyan businesses
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-          {brands.map((brand) => (
-            <span key={brand} className="text-sm md:text-base font-semibold text-[#a0a0a0]">
+    <section className="py-10 border-y border-[#e5e5e5] bg-white overflow-hidden">
+      <p className="text-center text-xs text-[#a0a0a0] uppercase tracking-widest mb-6">
+        Trusted by Kenyan businesses
+      </p>
+      <div className="relative">
+        <div
+          className="flex items-center gap-12 animate-marquee whitespace-nowrap"
+          style={{ width: 'max-content' }}
+        >
+          {doubled.map((brand, idx) => (
+            <span
+              key={`${brand}-${idx}`}
+              className="text-sm font-semibold text-[#a0a0a0] hover:text-[#f97316] transition-colors cursor-default"
+            >
               {brand}
             </span>
           ))}

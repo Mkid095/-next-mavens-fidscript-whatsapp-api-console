@@ -6,10 +6,10 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function AuthGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">Authentication</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Authentication</h1>
+      <p className="text-sm text-[#525252] mb-8">
         All requests require your API key in the{' '}
-        <code className="bg-[#1a1910] border border-[#262413] px-1.5 py-0.5 rounded text-yellow-500 font-mono text-xs">
+        <code className="bg-[#f8f8f8] border border-[#e5e5e5] px-1.5 py-0.5 rounded text-[#f97316] font-mono text-xs">
           X-API-Key
         </code>{' '}
         header.
@@ -17,18 +17,18 @@ export function AuthGuide() {
 
       <Callout type="warning">
         <p>
-          <strong className="text-white">Keep your API key secret.</strong> If exposed,
+          <strong className="text-[#1a1a1a]">Keep your API key secret.</strong> If exposed,
           reset it immediately from Settings → API Keys.
         </p>
       </Callout>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Request Example</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Request Example</h2>
       <DocsCodeBlock
         code={`curl -X GET ${PUBLIC_API_BASE}/usage \\\n  -H "X-API-Key: fidscript_live_your_key_here"`}
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Error Codes</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Error Codes</h2>
       <div className="space-y-2">
         {[
           { c: 401, m: 'Invalid or missing API key' },
@@ -37,8 +37,8 @@ export function AuthGuide() {
           { c: 500, m: 'Server error — retry with backoff' },
         ].map(({ c, m }) => (
           <div key={c} className="flex items-center gap-3 text-xs">
-            <span className="font-mono font-bold text-yellow-500 w-8">{c}</span>
-            <span className="text-[#8a886a]">{m}</span>
+            <span className="font-mono font-bold text-[#f97316] w-8">{c}</span>
+            <span className="text-[#525252]">{m}</span>
           </div>
         ))}
       </div>

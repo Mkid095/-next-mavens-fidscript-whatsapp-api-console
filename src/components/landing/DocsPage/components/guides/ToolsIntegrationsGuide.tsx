@@ -6,26 +6,26 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function ToolsIntegrationsGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">Tools &amp; Integrations</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
-        FIDScript is an <strong className="text-[#cbd3cf]">AI orchestration layer</strong> that
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Tools &amp; Integrations</h1>
+      <p className="text-sm text-[#525252] mb-8">
+        FIDScript is an <strong className="text-[#1a1a1a]">AI orchestration layer</strong> that
         sits on top of your business systems. The chatbot never stores your customer data — it
         calls{' '}
-        <strong className="text-[#cbd3cf]">tools</strong> that hit your external APIs,
+        <strong className="text-[#1a1a1a]">tools</strong> that hit your external APIs,
         databases, or e-commerce platforms in real time. This means the bot always answers with
         live, accurate data.
       </p>
 
       <Callout type="info">
         <p>
-          <strong className="text-white">Data-first principle:</strong> When a tool exists
+          <strong className="text-[#1a1a1a]">Data-first principle:</strong> When a tool exists
           that could answer the user's question, the bot MUST use the tool before relying on its
           own knowledge. Never guess inventory, pricing, customer details, or order status —
           always call the tool first.
         </p>
       </Callout>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">The 6-layer architecture</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">The 6-layer architecture</h2>
       <DocsCodeBlock
         code={`External Systems (Shopify, Postgres, REST API, ERP, CRM)
        ↓
@@ -48,8 +48,8 @@ LLM → WhatsApp reply`}
         lang="text"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Step 1: Create a data source</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Step 1: Create a data source</h2>
+      <p className="text-xs text-[#525252] mb-3">
         A data source is the link between your external system and FIDScript. It can be a
         static JSON dataset (for demos), an API endpoint, or a SQL query.
       </p>
@@ -71,8 +71,8 @@ curl -X POST https://whatsapp.fidscript.com/api/platform/data-sources \\
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Step 2: Add tools to the data source</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Step 2: Add tools to the data source</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Tools are the operations the LLM can call. Each tool has a name, description,
         parameter schema, and a type that determines how it executes.
       </p>
@@ -89,7 +89,7 @@ fidscript tool exec <data-source-id> <tool-id> \\
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Step 3: Attach tools to a chatbot</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Step 3: Attach tools to a chatbot</h2>
       <DocsCodeBlock
         code={`# See a chatbot's current tools
 fidscript chatbot tools <chatbot-id>
@@ -102,8 +102,8 @@ fidscript chatbot tools <chatbot-id> detach <tool-id>`}
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Step 4: How the tool-calling engine works</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Step 4: How the tool-calling engine works</h2>
+      <p className="text-xs text-[#525252] mb-3">
         When the chatbot receives a message, the inference loop:
       </p>
       <DocsCodeBlock
@@ -119,8 +119,8 @@ fidscript chatbot tools <chatbot-id> detach <tool-id>`}
         lang="text"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">E-commerce demo walkthrough</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">E-commerce demo walkthrough</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Every workspace is auto-seeded with a demo catalog. Here's what happens when a user
         texts your WhatsApp:
       </p>
@@ -149,8 +149,8 @@ Bot:  "Hello Ken! You're a Gold tier customer."`}
         lang="text"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Connecting a real system</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Connecting a real system</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Replace the demo data source with your production API:
       </p>
       <DocsCodeBlock
@@ -177,48 +177,48 @@ fidscript chatbot tools <chatbot-id> attach <tool-id>
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Tool types reference</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Tool types reference</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-[#1a1910]">
+          <thead className="bg-[#f8f8f8]">
             <tr>
               {['Type', 'What it does', 'When to use'].map(h => (
-                <th key={h} className="text-left px-4 py-2 font-bold text-[#8a886a]">{h}</th>
+                <th key={h} className="text-left px-4 py-2 font-bold text-[#525252]">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#262413]">
+          <tbody className="divide-y divide-[#e5e5e5]">
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">lookup</td>
-              <td className="px-4 py-2 text-[#a8a594]">Single-record fetch by key (phone, ID, SKU)</td>
-              <td className="px-4 py-2 text-[#a8a594]">Customer identification, order lookup</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">lookup</td>
+              <td className="px-4 py-2 text-[#525252]">Single-record fetch by key (phone, ID, SKU)</td>
+              <td className="px-4 py-2 text-[#525252]">Customer identification, order lookup</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">search</td>
-              <td className="px-4 py-2 text-[#a8a594]">Free-text + filtered search returning multiple records</td>
-              <td className="px-4 py-2 text-[#a8a594]">Product search, inventory check</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">search</td>
+              <td className="px-4 py-2 text-[#525252]">Free-text + filtered search returning multiple records</td>
+              <td className="px-4 py-2 text-[#525252]">Product search, inventory check</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">query</td>
-              <td className="px-4 py-2 text-[#a8a594]">HTTP GET to a remote API</td>
-              <td className="px-4 py-2 text-[#a8a594]">Read from Shopify, WooCommerce, custom REST</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">query</td>
+              <td className="px-4 py-2 text-[#525252]">HTTP GET to a remote API</td>
+              <td className="px-4 py-2 text-[#525252]">Read from Shopify, WooCommerce, custom REST</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">action</td>
-              <td className="px-4 py-2 text-[#a8a594]">HTTP POST/PUT/DELETE (mutating)</td>
-              <td className="px-4 py-2 text-[#a8a594]">Create order, add to cart, push STK payment</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">action</td>
+              <td className="px-4 py-2 text-[#525252]">HTTP POST/PUT/DELETE (mutating)</td>
+              <td className="px-4 py-2 text-[#525252]">Create order, add to cart, push STK payment</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-mono text-yellow-500">workflow</td>
-              <td className="px-4 py-2 text-[#a8a594]">Multi-step chain calling other tools in sequence</td>
-              <td className="px-4 py-2 text-[#a8a594]">Full checkout: search → cart → order → pay → confirm</td>
+              <td className="px-4 py-2 font-mono text-[#f97316]">workflow</td>
+              <td className="px-4 py-2 text-[#525252]">Multi-step chain calling other tools in sequence</td>
+              <td className="px-4 py-2 text-[#525252]">Full checkout: search → cart → order → pay → confirm</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Agent-driven setup</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Agent-driven setup</h2>
+      <p className="text-xs text-[#525252] mb-3">
         The entire tool platform is CLI-accessible. An AI agent (Claude Code, Cursor, etc.)
         can set up a full chatbot with tools from scratch:
       </p>

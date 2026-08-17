@@ -29,11 +29,11 @@ const QA_LIST: QA[] = [
     q: 'What are the rate limits?',
     a: (
       <ul className="space-y-2 list-disc pl-5">
-        <li><span className="text-[#eab308] font-semibold">Chat reads:</span> 10/sec per client</li>
-        <li><span className="text-[#eab308] font-semibold">WhatsApp reads:</span> 3/sec per instance</li>
-        <li><span className="text-[#eab308] font-semibold">Mutations:</span> 2/sec per instance</li>
-        <li><span className="text-[#eab308] font-semibold">Bulk send:</span> 10 MPS; 30 MPS when queue 5,000+</li>
-        <li><span className="text-[#eab308] font-semibold">Volume (Tier 0):</span> 250 unique customers/day initiated</li>
+        <li><span className="text-[#f97316] font-semibold">Chat reads:</span> 10/sec per client</li>
+        <li><span className="text-[#f97316] font-semibold">WhatsApp reads:</span> 3/sec per instance</li>
+        <li><span className="text-[#f97316] font-semibold">Mutations:</span> 2/sec per instance</li>
+        <li><span className="text-[#f97316] font-semibold">Bulk send:</span> 10 MPS; 30 MPS when queue 5,000+</li>
+        <li><span className="text-[#f97316] font-semibold">Volume (Tier 0):</span> 250 unique customers/day initiated</li>
       </ul>
     ),
   },
@@ -80,7 +80,7 @@ const QA_LIST: QA[] = [
 export default function FAQSection() {
   const [open, setOpen] = useState<number>(0);
   return (
-    <section className="relative bg-white py-16 md:py-24">
+    <section className="relative bg-white py-12 md:py-20">
       <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -89,14 +89,14 @@ export default function FAQSection() {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#eab308]/20 bg-[#facc15]/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-[#eab308]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#f97316]/20 bg-[#fb923c]/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-[#f97316]">
             <ShieldCheck size={12} /> Reliability
           </span>
           <h2
-            className="mt-6 text-[clamp(48px,6vw,74px)] font-bold text-[#1a1a1a] leading-[110%] tracking-[-2px]"
+            className="mt-6 text-[clamp(24px,3vw,40px)] font-bold text-[#1a1a1a] leading-[120%] tracking-[-1px]"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            Questions about <span className="text-[#eab308]">limits &amp; blocks</span>
+            Questions about <span className="text-[#f97316]">limits &amp; blocks</span>
           </h2>
           <p className="mx-auto mt-6 text-[20px] text-[#1a1a1a]/75 leading-[150%] max-w-2xl">
             The same protections that keep our platform stable also keep your WhatsApp account healthy.
@@ -124,7 +124,7 @@ export default function FAQSection() {
                   <span className="text-sm font-semibold text-[#1a1a1a] md:text-base">{item.q}</span>
                   <ChevronDown
                     size={18}
-                    className={`shrink-0 text-[#525252] transition-transform ${isOpen ? 'rotate-180 text-[#eab308]' : ''}`}
+                    className={`shrink-0 text-[#525252] transition-transform ${isOpen ? 'rotate-180 text-[#f97316]' : ''}`}
                   />
                 </button>
                 {isOpen && (

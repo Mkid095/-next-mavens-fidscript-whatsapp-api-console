@@ -6,27 +6,27 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function CliGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">Use the CLI</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
-        Every <code className="font-mono text-[#eab308]">/api/v1</code> endpoint is wrapped
-        by a single binary called <code className="font-mono text-[#eab308]">fidscript</code>.
-        It&rsquo;s built for both humans and AI agents — every command supports
-        <code className="font-mono text-[#eab308]">--json</code> and
-        <code className="font-mono text-[#eab308]">--yaml</code> output, and
-        <code className="font-mono text-[#eab308]">--verbose</code> prints the underlying
-        curl request as it&rsquo;s sent.
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Use the CLI</h1>
+      <p className="text-sm text-[#525252] mb-8">
+        Every <code className="font-mono text-[#f97316]">/api/v1</code> endpoint is wrapped
+        by a single binary called <code className="font-mono text-[#f97316]">fidscript</code>.
+        It's built for both humans and AI agents — every command supports
+        <code className="font-mono text-[#f97316]">--json</code> and
+        <code className="font-mono text-[#f97316]">--yaml</code> output, and
+        <code className="font-mono text-[#f97316]">--verbose</code> prints the underlying
+        curl request as it's sent.
       </p>
 
-      <h2 className="text-lg font-bold text-white mb-4">Install</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">Install</h2>
       <DocsCodeBlock
         code="curl -Ls https://whatsapp.fidscript.com/cli/install.sh | sh"
         lang="bash"
       />
-      <p className="text-xs text-[#6a6c5d] mt-3">
+      <p className="text-xs text-[#525252] mt-3">
         Requires Node.js 18+. The installer will bootstrap it for you.
       </p>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Side-by-side: cURL vs CLI</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Side-by-side: cURL vs CLI</h2>
       <div className="space-y-6">
         <CliComparison
           op="Send a text message"
@@ -50,14 +50,14 @@ export function CliGuide() {
         />
       </div>
 
-      <h2 className="text-lg font-bold text-white mt-10 mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-10 mb-4">
         Auth for /api/instance, /api/platform, /api/sse
       </h2>
-      <p className="text-sm text-[#a8a594] mb-4">
+      <p className="text-sm text-[#525252] mb-4">
         Those routes use a Bearer JWT, not an API key. Run
-        <code className="font-mono text-[#eab308] mx-1">fidscript login</code>
+        <code className="font-mono text-[#f97316] mx-1">fidscript login</code>
         once and your JWT is stored in{' '}
-        <code className="font-mono text-[#eab308]">~/.fidscript/credentials</code>.
+        <code className="font-mono text-[#f97316]">~/.fidscript/credentials</code>.
         After login, the data-backed instance list and the chatbot CRUD commands just work.
       </p>
       <DocsCodeBlock

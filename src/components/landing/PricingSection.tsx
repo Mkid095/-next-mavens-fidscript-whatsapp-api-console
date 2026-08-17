@@ -9,14 +9,14 @@ export default function PricingSection() {
   const filteredPlans = plans.filter((p) => p.price_monthly > 0 || p.name === 'Free');
 
   return (
-    <section id="pricing" className="py-16 md:py-24 bg-[#f8f8f8]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 md:mb-16">
+    <section id="pricing" className="py-12 md:py-20 bg-[#f8f8f8]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
           <h2
-            className="text-[clamp(48px,6vw,74px)] font-bold text-[#1a1a1a] leading-[110%] tracking-[-2px]"
+            className="text-[clamp(24px,3vw,40px)] font-bold text-[#1a1a1a] leading-[120%] tracking-[-1px]"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            Simple, transparent <span className="text-[#eab308]">pricing</span>
+            Simple, transparent <span className="text-[#f97316]">pricing</span>
           </h2>
           <p className="mt-6 text-[20px] text-[#1a1a1a]/75 leading-[150%] max-w-2xl mx-auto">
             Pay for what you use. No monthly fees, no hidden costs. KES 0.11 per message.
@@ -25,7 +25,7 @@ export default function PricingSection() {
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#eab308] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#f97316] animate-spin" />
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -37,11 +37,11 @@ export default function PricingSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: idx * 0.1 }}
                 className={`relative p-6 bg-white rounded-[28px] border ${
-                  plan.name === 'Professional' ? 'border-[#eab308] shadow-lg' : 'border-[#e5e5e5]'
+                  plan.name === 'Professional' ? 'border-[#f97316] shadow-lg' : 'border-[#e5e5e5]'
                 }`}
               >
                 {plan.name === 'Professional' && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#eab308] text-[#1a1a1a] text-xs font-bold rounded-full">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#f97316] text-[#1a1a1a] text-xs font-bold rounded-full">
                     Most Popular
                   </div>
                 )}
@@ -59,23 +59,23 @@ export default function PricingSection() {
                 </div>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#eab308] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#f97316] shrink-0 mt-0.5" />
                     <span className="text-[#525252]">{plan.max_instances} WhatsApp instance{plan.max_instances !== 1 ? 's' : ''}</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#eab308] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#f97316] shrink-0 mt-0.5" />
                     <span className="text-[#525252]">{plan.max_messages_per_month.toLocaleString()} messages/mo</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#eab308] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#f97316] shrink-0 mt-0.5" />
                     <span className="text-[#525252]">M-Pesa token billing</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#eab308] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#f97316] shrink-0 mt-0.5" />
                     <span className="text-[#525252]">REST API + webhooks</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-5 h-5 text-[#eab308] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#f97316] shrink-0 mt-0.5" />
                     <span className="text-[#525252]">Real-time analytics</span>
                   </li>
                 </ul>
@@ -83,7 +83,7 @@ export default function PricingSection() {
                   onClick={() => navigate('/register')}
                   className={`w-full py-3 rounded-full font-semibold text-sm transition-colors ${
                     plan.name === 'Professional'
-                      ? 'bg-[#eab308] hover:bg-[#facc15] text-[#1a1a1a]'
+                      ? 'bg-[#f97316] hover:bg-[#fb923c] text-[#1a1a1a]'
                       : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white'
                   }`}
                 >
@@ -94,9 +94,9 @@ export default function PricingSection() {
           </div>
         )}
 
-        <div className="text-center mt-8 p-4 bg-[#facc15]/10 border border-[#eab308]/20 rounded-[28px] max-w-2xl mx-auto">
+        <div className="text-center mt-8 p-4 bg-[#fb923c]/10 border border-[#f97316]/20 rounded-[28px] max-w-2xl mx-auto">
           <p className="text-sm text-[#525252]">
-            <strong>New!</strong> Sign up today and get <span className="text-[#eab308] font-bold">500 free welcome tokens</span> — no payment required!
+            <strong>New!</strong> Sign up today and get <span className="text-[#f97316] font-bold">500 free welcome tokens</span> — no payment required!
           </p>
         </div>
       </div>

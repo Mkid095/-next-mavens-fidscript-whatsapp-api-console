@@ -11,7 +11,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Sparkles, Wrench, GitCommit, Github, ArrowRight } from 'lucide-react';
+import { Wrench, GitCommit, Github, ArrowRight, Star } from 'lucide-react';
 import changelogData from '../../data/changelog.json';
 
 interface ChangelogEntry {
@@ -65,7 +65,7 @@ export function ChangelogList({ limit }: ChangelogListProps) {
 
   return (
     <div className="relative">
-      <div className="absolute left-[18px] top-0 bottom-0 w-px bg-[#262413]" />
+      <div className="absolute left-[18px] top-0 bottom-0 w-px bg-[#e5e5e5]" />
 
       <div className="space-y-6">
         {entries.map((entry, idx) => {
@@ -82,58 +82,58 @@ export function ChangelogList({ limit }: ChangelogListProps) {
               {/* Timeline dot */}
               <div className={`absolute left-2 top-5 w-4 h-4 rounded-full border-2 ${
                 isLatest
-                  ? 'bg-yellow-500 border-yellow-500 shadow-[0_0_0_4px_rgba(234,179,8,0.15)]'
-                  : 'bg-[#0c0b06] border-[#383416]'
+                  ? 'bg-[#f97316] border-[#f97316]'
+                  : 'bg-white border-[#e5e5e5]'
               }`} />
 
-              <div className={`bg-[#11110a] border rounded-2xl p-5 ${
-                isLatest ? 'border-yellow-500/30' : 'border-[#262413]'
+              <div className={`bg-white border rounded-2xl p-5 ${
+                isLatest ? 'border-[#f97316]/30' : 'border-[#e5e5e5]'
               }`}>
                 {/* Header */}
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
                     {isLatest && (
-                      <span className="px-2 py-0.5 bg-yellow-500 text-[#181711] text-[10px] font-bold rounded-full uppercase tracking-wider">
+                      <span className="px-2 py-0.5 bg-[#f97316] text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
                         Latest
                       </span>
                     )}
-                    <h2 className="text-lg font-bold text-white">{entry.version}</h2>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#6a6c5d] bg-[#1a1910] border border-[#262413] px-2 py-0.5 rounded-full">
+                    <h2 className="text-lg font-bold text-[#1a1a1a]">{entry.version}</h2>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#a0a0a0] bg-[#f8f8f8] border border-[#e5e5e5] px-2 py-0.5 rounded-full">
                       {formatLongDate(entry.date)}
                     </span>
                     {entry.bumpType && (
                       <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-mono ${
-                        entry.bumpType === 'major' ? 'bg-red-900/40 text-red-300 border border-red-900/50'
-                        : entry.bumpType === 'minor' ? 'bg-yellow-900/40 text-yellow-300 border border-yellow-900/50'
-                        : 'bg-green-900/40 text-green-300 border border-green-900/50'
+                        entry.bumpType === 'major' ? 'bg-red-50 text-red-500 border border-red-200'
+                        : entry.bumpType === 'minor' ? 'bg-orange-50 text-orange-500 border border-orange-200'
+                        : 'bg-green-50 text-green-600 border border-green-200'
                       }`}>{entry.bumpType}</span>
                     )}
                     <Link
                       to={`/changelog/${encodeURIComponent(entry.version)}`}
-                      className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#8a886a] hover:text-yellow-500 transition-colors"
+                      className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#525252] hover:text-[#f97316] transition-colors"
                     >
-                      details <ArrowRight className="w-3 h-3" />
+                      details <ArrowRight className="w-3 h-3 text-[#f97316]" />
                     </Link>
                   </div>
-                  <span className="text-[10px] text-[#5a554a] shrink-0" title={entry.date}>
+                  <span className="text-[10px] text-[#a0a0a0] shrink-0" title={entry.date}>
                     {timeAgo(entry.date)}
                   </span>
                 </div>
 
-                <h3 className="text-base font-semibold text-[#cbd3cf] mb-4 leading-snug">
+                <h3 className="text-base font-semibold text-[#1a1a1a] mb-4 leading-snug">
                   {entry.title}
                 </h3>
 
                 {/* Highlights */}
                 {entry.highlights.length > 0 && (
                   <section className="mb-4">
-                    <header className="flex items-center gap-1.5 text-[10px] font-bold text-yellow-500 uppercase tracking-widest mb-2">
-                      <Sparkles className="w-3 h-3" /> Highlights
+                    <header className="flex items-center gap-1.5 text-[10px] font-bold text-[#f97316] uppercase tracking-widest mb-2">
+                      <Star className="w-3 h-3" /> What's New
                     </header>
                     <ul className="space-y-1.5">
                       {entry.highlights.map((h, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-[#cbd3cf] leading-relaxed">
-                          <span className="text-yellow-500 mt-0.5 select-none shrink-0">+</span>
+                        <li key={i} className="flex items-start gap-2 text-xs text-[#525252] leading-relaxed">
+                          <span className="text-[#f97316] mt-0.5 select-none shrink-0">+</span>
                           <span>{h}</span>
                         </li>
                       ))}
@@ -144,13 +144,13 @@ export function ChangelogList({ limit }: ChangelogListProps) {
                 {/* Fixes */}
                 {entry.fixes.length > 0 && (
                   <section className="mb-4">
-                    <header className="flex items-center gap-1.5 text-[10px] font-bold text-green-400 uppercase tracking-widest mb-2">
+                    <header className="flex items-center gap-1.5 text-[10px] font-bold text-[#16a34a] uppercase tracking-widest mb-2">
                       <Wrench className="w-3 h-3" /> Fixes &amp; improvements
                     </header>
                     <ul className="space-y-1.5">
                       {entry.fixes.map((f, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-[#a8a99e] leading-relaxed">
-                          <span className="text-green-400 mt-0.5 select-none shrink-0">·</span>
+                        <li key={i} className="flex items-start gap-2 text-xs text-[#525252] leading-relaxed">
+                          <span className="text-[#16a34a] mt-0.5 select-none shrink-0">·</span>
                           <span>{f}</span>
                         </li>
                       ))}
@@ -161,17 +161,17 @@ export function ChangelogList({ limit }: ChangelogListProps) {
                 {/* Commits */}
                 {entry.commits.length > 0 && (
                   <section>
-                    <header className="flex items-center gap-1.5 text-[10px] font-bold text-[#6a6c5d] uppercase tracking-widest mb-2">
+                    <header className="flex items-center gap-1.5 text-[10px] font-bold text-[#a0a0a0] uppercase tracking-widest mb-2">
                       <GitCommit className="w-3 h-3" /> Commits
                     </header>
                     <div className="flex flex-wrap gap-1.5">
                       {entry.commits.map((c, i) => (
                         <a
                           key={i}
-                          href={`https://github.com/Mkid095/-next-mavens-fidscript-whatsapp-api-console/commit/${c}`}
+                          href={`https://github.com/nextmavens/fidscript-whatsapp-api-console/commit/${c}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#1a1910] border border-[#262413] rounded text-[10px] font-mono text-[#8a886a] hover:text-yellow-500 hover:border-[#3d3a1e] transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f8f8f8] border border-[#e5e5e5] rounded text-[10px] font-mono text-[#525252] hover:text-[#f97316] hover:border-[#fed7aa] transition-colors"
                         >
                           <GitCommit className="w-2.5 h-2.5" /> {c.slice(0, 7)}
                         </a>

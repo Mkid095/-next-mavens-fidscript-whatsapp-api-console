@@ -6,25 +6,25 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function ChatbotApiGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">Chatbot API</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Chatbot API</h1>
+      <p className="text-sm text-[#525252] mb-8">
         Full reference for the{' '}
-        <code className="font-mono text-[#eab308]">/api/platform/chatbots</code> endpoints. All
-        require a Bearer JWT (run <code className="font-mono text-[#eab308]">fidscript login</code>{' '}
+        <code className="font-mono text-[#f97316]">/api/platform/chatbots</code> endpoints. All
+        require a Bearer JWT (run <code className="font-mono text-[#f97316]">fidscript login</code>{' '}
         once to store one). Each request costs{' '}
-        <code className="font-mono text-[#eab308]">1 token</code> for AI processing; reads and
+        <code className="font-mono text-[#f97316]">1 token</code> for AI processing; reads and
         configs are free.
       </p>
 
       <Callout type="info">
         <p>
           Looking for an end-to-end walkthrough? See the{' '}
-          <a href="#byo-llm" className="text-yellow-500 underline">Bring Your Own LLM</a> guide.
+          <a href="#byo-llm" className="text-[#f97316] underline">Bring Your Own LLM</a> guide.
           The sections below are a dry reference for each endpoint + request body.
         </p>
       </Callout>
 
-      <h2 className="text-lg font-bold text-white mt-6 mb-4">Chatbot CRUD</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-6 mb-4">Chatbot CRUD</h2>
       <DocsCodeBlock
         lang="bash"
         code={`# List chatbots in your workspace
@@ -61,8 +61,8 @@ curl -X PATCH https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/toggl
   -d '{"enabled": false}'`}
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">AI behavior</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">AI behavior</h2>
+      <p className="text-xs text-[#525252] mb-3">
         The full AI config endpoint — model, provider, system prompt, hallucination policy,
         generation params, history window, and BYO LLM connection.
       </p>
@@ -84,7 +84,7 @@ curl -X PUT https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/ai-conf
   }'`}
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Triggers, response rules, handoff</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Triggers, response rules, handoff</h2>
       <DocsCodeBlock
         lang="bash"
         code={`# Add a trigger (keyword / regex / mention / always)
@@ -104,7 +104,7 @@ curl -X DELETE https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/trig
   -H "Authorization: Bearer $FIDSCRIPT_JWT"
 
 # Add a response rule (conditions_json and an action)
-curl -X POST https://whatscript.com/api/platform/chatbots/bot_xyz/rules \\
+curl -X POST https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/rules \\
   -H "Authorization: Bearer $FIDSCRIPT_JWT" -H "Content-Type: application/json" \\
   -d '{
     "name": "Refund handoff",
@@ -128,7 +128,7 @@ curl -X POST https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/handof
   }'`}
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">
         Group settings, contact assignments, test
       </h2>
       <DocsCodeBlock
@@ -161,7 +161,7 @@ curl -X POST https://whatsapp.fidscript.com/api/platform/chatbots/bot_xyz/test-t
   }'`}
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">
         Publishing, versions, health, traces
       </h2>
       <DocsCodeBlock

@@ -9,9 +9,9 @@ interface CodeInputProps {
 }
 
 const INPUT_BASE =
-  'w-11 h-13 text-center text-lg font-bold font-mono text-stone-100 ' +
-  'bg-[#1e1d13]/60 border border-[#38351c] rounded-xl ' +
-  'focus:outline-none focus:border-yellow-600 transition-colors ' +
+  'w-11 h-13 text-center text-lg font-bold font-mono text-[#1a1a1a] ' +
+  'bg-white border border-[#e5e5e5] rounded-2xl ' +
+  'focus:outline-none focus:border-[#f97316] transition-colors ' +
   'disabled:opacity-50';
 
 export default function CodeInput({

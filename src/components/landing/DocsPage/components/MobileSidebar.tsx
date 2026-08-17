@@ -22,8 +22,8 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
 interface MobileSidebarProps {
   open: boolean;
   onClose: () => void;
-  activeTab: 'guides' | 'api-reference' | 'changelog';
-  setActiveTab: (t: 'guides' | 'api-reference' | 'changelog') => void;
+  activeTab: 'guides' | 'api-reference';
+  setActiveTab: (t: 'guides' | 'api-reference') => void;
   activeSection: string;
   setActiveSection: (s: string) => void;
   onSelectGuide: (id: string) => void;
@@ -55,19 +55,19 @@ export function MobileSidebar({
             initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             onClick={e => e.stopPropagation()}
-            className="w-64 h-full bg-[#11110a] border-r border-[#262413] pt-[52px] overflow-y-auto"
+            className="w-64 h-full bg-white border-r border-[#e5e5e5] pt-[52px] overflow-y-auto"
           >
             <div className="py-3">
               <div className="px-3 mb-2">
-                <div className="flex bg-[#1a1910] rounded-xl p-1">
+                <div className="flex bg-[#f8f8f8] rounded-xl p-1">
                   {(['guides', 'api-reference'] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
                       className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                         activeTab === tab
-                          ? 'bg-yellow-500 text-stone-950'
-                          : 'text-[#8a886a]'
+                          ? 'bg-[#f97316] text-white'
+                          : 'text-[#525252]'
                       }`}
                     >
                       {tab === 'guides' ? 'Guides' : 'API Ref'}
@@ -82,8 +82,8 @@ export function MobileSidebar({
                     <button
                       key={g.id}
                       onClick={() => { onSelectGuide(g.id); onClose(); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm border-b border-[#1e1c10] ${
-                        activeSection === g.id ? 'text-yellow-500 font-semibold' : 'text-[#8a886a]'
+                      className={`w-full text-left px-4 py-2.5 text-sm border-b border-[#f0f0f0] ${
+                        activeSection === g.id ? 'text-[#f97316] font-semibold' : 'text-[#525252]'
                       }`}
                     >
                       {g.label}
@@ -95,8 +95,8 @@ export function MobileSidebar({
                   <div key={group.name}>
                     <button
                       onClick={() => setActiveSection(group.name === activeSection ? '' : group.name)}
-                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b border-[#1e1c10] ${
-                        activeSection === group.name ? 'text-yellow-500' : 'text-[#6a6c5d]'
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b border-[#f0f0f0] ${
+                        activeSection === group.name ? 'text-[#f97316]' : 'text-[#a0a0a0]'
                       }`}
                     >
                       {SECTION_ICONS[group.name] || <BookOpen size={13} />}
@@ -107,7 +107,7 @@ export function MobileSidebar({
                       <button
                         key={ep.path}
                         onClick={() => { onSelectEndpoint(ep); onClose(); }}
-                        className="w-full flex items-center gap-2 px-4 py-2 pl-8 text-xs text-[#8a886a] hover:text-white border-b border-[#1a1910]"
+                        className="w-full flex items-center gap-2 px-4 py-2 pl-8 text-xs text-[#525252] hover:text-[#f97316] border-b border-[#f8f8f8]"
                       >
                         <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded font-mono ${methodColors[ep.method] || 'bg-gray-600 text-white'}`}>
                           {ep.method}

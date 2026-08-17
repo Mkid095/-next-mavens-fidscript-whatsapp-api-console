@@ -26,10 +26,16 @@
 
   /* Custom Animations */
   --animate-pulse-subtle: pulseSubtle 2s infinite ease-in-out;
+  --animate-marquee: marquee 30s linear infinite;
 
   @keyframes pulseSubtle {
     0%, 100% { opacity: 0.65; transform: scale(0.92); }
     50% { opacity: 1; transform: scale(1.08); }
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 }
 

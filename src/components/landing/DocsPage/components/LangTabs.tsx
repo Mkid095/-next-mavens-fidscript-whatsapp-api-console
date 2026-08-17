@@ -4,7 +4,7 @@ import type { Lang } from '../types.ts';
 
 export function LangTabs({ active, onChange }: { active: Lang; onChange: (l: Lang) => void }) {
   return (
-    <div className="flex items-center bg-[#1a1910] rounded-xl p-1 gap-1 w-fit">
+    <div className="flex items-center bg-[#f8f8f8] border border-[#e5e5e5] rounded-xl p-1 gap-1 w-fit">
       {LANGUAGES.map(l => {
         const Icon = l.id === 'curl' ? Terminal : l.id === 'node' ? Code2 : BookOpen;
         return (
@@ -13,8 +13,8 @@ export function LangTabs({ active, onChange }: { active: Lang; onChange: (l: Lan
             onClick={() => onChange(l.id)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${
               active === l.id
-                ? 'bg-yellow-500 text-stone-950'
-                : 'text-[#6a6c5d] hover:text-white'
+                ? 'bg-[#f97316] text-white'
+                : 'text-[#525252] hover:text-[#1a1a1a] hover:bg-[#f0f0f0]'
             }`}
           >
             <Icon size={12} />

@@ -5,35 +5,35 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function MetaPolicyGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">
         WhatsApp Meta Policy Compliance
       </h1>
-      <p className="text-sm text-[#8a886a] mb-8">
+      <p className="text-sm text-[#525252] mb-8">
         WhatsApp enforces two hard ceilings on every business account that uses the Business
         API. FIDScript paces your traffic through multiple layers so you stay well under both,
         but you should design your chatbot accordingly.
       </p>
 
-      <h2 className="text-lg font-bold text-white mb-4">1. The two ceilings</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">1. The two ceilings</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
-        <div className="bg-[#1a1910] border border-[#262413] rounded-2xl p-4">
-          <p className="text-yellow-500 font-bold text-sm">Speed ceiling</p>
-          <p className="text-3xl font-black text-white mt-2">~80 MPS</p>
-          <p className="text-xs text-[#6a6c5d] mt-2">
+        <div className="bg-[#f8f8f8] border border-[#e5e5e5] rounded-2xl p-4">
+          <p className="text-[#f97316] font-bold text-sm">Speed ceiling</p>
+          <p className="text-3xl font-black text-[#1a1a1a] mt-2">~80 MPS</p>
+          <p className="text-xs text-[#525252] mt-2">
             Max messages-per-second per phone number. Bulk senders are paced adaptively.
           </p>
         </div>
-        <div className="bg-[#1a1910] border border-[#262413] rounded-2xl p-4">
-          <p className="text-yellow-500 font-bold text-sm">Volume ceiling</p>
-          <p className="text-3xl font-black text-white mt-2">250 / day → ∞</p>
-          <p className="text-xs text-[#6a6c5d] mt-2">
+        <div className="bg-[#f8f8f8] border border-[#e5e5e5] rounded-2xl p-4">
+          <p className="text-[#f97316] font-bold text-sm">Volume ceiling</p>
+          <p className="text-3xl font-black text-[#1a1a1a] mt-2">250 / day → ∞</p>
+          <p className="text-xs text-[#525252] mt-2">
             Unique customers initiated in a rolling 24h, tiered by quality rating.
           </p>
         </div>
       </div>
 
-      <h2 className="text-lg font-bold text-white mb-4">2. Quality rating tiers</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">2. Quality rating tiers</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Your tier is set by Meta based on the quality of conversations you have — recipient
         blocks, reports, and low engagement all drag it down. Higher tiers unlock higher
         volume.
@@ -48,21 +48,21 @@ export function MetaPolicyGuide() {
         ].map(({ tier, limit, note }) => (
           <div
             key={tier}
-            className="flex items-center justify-between bg-[#1a1910] border border-[#262413] rounded-xl px-4 py-3"
+            className="flex items-center justify-between bg-[#f8f8f8] border border-[#e5e5e5] rounded-xl px-4 py-3"
           >
             <div>
-              <div className="text-sm font-semibold text-white">{tier}</div>
-              <div className="text-xs text-[#6a6c5d] mt-0.5">{note}</div>
+              <div className="text-sm font-semibold text-[#1a1a1a]">{tier}</div>
+              <div className="text-xs text-[#525252] mt-0.5">{note}</div>
             </div>
-            <div className="text-yellow-500 font-mono text-sm font-bold">{limit}</div>
+            <div className="text-[#f97316] font-mono text-sm font-bold">{limit}</div>
           </div>
         ))}
       </div>
 
-      <h2 className="text-lg font-bold text-white mb-4">3. Prohibited content categories</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
-        WhatsApp explicitly bans the following. Your chatbot&rsquo;s{' '}
-        <code className="font-mono text-[#eab308]">system_prompt</code> should refuse or hand
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">3. Prohibited content categories</h2>
+      <p className="text-xs text-[#525252] mb-3">
+        WhatsApp explicitly bans the following. Your chatbot's{' '}
+        <code className="font-mono text-[#f97316]">system_prompt</code> should refuse or hand
         off on any of these — never try to comply:
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
@@ -82,53 +82,53 @@ export function MetaPolicyGuide() {
         ].map(cat => (
           <div
             key={cat}
-            className="flex items-center gap-2 bg-red-900/20 border border-red-900/40 rounded-lg px-3 py-2 text-xs text-red-200"
+            className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-800"
           >
-            <span className="text-red-400">✗</span>
+            <span className="text-red-500">✗</span>
             {cat}
           </div>
         ))}
       </div>
 
-      <h2 className="text-lg font-bold text-white mb-4">4. How FIDScript enforces compliance</h2>
-      <ul className="list-disc list-inside text-sm text-[#a8a594] space-y-2 mb-8">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">4. How FIDScript enforces compliance</h2>
+      <ul className="list-disc list-inside text-sm text-[#525252] space-y-2 mb-8">
         <li>
-          <strong className="text-white">Tier-aware volume cap</strong> — daily unique-customer
+          <strong className="text-[#1a1a1a]">Tier-aware volume cap</strong> — daily unique-customer
           initiations are tracked against your tier. Sends past the cap are queued for the next
           24h window, never dropped.
         </li>
         <li>
-          <strong className="text-white">Adaptive bulk pacing</strong> — 10 MPS at idle, ramps
+          <strong className="text-[#1a1a1a]">Adaptive bulk pacing</strong> — 10 MPS at idle, ramps
           to 30 MPS when the queue hits 5,000+ (still well under Meta's 80 MPS cap).
         </li>
         <li>
-          <strong className="text-white">Per-instance rate limiter</strong> — 3 reads/sec/instance
+          <strong className="text-[#1a1a1a]">Per-instance rate limiter</strong> — 3 reads/sec/instance
           and 2 mutations/sec/instance to prevent account-level blocks.
         </li>
         <li>
-          <strong className="text-white">Hallucination policy</strong> — set per-chatbot.{' '}
-          <code className="font-mono text-[#eab308]">strict</code> refuses on low confidence;{' '}
-          <code className="font-mono text-[#eab308]">balanced</code> gives a hedged answer;{' '}
-          <code className="font-mono text-[#eab308]">creative</code> lets the model improvise;{' '}
-          <code className="font-mono text-[#eab308]">disabled</code> passes through unchanged.
+          <strong className="text-[#1a1a1a]">Hallucination policy</strong> — set per-chatbot.{' '}
+          <code className="font-mono text-[#f97316]">strict</code> refuses on low confidence;{' '}
+          <code className="font-mono text-[#f97316]">balanced</code> gives a hedged answer;{' '}
+          <code className="font-mono text-[#f97316]">creative</code> lets the model improvise;{' '}
+          <code className="font-mono text-[#f97316]">disabled</code> passes through unchanged.
         </li>
         <li>
-          <strong className="text-white">Confidence threshold + handoff</strong> — below your
+          <strong className="text-[#1a1a1a]">Confidence threshold + handoff</strong> — below your
           configured threshold (e.g. 0.6), the bot hands the conversation to a human instead of
           risking a wrong answer that triggers a user block.
         </li>
         <li>
-          <strong className="text-white">24h session window</strong> — utility templates can
-          only be sent within 24h of the user&rsquo;s last message. Marketing templates require
+          <strong className="text-[#1a1a1a]">24h session window</strong> — utility templates can
+          only be sent within 24h of the user's last message. Marketing templates require
           explicit opt-in via template approval.
         </li>
       </ul>
 
-      <h2 className="text-lg font-bold text-white mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">
         5. Best practices for your system_prompt
       </h2>
-      <p className="text-xs text-[#8a886a] mb-3">
-        Configure <code className="font-mono text-[#eab308]">system_prompt</code>{' '}
+      <p className="text-xs text-[#525252] mb-3">
+        Configure <code className="font-mono text-[#f97316]">system_prompt</code>{' '}
         defensively. Recommended clauses to include:
       </p>
       <DocsCodeBlock
@@ -154,12 +154,12 @@ Operational:
         lang="text"
       />
 
-      <h2 className="text-lg font-bold text-white mb-4">6. When to hand off to a human</h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">6. When to hand off to a human</h2>
+      <p className="text-xs text-[#525252] mb-3">
         Configure handoff conditions per chatbot. Examples of conditions that should always
         escalate:
       </p>
-      <ul className="list-disc list-inside text-sm text-[#a8a594] space-y-1 mb-8">
+      <ul className="list-disc list-inside text-sm text-[#525252] space-y-1 mb-8">
         <li>User asks for a human / manager / supervisor</li>
         <li>User expresses frustration (sentiment below threshold)</li>
         <li>User requests a refund, return, cancellation, or account closure</li>
@@ -169,7 +169,7 @@ Operational:
         <li>Bot's own confidence score is below the configured threshold</li>
       </ul>
 
-      <h2 className="text-lg font-bold text-white mb-4">7. Monitoring your quality rating</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">7. Monitoring your quality rating</h2>
       <DocsCodeBlock
         code={`# Check current tier + volume
 curl ${PUBLIC_API_BASE.replace('/api/v1', '')}/api/auth/client/me \\
@@ -179,8 +179,8 @@ curl ${PUBLIC_API_BASE.replace('/api/v1', '')}/api/auth/client/me \\
 fidscript --json chatbot token-forecast <chatbot-id>`}
         lang="bash"
       />
-      <p className="text-xs text-[#6a6c5d] mt-3">
-        If your quality rating drops, lower your tier limit, tighten the bot&rsquo;s handoff
+      <p className="text-xs text-[#525252] mt-3">
+        If your quality rating drops, lower your tier limit, tighten the bot's handoff
         conditions, and review recent conversations for blocks or reports.
       </p>
     </motion.div>

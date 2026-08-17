@@ -4,18 +4,18 @@ import { DocsCodeBlock } from '../../../../shared/DocsCodeBlock';
 export function SdksGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">SDKs &amp; direct HTTP</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">SDKs &amp; direct HTTP</h1>
+      <p className="text-sm text-[#525252] mb-8">
         FIDScript ships an official TypeScript SDK on npm. Every endpoint accepts standard JSON
         over HTTPS — any HTTP client in any language can integrate. Use the SDK for the fastest
         setup, or hit the API directly from any service.
       </p>
 
-      <h2 className="text-lg font-bold text-white mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">
         1. Node.js / TypeScript SDK (recommended)
       </h2>
       <DocsCodeBlock code="npm install @fidscript/sdk" lang="bash" />
-      <p className="text-xs text-[#8a886a] mt-3 mb-3">Type-safe wrappers for every endpoint:</p>
+      <p className="text-xs text-[#525252] mt-3 mb-3">Type-safe wrappers for every endpoint:</p>
       <DocsCodeBlock
         code={`import { Fidscript, FidscriptError } from '@fidscript/sdk';
 
@@ -58,12 +58,12 @@ catch (err) {
         lang="typescript"
       />
 
-      <h2 className="text-lg font-bold text-white mt-10 mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-10 mb-4">
         2. Direct HTTP (any language)
       </h2>
       <div className="grid md:grid-cols-2 gap-3">
         <div>
-          <p className="text-xs text-[#6a6c5d] uppercase font-bold mb-2">cURL</p>
+          <p className="text-xs text-[#525252] uppercase font-bold mb-2">cURL</p>
           <DocsCodeBlock
             code={`curl -X POST https://whatsapp.fidscript.com/api/v1/messages/text/my-bot \\
   -H "X-API-Key: $FIDSCRIPT_API_KEY" \\
@@ -73,7 +73,7 @@ catch (err) {
           />
         </div>
         <div>
-          <p className="text-xs text-[#6a6c5d] uppercase font-bold mb-2">Python (requests)</p>
+          <p className="text-xs text-[#525252] uppercase font-bold mb-2">Python (requests)</p>
           <DocsCodeBlock
             code={`import requests, os
 
@@ -91,7 +91,7 @@ print(r.json())`}
           />
         </div>
         <div>
-          <p className="text-xs text-[#6a6c5d] uppercase font-bold mb-2">Go (net/http)</p>
+          <p className="text-xs text-[#525252] uppercase font-bold mb-2">Go (net/http)</p>
           <DocsCodeBlock
             code={`req, _ := http.NewRequest("POST",
     "https://whatsapp.fidscript.com/api/v1/messages/text/my-bot",
@@ -108,7 +108,7 @@ fmt.Println(string(body))`}
           />
         </div>
         <div>
-          <p className="text-xs text-[#6a6c5d] uppercase font-bold mb-2">PHP (curl)</p>
+          <p className="text-xs text-[#525252] uppercase font-bold mb-2">PHP (curl)</p>
           <DocsCodeBlock
             code={`<?php
 $ch = curl_init('https://whatsapp.fidscript.com/api/v1/messages/text/my-bot');
@@ -130,12 +130,12 @@ echo curl_exec($ch);`}
         </div>
       </div>
 
-      <h2 className="text-lg font-bold text-white mt-10 mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-10 mb-4">
         3. Generate a typed client for any other language
       </h2>
-      <p className="text-xs text-[#8a886a] mb-3">
+      <p className="text-xs text-[#525252] mb-3">
         Pull the live OpenAPI spec and feed it to{' '}
-        <code className="font-mono text-[#eab308]">openapi-generator-cli</code>. Works for
+        <code className="font-mono text-[#f97316]">openapi-generator-cli</code>. Works for
         Java/Kotlin, Swift, Rust, C#, Ruby, and dozens more:
       </p>
       <DocsCodeBlock

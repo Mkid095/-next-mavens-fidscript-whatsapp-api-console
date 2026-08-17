@@ -11,11 +11,11 @@ interface LoginFormProps {
   onLoadingChange: (loading: boolean) => void;
 }
 
-const LABEL = 'block text-[10px] font-bold text-[#8f8c6b] uppercase tracking-wider mb-2';
+const LABEL = 'block text-xs font-semibold text-[#1a1a1a] mb-1.5';
 const INPUT =
-  'w-full px-3 py-2.5 bg-[#1e1d13]/60 border border-[#38351c] text-stone-100 placeholder-[#7a775d] rounded-xl focus:outline-none focus:border-yellow-600 text-xs transition-colors font-mono disabled:opacity-50';
+  'w-full px-4 py-3 bg-white border border-[#e5e5e5] text-[#1a1a1a] placeholder-[#a0a0a0] rounded-2xl focus:outline-none focus:border-[#f97316] text-sm transition-colors disabled:opacity-50';
 const BTN =
-  'w-full mt-2 bg-[#eab308] hover:bg-[#d9a307] disabled:opacity-50 disabled:cursor-not-allowed text-[#070e0c] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition-all shadow-md focus:outline-none';
+  'w-full mt-4 bg-[#f97316] hover:bg-[#fb923c] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-full flex items-center justify-center gap-2 text-sm transition-colors focus:outline-none';
 
 export default function LoginForm({
   defaultEmail,
@@ -96,30 +96,30 @@ export default function LoginForm({
         <button
           type="button"
           onClick={() => { setStep('email'); onError(''); }}
-          className="flex items-center gap-1 text-[10px] text-[#8a886a] hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm text-[#525252] hover:text-[#1a1a1a] transition-colors"
         >
-          <ArrowLeft className="w-3 h-3" /> Change email
+          <ArrowLeft className="w-4 h-4" /> Change email
         </button>
         <div>
-          <p className="text-xs text-[#8f8c6d] mb-1">Enter the 6-digit code sent to</p>
-          <p className="text-xs font-mono text-yellow-400 break-all">{email.trim().toLowerCase()}</p>
+          <p className="text-sm text-[#525252] mb-1">Enter the 6-digit code sent to</p>
+          <p className="text-sm font-mono text-[#f97316] break-all">{email.trim().toLowerCase()}</p>
         </div>
         <CodeInput value={code} onChange={setCode} disabled={isSubmitting} />
-        <div className="flex justify-between items-center text-[10px]">
-          <span className="text-[#7a775d]">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-[#a0a0a0]">
             {canResend ? "Didn't get it?" : `Resend in ${secondsLeft}s`}
           </span>
           <button
             type="button"
             onClick={resend}
             disabled={!canResend || isSubmitting}
-            className="text-yellow-500 hover:text-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed font-semibold"
+            className="text-[#f97316] hover:text-[#fb923c] disabled:opacity-40 disabled:cursor-not-allowed font-semibold"
           >
             Resend code
           </button>
         </div>
         <button type="submit" disabled={isSubmitting} className={BTN}>
-          {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin text-[#070e0c]" /> : null}
+          {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           <span>{isSubmitting ? 'Verifying...' : 'Verify & Continue'}</span>
         </button>
       </form>
@@ -141,10 +141,10 @@ export default function LoginForm({
         />
       </div>
       <button type="submit" disabled={isSubmitting} className={BTN}>
-        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin text-[#070e0c]" /> : <Mail className="w-4 h-4 text-[#070e0c]" />}
+        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
         <span>{isSubmitting ? 'Sending code...' : 'Send Code'}</span>
       </button>
-      <p className="text-[10px] text-[#8f8c6d] text-center leading-relaxed">
+      <p className="text-sm text-[#a0a0a0] text-center">
         We'll email you a one-time code. No password needed.
       </p>
     </form>

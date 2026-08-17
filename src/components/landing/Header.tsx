@@ -50,7 +50,7 @@ export default function Header({ scrolled, onScroll }: HeaderProps) {
             </button>
             <button
               onClick={() => navigate('/register')}
-              className="px-5 py-2.5 bg-[#eab308] hover:bg-[#facc15] text-[#1a1a1a] font-semibold text-sm rounded-full transition-colors flex items-center gap-2"
+              className="px-5 py-2.5 bg-[#f97316] hover:bg-[#fb923c] text-[#1a1a1a] font-semibold text-sm rounded-full transition-colors flex items-center gap-2"
             >
               Get Started
               <ArrowRight className="w-4 h-4" />
@@ -81,7 +81,7 @@ export default function Header({ scrolled, onScroll }: HeaderProps) {
               <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-[#525252] hover:text-[#1a1a1a] py-2">Contact</Link>
               <div className="pt-3 border-t border-[#e5e5e5] space-y-2">
                 <button onClick={() => navigate('/login')} className="w-full px-4 py-2 text-sm text-[#525252] hover:text-[#1a1a1a] text-left">Login</button>
-                <button onClick={() => navigate('/register')} className="w-full px-4 py-2 bg-[#eab308] hover:bg-[#facc15] text-[#1a1a1a] font-semibold text-sm rounded-full text-center">
+                <button onClick={() => navigate('/register')} className="w-full px-4 py-2 bg-[#f97316] hover:bg-[#fb923c] text-[#1a1a1a] font-semibold text-sm rounded-full text-center">
                   Get Started
                 </button>
               </div>

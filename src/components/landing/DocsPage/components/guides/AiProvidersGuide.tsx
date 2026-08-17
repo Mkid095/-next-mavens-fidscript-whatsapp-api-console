@@ -6,22 +6,22 @@ import { PUBLIC_API_BASE } from '../../../../../data/apiEndpoints/index';
 export function AiProvidersGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">AI Providers</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
-        Connect any LLM provider to power your chatbot&rsquo;s AI responses. FIDScript
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">AI Providers</h1>
+      <p className="text-sm text-[#525252] mb-8">
+        Connect any LLM provider to power your chatbot's AI responses. FIDScript
         supports OpenAI, OpenRouter, Anthropic, Google Gemini, Azure OpenAI, Ollama, and any
         OpenAI-compatible custom endpoint.
       </p>
 
       <Callout type="info">
         <p>
-          <strong className="text-white">Bring Your Own Model (BYOM).</strong> You provide
+          <strong className="text-[#1a1a1a]">Bring Your Own Model (BYOM).</strong> You provide
           the API key — FIDScript encrypts it with AES-256-GCM and never stores plaintext
           keys. Works at the workspace level so your team shares connections safely.
         </p>
       </Callout>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Supported Providers</h2>
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Supported Providers</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
         {[
           {
@@ -69,29 +69,29 @@ export function AiProvidersGuide() {
         ].map(({ name, desc, badge, badgeColor }) => (
           <div
             key={name}
-            className="bg-[#1a1910] border border-[#262413] rounded-xl px-4 py-3"
+            className="bg-[#f8f8f8] border border-[#e5e5e5] rounded-xl px-4 py-3"
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-semibold text-white">{name}</span>
+              <span className="text-sm font-semibold text-[#1a1a1a]">{name}</span>
               <span
                 className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                   badgeColor === 'emerald'
-                    ? 'bg-emerald-500/20 text-emerald-400'
+                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                     : badgeColor === 'yellow'
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-stone-700 text-stone-400'
+                      ? 'bg-orange-50 text-orange-600 border border-orange-200'
+                      : 'bg-gray-100 text-gray-600 border border-gray-200'
                 }`}
               >
                 {badge}
               </span>
             </div>
-            <p className="text-xs text-[#6a6c5d]">{desc}</p>
+            <p className="text-xs text-[#525252]">{desc}</p>
           </div>
         ))}
       </div>
 
-      <h2 className="text-lg font-bold text-white mb-4">Discovery Endpoint</h2>
-      <p className="text-xs text-[#8a886a] mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mb-4">Discovery Endpoint</h2>
+      <p className="text-xs text-[#525252] mb-4">
         List all available providers for your workspace without authentication complexity.
       </p>
       <DocsCodeBlock
@@ -99,28 +99,28 @@ export function AiProvidersGuide() {
         lang="bash"
       />
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Key Management</h2>
-      <p className="text-xs text-[#8a886a] mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Key Management</h2>
+      <p className="text-xs text-[#525252] mb-4">
         API keys are encrypted server-side using AES-256-GCM before storage. Each key has a
         unique IV and auth tag — key rotation does not require re-encryption of all data.
       </p>
-      <div className="bg-[#1a1910] border border-[#262413] rounded-xl p-4 text-xs text-[#6a6c5d] space-y-2">
+      <div className="bg-[#f8f8f8] border border-[#e5e5e5] rounded-xl p-4 text-xs text-[#525252] space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-yellow-400 font-mono">iv</span>
+          <span className="text-[#f97316] font-mono font-bold">iv</span>
           <span>Per-row initialization vector (unique per key)</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-yellow-400 font-mono">auth_tag</span>
+          <span className="text-[#f97316] font-mono font-bold">auth_tag</span>
           <span>GCM authentication tag (verification on decrypt)</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-yellow-400 font-mono">key_version</span>
+          <span className="text-[#f97316] font-mono font-bold">key_version</span>
           <span>Increments on key rotation (supports future master key roll)</span>
         </div>
       </div>
 
-      <h2 className="text-lg font-bold text-white mt-8 mb-4">Fallback Chains</h2>
-      <p className="text-xs text-[#8a886a] mb-4">
+      <h2 className="text-lg font-bold text-[#1a1a1a] mt-8 mb-4">Fallback Chains</h2>
+      <p className="text-xs text-[#525252] mb-4">
         Define an ordered failover chain so your chatbot stays responsive even if a provider
         goes down.
       </p>

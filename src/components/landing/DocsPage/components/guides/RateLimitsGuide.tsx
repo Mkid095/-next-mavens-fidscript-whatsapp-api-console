@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 export function RateLimitsGuide() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="text-3xl font-bold text-white mb-2">Rate Limits</h1>
-      <p className="text-sm text-[#8a886a] mb-8">
+      <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Rate Limits</h1>
+      <p className="text-sm text-[#525252] mb-8">
         Every request is paced through multiple layers so production traffic stays well under
-        WhatsApp&rsquo;s account thresholds.
+        WhatsApp's account thresholds.
       </p>
       <div className="space-y-2">
         {[
@@ -43,19 +43,19 @@ export function RateLimitsGuide() {
         ].map(({ cat, limit, note }) => (
           <div
             key={cat}
-            className="flex items-center justify-between bg-[#1a1910] border border-[#262413] rounded-xl px-4 py-3"
+            className="flex items-center justify-between bg-[#f8f8f8] border border-[#e5e5e5] rounded-xl px-4 py-3"
           >
             <div>
-              <div className="text-sm font-semibold text-white">{cat}</div>
-              <div className="text-xs text-[#6a6c5d] mt-0.5">{note}</div>
+              <div className="text-sm font-semibold text-[#1a1a1a]">{cat}</div>
+              <div className="text-xs text-[#525252] mt-0.5">{note}</div>
             </div>
-            <div className="text-yellow-500 font-mono text-sm font-bold">{limit}</div>
+            <div className="text-[#f97316] font-mono text-sm font-bold">{limit}</div>
           </div>
         ))}
       </div>
-      <div className="mt-6 rounded-2xl border border-[#262413] bg-[#1a1910] p-4">
-        <p className="text-sm font-semibold text-white">Why these limits?</p>
-        <p className="mt-2 text-xs leading-relaxed text-[#a8a594]">
+      <div className="mt-6 rounded-2xl border border-[#e5e5e5] bg-[#f8f8f8] p-4">
+        <p className="text-sm font-semibold text-[#1a1a1a]">Why these limits?</p>
+        <p className="mt-2 text-xs leading-relaxed text-[#525252]">
           WhatsApp enforces two ceilings on business accounts: a <em>speed</em> ceiling
           (~80 MPS sends) and a <em>volume</em> ceiling (unique customers initiated per
           rolling 24h, tiered: 250 → 1k → 10k → 100k → unlimited). We pace every request

@@ -6,7 +6,7 @@
  *
  * Visual style: same dark palette as the rest of LandingPage.tsx
  *   - page bg `#0c0b06`, card `#1a1915`, border `#262413`
- *   - text `#a8a99e`, accent `#eab308`
+ *   - text `#a8a99e`, accent `#f97316`
  */
 import React from 'react';
 import { Terminal, Sparkles } from 'lucide-react';
@@ -58,11 +58,11 @@ export function CliInstallSection(): React.ReactElement {
             Or just install the CLI
           </h2>
           <p className="text-sm sm:text-base text-[#8a886a] max-w-2xl mx-auto leading-relaxed">
-            Every <code className="font-mono text-[#eab308]">/api/v1</code> endpoint,
+            Every <code className="font-mono text-[#f97316]">/api/v1</code> endpoint,
             chatbot, and instance lifecycle is one command away. The CLI is built
             for both humans and AI agents — every command supports
-            <code className="font-mono text-[#eab308] mx-1">--json</code> and
-            <code className="font-mono text-[#eab308] mx-1">--yaml</code> output.
+            <code className="font-mono text-[#f97316] mx-1">--json</code> and
+            <code className="font-mono text-[#f97316] mx-1">--yaml</code> output.
           </p>
         </div>
 
