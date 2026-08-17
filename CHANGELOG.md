@@ -58,3 +58,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - ChangelogPage and ChangelogVersionPage no longer render their own header alongside the shared nav (duplicate-header issue)
 - LoginView.tsx trimmed from 188 lines to 138 lines by extracting LoginLeftPanel
 - Login page right-side form panel now properly centered (was floating to the left of a wide empty container)
+- Hero section rebuilt with a layered fallback so text stays readable even when the hero image fails to load on slow connections: always-visible cream-to-orange linear-gradient background, two decorative gradient orbs, image now fills the entire hero (`absolute inset-0`) with `mix-blend-mode: multiply` so it darkens the gradient instead of replacing it. Hero is now minimalistic: removed the SCROLL indicator animation entirely. Dark `#1a1a1a` headline with `#ea580c` KES accent stays readable regardless of image load state.
